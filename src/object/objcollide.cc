@@ -466,6 +466,7 @@ void obj_add_pair(object *A, object *B, int check_time, int add_to_end)
                                                 // the "next" ptr will end up going backwards for used
                                                 // pairs so we have to allow for that with this
                                                 // craziness...
+                                                // TODO: wtf, after realloc?!
                                                 int next_mark = (int)(Obj_pairs[i].next - old_pairs_ptr);
                                                 Obj_pairs[i].next = &Obj_pairs[next_mark];
                                         }

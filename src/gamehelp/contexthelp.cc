@@ -289,14 +289,14 @@ void parse_helptbl(const char *filename)
         int i, j;
 
         std::vector< help_pline > pline_temp;
-        help_pline pline_temp2;
+        help_pline pline_temp2{ };
         std::vector< help_text > text_temp;
         help_text text_temp2;
         std::vector< help_right_bracket > rbracket_temp;
         help_right_bracket rbracket_temp2;
         std::vector< help_left_bracket > lbracket_temp;
         help_left_bracket lbracket_temp2;
-        vec3d vec3d_temp;
+        vec3d vec3d_temp{ };
 
         try {
                 read_file_text(filename, CF_TYPE_TABLES);
