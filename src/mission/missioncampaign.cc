@@ -428,7 +428,7 @@ int mission_campaign_load(
         if (pl == NULL)
                 pl = Player;
 
-        if (load_savefile && pl) {
+        if (load_savefile && 0 == pl) {
                 ASSERT(0);
                 load_savefile = 0;
         }
