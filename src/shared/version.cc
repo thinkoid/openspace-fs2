@@ -7,6 +7,8 @@
 
 #include "parse/parselo.hh"
 
+#include <sstream>
+
 namespace gameversion {
 
 bool check_at_least (const version& v) {

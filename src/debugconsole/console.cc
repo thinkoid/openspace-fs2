@@ -1,6 +1,5 @@
 // -*- mode: c++; -*-
 
-#include <algorithm>
 #include <cmath>
 #include <cstdarg>
 
@@ -14,6 +13,9 @@
 #include "io/timer.hh"
 #include "math/fix.hh"
 #include "osapi/osapi.hh"
+
+#include <algorithm>
+#include <deque>
 
 // ========================= GLOBALS =========================
 bool Dc_debug_on; //!< Flag used to print console and command debugging strings

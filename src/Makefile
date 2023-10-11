@@ -6,7 +6,7 @@ WARNINGS =										\
 	-Wno-unused-function						\
 	-Wno-deprecated-declarations
 
-CXXFLAGS = -g -O -std=c++2a -W -Wall $(WARNINGS)
+CXXFLAGS = -g -O4 -std=c++2a -W -Wall $(WARNINGS)
 
 SRCS :=											\
 	ai/ai.cc									\

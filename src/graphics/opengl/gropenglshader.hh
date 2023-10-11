@@ -12,6 +12,8 @@
 #include <string>
 #include "glad/glad.h"
 
+#include <boost/container_hash/hash.hpp>
+
 namespace opengl {
 // Forward definition to avoid cyclic dependency
 class ShaderProgram;

@@ -36,6 +36,8 @@
 #include "mission/missionload.hh"
 #endif
 
+#include <deque>
+
 // A reference to io/keycontrol.cpp
 extern void game_process_cheats (int k);
 

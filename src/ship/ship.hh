@@ -21,6 +21,7 @@
 #include "ship/ship_flags.hh"
 #include "weapon/weapon_flags.hh"
 
+#include <deque>
 #include <string>
 
 class object;

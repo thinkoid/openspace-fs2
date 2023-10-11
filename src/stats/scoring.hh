@@ -6,6 +6,7 @@
 #include "defs.hh"
 
 #include <ctime>
+#include <map>
 
 class player;
 class ship;

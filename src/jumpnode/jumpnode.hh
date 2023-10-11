@@ -7,6 +7,8 @@
 
 #include <cstdlib>
 
+#include <list>
+
 #include "graphics/2d.hh"
 
 struct vec3d;
