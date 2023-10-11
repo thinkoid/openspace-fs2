@@ -209,7 +209,7 @@ std::unique_ptr< DecoderStatus > initializeStatus (
     auto ctx = stream->m_ctx->ctx ();
 
     auto videoStream = av_find_best_stream (
-        ctx, AVMEDIA_TYPE_VIDEO, -1, -1, &status->videoCodec, 0);
+            ctx, AVMEDIA_TYPE_VIDEO, -1, -1, (const AVCodec **)&status->videoCodec, 0);
     if (videoStream < 0) {
         if (videoStream == AVERROR_STREAM_NOT_FOUND) {
             WARNINGF (LOCATION, "FFmpeg: No video stream found in file!");
@@ -230,7 +230,7 @@ std::unique_ptr< DecoderStatus > initializeStatus (
 
     if (properties.with_audio) {
         audioStream = av_find_best_stream (
-            ctx, AVMEDIA_TYPE_AUDIO, -1, videoStream, &status->audioCodec, 0);
+                ctx, AVMEDIA_TYPE_AUDIO, -1, videoStream, (const AVCodec **)&status->audioCodec, 0);
         if (audioStream < 0) {
             if (audioStream == AVERROR_STREAM_NOT_FOUND) {
                 WARNINGF (LOCATION, "FFmpeg: No audio stream found in file!");
@@ -391,7 +391,7 @@ std::unique_ptr< DecoderStatus > initializeStatus (
             getCodecParameters (status->subtitleStream);
 
         status->subtitleCodec =
-            avcodec_find_decoder (status->subtitleCodecPars.codec_id);
+                (AVCodec *)avcodec_find_decoder (status->subtitleCodecPars.codec_id);
 
 #if LIBAVCODEC_VERSION_INT > AV_VERSION_INT(57, 24, 255)
         status->subtitleCodecCtx =

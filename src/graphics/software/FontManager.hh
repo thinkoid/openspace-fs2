@@ -5,6 +5,7 @@
 
 #include "defs.hh"
 
+#include <map>
 #include <memory>
 
 namespace font {

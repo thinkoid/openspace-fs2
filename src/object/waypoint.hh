@@ -5,6 +5,8 @@
 
 #include "defs.hh"
 
+#include <list>
+
 class waypoint_list;
 
 class waypoint {

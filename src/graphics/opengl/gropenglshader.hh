@@ -10,6 +10,9 @@
 #include "graphics/material.hh"
 
 #include <string>
+
+#include <boost/container_hash/hash.hpp>
+
 #include "glad/glad.h"
 
 namespace opengl {

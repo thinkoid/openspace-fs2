@@ -22,6 +22,7 @@
 #include "weapon/weapon_flags.hh"
 
 #include <string>
+#include <deque>
 
 class object;
 class WarpEffect;

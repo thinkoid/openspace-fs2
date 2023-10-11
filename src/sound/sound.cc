@@ -23,6 +23,8 @@
 #include "assert/assert.hh"
 #include "log/log.hh"
 
+#include <list>
+
 const unsigned int SND_ENHANCED_MAX_LIMIT = 15; // seems like a good max limit
 
 #define SND_F_USED (1 << 0) // Sounds[] element is used

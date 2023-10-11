@@ -7,6 +7,8 @@
 #include "shared/globals.hh"
 #include "tracing/FrameProfiler.hh"
 
+#include <sstream>
+
 using namespace tracing;
 
 namespace {

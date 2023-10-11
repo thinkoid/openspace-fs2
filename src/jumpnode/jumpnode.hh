@@ -9,6 +9,8 @@
 
 #include "graphics/2d.hh"
 
+#include <list>
+
 struct vec3d;
 class object;
 

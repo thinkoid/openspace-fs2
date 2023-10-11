@@ -7,6 +7,8 @@
 
 #include <ctime>
 
+#include <map>
+
 class player;
 class ship;
 class object;
