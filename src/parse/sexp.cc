@@ -9262,6 +9262,7 @@ int sexp_determine_team (char* subj) {
     if (strncasecmp (subj, "<any ", 5) != 0) return -1;
 
     // grab IFF (rest of string except for closing angle bracket)
+    // TODO: should be strings
     auto len = strlen (subj + 5) - 1;
     strncpy (team_name, subj + 5, len);
     team_name[len] = '\0';

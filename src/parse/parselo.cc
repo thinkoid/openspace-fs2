@@ -1472,6 +1472,7 @@ int maybe_convert_foreign_character (int ch) {
 // Yarn - The capacity of out must be at least the value returned by
 // get_converted_string_length(in) (plus one if add_null is true).
 // Returns the number of characters written to out.
+// TODO: suspiciously stupid
 size_t
 maybe_convert_foreign_characters (const char* in, char* out, bool add_null) {
     if (Fred_running) {

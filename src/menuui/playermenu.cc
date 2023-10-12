@@ -973,9 +973,11 @@ void player_select_init_player_stuff (int mode) {
             if (!strcasecmp (Player_select_last_pilot, Pilots[i])) { break; }
         }
         if (i != Player_select_num_pilots) {
+            // TODO: this should be strings
             for (j = i; j > 0; --j) {
                 strncpy (Pilots[j], Pilots[j - 1], strlen (Pilots[j - 1]) + 1);
             }
+            // TODO: this should be strings
             strncpy (
                 Pilots[0], Player_select_last_pilot,
                 strlen (Player_select_last_pilot) + 1);

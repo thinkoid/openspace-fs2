@@ -440,6 +440,7 @@ int mission_campaign_load (
         // copy filename to campaign structure minus the extension
         auto len = strlen (filename) - 4;
         ASSERT (len < MAX_FILENAME_LEN);
+        // TODO: this should be strings
         strncpy (Campaign.filename, filename, len);
         Campaign.filename[len] = '\0';
 

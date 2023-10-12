@@ -419,6 +419,8 @@ void obj_add_pair (object* A, object* B, int check_time, int add_to_end) {
         }
     */
 
+    // TODO: this is a simple vector reallocation -- rewrite
+
     if (Num_pairs >= (Num_pairs_allocated - 20)) {
         int i;
 
@@ -436,19 +438,19 @@ void obj_add_pair (object* A, object* B, int check_time, int add_to_end) {
 
         // allow us to fail here and only if we don't do we setup the new pairs
 
-        if (Obj_pairs == NULL) {
+        if (0 == Obj_pairs) {
             // failed, just go back to the way we were and use only the pairs
             // we have already
+            ASSERT(0);
             Obj_pairs = old_pairs_ptr;
         }
         else {
             Num_pairs_allocated += PAIRS_BUMP;
-
-            ASSERT (Obj_pairs != NULL);
+            ASSERT(Obj_pairs);
 
             // have to reset all of the "next" ptrs for the old set and handle
             // the new set
-            for (i = 0; i < Num_pairs_allocated; i++) {
+            for (i = 0; i < Num_pairs_allocated; ++i) {
                 if (i >= old_pair_count) {
                     memset (&Obj_pairs[i], 0, sizeof (obj_pair));
                     Obj_pairs[i].next = &Obj_pairs[i + 1];
@@ -458,8 +460,8 @@ void obj_add_pair (object* A, object* B, int check_time, int add_to_end) {
                         // the "next" ptr will end up going backwards for used
                         // pairs so we have to allow for that with this
                         // craziness...
-                        int next_mark =
-                            (int)(Obj_pairs[i].next - old_pairs_ptr);
+                        // TODO: wtf, after realloc?!
+                        int next_mark = (int)(Obj_pairs[i].next - old_pairs_ptr);
                         Obj_pairs[i].next = &Obj_pairs[next_mark];
                     }
 
@@ -495,7 +497,7 @@ void obj_add_pair (object* A, object* B, int check_time, int add_to_end) {
         if (last == NULL) last = &pair_used_list;
 
         last->next = new_pair;
-        ASSERT (new_pair != NULL);
+        ASSERT (new_pair);
         new_pair->next = NULL;
     }
     else {
