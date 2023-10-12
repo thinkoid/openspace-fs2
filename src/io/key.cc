@@ -1,18 +1,18 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "controlconfig/controlsconfig.hh" //For textify scancode
-#include "shared/types.hh"
+#include <controlconfig/controlsconfig.hh> //For textify scancode
+#include <shared/types.hh>
 #include "graphics/2d.hh"
-#include "io/key.hh"
-#include "math/fix.hh"
-#include "io/timer.hh"
-#include "localization/localize.hh"
-#include "cmdline/cmdline.hh"
+#include <io/key.hh>
+#include <math/fix.hh>
+#include <io/timer.hh>
+#include <localization/localize.hh>
+#include <cmdline/cmdline.hh>
 
 #define THREADED // to use the proper set of macros
-#include "osapi/osapi.hh"
+#include <osapi/osapi.hh>
 
 #define KEY_BUFFER_SIZE 16
 

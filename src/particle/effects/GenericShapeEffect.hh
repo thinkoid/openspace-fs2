@@ -3,12 +3,12 @@
 #ifndef FREESPACE2_PARTICLE_EFFECTS_GENERICSHAPEEFFECT_HH
 #define FREESPACE2_PARTICLE_EFFECTS_GENERICSHAPEEFFECT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "particle/ParticleEffect.hh"
-#include "particle/ParticleManager.hh"
+#include <particle/ParticleEffect.hh>
+#include <particle/ParticleManager.hh>
 #include "particle/util/ParticleProperties.hh"
-#include "util/RandomRange.hh"
+#include <util/RandomRange.hh>
 
 namespace particle {
 namespace effects {

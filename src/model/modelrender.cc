@@ -9,31 +9,31 @@
  *
  */
 
-#include "defs.hh"
+#include <defs.hh>
 
 
-#include "assert/assert.hh"
-#include "asteroid/asteroid.hh"
-#include "cmdline/cmdline.hh"
-#include "gamesequence/gamesequence.hh"
-#include "graphics/light.hh"
-#include "graphics/matrix.hh"
+#include <assert/assert.hh>
+#include <asteroid/asteroid.hh>
+#include <cmdline/cmdline.hh>
+#include <gamesequence/gamesequence.hh>
+#include <graphics/light.hh>
+#include <graphics/matrix.hh>
 #include "graphics/opengl/gropengldraw.hh"
 #include "graphics/opengl/gropenglshader.hh"
-#include "graphics/tmapper.hh"
-#include "graphics/uniforms.hh"
-#include "io/timer.hh"
-#include "log/log.hh"
-#include "math/prng.hh"
-#include "model/modelrender.hh"
-#include "nebula/neb.hh"
-#include "particle/particle.hh"
+#include <graphics/tmapper.hh>
+#include <graphics/uniforms.hh>
+#include <io/timer.hh>
+#include <log/log.hh>
+#include <math/prng.hh>
+#include <model/modelrender.hh>
+#include <nebula/neb.hh>
+#include <particle/particle.hh>
 #include "render/3dinternal.hh"
-#include "render/batching.hh"
-#include "ship/ship.hh"
-#include "ship/shipfx.hh"
-#include "tracing/tracing.hh"
-#include "weapon/weapon.hh"
+#include <render/batching.hh>
+#include <ship/ship.hh>
+#include <ship/shipfx.hh>
+#include <tracing/tracing.hh>
+#include <weapon/weapon.hh>
 
 #include <algorithm>
 

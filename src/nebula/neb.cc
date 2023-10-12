@@ -1,26 +1,26 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "bmpman/bmpman.hh"
-#include "cmdline/cmdline.hh"
-#include "ddsutils/ddsutils.hh"
-#include "debugconsole/console.hh"
+#include <bmpman/bmpman.hh>
+#include <cmdline/cmdline.hh>
+#include <ddsutils/ddsutils.hh>
+#include <debugconsole/console.hh>
 #include "freespace2/freespace.hh"
-#include "graphics/light.hh"
-#include "jpgutils/jpgutils.hh"
-#include "log/log.hh"
-#include "math/prng.hh"
-#include "mission/missionparse.hh"
-#include "nebula/neb.hh"
-#include "object/object.hh"
-#include "parse/parselo.hh"
-#include "pcxutils/pcxutils.hh"
+#include <graphics/light.hh>
+#include <jpgutils/jpgutils.hh>
+#include <log/log.hh>
+#include <math/prng.hh>
+#include <mission/missionparse.hh>
+#include <nebula/neb.hh>
+#include <object/object.hh>
+#include <parse/parselo.hh>
+#include <pcxutils/pcxutils.hh>
 #include "render/3d.hh"
-#include "ship/ship.hh"
-#include "starfield/starfield.hh"
-#include "tgautils/tgautils.hh"
-#include "tracing/tracing.hh"
+#include <ship/ship.hh>
+#include <starfield/starfield.hh>
+#include <tgautils/tgautils.hh>
+#include <tracing/tracing.hh>
 
 // --------------------------------------------------------------------------------------------------------
 // NEBULA DEFINES/VARS

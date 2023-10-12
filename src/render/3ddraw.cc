@@ -1,19 +1,19 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "bmpman/bmpman.hh"
-#include "cmdline/cmdline.hh"
-#include "graphics/grbatch.hh"
-#include "graphics/matrix.hh"
-#include "graphics/tmapper.hh"
-#include "io/key.hh"
-#include "log/log.hh"
-#include "math/prng.hh"
-#include "physics/physics.hh" // For Physics_viewer_bank for g3_draw_rotated_bitmap
+#include <bmpman/bmpman.hh>
+#include <cmdline/cmdline.hh>
+#include <graphics/grbatch.hh>
+#include <graphics/matrix.hh>
+#include <graphics/tmapper.hh>
+#include <io/key.hh>
+#include <log/log.hh>
+#include <math/prng.hh>
+#include <physics/physics.hh> // For Physics_viewer_bank for g3_draw_rotated_bitmap
 #include "render/3dinternal.hh"
-#include "render/batching.hh"
-#include "shared/alphacolors.hh"
+#include <render/batching.hh>
+#include <shared/alphacolors.hh>
 
 /**
  * Deal with a clipped line

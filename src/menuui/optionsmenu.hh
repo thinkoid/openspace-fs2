@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_MENUUI_OPTIONSMENU_HH
 #define FREESPACE2_MENUUI_OPTIONSMENU_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "ui/ui.hh"
+#include <ui/ui.hh>
 
 struct op_sliders {
     // base slider

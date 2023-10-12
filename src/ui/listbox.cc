@@ -1,11 +1,11 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "shared/alphacolors.hh"
-#include "io/timer.hh"
-#include "ui/ui.hh"
-#include "ui/uidefs.hh"
+#include <shared/alphacolors.hh>
+#include <io/timer.hh>
+#include <ui/ui.hh>
+#include <ui/uidefs.hh>
 
 #define KEY_BUFFER_TIMEOUT 1000 // time to clear buffer in milliseconds
 

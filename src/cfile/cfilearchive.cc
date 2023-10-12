@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "assert/assert.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
 
 #define _CFILE_INTERNAL
 
@@ -11,8 +11,8 @@
 #include <sstream>
 #include <limits>
 
-#include "cfile/cfile.hh"
-#include "cfile/cfilearchive.hh"
+#include <cfile/cfile.hh>
+#include <cfile/cfilearchive.hh>
 
 #define CHECK_POSITION
 

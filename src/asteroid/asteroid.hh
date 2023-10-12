@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_ASTEROID_ASTEROID_HH
 #define FREESPACE2_ASTEROID_ASTEROID_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 class object;
 class polymodel;

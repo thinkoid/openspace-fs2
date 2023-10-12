@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "assert/assert.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
 
 /*
  * Code created by Thomas Whittaker (RT) for a FreeSpace 2 source code project
@@ -11,11 +11,11 @@
  *
  */
 
-#include "bmpman/bmpman.hh"
-#include "cmdline/cmdline.hh"
-#include "shared/types.hh"
+#include <bmpman/bmpman.hh>
+#include <cmdline/cmdline.hh>
+#include <shared/types.hh>
 #include "graphics/2d.hh"
-#include "graphics/grbatch.hh"
+#include <graphics/grbatch.hh>
 #include "render/3d.hh"
 
 geometry_batcher::~geometry_batcher () {

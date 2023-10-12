@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "assert/assert.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
 
 /*
  * Created by Ian "Goober5000" Warfield for the FreeSpace2 Source Code Project.
@@ -9,8 +9,8 @@
  * create based on the source.
  */
 
-#include "object/deadobjectdock.hh"
-#include "object/object.hh"
+#include <object/deadobjectdock.hh>
+#include <object/object.hh>
 
 // management prototypes
 

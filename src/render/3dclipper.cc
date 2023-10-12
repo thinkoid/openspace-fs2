@@ -1,8 +1,8 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "graphics/tmapper.hh"
+#include <graphics/tmapper.hh>
 #include "render/3dinternal.hh"
 
 int free_point_num = 0;

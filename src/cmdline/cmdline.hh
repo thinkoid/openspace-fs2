@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_CMDLINE_CMDLINE_HH
 #define FREESPACE2_CMDLINE_CMDLINE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 int parse_cmdline (int argc, char* argv[]);
 

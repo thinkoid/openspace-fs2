@@ -2,22 +2,22 @@
 
 #include <cstdlib>
 
-#include "defs.hh"
-#include "asteroid/asteroid.hh"
-#include "cmdline/cmdline.hh"
-#include "fireball/fireballs.hh"
-#include "gamesnd/gamesnd.hh"
-#include "graphics/tmapper.hh"
-#include "localization/localize.hh"
-#include "model/model.hh"
-#include "object/object.hh"
-#include "parse/parselo.hh"
+#include <defs.hh>
+#include <asteroid/asteroid.hh>
+#include <cmdline/cmdline.hh>
+#include <fireball/fireballs.hh>
+#include <gamesnd/gamesnd.hh>
+#include <graphics/tmapper.hh>
+#include <localization/localize.hh>
+#include <model/model.hh>
+#include <object/object.hh>
+#include <parse/parselo.hh>
 #include "render/3d.hh"
-#include "render/batching.hh"
-#include "ship/ship.hh"
-#include "tracing/Monitor.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <render/batching.hh>
+#include <ship/ship.hh>
+#include <tracing/Monitor.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 // make use of the LOD checker for tbl/tbm parsing (from weapons.cpp)
 extern std::vector< lod_checker > LOD_checker;

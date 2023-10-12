@@ -1,33 +1,33 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "asteroid/asteroid.hh"
-#include "cmdline/cmdline.hh"
-#include "debris/debris.hh"
+#include <defs.hh>
+#include <asteroid/asteroid.hh>
+#include <cmdline/cmdline.hh>
+#include <debris/debris.hh>
 #include "freespace2/freespace.hh"
-#include "gamesnd/gamesnd.hh"
-#include "graphics/matrix.hh"
-#include "hud/hudbrackets.hh"
-#include "hud/hudtargetbox.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "jumpnode/jumpnode.hh"
-#include "localization/localize.hh"
-#include "mission/missionparse.hh"
-#include "model/model.hh"
-#include "object/object.hh"
-#include "object/objectdock.hh"
-#include "parse/parselo.hh"
-#include "playerman/player.hh"
-#include "ship/ship.hh"
-#include "ship/subsysdamage.hh"
-#include "species_defs/species_defs.hh"
-#include "weapon/emp.hh"
-#include "weapon/weapon.hh"
-#include "log/log.hh"
+#include <gamesnd/gamesnd.hh>
+#include <graphics/matrix.hh>
+#include <hud/hudbrackets.hh>
+#include <hud/hudtargetbox.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <jumpnode/jumpnode.hh>
+#include <localization/localize.hh>
+#include <mission/missionparse.hh>
+#include <model/model.hh>
+#include <object/object.hh>
+#include <object/objectdock.hh>
+#include <parse/parselo.hh>
+#include <playerman/player.hh>
+#include <ship/ship.hh>
+#include <ship/subsysdamage.hh>
+#include <species_defs/species_defs.hh>
+#include <weapon/emp.hh>
+#include <weapon/weapon.hh>
+#include <log/log.hh>
 
 #ifndef NDEBUG
-#include "hud/hudets.hh"
+#include <hud/hudets.hh>
 #endif
 
 extern float View_zoom;

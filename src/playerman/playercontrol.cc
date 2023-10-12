@@ -1,37 +1,37 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "autopilot/autopilot.hh"
-#include "camera/camera.hh"
-#include "controlconfig/controlsconfig.hh"
-#include "debugconsole/console.hh"
+#include <defs.hh>
+#include <autopilot/autopilot.hh>
+#include <camera/camera.hh>
+#include <controlconfig/controlsconfig.hh>
+#include <debugconsole/console.hh>
 #include "freespace2/freespace.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
-#include "hud/hud.hh"
-#include "hud/hudmessage.hh"
-#include "hud/hudsquadmsg.hh"
-#include "hud/hudtargetbox.hh"
-#include "io/joy.hh"
-#include "io/joy_ff.hh"
-#include "io/mouse.hh"
-#include "io/timer.hh"
-#include "math/fix.hh"
-#include "mission/missiongoals.hh"
-#include "mission/missionmessage.hh"
-#include "object/object.hh"
-#include "object/objectdock.hh"
-#include "observer/observer.hh"
-#include "parse/parselo.hh"
-#include "playerman/player.hh"
-#include "ship/ship.hh"
-#include "ship/shipfx.hh"
-#include "util/list.hh"
-#include "weapon/weapon.hh"
-#include "log/log.hh"
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
+#include <hud/hud.hh>
+#include <hud/hudmessage.hh>
+#include <hud/hudsquadmsg.hh>
+#include <hud/hudtargetbox.hh>
+#include <io/joy.hh>
+#include <io/joy_ff.hh>
+#include <io/mouse.hh>
+#include <io/timer.hh>
+#include <math/fix.hh>
+#include <mission/missiongoals.hh>
+#include <mission/missionmessage.hh>
+#include <object/object.hh>
+#include <object/objectdock.hh>
+#include <observer/observer.hh>
+#include <parse/parselo.hh>
+#include <playerman/player.hh>
+#include <ship/ship.hh>
+#include <ship/shipfx.hh>
+#include <util/list.hh>
+#include <weapon/weapon.hh>
+#include <log/log.hh>
 
 #ifndef NDEBUG
-#include "io/key.hh"
+#include <io/key.hh>
 #endif
 
 ////////////////////////////////////////////////////////////

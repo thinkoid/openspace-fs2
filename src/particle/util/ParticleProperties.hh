@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_PARTICLE_UTIL_PARTICLEPROPERTIES_HH
 #define FREESPACE2_PARTICLE_UTIL_PARTICLEPROPERTIES_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "particle/particle.hh"
-#include "util/RandomRange.hh"
+#include <particle/particle.hh>
+#include <util/RandomRange.hh>
 
 namespace particle {
 namespace util {

@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_MISSION_MISSIONBRIEFCOMMON_HH
 #define FREESPACE2_MISSION_MISSIONBRIEFCOMMON_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "anim/packunpack.hh"
-#include "graphics/generic.hh"
-#include "hud/hud.hh"
+#include <anim/packunpack.hh>
+#include <graphics/generic.hh>
+#include <hud/hud.hh>
 
 #define MAX_TEXT_STREAMS \
     2 // how many concurrent streams of text can be displayed

@@ -1,21 +1,21 @@
 // -*- mode: c++; -*-
 
-#include "anim/animplay.hh"
-#include "anim/packunpack.hh"
-#include "bmpman/bmpman.hh"
-#include "ddsutils/ddsutils.hh"
-#include "shared/globals.hh"
+#include <anim/animplay.hh>
+#include <anim/packunpack.hh>
+#include <bmpman/bmpman.hh>
+#include <ddsutils/ddsutils.hh>
+#include <shared/globals.hh>
 #include "graphics/2d.hh"
-#include "graphics/grinternal.hh"
-#include "jpgutils/jpgutils.hh"
-#include "model/model.hh"
-#include "graphics/material.hh"
-#include "pcxutils/pcxutils.hh"
-#include "pngutils/pngutils.hh"
-#include "tgautils/tgautils.hh"
+#include <graphics/grinternal.hh>
+#include <jpgutils/jpgutils.hh>
+#include <model/model.hh>
+#include <graphics/material.hh>
+#include <pcxutils/pcxutils.hh>
+#include <pngutils/pngutils.hh>
+#include <tgautils/tgautils.hh>
 
 #define BMPMAN_INTERNAL
-#include "bmpman/bm_internal.hh"
+#include <bmpman/bm_internal.hh>
 
 uint gr_stub_lock () { return 1; }
 

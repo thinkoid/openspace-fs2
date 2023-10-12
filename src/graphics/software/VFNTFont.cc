@@ -2,7 +2,7 @@
 
 #include "graphics/software/VFNTFont.hh"
 #include "graphics/software/font_internal.hh"
-#include "assert/assert.hh"
+#include <assert/assert.hh>
 
 namespace font {
 

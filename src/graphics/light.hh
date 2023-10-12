@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_GRAPHICS_LIGHT_HH
 #define FREESPACE2_GRAPHICS_LIGHT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "lighting/lighting.hh"
+#include <lighting/lighting.hh>
 #include "graphics/util/uniform_structs.hh"
 
 // Variables

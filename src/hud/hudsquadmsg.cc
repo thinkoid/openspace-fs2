@@ -1,29 +1,29 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "ai/aigoals.hh"
-#include "assert/assert.hh"
-#include "gamesnd/gamesnd.hh"
-#include "hud/hudmessage.hh"
-#include "hud/hudsquadmsg.hh"
-#include "hud/hudtargetbox.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/key.hh"
-#include "io/timer.hh"
-#include "log/log.hh"
-#include "math/fix.hh"
-#include "math/prng.hh"
-#include "mission/missionlog.hh"
-#include "mission/missionmessage.hh"
-#include "parse/parselo.hh"
-#include "parse/sexp.hh"
-#include "playerman/player.hh"
-#include "ship/ship.hh"
-#include "ship/subsysdamage.hh"
-#include "util/list.hh"
-#include "weapon/emp.hh"
-#include "weapon/weapon.hh"
+#include <ai/aigoals.hh>
+#include <assert/assert.hh>
+#include <gamesnd/gamesnd.hh>
+#include <hud/hudmessage.hh>
+#include <hud/hudsquadmsg.hh>
+#include <hud/hudtargetbox.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/key.hh>
+#include <io/timer.hh>
+#include <log/log.hh>
+#include <math/fix.hh>
+#include <math/prng.hh>
+#include <mission/missionlog.hh>
+#include <mission/missionmessage.hh>
+#include <parse/parselo.hh>
+#include <parse/sexp.hh>
+#include <playerman/player.hh>
+#include <ship/ship.hh>
+#include <ship/subsysdamage.hh>
+#include <util/list.hh>
+#include <weapon/emp.hh>
+#include <weapon/weapon.hh>
 
 // defines for different modes in the squad messaging system
 

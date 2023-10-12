@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_OSAPI_OSREGISTRY_HH
 #define FREESPACE2_OSAPI_OSREGISTRY_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <string>
 

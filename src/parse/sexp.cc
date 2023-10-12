@@ -1,86 +1,86 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 // Parse a symbolic expression.
 // These are identical to Lisp functions.
 // It uses a very baggy format, allocating 16 characters per token, regardless
 // of how many are used.
 
-#include "ai/aigoals.hh"
-#include "asteroid/asteroid.hh"
-#include "autopilot/autopilot.hh"
-#include "camera/camera.hh"
-#include "cmdline/cmdline.hh"
-#include "debugconsole/console.hh"
-#include "fireball/fireballs.hh" // for explosion stuff
+#include <ai/aigoals.hh>
+#include <asteroid/asteroid.hh>
+#include <autopilot/autopilot.hh>
+#include <camera/camera.hh>
+#include <cmdline/cmdline.hh>
+#include <debugconsole/console.hh>
+#include <fireball/fireballs.hh> // for explosion stuff
 #include "freespace2/freespace.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/eventmusic.hh" // for change-soundtrack
-#include "gamesnd/gamesnd.hh"
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/eventmusic.hh> // for change-soundtrack
+#include <gamesnd/gamesnd.hh>
 #include "graphics/2d.hh"
-#include "graphics/font.hh"
-#include "graphics/light.hh"
-#include "hud/hud.hh"
-#include "hud/hudartillery.hh"
-#include "hud/hudconfig.hh"
-#include "hud/hudescort.hh"
-#include "hud/hudets.hh"
-#include "hud/hudmessage.hh"
-#include "hud/hudparse.hh"
-#include "hud/hudshield.hh"
-#include "hud/hudsquadmsg.hh" // for the order sexp
-#include "iff_defs/iff_defs.hh"
-#include "io/keycontrol.hh"
-#include "io/timer.hh"
-#include "jumpnode/jumpnode.hh"
-#include "localization/localize.hh"
-#include "math/fix.hh"
-#include "math/fvi.hh"
-#include "math/prng.hh"
-#include "menuui/techmenu.hh" // for intel stuff
-#include "mission/missionbriefcommon.hh"
-#include "mission/missioncampaign.hh"
-#include "mission/missiongoals.hh"
-#include "mission/missionlog.hh"
-#include "mission/missionmessage.hh"
-#include "mission/missionparse.hh" // for p_object definition
-#include "mission/missiontraining.hh"
-#include "missionui/redalert.hh"
-#include "mod_table/mod_table.hh"
-#include "nebula/neb.hh"
-#include "nebula/neblightning.hh"
-#include "object/objcollide.hh"
-#include "object/objectdock.hh"
-#include "object/objectshield.hh"
-#include "object/objectsnd.hh"
-#include "object/waypoint.hh"
-#include "parse/parselo.hh"
-#include "parse/sexp.hh"
-#include "playerman/player.hh"
+#include <graphics/font.hh>
+#include <graphics/light.hh>
+#include <hud/hud.hh>
+#include <hud/hudartillery.hh>
+#include <hud/hudconfig.hh>
+#include <hud/hudescort.hh>
+#include <hud/hudets.hh>
+#include <hud/hudmessage.hh>
+#include <hud/hudparse.hh>
+#include <hud/hudshield.hh>
+#include <hud/hudsquadmsg.hh> // for the order sexp
+#include <iff_defs/iff_defs.hh>
+#include <io/keycontrol.hh>
+#include <io/timer.hh>
+#include <jumpnode/jumpnode.hh>
+#include <localization/localize.hh>
+#include <math/fix.hh>
+#include <math/fvi.hh>
+#include <math/prng.hh>
+#include <menuui/techmenu.hh> // for intel stuff
+#include <mission/missionbriefcommon.hh>
+#include <mission/missioncampaign.hh>
+#include <mission/missiongoals.hh>
+#include <mission/missionlog.hh>
+#include <mission/missionmessage.hh>
+#include <mission/missionparse.hh> // for p_object definition
+#include <mission/missiontraining.hh>
+#include <missionui/redalert.hh>
+#include <mod_table/mod_table.hh>
+#include <nebula/neb.hh>
+#include <nebula/neblightning.hh>
+#include <object/objcollide.hh>
+#include <object/objectdock.hh>
+#include <object/objectshield.hh>
+#include <object/objectsnd.hh>
+#include <object/waypoint.hh>
+#include <parse/parselo.hh>
+#include <parse/sexp.hh>
+#include <playerman/player.hh>
 #include "render/3d.hh"
-#include "shared/alphacolors.hh"
-#include "shared/globals.hh"
-#include "shared/version.hh"
-#include "ship/afterburner.hh"
-#include "ship/awacs.hh"
-#include "ship/ship.hh"
-#include "ship/ship_flags.hh"
-#include "ship/shiphit.hh"
-#include "sound/audiostr.hh"
-#include "sound/ds.hh"
-#include "sound/sound.hh"
-#include "starfield/starfield.hh"
-#include "starfield/supernova.hh"
-#include "stats/medals.hh"
-#include "util/list.hh"
-#include "util/unicode.hh"
-#include "weapon/beam.hh"
-#include "weapon/emp.hh"
-#include "weapon/shockwave.hh"
-#include "weapon/weapon.hh"
+#include <shared/alphacolors.hh>
+#include <shared/globals.hh>
+#include <shared/version.hh>
+#include <ship/afterburner.hh>
+#include <ship/awacs.hh>
+#include <ship/ship.hh>
+#include <ship/ship_flags.hh>
+#include <ship/shiphit.hh>
+#include <sound/audiostr.hh>
+#include <sound/ds.hh>
+#include <sound/sound.hh>
+#include <starfield/starfield.hh>
+#include <starfield/supernova.hh>
+#include <stats/medals.hh>
+#include <util/list.hh>
+#include <util/unicode.hh>
+#include <weapon/beam.hh>
+#include <weapon/emp.hh>
+#include <weapon/shockwave.hh>
+#include <weapon/weapon.hh>
 
 #include <cstdio>
 #include <cstdlib>

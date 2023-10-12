@@ -1,25 +1,25 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "anim/animplay.hh"
-#include "anim/packunpack.hh"
-#include "gamehelp/contexthelp.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/eventmusic.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "graphics/font.hh"
-#include "io/key.hh"
-#include "io/timer.hh"
-#include "mission/missionparse.hh"
-#include "mission/missionbriefcommon.hh"
-#include "missionui/missioncmdbrief.hh"
-#include "missionui/missionscreencommon.hh"
-#include "missionui/redalert.hh"
-#include "playerman/player.hh"
-#include "sound/audiostr.hh"
-#include "ui/uidefs.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <anim/animplay.hh>
+#include <anim/packunpack.hh>
+#include <gamehelp/contexthelp.hh>
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/eventmusic.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <graphics/font.hh>
+#include <io/key.hh>
+#include <io/timer.hh>
+#include <mission/missionparse.hh>
+#include <mission/missionbriefcommon.hh>
+#include <missionui/missioncmdbrief.hh>
+#include <missionui/missionscreencommon.hh>
+#include <missionui/redalert.hh>
+#include <playerman/player.hh>
+#include <sound/audiostr.hh>
+#include <ui/uidefs.hh>
+#include <log/log.hh>
 
 #define NUM_CMD_SETTINGS 2
 

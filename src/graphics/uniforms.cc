@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "assert/assert.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
 
 //
 //
@@ -9,7 +9,7 @@
 #include "uniforms.hh"
 #include "matrix.hh"
 #include "light.hh"
-#include "shared/globals.hh"
+#include <shared/globals.hh>
 #include "shadows.hh"
 
 namespace {

@@ -3,13 +3,13 @@
 #ifndef FREESPACE2_MODEL_MODELRENDER_HH
 #define FREESPACE2_MODEL_MODELRENDER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "graphics/material.hh"
-#include "lighting/lighting.hh"
-#include "math/vecmat.hh"
-#include "model/model.hh"
-#include "mission/missionparse.hh"
+#include <graphics/material.hh>
+#include <lighting/lighting.hh>
+#include <math/vecmat.hh>
+#include <model/model.hh>
+#include <mission/missionparse.hh>
 #include "graphics/util/UniformBuffer.hh"
 
 extern std::vector< light > Lights;

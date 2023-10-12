@@ -3,12 +3,12 @@
 #ifndef FREESPACE2_OBJECT_OBJECT_HH
 #define FREESPACE2_OBJECT_OBJECT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "math/vecmat.hh"
-#include "object/object_flags.hh"
-#include "physics/physics.hh"
-#include "util/event.hh"
+#include <math/vecmat.hh>
+#include <object/object_flags.hh>
+#include <physics/physics.hh>
+#include <util/event.hh>
 
 #include <functional>
 

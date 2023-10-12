@@ -1,9 +1,9 @@
 // -*- mode: c++; -*-
 
-#include "bmpman/bmpman.hh"
-#include "math/prng.hh"
-#include "parse/parselo.hh"
-#include "particle/ParticleSource.hh"
+#include <bmpman/bmpman.hh>
+#include <math/prng.hh>
+#include <parse/parselo.hh>
+#include <particle/ParticleSource.hh>
 #include "particle/effects/BeamPiercingEffect.hh"
 
 namespace particle {

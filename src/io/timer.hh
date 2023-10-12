@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_IO_TIMER_HH
 #define FREESPACE2_IO_TIMER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <cstdint>
 

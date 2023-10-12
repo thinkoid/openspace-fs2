@@ -3,13 +3,13 @@
 #ifndef FREESPACE2_CUTSCENE_PLAYER_HH
 #define FREESPACE2_CUTSCENE_PLAYER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <memory>
 #include <queue>
 #include <thread>
 
-#include "sound/openal.hh"
+#include <sound/openal.hh>
 
 #include "Decoder.hh"
 #include "VideoPresenter.hh"

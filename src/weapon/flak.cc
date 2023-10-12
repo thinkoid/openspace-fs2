@@ -1,11 +1,11 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "math/prng.hh"
-#include "object/object.hh"
-#include "weapon/flak.hh"
-#include "weapon/muzzleflash.hh"
+#include <math/prng.hh>
+#include <object/object.hh>
+#include <weapon/flak.hh>
+#include <weapon/muzzleflash.hh>
 
 // --------------------------------------------------------------------------------------------------------------------------------------
 // FLAK FUNCTIONS

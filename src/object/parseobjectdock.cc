@@ -6,13 +6,13 @@
  * create based on the source.
  */
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "assert/assert.hh"
-#include "math/prng.hh"
-#include "mission/missionparse.hh"
-#include "object/parseobjectdock.hh"
-#include "shared/types.hh"
+#include <assert/assert.hh>
+#include <math/prng.hh>
+#include <mission/missionparse.hh>
+#include <object/parseobjectdock.hh>
+#include <shared/types.hh>
 
 #include <boost/dynamic_bitset.hpp>
 

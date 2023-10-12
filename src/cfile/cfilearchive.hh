@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_CFILE_CFILEARCHIVE_HH
 #define FREESPACE2_CFILE_CFILEARCHIVE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // The following Cfile_block data is private to cfile.cpp
 // DO NOT MOVE the Cfile_block* information to cfile.h / do not extern this

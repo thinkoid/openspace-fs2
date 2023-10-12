@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_PARTICLE_UTIL_EFFECTTIMING_HH
 #define FREESPACE2_PARTICLE_UTIL_EFFECTTIMING_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "particle/ParticleSource.hh"
-#include "util/RandomRange.hh"
+#include <particle/ParticleSource.hh>
+#include <util/RandomRange.hh>
 
 namespace particle {
 namespace util {

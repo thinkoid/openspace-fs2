@@ -1,26 +1,26 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "asteroid/asteroid.hh"
-#include "debris/debris.hh"
-#include "debugconsole/console.hh"
+#include <defs.hh>
+#include <asteroid/asteroid.hh>
+#include <debris/debris.hh>
+#include <debugconsole/console.hh>
 #include "freespace2/freespace.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
-#include "hud/hudmessage.hh"
-#include "hud/hudshield.hh"
-#include "io/joy_ff.hh"
-#include "io/timer.hh"
-#include "math/fix.hh"
-#include "object/objcollide.hh"
-#include "object/object.hh"
-#include "object/objectdock.hh"
-#include "object/objectshield.hh"
-#include "playerman/player.hh"
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
+#include <hud/hudmessage.hh>
+#include <hud/hudshield.hh>
+#include <io/joy_ff.hh>
+#include <io/timer.hh>
+#include <math/fix.hh>
+#include <object/objcollide.hh>
+#include <object/object.hh>
+#include <object/objectdock.hh>
+#include <object/objectshield.hh>
+#include <playerman/player.hh>
 #include "render/3d.hh" // needed for View_position, which is used when playing 3d sound
-#include "ship/ship.hh"
-#include "ship/shiphit.hh"
-#include "log/log.hh"
+#include <ship/ship.hh>
+#include <ship/shiphit.hh>
+#include <log/log.hh>
 
 #define COLLIDE_DEBUG
 #undef COLLIDE_DEBUG

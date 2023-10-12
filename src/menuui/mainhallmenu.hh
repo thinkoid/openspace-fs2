@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_MENUUI_MAINHALLMENU_HH
 #define FREESPACE2_MENUUI_MAINHALLMENU_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "gamesnd/gamesnd.hh"
+#include <gamesnd/gamesnd.hh>
 
 // CommanderDJ - this is now dynamic
 // #define MAIN_HALLS_MAX                       10

@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GRAPHICS_MATRIX_HH
 #define FREESPACE2_GRAPHICS_MATRIX_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
 

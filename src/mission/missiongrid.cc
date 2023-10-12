@@ -1,11 +1,11 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
-#include "io/key.hh"
-#include "math/fvi.hh"
-#include "mission/missiongrid.hh"
+#include <io/key.hh>
+#include <math/fvi.hh>
+#include <mission/missiongrid.hh>
 #include "render/3d.hh"
 
 grid Global_grid;

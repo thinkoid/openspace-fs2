@@ -1,21 +1,21 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "shared/types.hh"
-#include "shared/alphacolors.hh"
-#include "shared/globals.hh"
-#include "io/cursor.hh"
+#include <defs.hh>
+#include <shared/types.hh>
+#include <shared/alphacolors.hh>
+#include <shared/globals.hh>
+#include <io/cursor.hh>
 #include "graphics/2d.hh"
-#include "cfile/cfile.hh"
-#include "cmdline/cmdline.hh"
-#include "cutscene/cutscenes.hh" // cutscene_mark_viewable()
-#include "cutscene/player.hh"    // cutscene_mark_viewable()
-#include "tracing/categories.hh"
-#include "tracing/tracing.hh"
-#include "io/timer.hh"
-#include "io/key.hh"
-#include "mod_table/mod_table.hh"
-#include "log/log.hh"
+#include <cfile/cfile.hh>
+#include <cmdline/cmdline.hh>
+#include <cutscene/cutscenes.hh> // cutscene_mark_viewable()
+#include <cutscene/player.hh>    // cutscene_mark_viewable()
+#include <tracing/categories.hh>
+#include <tracing/tracing.hh>
+#include <io/timer.hh>
+#include <io/key.hh>
+#include <mod_table/mod_table.hh>
+#include <log/log.hh>
 
 extern int Game_mode;
 

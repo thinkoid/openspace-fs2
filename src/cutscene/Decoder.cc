@@ -3,8 +3,8 @@
 #include <boost/thread/sync_bounded_queue.hpp>
 #include <memory>
 
-#include "cutscene/Decoder.hh"
-#include "assert/assert.hh"
+#include <cutscene/Decoder.hh>
+#include <assert/assert.hh>
 
 using namespace boost::concurrent;
 

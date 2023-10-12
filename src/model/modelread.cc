@@ -4,34 +4,34 @@
 #include <cctype>
 #include <cstdarg>
 
-#include "defs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 #define MODEL_LIB
 
 #include <algorithm>
 #include <filesystem>
 
-#include "asteroid/asteroid.hh"
-#include "bmpman/bmpman.hh"
-#include "cfile/cfile.hh"
-#include "cmdline/cmdline.hh"
+#include <asteroid/asteroid.hh>
+#include <bmpman/bmpman.hh>
+#include <cfile/cfile.hh>
+#include <cmdline/cmdline.hh>
 #include "freespace2/freespace.hh" // For flFrameTime
-#include "gamesnd/gamesnd.hh"
-#include "io/key.hh"
-#include "io/timer.hh"
-#include "math/fvi.hh"
-#include "math/vecmat.hh"
-#include "model/model.hh"
-#include "model/modelsinc.hh"
-#include "parse/parselo.hh"
+#include <gamesnd/gamesnd.hh>
+#include <io/key.hh>
+#include <io/timer.hh>
+#include <math/fvi.hh>
+#include <math/vecmat.hh>
+#include <model/model.hh>
+#include <model/modelsinc.hh>
+#include <parse/parselo.hh>
 #include "render/3dinternal.hh"
-#include "ship/ship.hh"
-#include "tracing/tracing.hh"
-#include "util/list.hh"
-#include "util/strings.hh"
-#include "weapon/weapon.hh"
+#include <ship/ship.hh>
+#include <tracing/tracing.hh>
+#include <util/list.hh>
+#include <util/strings.hh>
+#include <weapon/weapon.hh>
 
 namespace fs = std::filesystem;
 

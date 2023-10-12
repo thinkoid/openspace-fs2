@@ -1,22 +1,22 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "anim/animplay.hh"
-#include "anim/packunpack.hh"
-#include "cmdline/cmdline.hh"
-#include "ddsutils/ddsutils.hh"
-#include "shared/globals.hh"
+#include <anim/animplay.hh>
+#include <anim/packunpack.hh>
+#include <cmdline/cmdline.hh>
+#include <ddsutils/ddsutils.hh>
+#include <shared/globals.hh>
 #include "gropenglbmpman.hh"
 #include "gropenglstate.hh"
 #include "gropengltexture.hh"
-#include "jpgutils/jpgutils.hh"
-#include "pcxutils/pcxutils.hh"
-#include "pngutils/pngutils.hh"
-#include "tgautils/tgautils.hh"
+#include <jpgutils/jpgutils.hh>
+#include <pcxutils/pcxutils.hh>
+#include <pngutils/pngutils.hh>
+#include <tgautils/tgautils.hh>
 
 #define BMPMAN_INTERNAL
-#include "bmpman/bm_internal.hh"
+#include <bmpman/bm_internal.hh>
 
 int get_num_mipmap_levels (int w, int h) {
     int size, levels = 0;

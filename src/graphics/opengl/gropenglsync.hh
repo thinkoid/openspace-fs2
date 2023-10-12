@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GRAPHICS_OPENGL_GROPENGLSYNC_HH
 #define FREESPACE2_GRAPHICS_OPENGL_GROPENGLSYNC_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/opengl/gropengl.hh"
 

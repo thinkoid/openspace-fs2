@@ -1,9 +1,9 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 #include "graphics/opengl/gropenglquery.hh"
 #include "graphics/opengl/gropengl.hh"
-#include "assert/assert.hh"
+#include <assert/assert.hh>
 
 namespace {
 

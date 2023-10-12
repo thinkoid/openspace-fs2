@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_RADAR_RADARSETUP_HH
 #define FREESPACE2_RADAR_RADARSETUP_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "hud/hud.hh"
-#include "hud/hudconfig.hh"
-#include "sound/sound.hh"
+#include <hud/hud.hh>
+#include <hud/hudconfig.hh>
+#include <sound/sound.hh>
 
 // which radar type are we using
 // to add another radar type, begin by adding a RADAR_MODE_* define and

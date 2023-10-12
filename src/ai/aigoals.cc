@@ -1,19 +1,19 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "ai/aigoals.hh"
-#include "util/list.hh"
-#include "mission/missionlog.hh"
-#include "mission/missionparse.hh"
-#include "object/object.hh"
-#include "object/objectdock.hh"
-#include "object/waypoint.hh"
-#include "parse/sexp.hh"
-#include "playerman/player.hh"
-#include "ship/ship.hh"
-#include "weapon/weapon.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <ai/aigoals.hh>
+#include <util/list.hh>
+#include <mission/missionlog.hh>
+#include <mission/missionparse.hh>
+#include <object/object.hh>
+#include <object/objectdock.hh>
+#include <object/waypoint.hh>
+#include <parse/sexp.hh>
+#include <playerman/player.hh>
+#include <ship/ship.hh>
+#include <weapon/weapon.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 // all ai goals dealt with in this code are goals that are specified through
 // sexpressions in the mission file.  They are either specified as part of a

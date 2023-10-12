@@ -5,13 +5,13 @@
 #include <memory>
 #include <utility>
 
-#include "defs.hh"
-#include "io/joy.hh"
-#include "io/joy_ff.hh"
-#include "io/timer.hh"
-#include "osapi/osapi.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <io/joy.hh>
+#include <io/joy_ff.hh>
+#include <io/timer.hh>
+#include <osapi/osapi.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 using namespace io::joystick;
 using namespace fs2::os::events;

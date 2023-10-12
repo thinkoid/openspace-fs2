@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <log/log.hh>
 
 /*
  * Created by Ian "Goober5000" Warfield for the FreeSpace2 Source Code Project.
@@ -9,12 +9,12 @@
  * create based on the source.
  */
 
-#include "shared/types.hh"
-#include "ai/ai_profiles.hh"
-#include "localization/localize.hh"
-#include "parse/parselo.hh"
-#include "ship/ship.hh"
-#include "weapon/weapon.hh"
+#include <shared/types.hh>
+#include <ai/ai_profiles.hh>
+#include <localization/localize.hh>
+#include <parse/parselo.hh>
+#include <ship/ship.hh>
+#include <weapon/weapon.hh>
 
 // global stuff
 int Num_ai_profiles;

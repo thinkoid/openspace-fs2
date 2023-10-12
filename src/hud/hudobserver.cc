@@ -1,9 +1,9 @@
 // -*- mode: c++; -*-
 
-#include "hud/hudconfig.hh"
-#include "hud/hudobserver.hh"
-#include "hud/hudtargetbox.hh"
-#include "ship/ship.hh"
+#include <hud/hudconfig.hh>
+#include <hud/hudobserver.hh>
+#include <hud/hudtargetbox.hh>
+#include <ship/ship.hh>
 
 // use these to redirect Player_ship and Player_ai when switching into ai mode
 ship Hud_obs_ship;

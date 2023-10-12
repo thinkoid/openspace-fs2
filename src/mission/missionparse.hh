@@ -3,19 +3,19 @@
 #ifndef FREESPACE2_MISSION_MISSIONPARSE_HH
 #define FREESPACE2_MISSION_MISSIONPARSE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <csetjmp>
 
-#include "ai/ai.hh"
-#include "ai/ai_profiles.hh"
+#include <ai/ai.hh>
+#include <ai/ai_profiles.hh>
 #include "graphics/2d.hh"
-#include "io/keycontrol.hh"
-#include "model/model.hh"
-#include "object/object.hh"
-#include "parse/sexp.hh"
-#include "sound/sound.hh"
-#include "mission/mission_flags.hh"
+#include <io/keycontrol.hh>
+#include <model/model.hh>
+#include <object/object.hh>
+#include <parse/sexp.hh>
+#include <sound/sound.hh>
+#include <mission/mission_flags.hh>
 
 // WMC - This should be here
 #define FS_MISSION_FILE_EXT NOX (".fs2")

@@ -3,37 +3,37 @@
 #include <cstdlib>
 #include <climits>
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "anim/animplay.hh"
-#include "anim/packunpack.hh"
-#include "assert/assert.hh"
-#include "cmdline/cmdline.hh"
+#include <anim/animplay.hh>
+#include <anim/packunpack.hh>
+#include <assert/assert.hh>
+#include <cmdline/cmdline.hh>
 #include "freespace2/freespace.hh"
-#include "gamehelp/contexthelp.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/eventmusic.hh"
-#include "gamesnd/gamesnd.hh"
-#include "graphics/generic.hh"
-#include "io/key.hh"
-#include "io/mouse.hh"
-#include "io/timer.hh"
-#include "log/log.hh"
-#include "math/prng.hh"
-#include "menuui/fishtank.hh"
-#include "menuui/mainhallmenu.hh"
-#include "menuui/playermenu.hh"
-#include "menuui/snazzyui.hh"
-#include "mission/missioncampaign.hh"
-#include "parse/parselo.hh"
-#include "playerman/player.hh"
-#include "popup/popup.hh"
-#include "shared/alphacolors.hh"
-#include "sound/audiostr.hh"
+#include <gamehelp/contexthelp.hh>
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/eventmusic.hh>
+#include <gamesnd/gamesnd.hh>
+#include <graphics/generic.hh>
+#include <io/key.hh>
+#include <io/mouse.hh>
+#include <io/timer.hh>
+#include <log/log.hh>
+#include <math/prng.hh>
+#include <menuui/fishtank.hh>
+#include <menuui/mainhallmenu.hh>
+#include <menuui/playermenu.hh>
+#include <menuui/snazzyui.hh>
+#include <mission/missioncampaign.hh>
+#include <parse/parselo.hh>
+#include <playerman/player.hh>
+#include <popup/popup.hh>
+#include <shared/alphacolors.hh>
+#include <sound/audiostr.hh>
 
 #ifndef NDEBUG
-#include "cutscene/movie.hh"
-#include "mission/missionload.hh"
+#include <cutscene/movie.hh>
+#include <mission/missionload.hh>
 #endif
 
 #include <deque>

@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_PARSE_SEXP_HH
 #define FREESPACE2_PARSE_SEXP_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 class ship_subsys;
 class ship;

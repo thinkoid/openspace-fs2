@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_JPGUTILS_JPGUTILS_HH
 #define FREESPACE2_JPGUTILS_JPGUTILS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "cfile/cfile.hh"
+#include <cfile/cfile.hh>
 
 #define JPEG_ERROR_INVALID -1
 #define JPEG_ERROR_NONE 0

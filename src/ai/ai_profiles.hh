@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_AI_AI_PROFILES_HH
 #define FREESPACE2_AI_AI_PROFILES_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "ai/ai_flags.hh"
+#include <ai/ai_flags.hh>
 
 // AI Path types
 #define AI_PATH_MODE_NORMAL 0

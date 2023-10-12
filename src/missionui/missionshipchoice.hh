@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_MISSIONUI_MISSIONSHIPCHOICE_HH
 #define FREESPACE2_MISSIONUI_MISSIONSHIPCHOICE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "gamesnd/gamesnd.hh"
+#include <gamesnd/gamesnd.hh>
 
 class p_object;
 

@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MISSIONUI_REDALERT_HH
 #define FREESPACE2_MISSIONUI_REDALERT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 struct CFILE;
 

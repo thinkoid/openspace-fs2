@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_TGAUTILS_TGAUTILS_HH
 #define FREESPACE2_TGAUTILS_TGAUTILS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "cfile/cfile.hh"
+#include <cfile/cfile.hh>
 
 // --------------------
 //

@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_GRAPHICS_OPENGL_GROPENGLSHADER_HH
 #define FREESPACE2_GRAPHICS_OPENGL_GROPENGLSHADER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
 #include "graphics/opengl/gropengl.hh"
-#include "graphics/material.hh"
+#include <graphics/material.hh>
 
 #include <string>
 #include "glad/glad.h"

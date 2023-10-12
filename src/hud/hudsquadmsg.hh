@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_HUD_HUDSQUADMSG_HH
 #define FREESPACE2_HUD_HUDSQUADMSG_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "hud/hud.hh"
+#include <hud/hud.hh>
 
 #define SM_MODE_TYPE_SELECT 1        // am I going to message a ship or a wing
 #define SM_MODE_SHIP_SELECT 2        // choosing actual ship

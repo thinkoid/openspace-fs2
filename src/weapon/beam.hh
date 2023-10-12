@@ -3,12 +3,12 @@
 #ifndef FREESPACE2_WEAPON_BEAM_HH
 #define FREESPACE2_WEAPON_BEAM_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // ------------------------------------------------------------------------------------------------
 // BEAM WEAPON DEFINES/VARS
 //
-#include "model/model.hh"
+#include <model/model.hh>
 
 // prototypes
 class object;

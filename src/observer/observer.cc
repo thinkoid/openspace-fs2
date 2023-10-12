@@ -1,11 +1,11 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "shared/globals.hh"
-#include "object/object.hh"
-#include "observer/observer.hh"
-#include "playerman/player.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <shared/globals.hh>
+#include <object/object.hh>
+#include <observer/observer.hh>
+#include <playerman/player.hh>
+#include <log/log.hh>
 
 observer Observers[MAX_OBSERVER_OBS];
 

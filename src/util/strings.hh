@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_UTIL_STRINGS_HH
 #define FREESPACE2_UTIL_STRINGS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <ctype.h>
 

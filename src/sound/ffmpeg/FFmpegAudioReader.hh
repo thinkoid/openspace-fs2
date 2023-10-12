@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_SOUND_FFMPEG_FFMPEGAUDIOREADER_HH
 #define FREESPACE2_SOUND_FFMPEG_FFMPEGAUDIOREADER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "libs/ffmpeg/FFmpegHeaders.hh"
 

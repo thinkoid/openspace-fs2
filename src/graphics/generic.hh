@@ -3,12 +3,12 @@
 #ifndef FREESPACE2_GRAPHICS_GENERIC_HH
 #define FREESPACE2_GRAPHICS_GENERIC_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "anim/animplay.hh"
-#include "bmpman/bmpman.hh"
-#include "cfile/cfile.hh"
-#include "pngutils/pngutils.hh"
+#include <anim/animplay.hh>
+#include <bmpman/bmpman.hh>
+#include <cfile/cfile.hh>
+#include <pngutils/pngutils.hh>
 
 #define GENERIC_ANIM_DIRECTION_FORWARDS 0
 #define GENERIC_ANIM_DIRECTION_BACKWARDS 1

@@ -1,28 +1,28 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "bmpman/bmpman.hh"
-#include "debugconsole/console.hh"
+#include <defs.hh>
+#include <bmpman/bmpman.hh>
+#include <debugconsole/console.hh>
 #include "freespace2/freespace.hh"
-#include "gamesnd/gamesnd.hh"
-#include "util/list.hh"
-#include "graphics/font.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "jumpnode/jumpnode.hh"
-#include "localization/localize.hh"
-#include "object/object.hh"
-#include "playerman/player.hh"
-#include "radar/radar.hh"
-#include "radar/radarorb.hh"
-#include "radar/radarsetup.hh"
-#include "ship/awacs.hh"
-#include "ship/ship.hh"
-#include "ship/subsysdamage.hh"
-#include "weapon/emp.hh"
-#include "weapon/weapon.hh"
-#include "mod_table/mod_table.hh"
-#include "assert/assert.hh"
+#include <gamesnd/gamesnd.hh>
+#include <util/list.hh>
+#include <graphics/font.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <jumpnode/jumpnode.hh>
+#include <localization/localize.hh>
+#include <object/object.hh>
+#include <playerman/player.hh>
+#include <radar/radar.hh>
+#include <radar/radarorb.hh>
+#include <radar/radarsetup.hh>
+#include <ship/awacs.hh>
+#include <ship/ship.hh>
+#include <ship/subsysdamage.hh>
+#include <weapon/emp.hh>
+#include <weapon/weapon.hh>
+#include <mod_table/mod_table.hh>
+#include <assert/assert.hh>
 
 sound_handle Radar_static_looping = sound_handle::invalid ();
 

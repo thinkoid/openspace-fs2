@@ -3,13 +3,13 @@
 #ifndef FREESPACE2_RENDER_3D_HH
 #define FREESPACE2_RENDER_3D_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "camera/camera.hh"
+#include <camera/camera.hh>
 #include "graphics/2d.hh"
-#include "graphics/grbatch.hh"
-#include "graphics/tmapper.hh"
-#include "math/vecmat.hh"
+#include <graphics/grbatch.hh>
+#include <graphics/tmapper.hh>
+#include <math/vecmat.hh>
 
 // flags for point structure
 #define PF_PROJECTED 1  // has been projected, so sx,sy valid

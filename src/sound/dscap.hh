@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_SOUND_DSCAP_HH
 #define FREESPACE2_SOUND_DSCAP_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 int dscap_init ();
 void dscap_close ();

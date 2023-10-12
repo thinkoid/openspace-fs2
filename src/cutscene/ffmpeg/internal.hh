@@ -3,12 +3,12 @@
 #ifndef FREESPACE2_CUTSCENE_FFMPEG_INTERNAL_HH
 #define FREESPACE2_CUTSCENE_FFMPEG_INTERNAL_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <functional>
 #include <queue>
 
-#include "cutscene/Decoder.hh"
+#include <cutscene/Decoder.hh>
 #include "libs/ffmpeg/FFmpegHeaders.hh"
 
 namespace cutscene {

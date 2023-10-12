@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MATH_FVI_HH
 #define FREESPACE2_MATH_FVI_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // finds distance from point to plane
 float fvi_point_dist_plane (

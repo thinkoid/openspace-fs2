@@ -1,8 +1,8 @@
 // -*- mode: c++; -*-
 
-#include "shared/alphacolors.hh"
-#include "ui/ui.hh"
-#include "ui/uidefs.hh"
+#include <shared/alphacolors.hh>
+#include <ui/ui.hh>
+#include <ui/uidefs.hh>
 
 void ui_hline (int x1, int x2, int y) {
     gr_line (x1, y, x2, y, GR_RESIZE_MENU);

@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_DEBRIS_DEBRIS_HH
 #define FREESPACE2_DEBRIS_DEBRIS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 class object;
 struct CFILE;

@@ -1,24 +1,24 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "asteroid/asteroid.hh"
-#include "cmdline/cmdline.hh"
-#include "debris/debris.hh"
-#include "hud/hudbrackets.hh"
-#include "hud/hudtarget.hh"
-#include "iff_defs/iff_defs.hh"
-#include "jumpnode/jumpnode.hh"
-#include "mission/missionparse.hh"
-#include "object/object.hh"
-#include "parse/parselo.hh"
-#include "playerman/player.hh"
+#include <defs.hh>
+#include <asteroid/asteroid.hh>
+#include <cmdline/cmdline.hh>
+#include <debris/debris.hh>
+#include <hud/hudbrackets.hh>
+#include <hud/hudtarget.hh>
+#include <iff_defs/iff_defs.hh>
+#include <jumpnode/jumpnode.hh>
+#include <mission/missionparse.hh>
+#include <object/object.hh>
+#include <parse/parselo.hh>
+#include <playerman/player.hh>
 #include "render/3d.hh"
-#include "ship/ship.hh"
-#include "tracing/tracing.hh"
-#include "weapon/emp.hh"
-#include "weapon/weapon.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <ship/ship.hh>
+#include <tracing/tracing.hh>
+#include <weapon/emp.hh>
+#include <weapon/weapon.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 #define FADE_FACTOR 2   // how much the bounding brackets get faded
 #define LOWEST_RED 50   // lowest r value for bounding bracket

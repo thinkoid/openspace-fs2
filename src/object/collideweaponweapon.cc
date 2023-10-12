@@ -1,13 +1,13 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "freespace2/freespace.hh"
-#include "object/objcollide.hh"
-#include "object/object.hh"
-#include "ship/ship.hh"
-#include "stats/scoring.hh"
-#include "weapon/weapon.hh"
+#include <object/objcollide.hh>
+#include <object/object.hh>
+#include <ship/ship.hh>
+#include <stats/scoring.hh>
+#include <weapon/weapon.hh>
 
 /**
  * Checks weapon-weapon collisions.

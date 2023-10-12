@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MISSIONUI_MISSIONDEBRIEF_HH
 #define FREESPACE2_MISSIONUI_MISSIONDEBRIEF_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 extern int Debrief_overlay_id;
 

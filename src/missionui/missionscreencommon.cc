@@ -3,37 +3,37 @@
 #include <climits> // this is need even when not building debug!!
 #include <type_traits>
 
-#include "defs.hh"
-#include "anim/animplay.hh"
-#include "cmdline/cmdline.hh"
-#include "cutscene/cutscenes.hh"
-#include "cutscene/movie.hh"
-#include "gamehelp/contexthelp.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/eventmusic.hh"
-#include "gamesnd/gamesnd.hh"
-#include "util/list.hh"
+#include <defs.hh>
+#include <anim/animplay.hh>
+#include <cmdline/cmdline.hh>
+#include <cutscene/cutscenes.hh>
+#include <cutscene/movie.hh>
+#include <gamehelp/contexthelp.hh>
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/eventmusic.hh>
+#include <gamesnd/gamesnd.hh>
+#include <util/list.hh>
 #include "graphics/2d.hh"
-#include "graphics/matrix.hh"
-#include "graphics/shadows.hh"
-#include "hud/hudwingmanstatus.hh"
-#include "io/key.hh"
-#include "io/mouse.hh"
-#include "io/timer.hh"
-#include "lighting/lighting.hh"
-#include "missionui/missionbrief.hh"
-#include "missionui/missionscreencommon.hh"
-#include "missionui/missionshipchoice.hh"
-#include "missionui/missionweaponchoice.hh"
-#include "parse/sexp.hh"
-#include "popup/popup.hh"
+#include <graphics/matrix.hh>
+#include <graphics/shadows.hh>
+#include <hud/hudwingmanstatus.hh>
+#include <io/key.hh>
+#include <io/mouse.hh>
+#include <io/timer.hh>
+#include <lighting/lighting.hh>
+#include <missionui/missionbrief.hh>
+#include <missionui/missionscreencommon.hh>
+#include <missionui/missionshipchoice.hh>
+#include <missionui/missionweaponchoice.hh>
+#include <parse/sexp.hh>
+#include <popup/popup.hh>
 #include "render/3d.hh"
-#include "render/batching.hh"
-#include "ship/ship.hh"
-#include "ui/uidefs.hh"
-#include "weapon/weapon.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <render/batching.hh>
+#include <ship/ship.hh>
+#include <ui/uidefs.hh>
+#include <weapon/weapon.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 //////////////////////////////////////////////////////////////////
 // Game Globals

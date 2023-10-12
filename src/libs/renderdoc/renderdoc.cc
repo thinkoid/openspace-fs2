@@ -4,7 +4,7 @@
 
 #include "renderdoc.hh"
 #include "renderdoc_app.hh"
-#include "shared/types.hh"
+#include <shared/types.hh>
 
 namespace {
 bool api_loaded = false;

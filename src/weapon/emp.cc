@@ -1,22 +1,22 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "debugconsole/console.hh"
+#include <debugconsole/console.hh>
 #include "freespace2/freespace.hh"
-#include "hud/hud.hh"
-#include "hud/hudlock.hh"
-#include "hud/hudtarget.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "log/log.hh"
-#include "math/prng.hh"
-#include "object/object.hh"
-#include "parse/parselo.hh"
-#include "ship/ship.hh"
-#include "util/list.hh"
-#include "weapon/emp.hh"
-#include "weapon/weapon.hh"
+#include <hud/hud.hh>
+#include <hud/hudlock.hh>
+#include <hud/hudtarget.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <log/log.hh>
+#include <math/prng.hh>
+#include <object/object.hh>
+#include <parse/parselo.hh>
+#include <ship/ship.hh>
+#include <util/list.hh>
+#include <weapon/emp.hh>
+#include <weapon/weapon.hh>
 
 #include <cstdarg>
 #include <cstdarg>

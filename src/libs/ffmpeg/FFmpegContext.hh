@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_LIBS_FFMPEG_FFMPEGCONTEXT_HH
 #define FREESPACE2_LIBS_FFMPEG_FFMPEGCONTEXT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "cfile/cfile.hh"
+#include <cfile/cfile.hh>
 
 #include "FFmpeg.hh"
 #include "FFmpegHeaders.hh"

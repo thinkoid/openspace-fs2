@@ -3,8 +3,8 @@
 #ifndef FREESPACE2_MATH_STATICRAND_HH
 #define FREESPACE2_MATH_STATICRAND_HH
 
-#include "defs.hh"
-#include "math/vecmat.hh"
+#include <defs.hh>
+#include <math/vecmat.hh>
 
 namespace fs2 {
 namespace prng {

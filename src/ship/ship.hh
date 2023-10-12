@@ -3,23 +3,23 @@
 #ifndef FREESPACE2_SHIP_SHIP_HH
 #define FREESPACE2_SHIP_SHIP_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "ai/ai.hh"
-#include "fireball/fireballs.hh"
+#include <ai/ai.hh>
+#include <fireball/fireballs.hh>
 #include "graphics/2d.hh" // for color def
-#include "hud/hud.hh"
-#include "hud/hudparse.hh"
-#include "model/model.hh"
-#include "model/modelanim.hh"
-#include "particle/ParticleManager.hh"
-#include "radar/radarsetup.hh"
+#include <hud/hud.hh>
+#include <hud/hudparse.hh>
+#include <model/model.hh>
+#include <model/modelanim.hh>
+#include <particle/ParticleManager.hh>
+#include <radar/radarsetup.hh>
 #include "render/3d.hh"
-#include "species_defs/species_defs.hh"
-#include "weapon/shockwave.hh"
-#include "weapon/trails.hh"
-#include "ship/ship_flags.hh"
-#include "weapon/weapon_flags.hh"
+#include <species_defs/species_defs.hh>
+#include <weapon/shockwave.hh>
+#include <weapon/trails.hh>
+#include <ship/ship_flags.hh>
+#include <weapon/weapon_flags.hh>
 
 #include <deque>
 #include <string>

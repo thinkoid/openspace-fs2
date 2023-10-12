@@ -1,8 +1,8 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 //
 // Copyright (c) 2009-2013 Mikko Mononen memon@inside.org
@@ -26,7 +26,7 @@
 // the FreeSpace Open graphics API
 
 #include "NanoVGRenderer.hh"
-#include "tracing/tracing.hh"
+#include <tracing/tracing.hh>
 
 namespace {
 using namespace graphics::paths;

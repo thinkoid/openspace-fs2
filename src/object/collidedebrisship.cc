@@ -1,18 +1,18 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "asteroid/asteroid.hh"
-#include "debris/debris.hh"
-#include "hud/hud.hh"
-#include "io/timer.hh"
-#include "log/log.hh"
-#include "math/prng.hh"
-#include "object/objcollide.hh"
-#include "object/object.hh"
-#include "playerman/player.hh"
-#include "ship/ship.hh"
-#include "ship/shiphit.hh"
+#include <asteroid/asteroid.hh>
+#include <debris/debris.hh>
+#include <hud/hud.hh>
+#include <io/timer.hh>
+#include <log/log.hh>
+#include <math/prng.hh>
+#include <object/objcollide.hh>
+#include <object/object.hh>
+#include <playerman/player.hh>
+#include <ship/ship.hh>
+#include <ship/shiphit.hh>
 
 void calculate_ship_ship_collision_physics (
     collision_info_struct* ship_ship_hit_info);

@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_DEBUGCONSOLE_CONSOLEPARSE_HH
 #define FREESPACE2_DEBUGCONSOLE_CONSOLEPARSE_HH
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#include "defs.hh"
+#include <defs.hh>
 
 // Command-line parsing functions for z64555's debug console, created for the
 // FreeSpace Source Code project
@@ -21,7 +21,7 @@
  * @details A lot of functions here are blatently copied from parselo.h :D
  */
 
-#include "debugconsole/console.hh"
+#include <debugconsole/console.hh>
 
 #include <cstdarg>
 

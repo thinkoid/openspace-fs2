@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_HUD_HUDTARGETBOX_HH
 #define FREESPACE2_HUD_HUDTARGETBOX_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "hud/hud.hh"
-#include "radar/radarsetup.hh"
-#include "ship/ship.hh"
+#include <hud/hud.hh>
+#include <radar/radarsetup.hh>
+#include <ship/ship.hh>
 
 class object;
 

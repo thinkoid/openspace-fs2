@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GRAPHICS_SOFTWARE_NVGFONT_HH
 #define FREESPACE2_GRAPHICS_SOFTWARE_NVGFONT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/software/FSFont.hh"
 

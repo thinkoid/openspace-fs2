@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_FIREBALL_FIREBALLS_HH
 #define FREESPACE2_FIREBALL_FIREBALLS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "model/modelrender.hh"
-#include "gamesnd/gamesnd.hh"
+#include <model/modelrender.hh>
+#include <gamesnd/gamesnd.hh>
 
 class object;
 class ship_info;

@@ -2,7 +2,7 @@
 
 #include "graphics/paths/PathRenderer.hh"
 #include "graphics/paths/NanoVGRenderer.hh"
-#include "assert/assert.hh"
+#include <assert/assert.hh>
 
 namespace {
 

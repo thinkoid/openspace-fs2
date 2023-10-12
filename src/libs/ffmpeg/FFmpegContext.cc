@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
 #include "FFmpegContext.hh"
-#include "assert/assert.hh"
+#include <assert/assert.hh>
 
 namespace {
 const size_t AVIO_BUFFER_SIZE = 8192;

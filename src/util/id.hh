@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_UTIL_ID_HH
 #define FREESPACE2_UTIL_ID_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 namespace util {
 

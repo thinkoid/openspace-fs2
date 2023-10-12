@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_ASSERT_ASSERT_HH
 #define FREESPACE2_ASSERT_ASSERT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #ifndef NDEBUG
 

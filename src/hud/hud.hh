@@ -3,12 +3,12 @@
 #ifndef FREESPACE2_HUD_HUD_HH
 #define FREESPACE2_HUD_HUD_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
-#include "graphics/font.hh"
-#include "hud/hudgauges.hh"
-#include "hud/hudparse.hh"
+#include <graphics/font.hh>
+#include <hud/hudgauges.hh>
+#include <hud/hudparse.hh>
 
 class object;
 struct cockpit_display;

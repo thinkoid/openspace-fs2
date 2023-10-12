@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_GAMESND_GAMESND_HH
 #define FREESPACE2_GAMESND_GAMESND_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "sound/sound.hh"
-#include "util/id.hh"
+#include <sound/sound.hh>
+#include <util/id.hh>
 
 /**
  * symbolic names for misc. game sounds.

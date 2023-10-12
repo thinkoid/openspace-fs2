@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_DEBUGCONSOLE_CONSOLE_HH
 #define FREESPACE2_DEBUGCONSOLE_CONSOLE_HH
 /*
-#include "defs.hh"
+#include <defs.hh>
 
  * z64555's debug console, created for the FreeSpace Source Code project
  *
@@ -25,7 +25,7 @@
  * has its sub-arguments delimited by a pair of -'s, or --)
  */
 
-#include "debugconsole/consoleparse.hh"
+#include <debugconsole/consoleparse.hh>
 
 #define DC_MAX_COMMANDS 300
 

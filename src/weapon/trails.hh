@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_WEAPON_TRAILS_HH
 #define FREESPACE2_WEAPON_TRAILS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "graphics/generic.hh"
+#include <graphics/generic.hh>
 
 #define NUM_TRAIL_SECTIONS 128
 

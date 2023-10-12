@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_OSAPI_OSAPI_HH
 #define FREESPACE2_OSAPI_OSAPI_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "osapi/osregistry.hh"
-#include "util/flagset.hh"
+#include <osapi/osregistry.hh>
+#include <util/flagset.hh>
 
 #include <filesystem>
 #include <functional>

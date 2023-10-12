@@ -1,8 +1,8 @@
 // -*- mode: c++; -*-
 
-#include "shared/alphacolors.hh"
-#include "ui/ui.hh"
-#include "ui/uidefs.hh"
+#include <shared/alphacolors.hh>
+#include <ui/ui.hh>
+#include <ui/uidefs.hh>
 
 void UI_CHECKBOX::create (
     UI_WINDOW* wnd, const char* _text, int _x, int _y, int _state) {

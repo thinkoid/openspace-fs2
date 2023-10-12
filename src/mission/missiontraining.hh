@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_MISSION_MISSIONTRAINING_HH
 #define FREESPACE2_MISSION_MISSIONTRAINING_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "hud/hud.hh"
+#include <hud/hud.hh>
 
 extern int Max_directives;
 extern int Training_message_method;

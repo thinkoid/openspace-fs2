@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_UI_UIDEFS_HH
 #define FREESPACE2_UI_UIDEFS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "freespace2/freespace.hh"
-#include "io/key.hh"
-#include "io/mouse.hh"
+#include <io/key.hh>
+#include <io/mouse.hh>
 
 #define CBLACK Color_black
 #define CGREEN Color_green

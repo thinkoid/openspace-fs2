@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_STATS_MEDALS_HH
 #define FREESPACE2_STATS_MEDALS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 class scoring_struct;
 class player;

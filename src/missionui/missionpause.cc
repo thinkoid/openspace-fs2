@@ -1,21 +1,21 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "controlconfig/controlsconfig.hh"
+#include <controlconfig/controlsconfig.hh>
 #include "freespace2/freespace.hh"
-#include "gamesequence/gamesequence.hh"
-#include "shared/alphacolors.hh"
-#include "graphics/font.hh"
-#include "hud/hud.hh"
-#include "hud/hudmessage.hh"
-#include "io/key.hh"
-#include "missionui/missionpause.hh"
-#include "object/object.hh"
-#include "popup/popup.hh"
-#include "sound/audiostr.hh"
-#include "ui/ui.hh"
-#include "weapon/weapon.hh"
+#include <gamesequence/gamesequence.hh>
+#include <shared/alphacolors.hh>
+#include <graphics/font.hh>
+#include <hud/hud.hh>
+#include <hud/hudmessage.hh>
+#include <io/key.hh>
+#include <missionui/missionpause.hh>
+#include <object/object.hh>
+#include <popup/popup.hh>
+#include <sound/audiostr.hh>
+#include <ui/ui.hh>
+#include <weapon/weapon.hh>
 
 // ----------------------------------------------------------------------------------------------------------------
 // PAUSE DEFINES/VARS

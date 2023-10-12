@@ -1,8 +1,8 @@
 // -*- mode: c++; -*-
 
 #include "particle/util/ParticleProperties.hh"
-#include "particle/ParticleManager.hh"
-#include "bmpman/bmpman.hh"
+#include <particle/ParticleManager.hh>
+#include <bmpman/bmpman.hh>
 
 namespace particle {
 namespace util {

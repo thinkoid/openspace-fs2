@@ -1,11 +1,11 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "shared/alphacolors.hh"
+#include <defs.hh>
+#include <shared/alphacolors.hh>
 #include "graphics/2d.hh"
-#include "parse/parselo.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <parse/parselo.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 std::map< std::string, team_color > Team_Colors;
 std::vector< std::string > Team_Names;

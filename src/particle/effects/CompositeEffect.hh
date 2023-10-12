@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_PARTICLE_EFFECTS_COMPOSITEEFFECT_HH
 #define FREESPACE2_PARTICLE_EFFECTS_COMPOSITEEFFECT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "particle/ParticleEffect.hh"
-#include "particle/ParticleManager.hh"
-#include "util/RandomRange.hh"
+#include <particle/ParticleEffect.hh>
+#include <particle/ParticleManager.hh>
+#include <util/RandomRange.hh>
 
 namespace particle {
 namespace effects {

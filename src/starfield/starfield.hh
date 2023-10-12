@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_STARFIELD_STARFIELD_HH
 #define FREESPACE2_STARFIELD_STARFIELD_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
-#include "model/model.hh"
+#include <model/model.hh>
 
 #define DEFAULT_NMODEL_FLAGS \
     (MR_NO_ZBUFFER | MR_NO_CULL | MR_ALL_XPARENT | MR_NO_LIGHTING)

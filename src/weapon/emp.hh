@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_WEAPON_EMP_HH
 #define FREESPACE2_WEAPON_EMP_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // ----------------------------------------------------------------------------------------------------
 // EMP EFFECT DEFINES/VARS

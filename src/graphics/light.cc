@@ -1,14 +1,14 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "assert/assert.hh"
-#include "cmdline/cmdline.hh"
+#include <assert/assert.hh>
+#include <cmdline/cmdline.hh>
 #include "graphics/2d.hh"
 #include "light.hh"
 #include "matrix.hh"
 #include "render/3d.hh"
-#include "shared/types.hh"
+#include <shared/types.hh>
 
 // Structures
 struct gr_light {

@@ -1,42 +1,42 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "asteroid/asteroid.hh"
-#include "cmdline/cmdline.hh"
-#include "debris/debris.hh"
+#include <defs.hh>
+#include <asteroid/asteroid.hh>
+#include <cmdline/cmdline.hh>
+#include <debris/debris.hh>
 #include "freespace2/freespace.hh" // for flFrametime
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "util/list.hh"
-#include "graphics/matrix.hh"
-#include "hud/hudartillery.hh"
-#include "hud/hudbrackets.hh"
-#include "hud/hudlock.hh"
-#include "hud/hudmessage.hh"
-#include "hud/hudparse.hh"
-#include "hud/hudreticle.hh"
-#include "hud/hudshield.hh"
-#include "hud/hudtarget.hh"
-#include "hud/hudtargetbox.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "jumpnode/jumpnode.hh"
-#include "localization/localize.hh"
-#include "mission/missionhotkey.hh"
-#include "mission/missionmessage.hh"
-#include "model/model.hh"
-#include "object/object.hh"
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <util/list.hh>
+#include <graphics/matrix.hh>
+#include <hud/hudartillery.hh>
+#include <hud/hudbrackets.hh>
+#include <hud/hudlock.hh>
+#include <hud/hudmessage.hh>
+#include <hud/hudparse.hh>
+#include <hud/hudreticle.hh>
+#include <hud/hudshield.hh>
+#include <hud/hudtarget.hh>
+#include <hud/hudtargetbox.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <jumpnode/jumpnode.hh>
+#include <localization/localize.hh>
+#include <mission/missionhotkey.hh>
+#include <mission/missionmessage.hh>
+#include <model/model.hh>
+#include <object/object.hh>
 #include "libs/renderdoc/renderdoc.hh"
-#include "parse/parselo.hh"
-#include "playerman/player.hh"
+#include <parse/parselo.hh>
+#include <playerman/player.hh>
 #include "render/3dinternal.hh"
-#include "ship/awacs.hh"
-#include "ship/ship.hh"
-#include "ship/subsysdamage.hh"
-#include "weapon/emp.hh"
-#include "weapon/weapon.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <ship/awacs.hh>
+#include <ship/ship.hh>
+#include <ship/subsysdamage.hh>
+#include <weapon/emp.hh>
+#include <weapon/weapon.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 // Global values for the target bracket width and height, used for debugging
 int Hud_target_w, Hud_target_h;
@@ -1651,15 +1651,8 @@ void hud_target_live_turret (
     eval_next_turret ent[MAX_MODEL_SUBSYSTEMS];
     int num_live_turrets = 0;
 
-    // make sure we're targeting a ship
-    if (Player_ai->target_objnum == -1 && !auto_advance) {
-        snd_play (gamesnd_get_game_sound (GameSounds::TARGET_FAIL));
-        return;
-    }
-
-    // only targeting subsystems on ship
-    if ((Objects[Player_ai->target_objnum].type != OBJ_SHIP) &&
-        (!auto_advance)) {
+    if (Player_ai->target_objnum == -1 ||
+        (Objects[Player_ai->target_objnum].type != OBJ_SHIP && !auto_advance)) {
         snd_play (gamesnd_get_game_sound (GameSounds::TARGET_FAIL));
         return;
     }

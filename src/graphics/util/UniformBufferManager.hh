@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GRAPHICS_UTIL_UNIFORMBUFFERMANAGER_HH
 #define FREESPACE2_GRAPHICS_UTIL_UNIFORMBUFFERMANAGER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
 

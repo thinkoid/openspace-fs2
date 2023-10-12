@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_TRACING_FRAMEPROFILER_HH
 #define FREESPACE2_TRACING_FRAMEPROFILER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "tracing.hh"
 

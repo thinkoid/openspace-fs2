@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_IFF_DEFS_IFF_DEFS_HH
 #define FREESPACE2_IFF_DEFS_IFF_DEFS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
-#include "mission/mission_flags.hh"
+#include <mission/mission_flags.hh>
 
 class object;
 

@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MODEL_MODELANIM_HH
 #define FREESPACE2_MODEL_MODELANIM_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <climits>
 

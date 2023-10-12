@@ -1,21 +1,21 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "debugconsole/console.hh"
+#include <debugconsole/console.hh>
 #include "freespace2/freespace.hh"
-#include "gamesnd/gamesnd.hh"
-#include "graphics/material.hh"
-#include "io/timer.hh"
-#include "log/log.hh"
-#include "math/prng.hh"
-#include "mission/missionparse.hh"
-#include "nebula/neb.hh"
-#include "nebula/neblightning.hh"
-#include "parse/parselo.hh"
+#include <gamesnd/gamesnd.hh>
+#include <graphics/material.hh>
+#include <io/timer.hh>
+#include <log/log.hh>
+#include <math/prng.hh>
+#include <mission/missionparse.hh>
+#include <nebula/neb.hh>
+#include <nebula/neblightning.hh>
+#include <parse/parselo.hh>
 #include "render/3d.hh"
-#include "util/list.hh"
-#include "weapon/emp.hh"
+#include <util/list.hh>
+#include <weapon/emp.hh>
 
 // ------------------------------------------------------------------------------------------------------
 // NEBULA LIGHTNING DEFINES/VARS

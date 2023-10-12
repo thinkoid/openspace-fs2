@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GRAPHICS_UNIFORMS_HH
 #define FREESPACE2_GRAPHICS_UNIFORMS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/util/uniform_structs.hh"
 #include "material.hh"

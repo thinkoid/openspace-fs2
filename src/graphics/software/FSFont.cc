@@ -1,8 +1,8 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 #include "graphics/software/FSFont.hh"
-#include "log/log.hh"
+#include <log/log.hh>
 
 namespace font {
 FSFont::FSFont ()

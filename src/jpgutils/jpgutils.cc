@@ -1,13 +1,13 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "bmpman/bmpman.hh"
-#include "cfile/cfile.hh"
+#include <defs.hh>
+#include <bmpman/bmpman.hh>
+#include <cfile/cfile.hh>
 #include "graphics/2d.hh"
-#include "jpgutils/jpgutils.hh"
-#include "shared/types.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <jpgutils/jpgutils.hh>
+#include <shared/types.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 #undef LOCAL
 #include <jpeglib.h>

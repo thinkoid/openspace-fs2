@@ -1,20 +1,20 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 // HUDNavigation.cpp
 // Derek Meek
 // 4-30-2004
 
-#include "autopilot/autopilot.hh"
-#include "hud/hud.hh"
-#include "hud/hudbrackets.hh"
-#include "hud/hudnavigation.hh"
-#include "hud/hudtarget.hh"
-#include "hud/hudtargetbox.hh"
-#include "object/object.hh"
+#include <autopilot/autopilot.hh>
+#include <hud/hud.hh>
+#include <hud/hudbrackets.hh>
+#include <hud/hudnavigation.hh>
+#include <hud/hudtarget.hh>
+#include <hud/hudtargetbox.hh>
+#include <object/object.hh>
 #include "render/3d.hh"
-#include "ship/ship.hh"
+#include <ship/ship.hh>
 
 extern void
 hud_target_show_dist_on_bracket (int x, int y, float distance, int font_num);

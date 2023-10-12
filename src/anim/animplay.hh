@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_ANIM_ANIMPLAY_HH
 #define FREESPACE2_ANIM_ANIMPLAY_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "cfile/cfile.hh"
+#include <cfile/cfile.hh>
 
 struct anim;
 struct anim_info;

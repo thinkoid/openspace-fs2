@@ -1,8 +1,8 @@
 // -*- mode: c++; -*-
 
-#include "shared/alphacolors.hh"
-#include "ui/ui.hh"
-#include "ui/uidefs.hh"
+#include <shared/alphacolors.hh>
+#include <ui/ui.hh>
+#include <ui/uidefs.hh>
 
 // ---------------------------------------------------------------------------------------
 // UI_ICON::create()

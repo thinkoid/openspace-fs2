@@ -1,29 +1,29 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <cctype>
 
-#include "cfile/cfile.hh"
+#include <cfile/cfile.hh>
 #include "freespace2/freespace.hh"
-#include "gamehelp/contexthelp.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "graphics/font.hh"
-#include "io/key.hh"
-#include "io/mouse.hh"
-#include "menuui/barracks.hh"
-#include "menuui/playermenu.hh"
-#include "mission/missioncampaign.hh"
-#include "osapi/osregistry.hh"
-#include "parse/parselo.hh"
-#include "pilotfile/pilotfile.hh"
-#include "playerman/managepilot.hh"
-#include "playerman/player.hh"
-#include "popup/popup.hh"
-#include "ship/ship.hh"
-#include "ui/ui.hh"
+#include <gamehelp/contexthelp.hh>
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <graphics/font.hh>
+#include <io/key.hh>
+#include <io/mouse.hh>
+#include <menuui/barracks.hh>
+#include <menuui/playermenu.hh>
+#include <mission/missioncampaign.hh>
+#include <osapi/osregistry.hh>
+#include <parse/parselo.hh>
+#include <pilotfile/pilotfile.hh>
+#include <playerman/managepilot.hh>
+#include <playerman/player.hh>
+#include <popup/popup.hh>
+#include <ship/ship.hh>
+#include <ui/ui.hh>
 
 // Returns 0 on failure, 1 on success
 int delete_pilot_file (char* pilot_name); // manage_pilot.cpp

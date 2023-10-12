@@ -1,9 +1,9 @@
 // -*- mode: c++; -*-
 
-#include "shared/globals.hh"
-#include "hud/hud.hh"
-#include "playerman/player.hh"
-#include "stats/stats.hh"
+#include <shared/globals.hh>
+#include <hud/hud.hh>
+#include <playerman/player.hh>
+#include <stats/stats.hh>
 
 #define MISSION_STATS_START_Y 80
 #define ALLTIME_STATS_START_Y 270

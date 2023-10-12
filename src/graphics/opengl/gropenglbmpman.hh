@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_GRAPHICS_OPENGL_GROPENGLBMPMAN_HH
 #define FREESPACE2_GRAPHICS_OPENGL_GROPENGLBMPMAN_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "bmpman/bmpman.hh"
+#include <bmpman/bmpman.hh>
 
 #include "glad/glad.h"
 

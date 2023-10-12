@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GRAPHICS_OPENGL_GROPENGLDEFERRED_HH
 #define FREESPACE2_GRAPHICS_OPENGL_GROPENGLDEFERRED_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 void gr_opengl_deferred_init ();
 

@@ -3,16 +3,16 @@
 #include <cmath>
 #include <cstdarg>
 
-#include "defs.hh"
-#include "debugconsole/console.hh"
-#include "shared/alphacolors.hh"
-#include "shared/version.hh"
+#include <defs.hh>
+#include <debugconsole/console.hh>
+#include <shared/alphacolors.hh>
+#include <shared/version.hh>
 #include "graphics/2d.hh"
-#include "graphics/font.hh"
-#include "io/key.hh"
-#include "io/timer.hh"
-#include "math/fix.hh"
-#include "osapi/osapi.hh"
+#include <graphics/font.hh>
+#include <io/key.hh>
+#include <io/timer.hh>
+#include <math/fix.hh>
+#include <osapi/osapi.hh>
 
 #include <algorithm>
 #include <deque>

@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MATH_FIX_HH
 #define FREESPACE2_MATH_FIX_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #define F1_0 65536
 #define f1_0 65536

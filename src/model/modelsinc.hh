@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MODEL_MODELSINC_HH
 #define FREESPACE2_MODEL_MODELSINC_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 class polymodel;
 

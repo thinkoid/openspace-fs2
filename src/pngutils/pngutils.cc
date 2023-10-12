@@ -3,14 +3,14 @@
 #include <cstdio>
 #include <cstring>
 
-#include "defs.hh"
-#include "bmpman/bmpman.hh"
-#include "cfile/cfile.hh"
-#include "shared/types.hh"
+#include <defs.hh>
+#include <bmpman/bmpman.hh>
+#include <cfile/cfile.hh>
+#include <shared/types.hh>
 #include "graphics/2d.hh"
-#include "pngutils/pngutils.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <pngutils/pngutils.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 struct png_status {
     CFILE* cfp = nullptr;

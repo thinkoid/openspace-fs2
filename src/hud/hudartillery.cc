@@ -1,24 +1,24 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "ai/ai.hh"
-#include "assert/assert.hh"
-#include "fireball/fireballs.hh"
-#include "gamesnd/gamesnd.hh"
-#include "hud/hudartillery.hh"
-#include "hud/hudmessage.hh"
-#include "io/timer.hh"
-#include "log/log.hh"
-#include "math/prng.hh"
-#include "math/vecmat.hh"
-#include "object/object.hh"
-#include "parse/parselo.hh"
-#include "shared/alphacolors.hh"
-#include "sound/sound.hh"
-#include "util/list.hh"
-#include "weapon/beam.hh"
-#include "weapon/weapon.hh"
+#include <ai/ai.hh>
+#include <assert/assert.hh>
+#include <fireball/fireballs.hh>
+#include <gamesnd/gamesnd.hh>
+#include <hud/hudartillery.hh>
+#include <hud/hudmessage.hh>
+#include <io/timer.hh>
+#include <log/log.hh>
+#include <math/prng.hh>
+#include <math/vecmat.hh>
+#include <object/object.hh>
+#include <parse/parselo.hh>
+#include <shared/alphacolors.hh>
+#include <sound/sound.hh>
+#include <util/list.hh>
+#include <weapon/beam.hh>
+#include <weapon/weapon.hh>
 
 // -----------------------------------------------------------------------------------------------------------------------
 // ARTILLERY DEFINES/VARS

@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_POPUP_POPUPDEAD_HH
 #define FREESPACE2_POPUP_POPUPDEAD_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // return values for popup_do_frame for multiplayer
 #define POPUPDEAD_DO_RESPAWN 0

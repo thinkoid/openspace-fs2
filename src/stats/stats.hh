@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_STATS_STATS_HH
 #define FREESPACE2_STATS_STATS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #define MISSION_STATS 0
 #define ALL_TIME_STATS 1

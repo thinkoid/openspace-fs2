@@ -1,21 +1,21 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "cutscene/player.hh"
-#include "cutscene/Decoder.hh"
-#include "cutscene/VideoPresenter.hh"
+#include <defs.hh>
+#include <cutscene/player.hh>
+#include <cutscene/Decoder.hh>
+#include <cutscene/VideoPresenter.hh>
 #include "cutscene/ffmpeg/FFMPEGDecoder.hh"
 #include "graphics/2d.hh"
-#include "shared/alphacolors.hh"
-#include "osapi/osapi.hh"
-#include "sound/openal.hh"
-#include "tracing/tracing.hh"
-#include "io/key.hh"
-#include "io/timer.hh"
+#include <shared/alphacolors.hh>
+#include <osapi/osapi.hh>
+#include <sound/openal.hh>
+#include <tracing/tracing.hh>
+#include <io/key.hh>
+#include <io/timer.hh>
 #include "player.hh"
-#include "parse/parselo.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <parse/parselo.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 using namespace cutscene::player;
 

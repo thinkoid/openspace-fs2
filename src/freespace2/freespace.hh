@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_FREESPACE2_FREESPACE_HH
 #define FREESPACE2_FREESPACE2_FREESPACE_HH
 #ifndef STAMPER_PROGRAM // because of all the dependancies, I have to do
-#include "defs.hh"
+#include <defs.hh>
 
                         // this...yuck!!!  MWA 7/21/97
 
-#include "camera/camera.hh"
+#include <camera/camera.hh>
 #include "graphics/2d.hh"
 
 // --------------------------------------------------------------------------------------------------------

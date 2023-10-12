@@ -1,10 +1,10 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 #include "freespace2/freespace.hh"
 #include "levelpaging.hh"
-#include "tracing/tracing.hh"
-#include "log/log.hh"
+#include <tracing/tracing.hh>
+#include <log/log.hh>
 
 // All the page in functions
 extern void ship_page_in ();

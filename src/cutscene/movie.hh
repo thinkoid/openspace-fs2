@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_CUTSCENE_MOVIE_HH
 #define FREESPACE2_CUTSCENE_MOVIE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 namespace movie {
 

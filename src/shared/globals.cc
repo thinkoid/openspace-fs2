@@ -1,13 +1,13 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "debugconsole/console.hh"
-#include "shared/types.hh"
-#include "shared/globals.hh"
+#include <debugconsole/console.hh>
+#include <shared/types.hh>
+#include <shared/globals.hh>
 #include "graphics/2d.hh"
-#include "io/timer.hh"
-#include "nebula/neb.hh"
+#include <io/timer.hh>
+#include <nebula/neb.hh>
 
 fix Missiontime;
 fix Skybox_timestamp;

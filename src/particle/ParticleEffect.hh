@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_PARTICLE_PARTICLEEFFECT_HH
 #define FREESPACE2_PARTICLE_PARTICLEEFFECT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 namespace particle {
 class ParticleSource;

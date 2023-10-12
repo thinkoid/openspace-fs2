@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_RENDER_3DINTERNAL_HH
 #define FREESPACE2_RENDER_3DINTERNAL_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "render/3d.hh"
 

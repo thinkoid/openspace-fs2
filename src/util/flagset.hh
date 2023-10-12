@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_UTIL_FLAGSET_HH
 #define FREESPACE2_UTIL_FLAGSET_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #ifndef FREESPACE2_GLOBALINCS_FLAGSET_H
 #define FREESPACE2_GLOBALINCS_FLAGSET_H

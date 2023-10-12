@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_PLAYERMAN_MANAGEPILOT_HH
 #define FREESPACE2_PLAYERMAN_MANAGEPILOT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 class player;
 

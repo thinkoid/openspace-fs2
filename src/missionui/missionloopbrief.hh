@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MISSIONUI_MISSIONLOOPBRIEF_HH
 #define FREESPACE2_MISSIONUI_MISSIONLOOPBRIEF_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 // MISSION LOOP BRIEF DEFINES/VARS

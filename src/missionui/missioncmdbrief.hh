@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_MISSIONUI_MISSIONCMDBRIEF_HH
 #define FREESPACE2_MISSIONUI_MISSIONCMDBRIEF_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #define CMD_BRIEF_STAGES_MAX 10
 
-#include "graphics/generic.hh"
+#include <graphics/generic.hh>
 
 struct anim;
 struct anim_instance;

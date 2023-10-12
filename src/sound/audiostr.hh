@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_SOUND_AUDIOSTR_HH
 #define FREESPACE2_SOUND_AUDIOSTR_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // type of audio stream
 #define ASF_SOUNDFX 0

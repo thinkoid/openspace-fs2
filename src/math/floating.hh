@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MATH_FLOATING_HH
 #define FREESPACE2_MATH_FLOATING_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <cmath>
 #include <cmath>

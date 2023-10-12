@@ -1,13 +1,13 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "asteroid/asteroid.hh"
-#include "debris/debris.hh"
-#include "math/fvi.hh"
-#include "object/objcollide.hh"
-#include "object/object.hh"
-#include "weapon/weapon.hh"
+#include <asteroid/asteroid.hh>
+#include <debris/debris.hh>
+#include <math/fvi.hh>
+#include <object/objcollide.hh>
+#include <object/object.hh>
+#include <weapon/weapon.hh>
 
 // placeholder struct for ship_debris collisions
 typedef struct ship_weapon_debris_struct {

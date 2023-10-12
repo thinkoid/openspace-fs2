@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_RENDER_BATCHING_HH
 #define FREESPACE2_RENDER_BATCHING_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 /*
  * Copyright (C) Freespace Open 2015.  All rights reserved.
@@ -15,7 +15,7 @@
  */
 
 #include "graphics/2d.hh"
-#include "graphics/material.hh"
+#include <graphics/material.hh>
 
 struct batch_vertex {
     vec3d position;

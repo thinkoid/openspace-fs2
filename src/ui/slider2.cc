@@ -1,11 +1,11 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "bmpman/bmpman.hh"
-#include "io/timer.hh"
-#include "ui/ui.hh"
-#include "ui/uidefs.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <bmpman/bmpman.hh>
+#include <io/timer.hh>
+#include <ui/ui.hh>
+#include <ui/uidefs.hh>
+#include <log/log.hh>
 
 // captureCallback is called when an item is "selected" by mouse release. That
 // is, the user has clicked, dragged and _released_. the callback is called

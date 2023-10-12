@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_CMEASURE_CMEASURE_HH
 #define FREESPACE2_CMEASURE_CMEASURE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 class object;
 

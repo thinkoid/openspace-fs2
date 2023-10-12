@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_HUD_HUDESCORT_HH
 #define FREESPACE2_HUD_HUDESCORT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "hud/hud.hh"
+#include <hud/hud.hh>
 
 // Odd def for escort frames
 #define NUM_ESCORT_FRAMES 3

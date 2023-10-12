@@ -1,11 +1,11 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "math/fix.hh"
-#include "math/floating.hh"
-#include "shared/globals.hh"
-#include "tracing/FrameProfiler.hh"
+#include <math/fix.hh>
+#include <math/floating.hh>
+#include <shared/globals.hh>
+#include <tracing/FrameProfiler.hh>
 
 #include <sstream>
 

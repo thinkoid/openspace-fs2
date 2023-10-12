@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_BMPMAN_BMPMAN_HH
 #define FREESPACE2_BMPMAN_BMPMAN_HH
 /**
-#include "defs.hh"
+#include <defs.hh>
 
  * @file bmpman.h
  * Header file for the bitmap manager (bmpman)
@@ -14,7 +14,7 @@
  * @brief This containes examples of bmpman usage
  */
 
-#include "cfile/cfile.hh"
+#include <cfile/cfile.hh>
 
 #ifndef NDEBUG
 #define BMPMAN_NDEBUG //!< Enables BMPMAN debugging code

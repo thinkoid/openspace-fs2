@@ -1,8 +1,8 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 /*
  * Created by Ian "Goober5000" Warfield for the FreeSpace2 Source Code Project.
@@ -11,20 +11,20 @@
  */
 
 #include "freespace2/freespace.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/eventmusic.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "io/key.hh"
-#include "mission/missionbriefcommon.hh"
-#include "missionui/fictionviewer.hh"
-#include "missionui/missioncmdbrief.hh"
-#include "missionui/missionscreencommon.hh"
-#include "missionui/redalert.hh"
-#include "mod_table/mod_table.hh"
-#include "parse/parselo.hh"
-#include "sound/audiostr.hh"
-#include "util/encoding.hh"
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/eventmusic.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <io/key.hh>
+#include <mission/missionbriefcommon.hh>
+#include <missionui/fictionviewer.hh>
+#include <missionui/missioncmdbrief.hh>
+#include <missionui/missionscreencommon.hh>
+#include <missionui/redalert.hh>
+#include <mod_table/mod_table.hh>
+#include <parse/parselo.hh>
+#include <sound/audiostr.hh>
+#include <util/encoding.hh>
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 // MISSION FICTION VIEWER DEFINES/VARS

@@ -1,16 +1,16 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "cmdline/cmdline.hh"
-#include "shared/globals.hh"
+#include <defs.hh>
+#include <cmdline/cmdline.hh>
+#include <shared/globals.hh>
 #include "graphics/2d.hh"
-#include "io/timer.hh"
+#include <io/timer.hh>
 #include "render/3d.hh"
-#include "ship/ship.hh"
-#include "tracing/tracing.hh"
-#include "weapon/trails.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <ship/ship.hh>
+#include <tracing/tracing.hh>
+#include <weapon/trails.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 int Num_trails;
 trail Trails;

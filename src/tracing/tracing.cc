@@ -6,15 +6,15 @@
 #include <mutex>
 #include <queue>
 
-#include "defs.hh"
-#include "tracing/tracing.hh"
+#include <defs.hh>
+#include <tracing/tracing.hh>
 #include "graphics/2d.hh"
-#include "parse/parselo.hh"
-#include "io/timer.hh"
+#include <parse/parselo.hh>
+#include <io/timer.hh>
 #include "TraceEventWriter.hh"
 #include "MainFrameTimer.hh"
 #include "FrameProfiler.hh"
-#include "assert/assert.hh"
+#include <assert/assert.hh>
 
 // A function for getting the id of the current thread
 #if __LINUX__

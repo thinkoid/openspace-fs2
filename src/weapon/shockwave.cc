@@ -1,20 +1,20 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "asteroid/asteroid.hh"
-#include "gamesnd/gamesnd.hh"
-#include "util/list.hh"
-#include "io/timer.hh"
-#include "model/modelrender.hh"
-#include "object/object.hh"
+#include <defs.hh>
+#include <asteroid/asteroid.hh>
+#include <gamesnd/gamesnd.hh>
+#include <util/list.hh>
+#include <io/timer.hh>
+#include <model/modelrender.hh>
+#include <object/object.hh>
 #include "render/3d.hh"
-#include "render/batching.hh"
-#include "ship/ship.hh"
-#include "ship/shiphit.hh"
-#include "weapon/shockwave.hh"
-#include "weapon/weapon.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <render/batching.hh>
+#include <ship/ship.hh>
+#include <ship/shiphit.hh>
+#include <weapon/shockwave.hh>
+#include <weapon/weapon.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 // -----------------------------------------------------------
 // Module-wide globals

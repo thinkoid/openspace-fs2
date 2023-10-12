@@ -1,8 +1,8 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 #ifndef NDEBUG
 #define BMPMAN_NDEBUG
@@ -15,25 +15,25 @@
 #include <iomanip>
 #include <memory>
 
-#include "anim/animplay.hh"
-#include "anim/packunpack.hh"
-#include "bmpman/bm_internal.hh"
-#include "ddsutils/ddsutils.hh"
-#include "debugconsole/console.hh"
+#include <anim/animplay.hh>
+#include <anim/packunpack.hh>
+#include <bmpman/bm_internal.hh>
+#include <ddsutils/ddsutils.hh>
+#include <debugconsole/console.hh>
 #include "graphics/2d.hh"
-#include "graphics/matrix.hh"
-#include "io/key.hh"
-#include "io/timer.hh"
-#include "jpgutils/jpgutils.hh"
-#include "math/fix.hh"
-#include "parse/parselo.hh"
-#include "pcxutils/pcxutils.hh"
-#include "pngutils/pngutils.hh"
-#include "shared/globals.hh"
-#include "ship/ship.hh"
-#include "tgautils/tgautils.hh"
-#include "tracing/Monitor.hh"
-#include "tracing/tracing.hh"
+#include <graphics/matrix.hh>
+#include <io/key.hh>
+#include <io/timer.hh>
+#include <jpgutils/jpgutils.hh>
+#include <math/fix.hh>
+#include <parse/parselo.hh>
+#include <pcxutils/pcxutils.hh>
+#include <pngutils/pngutils.hh>
+#include <shared/globals.hh>
+#include <ship/ship.hh>
+#include <tgautils/tgautils.hh>
+#include <tracing/Monitor.hh>
+#include <tracing/tracing.hh>
 
 // --------------------------------------------------------------------------------------------------------------------
 // Private macros.

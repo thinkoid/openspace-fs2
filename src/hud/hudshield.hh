@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_HUD_HUDSHIELD_HH
 #define FREESPACE2_HUD_HUDSHIELD_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "hud/hud.hh"
+#include <hud/hud.hh>
 
 #define SHIELD_HIT_DURATION \
     1400 // time a shield quadrant flashes after being hit

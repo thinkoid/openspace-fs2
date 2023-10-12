@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_SHARED_ALPHACOLORS_HH
 #define FREESPACE2_SHARED_ALPHACOLORS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
-#include "parse/parselo.hh"
+#include <parse/parselo.hh>
 
 // Colors for UI
 // See FreeSpace.cpp for usage

@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
 #include "unicode.hh"
-#include "assert/assert.hh"
+#include <assert/assert.hh>
 
 namespace unicode {
 

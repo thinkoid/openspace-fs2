@@ -1,23 +1,23 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "util/list.hh"
-#include "shared/globals.hh"
-#include "hud/hudescort.hh"
-#include "hud/hudmessage.hh"
-#include "hud/hudparse.hh"
-#include "hud/hudshield.hh"
-#include "hud/hudtargetbox.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "object/object.hh"
-#include "parse/parselo.hh"
-#include "playerman/player.hh"
-#include "ship/ship.hh"
-#include "weapon/emp.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <util/list.hh>
+#include <shared/globals.hh>
+#include <hud/hudescort.hh>
+#include <hud/hudmessage.hh>
+#include <hud/hudparse.hh>
+#include <hud/hudshield.hh>
+#include <hud/hudtargetbox.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <object/object.hh>
+#include <parse/parselo.hh>
+#include <playerman/player.hh>
+#include <ship/ship.hh>
+#include <weapon/emp.hh>
+#include <log/log.hh>
 
 int Show_escort_view;
 

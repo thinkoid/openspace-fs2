@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_DECALS_DECALS_HH
 #define FREESPACE2_DECALS_DECALS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "object/object.hh"
+#include <object/object.hh>
 
-#include "util/RandomRange.hh"
+#include <util/RandomRange.hh>
 
 namespace decals {
 

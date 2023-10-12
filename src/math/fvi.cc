@@ -1,10 +1,10 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "math/floating.hh"
-#include "math/fvi.hh"
-#include "math/vecmat.hh"
+#include <math/floating.hh>
+#include <math/fvi.hh>
+#include <math/vecmat.hh>
 
 #define SMALL_NUM 1E-6
 

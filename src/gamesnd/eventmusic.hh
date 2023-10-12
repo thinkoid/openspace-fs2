@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GAMESND_EVENTMUSIC_HH
 #define FREESPACE2_GAMESND_EVENTMUSIC_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // Identifies songs in the Soundtrack_filenames[] structure.  The order matches
 // up with what is in Pattern_info and music.tbl.  Do not modify without

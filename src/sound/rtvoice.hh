@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_SOUND_RTVOICE_HH
 #define FREESPACE2_SOUND_RTVOICE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "sound/sound.hh"
+#include <sound/sound.hh>
 
 // general
 void rtvoice_set_qos (int qos);

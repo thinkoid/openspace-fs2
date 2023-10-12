@@ -23,10 +23,10 @@
 
 #include <algorithm>
 
-#include "debugconsole/console.hh"
-#include "debugconsole/consoleparse.hh"
-#include "io/key.hh"
-#include "assert/assert.hh"
+#include <debugconsole/console.hh>
+#include <debugconsole/consoleparse.hh>
+#include <io/key.hh>
+#include <assert/assert.hh>
 
 // ========================= GLOBALS =========================
 debug_command* dc_commands[DC_MAX_COMMANDS];

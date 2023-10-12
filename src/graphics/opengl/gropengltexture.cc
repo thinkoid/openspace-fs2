@@ -1,22 +1,22 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 #define BMPMAN_INTERNAL
 
-#include "bmpman/bm_internal.hh"
-#include "bmpman/bmpman.hh"
-#include "cmdline/cmdline.hh"
-#include "ddsutils/ddsutils.hh"
-#include "graphics/grinternal.hh"
+#include <bmpman/bm_internal.hh>
+#include <bmpman/bmpman.hh>
+#include <cmdline/cmdline.hh>
+#include <ddsutils/ddsutils.hh>
+#include <graphics/grinternal.hh>
 #include "gropenglstate.hh"
 #include "gropengltexture.hh"
-#include "math/fix.hh"
-#include "math/vecmat.hh"
-#include "osapi/osregistry.hh"
-#include "shared/globals.hh"
+#include <math/fix.hh>
+#include <math/vecmat.hh>
+#include <osapi/osregistry.hh>
+#include <shared/globals.hh>
 
 matrix4 GL_texture_matrix;
 

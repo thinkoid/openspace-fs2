@@ -1,28 +1,28 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "anim/animplay.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
-#include "hud/hud.hh"
-#include "hud/hudconfig.hh"
-#include "hud/hudgauges.hh"
-#include "hud/hudmessage.hh"
-#include "hud/hudtarget.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "localization/localize.hh"
-#include "mission/missionmessage.hh"
-#include "mission/missiontraining.hh"
-#include "mod_table/mod_table.hh"
-#include "parse/parselo.hh"
-#include "parse/sexp.hh"
-#include "ship/ship.hh"
-#include "ship/subsysdamage.hh"
-#include "species_defs/species_defs.hh"
-#include "weapon/emp.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <anim/animplay.hh>
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
+#include <hud/hud.hh>
+#include <hud/hudconfig.hh>
+#include <hud/hudgauges.hh>
+#include <hud/hudmessage.hh>
+#include <hud/hudtarget.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <localization/localize.hh>
+#include <mission/missionmessage.hh>
+#include <mission/missiontraining.hh>
+#include <mod_table/mod_table.hh>
+#include <parse/parselo.hh>
+#include <parse/sexp.hh>
+#include <ship/ship.hh>
+#include <ship/subsysdamage.hh>
+#include <species_defs/species_defs.hh>
+#include <weapon/emp.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 std::vector< std::string > Builtin_moods;
 int Current_mission_mood;

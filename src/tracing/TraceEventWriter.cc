@@ -2,9 +2,9 @@
 
 #include <iomanip>
 
-#include "defs.hh"
-#include "tracing/TraceEventWriter.hh"
-#include "assert/assert.hh"
+#include <defs.hh>
+#include <tracing/TraceEventWriter.hh>
+#include <assert/assert.hh>
 
 namespace {
 using namespace tracing;

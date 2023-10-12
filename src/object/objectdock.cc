@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "assert/assert.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
 
 /*
  * Created by Ian "Goober5000" Warfield for the FreeSpace2 Source Code Project.
@@ -9,11 +9,11 @@
  * create based on the source.
  */
 
-#include "math/vecmat.hh"
-#include "mission/missionparse.hh"
-#include "object/object.hh"
-#include "object/objectdock.hh"
-#include "ship/ship.hh"
+#include <math/vecmat.hh>
+#include <mission/missionparse.hh>
+#include <object/object.hh>
+#include <object/objectdock.hh>
+#include <ship/ship.hh>
 
 #include <bitset>
 

@@ -1,12 +1,12 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "io/timer.hh"
-#include "ui/ui.hh"
-#include "ui/uidefs.hh"
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <io/timer.hh>
+#include <ui/ui.hh>
+#include <ui/uidefs.hh>
 
 // ---------------------------------------------------------------------------------------
 // input:

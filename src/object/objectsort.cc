@@ -1,26 +1,26 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <algorithm>
 #include <list>
 #include <vector>
 
-#include "asteroid/asteroid.hh"
-#include "cmdline/cmdline.hh"
-#include "debris/debris.hh"
-#include "graphics/light.hh"
-#include "jumpnode/jumpnode.hh"
-#include "mission/missionparse.hh"
-#include "model/modelrender.hh"
-#include "nebula/neb.hh"
-#include "object/object.hh"
+#include <asteroid/asteroid.hh>
+#include <cmdline/cmdline.hh>
+#include <debris/debris.hh>
+#include <graphics/light.hh>
+#include <jumpnode/jumpnode.hh>
+#include <mission/missionparse.hh>
+#include <model/modelrender.hh>
+#include <nebula/neb.hh>
+#include <object/object.hh>
 #include "render/3d.hh"
-#include "render/batching.hh"
-#include "ship/ship.hh"
-#include "tracing/tracing.hh"
-#include "weapon/weapon.hh"
-#include "decals/decals.hh"
+#include <render/batching.hh>
+#include <ship/ship.hh>
+#include <tracing/tracing.hh>
+#include <weapon/weapon.hh>
+#include <decals/decals.hh>
 
 class sorted_obj {
 public:

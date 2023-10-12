@@ -1,20 +1,20 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "anim/animplay.hh"
-#include "anim/packunpack.hh"
-#include "bmpman/bmpman.hh"
-#include "cfile/cfile.hh"
-#include "cmdline/cmdline.hh"
-#include "util/list.hh"
+#include <defs.hh>
+#include <anim/animplay.hh>
+#include <anim/packunpack.hh>
+#include <bmpman/bmpman.hh>
+#include <cfile/cfile.hh>
+#include <cmdline/cmdline.hh>
+#include <util/list.hh>
 #include "graphics/2d.hh"
-#include "io/timer.hh"
-#include "pcxutils/pcxutils.hh"
+#include <io/timer.hh>
+#include <pcxutils/pcxutils.hh>
 #include "render/3d.hh"
-#include "graphics/material.hh"
-#include "tracing/Monitor.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <graphics/material.hh>
+#include <tracing/Monitor.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 static color Color_xparent;
 

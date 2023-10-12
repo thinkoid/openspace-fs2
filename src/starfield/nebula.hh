@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_STARFIELD_NEBULA_HH
 #define FREESPACE2_STARFIELD_NEBULA_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // mainly only needed by Fred
 extern int Nebula_pitch;

@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_HUD_HUDWINGMANSTATUS_HH
 #define FREESPACE2_HUD_HUDWINGMANSTATUS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "hud/hud.hh"
+#include <hud/hud.hh>
 
 struct wing;
 class ship;

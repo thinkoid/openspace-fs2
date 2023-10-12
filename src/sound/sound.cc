@@ -2,26 +2,26 @@
 
 #include <climits>
 
-#include "defs.hh"
-#include "cfile/cfile.hh"
-#include "cmdline/cmdline.hh"
-#include "debugconsole/console.hh"
-#include "gamesnd/eventmusic.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "shared/types.hh"
-#include "mod_table/mod_table.hh"
-#include "osapi/osapi.hh"
+#include <defs.hh>
+#include <cfile/cfile.hh>
+#include <cmdline/cmdline.hh>
+#include <debugconsole/console.hh>
+#include <gamesnd/eventmusic.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <shared/types.hh>
+#include <mod_table/mod_table.hh>
+#include <osapi/osapi.hh>
 #include "render/3d.hh"
 #include "sound/ffmpeg/WaveFile.hh"
-#include "sound/audiostr.hh"
-#include "sound/ds.hh"
+#include <sound/audiostr.hh>
+#include <sound/ds.hh>
 #include "sound/ds3d.hh"
-#include "sound/dscap.hh"
-#include "tracing/Monitor.hh"
-#include "tracing/tracing.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <sound/dscap.hh>
+#include <tracing/Monitor.hh>
+#include <tracing/tracing.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 #include <list>
 

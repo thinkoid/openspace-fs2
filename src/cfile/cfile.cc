@@ -1,8 +1,8 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 #define _CFILE_INTERNAL
 
@@ -16,11 +16,11 @@
 #include <cerrno>
 #include <limits>
 
-#include "cfile/cfile.hh"
-#include "cfile/cfilearchive.hh"
-#include "cfile/cfilesystem.hh"
-#include "osapi/osapi.hh"
-#include "parse/encrypt.hh"
+#include <cfile/cfile.hh>
+#include <cfile/cfilearchive.hh>
+#include <cfile/cfilesystem.hh>
+#include <osapi/osapi.hh>
+#include <parse/encrypt.hh>
 #include "cfilesystem.hh"
 
 char Cfile_root_dir[CFILE_ROOT_DIRECTORY_LEN] = "";

@@ -1,15 +1,15 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "cfile/cfile.hh"
-#include "debugconsole/console.hh"
-#include "math/vecmat.hh"
-#include "mission/missionparse.hh"
-#include "nebula/neb.hh"
-#include "graphics/material.hh"
+#include <defs.hh>
+#include <cfile/cfile.hh>
+#include <debugconsole/console.hh>
+#include <math/vecmat.hh>
+#include <mission/missionparse.hh>
+#include <nebula/neb.hh>
+#include <graphics/material.hh>
 #include "render/3d.hh"
-#include "starfield/nebula.hh"
-#include "log/log.hh"
+#include <starfield/nebula.hh>
+#include <log/log.hh>
 
 #define MAX_TRIS 200
 #define MAX_POINTS 300

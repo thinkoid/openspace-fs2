@@ -1,8 +1,8 @@
 // -*- mode: c++; -*-
 
-#include "io/timer.hh"
-#include "ui/ui.hh"
-#include "ui/uidefs.hh"
+#include <io/timer.hh>
+#include <ui/ui.hh>
+#include <ui/uidefs.hh>
 
 UI_MOUSE ui_mouse;
 

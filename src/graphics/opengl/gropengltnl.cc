@@ -1,29 +1,29 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "cmdline/cmdline.hh"
-#include "shared/alphacolors.hh"
-#include "shared/globals.hh"
+#include <defs.hh>
+#include <cmdline/cmdline.hh>
+#include <shared/alphacolors.hh>
+#include <shared/globals.hh>
 #include "graphics/2d.hh"
-#include "graphics/matrix.hh"
-#include "graphics/grinternal.hh"
+#include <graphics/matrix.hh>
+#include <graphics/grinternal.hh>
 #include "gropengldraw.hh"
 #include "gropenglshader.hh"
 #include "gropenglstate.hh"
 #include "gropengltexture.hh"
 #include "gropengldeferred.hh"
 #include "gropengltnl.hh"
-#include "lighting/lighting.hh"
-#include "math/vecmat.hh"
+#include <lighting/lighting.hh>
+#include <math/vecmat.hh>
 #include "render/3d.hh"
-#include "weapon/trails.hh"
-#include "particle/particle.hh"
-#include "graphics/shadows.hh"
-#include "graphics/material.hh"
-#include "graphics/light.hh"
+#include <weapon/trails.hh>
+#include <particle/particle.hh>
+#include <graphics/shadows.hh>
+#include <graphics/material.hh>
+#include <graphics/light.hh>
 #include "ShaderProgram.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 extern int GLOWMAP;
 extern int CLOAKMAP;

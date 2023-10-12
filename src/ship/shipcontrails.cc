@@ -1,10 +1,10 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "mission/missionparse.hh"
-#include "ship/ship.hh"
-#include "ship/shipcontrails.hh"
+#include <mission/missionparse.hh>
+#include <ship/ship.hh>
+#include <ship/shipcontrails.hh>
 
 // ----------------------------------------------------------------------------------------------
 // CONTRAIL DEFINES/VARS

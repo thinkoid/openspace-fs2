@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_HUD_HUDGAUGES_HH
 #define FREESPACE2_HUD_HUDGAUGES_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // HUD gauge types
 #define NUM_HUD_GAUGES 39

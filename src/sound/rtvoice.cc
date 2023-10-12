@@ -1,13 +1,13 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "math/floating.hh"
-#include "shared/types.hh"
-#include "sound/ds.hh"
-#include "sound/dscap.hh"
-#include "sound/rtvoice.hh"
-#include "sound/sound.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <math/floating.hh>
+#include <shared/types.hh>
+#include <sound/ds.hh>
+#include <sound/dscap.hh>
+#include <sound/rtvoice.hh>
+#include <sound/sound.hh>
+#include <log/log.hh>
 
 typedef struct rtv_format {
     int nchannels;

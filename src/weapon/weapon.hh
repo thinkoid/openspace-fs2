@@ -3,17 +3,17 @@
 #ifndef FREESPACE2_WEAPON_WEAPON_HH
 #define FREESPACE2_WEAPON_WEAPON_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
-#include "graphics/generic.hh"
-#include "gamesnd/gamesnd.hh"
-#include "model/model.hh"
-#include "weapon/shockwave.hh"
-#include "weapon/trails.hh"
-#include "particle/ParticleManager.hh"
-#include "weapon/weapon_flags.hh"
-#include "decals/decals.hh"
+#include <graphics/generic.hh>
+#include <gamesnd/gamesnd.hh>
+#include <model/model.hh>
+#include <weapon/shockwave.hh>
+#include <weapon/trails.hh>
+#include <particle/ParticleManager.hh>
+#include <weapon/weapon_flags.hh>
+#include <decals/decals.hh>
 
 class object;
 class ship_subsys;

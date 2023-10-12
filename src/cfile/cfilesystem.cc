@@ -14,17 +14,17 @@
 #include <sstream>
 #include <algorithm>
 
-#include "defs.hh"
-#include "cfile/cfile.hh"
-#include "cfile/cfilesystem.hh"
-#include "cmdline/cmdline.hh"
-#include "shared/types.hh"
-#include "localization/localize.hh"
-#include "osapi/osapi.hh"
-#include "parse/parselo.hh"
-#include "util/strings.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <cfile/cfile.hh>
+#include <cfile/cfilesystem.hh>
+#include <cmdline/cmdline.hh>
+#include <shared/types.hh>
+#include <localization/localize.hh>
+#include <osapi/osapi.hh>
+#include <parse/parselo.hh>
+#include <util/strings.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 enum CfileRootType {
     CF_ROOTTYPE_PATH = 0,

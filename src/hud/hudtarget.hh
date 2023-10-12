@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_HUD_HUDTARGET_HH
 #define FREESPACE2_HUD_HUDTARGET_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "hud/hud.hh"
+#include <hud/hud.hh>
 
 class ship;
 class ship_subsys;

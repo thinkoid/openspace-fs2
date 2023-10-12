@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_IO_JOY_HH
 #define FREESPACE2_IO_JOY_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <SDL_joystick.h>
 

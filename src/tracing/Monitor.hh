@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_TRACING_MONITOR_HH
 #define FREESPACE2_TRACING_MONITOR_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <type_traits>
 
-#include "tracing/categories.hh"
+#include <tracing/categories.hh>
 
 namespace tracing {
 

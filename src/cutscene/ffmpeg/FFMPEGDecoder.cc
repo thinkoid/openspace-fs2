@@ -3,17 +3,17 @@
 #include <limits>
 #include <thread>
 
-#include "defs.hh"
+#include <defs.hh>
 #include "cutscene/ffmpeg/FFMPEGDecoder.hh"
-#include "cfile/cfile.hh"
+#include <cfile/cfile.hh>
 #include "libs/ffmpeg/FFmpegContext.hh"
 #include "cutscene/ffmpeg/internal.hh"
 #include "cutscene/ffmpeg/AudioDecoder.hh"
 #include "cutscene/ffmpeg/VideoDecoder.hh"
 #include "cutscene/ffmpeg/SubtitleDecoder.hh"
 #include "FFMPEGDecoder.hh"
-#include "localization/localize.hh"
-#include "log/log.hh"
+#include <localization/localize.hh>
+#include <log/log.hh>
 
 using namespace libs::ffmpeg;
 

@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_GRAPHICS_MATERIAL_HH
 #define FREESPACE2_GRAPHICS_MATERIAL_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "graphics/grinternal.hh"
-#include "model/model.hh"
+#include <graphics/grinternal.hh>
+#include <model/model.hh>
 
 #include <array>
 

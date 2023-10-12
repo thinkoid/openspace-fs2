@@ -1,21 +1,21 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "cfile/cfile.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "shared/types.hh"
-#include "hud/hudconfig.hh"
-#include "hud/hudobserver.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/key.hh"
-#include "parse/parselo.hh"
-#include "playerman/player.hh"
-#include "popup/popup.hh"
-#include "ship/ship.hh"
-#include "ui/ui.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <cfile/cfile.hh>
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <shared/types.hh>
+#include <hud/hudconfig.hh>
+#include <hud/hudobserver.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/key.hh>
+#include <parse/parselo.hh>
+#include <playerman/player.hh>
+#include <popup/popup.hh>
+#include <ship/ship.hh>
+#include <ui/ui.hh>
+#include <log/log.hh>
 
 //////////////////////////////////////////////////////////////////////////////
 // Game-wide Globals

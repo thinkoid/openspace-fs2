@@ -1,20 +1,20 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "anim/animplay.hh"
+#include <anim/animplay.hh>
 #include "freespace2/freespace.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/eventmusic.hh"
-#include "gamesnd/gamesnd.hh"
-#include "graphics/generic.hh"
-#include "io/key.hh"
-#include "mission/missionbriefcommon.hh"
-#include "mission/missioncampaign.hh"
-#include "missionui/missionloopbrief.hh"
-#include "missionui/missionscreencommon.hh"
-#include "popup/popup.hh"
-#include "sound/audiostr.hh"
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/eventmusic.hh>
+#include <gamesnd/gamesnd.hh>
+#include <graphics/generic.hh>
+#include <io/key.hh>
+#include <mission/missionbriefcommon.hh>
+#include <mission/missioncampaign.hh>
+#include <missionui/missionloopbrief.hh>
+#include <missionui/missionscreencommon.hh>
+#include <popup/popup.hh>
+#include <sound/audiostr.hh>
 
 extern char default_loop_briefing_color; // Doesn't seem worth including
                                          // alphacolors.h for -MageKing17

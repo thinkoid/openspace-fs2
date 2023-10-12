@@ -1,29 +1,29 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "controlconfig/controlsconfig.hh"
-#include "debugconsole/console.hh"
+#include <controlconfig/controlsconfig.hh>
+#include <debugconsole/console.hh>
 #include "freespace2/freespace.hh"
-#include "gamehelp/contexthelp.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "graphics/font.hh"
-#include "hud/hudsquadmsg.hh"
-#include "io/joy.hh"
-#include "io/key.hh"
-#include "io/keycontrol.hh"
-#include "io/timer.hh"
-#include "math/fix.hh"
-#include "missionui/missionscreencommon.hh"
-#include "pilotfile/pilotfile.hh"
-#include "popup/popup.hh"
-#include "ui/ui.hh"
-#include "ui/uidefs.hh"
+#include <gamehelp/contexthelp.hh>
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <graphics/font.hh>
+#include <hud/hudsquadmsg.hh>
+#include <io/joy.hh>
+#include <io/key.hh>
+#include <io/keycontrol.hh>
+#include <io/timer.hh>
+#include <math/fix.hh>
+#include <missionui/missionscreencommon.hh>
+#include <pilotfile/pilotfile.hh>
+#include <popup/popup.hh>
+#include <ui/ui.hh>
+#include <ui/uidefs.hh>
 
 #ifndef NDEBUG
-#include "hud/hud.hh"
+#include <hud/hud.hh>
 #endif
 
 #define NUM_SYSTEM_KEYS 14

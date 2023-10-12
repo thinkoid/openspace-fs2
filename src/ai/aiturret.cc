@@ -1,29 +1,29 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "ai/aibig.hh"
-#include "ai/aiinternal.hh"
-#include "assert/assert.hh"
-#include "asteroid/asteroid.hh"
-#include "debugconsole/console.hh"
+#include <ai/aibig.hh>
+#include <ai/aiinternal.hh>
+#include <assert/assert.hh>
+#include <asteroid/asteroid.hh>
+#include <debugconsole/console.hh>
 #include "freespace2/freespace.hh"
-#include "gamesnd/gamesnd.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "log/log.hh"
-#include "math/prng.hh"
-#include "object/objectdock.hh"
+#include <gamesnd/gamesnd.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <log/log.hh>
+#include <math/prng.hh>
+#include <object/objectdock.hh>
 #include "render/3d.hh"
-#include "shared/globals.hh"
-#include "ship/ship.hh"
-#include "ship/shipfx.hh"
-#include "util/list.hh"
-#include "weapon/beam.hh"
-#include "weapon/flak.hh"
-#include "weapon/muzzleflash.hh"
-#include "weapon/swarm.hh"
-#include "weapon/weapon.hh"
+#include <shared/globals.hh>
+#include <ship/ship.hh>
+#include <ship/shipfx.hh>
+#include <util/list.hh>
+#include <weapon/beam.hh>
+#include <weapon/flak.hh>
+#include <weapon/muzzleflash.hh>
+#include <weapon/swarm.hh>
+#include <weapon/weapon.hh>
 
 #include <climits>
 

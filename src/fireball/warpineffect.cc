@@ -1,17 +1,17 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "cmdline/cmdline.hh"
-#include "shared/types.hh"
-#include "graphics/tmapper.hh"
-#include "math/vecmat.hh"
-#include "mission/missionparse.hh"
-#include "model/model.hh"
-#include "nebula/neb.hh"
+#include <cmdline/cmdline.hh>
+#include <shared/types.hh>
+#include <graphics/tmapper.hh>
+#include <math/vecmat.hh>
+#include <mission/missionparse.hh>
+#include <model/model.hh>
+#include <nebula/neb.hh>
 #include "render/3d.hh"
-#include "render/batching.hh"
-#include "ship/ship.hh"
+#include <render/batching.hh>
+#include <ship/ship.hh>
 
 extern int Warp_model;
 extern int Warp_glow_bitmap;

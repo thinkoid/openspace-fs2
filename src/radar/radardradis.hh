@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_RADAR_RADARDRADIS_HH
 #define FREESPACE2_RADAR_RADARDRADIS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "radar/radarsetup.hh"
+#include <radar/radarsetup.hh>
 
 class object;
 struct blip;

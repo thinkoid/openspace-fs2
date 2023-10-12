@@ -3,14 +3,14 @@
 #ifndef FREESPACE2_SOUND_FFMPEG_WAVEFILE_HH
 #define FREESPACE2_SOUND_FFMPEG_WAVEFILE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "sound/audiostr.hh"
-#include "sound/openal.hh"
+#include <sound/audiostr.hh>
+#include <sound/openal.hh>
 
 #include "libs/ffmpeg/FFmpegContext.hh"
 
-#include "osapi/osapi.hh"
+#include <osapi/osapi.hh>
 
 namespace ffmpeg {
 

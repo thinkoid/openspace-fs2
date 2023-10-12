@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_LIBS_FFMPEG_LIBAVCOMPATIBILITY_HH
 #define FREESPACE2_LIBS_FFMPEG_LIBAVCOMPATIBILITY_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // swresample typedefs and macros
 

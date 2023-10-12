@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
-#include "util/HeapAllocator.hh"
-#include "assert/assert.hh"
+#include <util/HeapAllocator.hh>
+#include <assert/assert.hh>
 
 namespace {
 

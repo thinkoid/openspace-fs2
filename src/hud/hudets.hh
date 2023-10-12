@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_HUD_HUDETS_HH
 #define FREESPACE2_HUD_HUDETS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "hud/hud.hh"
+#include <hud/hud.hh>
 
 class object;
 

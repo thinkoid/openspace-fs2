@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_AI_AIBIG_HH
 #define FREESPACE2_AI_AIBIG_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 class object;
 struct ai_info;

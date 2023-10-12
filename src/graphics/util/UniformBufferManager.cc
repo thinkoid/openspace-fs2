@@ -1,9 +1,9 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 #include "UniformBufferManager.hh"
 #include "uniform_structs.hh"
-#include "assert/assert.hh"
+#include <assert/assert.hh>
 
 namespace {
 

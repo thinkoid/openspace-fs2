@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_WEAPON_MUZZLEFLASH_HH
 #define FREESPACE2_WEAPON_MUZZLEFLASH_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "physics/physics.hh"
+#include <physics/physics.hh>
 
 // ---------------------------------------------------------------------------------------------------------------------
 // MUZZLE FLASH DEFINES/VARS

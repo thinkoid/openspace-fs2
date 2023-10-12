@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_TRACING_TRACEEVENTWRITER_HH
 #define FREESPACE2_TRACING_TRACEEVENTWRITER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "tracing/tracing.hh"
-#include "tracing/ThreadedEventProcessor.hh"
+#include <tracing/tracing.hh>
+#include <tracing/ThreadedEventProcessor.hh>
 
 #include <fstream>
 

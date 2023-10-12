@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_LIBS_RENDERDOC_RENDERDOC_HH
 #define FREESPACE2_LIBS_RENDERDOC_RENDERDOC_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 namespace renderdoc {
 

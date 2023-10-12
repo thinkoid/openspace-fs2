@@ -4,18 +4,18 @@
 #include <algorithm>
 #include <utility>
 
-#include "defs.hh"
-#include "bmpman/bmpman.hh"
-#include "cmdline/cmdline.hh"
-#include "gamesequence/gamesequence.hh"
+#include <defs.hh>
+#include <bmpman/bmpman.hh>
+#include <cmdline/cmdline.hh>
+#include <gamesequence/gamesequence.hh>
 #include "graphics/2d.hh"
-#include "io/cursor.hh"
-#include "io/timer.hh"
-#include "popup/popup.hh"
-#include "popup/popupdead.hh"
-#include "shared/globals.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <io/cursor.hh>
+#include <io/timer.hh>
+#include <popup/popup.hh>
+#include <popup/popupdead.hh>
+#include <shared/globals.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 namespace {
 SDL_Cursor* bitmapToCursor (int bitmapNum) {

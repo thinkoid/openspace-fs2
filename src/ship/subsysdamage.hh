@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_SHIP_SUBSYSDAMAGE_HH
 #define FREESPACE2_SHIP_SUBSYSDAMAGE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 /////////////////////////////////////////
 // engines

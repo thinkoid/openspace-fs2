@@ -1,11 +1,11 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
-#include "hud/hud.hh" //For HUD_offset_*
+#include <hud/hud.hh> //For HUD_offset_*
 #include "render/3dinternal.hh"
-#include "tracing/Monitor.hh"
+#include <tracing/Monitor.hh>
 
 #define MIN_Z 0.0f
 

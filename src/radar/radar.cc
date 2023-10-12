@@ -1,25 +1,25 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "bmpman/bmpman.hh"
+#include <defs.hh>
+#include <bmpman/bmpman.hh>
 #include "freespace2/freespace.hh"
-#include "gamesnd/gamesnd.hh"
-#include "util/list.hh"
-#include "graphics/font.hh"
-#include "graphics/matrix.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "jumpnode/jumpnode.hh"
-#include "localization/localize.hh"
-#include "object/object.hh"
-#include "playerman/player.hh"
-#include "radar/radar.hh"
-#include "ship/awacs.hh"
-#include "ship/ship.hh"
-#include "ship/subsysdamage.hh"
-#include "weapon/emp.hh"
-#include "weapon/weapon.hh"
-#include "log/log.hh"
+#include <gamesnd/gamesnd.hh>
+#include <util/list.hh>
+#include <graphics/font.hh>
+#include <graphics/matrix.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <jumpnode/jumpnode.hh>
+#include <localization/localize.hh>
+#include <object/object.hh>
+#include <playerman/player.hh>
+#include <radar/radar.hh>
+#include <ship/awacs.hh>
+#include <ship/ship.hh>
+#include <ship/subsysdamage.hh>
+#include <weapon/emp.hh>
+#include <weapon/weapon.hh>
+#include <log/log.hh>
 
 extern int radar_target_id_flags;
 

@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MENUUI_CREDITS_HH
 #define FREESPACE2_MENUUI_CREDITS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 void credits_init ();
 void credits_do_frame (float frametime);

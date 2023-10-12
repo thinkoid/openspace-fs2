@@ -1,14 +1,14 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "shared/globals.hh"
+#include <defs.hh>
+#include <shared/globals.hh>
 #include "graphics/2d.hh"
-#include "math/vecmat.hh"
-#include "object/object.hh"
-#include "parse/parselo.hh"
-#include "particle/particle.hh"
-#include "weapon/muzzleflash.hh"
-#include "log/log.hh"
+#include <math/vecmat.hh>
+#include <object/object.hh>
+#include <parse/parselo.hh>
+#include <particle/particle.hh>
+#include <weapon/muzzleflash.hh>
+#include <log/log.hh>
 
 // ---------------------------------------------------------------------------------------------------------------------
 // MUZZLE FLASH DEFINES/VARS

@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_SHIP_AFTERBURNER_HH
 #define FREESPACE2_SHIP_AFTERBURNER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #define AFTERBURNER_MIN_DELAY 1000
 #define ABURN_DECAY_TIME \

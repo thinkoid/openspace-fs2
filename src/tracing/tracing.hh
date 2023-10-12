@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_TRACING_TRACING_HH
 #define FREESPACE2_TRACING_TRACING_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "tracing/categories.hh"
-#include "tracing/scopes.hh"
+#include <tracing/categories.hh>
+#include <tracing/scopes.hh>
 
 /**
  * @defgroup tracing The Tracing API

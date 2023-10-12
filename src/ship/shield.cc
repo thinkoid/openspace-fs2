@@ -1,6 +1,6 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 //
 // Detail level effects (Detail.shield_effects)
@@ -12,19 +12,19 @@
 // 4: Shrink-wrapped texture.  Lasts full-time.
 //
 
-#include "assert/assert.hh"
+#include <assert/assert.hh>
 #include "freespace2/freespace.hh"
-#include "log/log.hh"
-#include "math/fix.hh"
-#include "math/prng.hh"
-#include "mission/missionparse.hh"
-#include "model/model.hh"
-#include "object/objectshield.hh"
+#include <log/log.hh>
+#include <math/fix.hh>
+#include <math/prng.hh>
+#include <mission/missionparse.hh>
+#include <model/model.hh>
+#include <object/objectshield.hh>
 #include "render/3d.hh"
-#include "ship/ship.hh"
-#include "species_defs/species_defs.hh"
-#include "tracing/Monitor.hh"
-#include "tracing/tracing.hh"
+#include <ship/ship.hh>
+#include <species_defs/species_defs.hh>
+#include <tracing/Monitor.hh>
+#include <tracing/tracing.hh>
 
 int Show_shield_mesh = 0;
 

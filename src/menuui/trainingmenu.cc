@@ -1,11 +1,11 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "gamesequence/gamesequence.hh"
+#include <defs.hh>
+#include <gamesequence/gamesequence.hh>
 #include "graphics/2d.hh"
-#include "menuui/snazzyui.hh"
-#include "menuui/trainingmenu.hh"
-#include "assert/assert.hh"
+#include <menuui/snazzyui.hh>
+#include <menuui/trainingmenu.hh>
+#include <assert/assert.hh>
 
 // global to this file
 static int trainingMenuBitmap;

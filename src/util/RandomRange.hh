@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_UTIL_RANDOMRANGE_HH
 #define FREESPACE2_UTIL_RANDOMRANGE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "parse/parselo.hh"
+#include <parse/parselo.hh>
 
 #include <random>
 #include <type_traits>

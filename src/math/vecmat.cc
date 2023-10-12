@@ -2,12 +2,12 @@
 
 #include <cstdio>
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "log/log.hh"
-#include "math/prng.hh"
-#include "math/vecmat.hh"
-#include "util/RandomRange.hh"
+#include <log/log.hh>
+#include <math/prng.hh>
+#include <math/vecmat.hh>
+#include <util/RandomRange.hh>
 
 #if _M_IX86_FP >= 1
 #include <xmmintrin.h>

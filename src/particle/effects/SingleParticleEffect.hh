@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_PARTICLE_EFFECTS_SINGLEPARTICLEEFFECT_HH
 #define FREESPACE2_PARTICLE_EFFECTS_SINGLEPARTICLEEFFECT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "particle/ParticleEffect.hh"
-#include "particle/ParticleManager.hh"
+#include <particle/ParticleEffect.hh>
+#include <particle/ParticleManager.hh>
 #include "particle/util/ParticleProperties.hh"
 #include "particle/util/EffectTiming.hh"
 

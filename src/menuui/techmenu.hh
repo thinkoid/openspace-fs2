@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MENUUI_TECHMENU_HH
 #define FREESPACE2_MENUUI_TECHMENU_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #define MAX_INTEL_ENTRIES 75
 #define TECH_INTEL_DESC_LEN 5120

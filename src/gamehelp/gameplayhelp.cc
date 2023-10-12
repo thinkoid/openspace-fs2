@@ -1,17 +1,17 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "controlconfig/controlsconfig.hh"
+#include <controlconfig/controlsconfig.hh>
 #include "freespace2/freespace.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "io/key.hh"
-#include "missionui/missionscreencommon.hh"
-#include "sound/audiostr.hh"
-#include "ui/ui.hh"
-#include "weapon/weapon.hh"
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <io/key.hh>
+#include <missionui/missionscreencommon.hh>
+#include <sound/audiostr.hh>
+#include <ui/ui.hh>
+#include <weapon/weapon.hh>
 
 // text positioning constats
 #define TITLE_Y 35

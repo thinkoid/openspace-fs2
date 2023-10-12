@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_UTIL_UNICODE_HH
 #define FREESPACE2_UTIL_UNICODE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // UTFCPP library inline, copyright 2006 Nemanja Trifunovic
 
@@ -29,7 +29,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#include "mod_table/mod_table.hh"
+#include <mod_table/mod_table.hh>
 
 #include <cinttypes>
 #include <iterator>

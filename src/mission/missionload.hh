@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MISSION_MISSIONLOAD_HH
 #define FREESPACE2_MISSION_MISSIONLOAD_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // -----------------------------------------------
 // For recording most recent missions played

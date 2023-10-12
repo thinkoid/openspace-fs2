@@ -1,12 +1,12 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "hud/hud.hh"
-#include "jumpnode/jumpnode.hh"
-#include "model/model.hh"
-#include "model/modelrender.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <hud/hud.hh>
+#include <jumpnode/jumpnode.hh>
+#include <model/model.hh>
+#include <model/modelrender.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 std::list< CJumpNode > Jump_nodes;
 

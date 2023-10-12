@@ -1,18 +1,18 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "anim/packunpack.hh"
-#include "shared/globals.hh"
+#include <defs.hh>
+#include <anim/packunpack.hh>
+#include <shared/globals.hh>
 #include "graphics/2d.hh"
-#include "graphics/generic.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <graphics/generic.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 #define BMPMAN_INTERNAL
-#include "bmpman/bm_internal.hh"
+#include <bmpman/bm_internal.hh>
 
 #ifdef TIMER
-#include "io/timer.hh"
+#include <io/timer.hh>
 #endif
 
 // we check background type to avoid messed up colours for ANI

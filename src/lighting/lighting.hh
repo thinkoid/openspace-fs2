@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_LIGHTING_LIGHTING_HH
 #define FREESPACE2_LIGHTING_LIGHTING_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // Light stuff works like this:
 // At the start of the frame, call light_reset.

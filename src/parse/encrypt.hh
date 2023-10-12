@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_PARSE_ENCRYPT_HH
 #define FREESPACE2_PARSE_ENCRYPT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // initialize encryption
 void encrypt_init ();

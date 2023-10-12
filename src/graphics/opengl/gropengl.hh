@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_GRAPHICS_OPENGL_GROPENGL_HH
 #define FREESPACE2_GRAPHICS_OPENGL_GROPENGL_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "glad/glad.h"
-#include "graphics/grinternal.hh"
+#include <graphics/grinternal.hh>
 
 const ubyte GL_zero_3ub[3] = { 0, 0, 0 };
 

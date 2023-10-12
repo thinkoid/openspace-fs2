@@ -1,30 +1,30 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "anim/animplay.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "util/list.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/mouse.hh"
-#include "io/timer.hh"
-#include "localization/localize.hh"
-#include "math/fvi.hh"
-#include "mission/missionbriefcommon.hh"
-#include "mission/missiongrid.hh"
-#include "mission/missionparse.hh"
-#include "missionui/missionbrief.hh"
-#include "missionui/missioncmdbrief.hh"
-#include "missionui/missiondebrief.hh"
-#include "mod_table/mod_table.hh"
-#include "parse/parselo.hh"
-#include "playerman/player.hh"
+#include <defs.hh>
+#include <anim/animplay.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <util/list.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/mouse.hh>
+#include <io/timer.hh>
+#include <localization/localize.hh>
+#include <math/fvi.hh>
+#include <mission/missionbriefcommon.hh>
+#include <mission/missiongrid.hh>
+#include <mission/missionparse.hh>
+#include <missionui/missionbrief.hh>
+#include <missionui/missioncmdbrief.hh>
+#include <missionui/missiondebrief.hh>
+#include <mod_table/mod_table.hh>
+#include <parse/parselo.hh>
+#include <playerman/player.hh>
 #include "render/3d.hh"
-#include "ship/ship.hh"
-#include "sound/audiostr.hh"
-#include "species_defs/species_defs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <ship/ship.hh>
+#include <sound/audiostr.hh>
+#include <species_defs/species_defs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 // --------------------------------------------------------------------------------------
 // briefing screen

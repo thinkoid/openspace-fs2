@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <log/log.hh>
 
 /*
  * wmcgui.cpp
@@ -14,11 +14,11 @@
 
 #include "freespace2/freespace.hh"
 #include "graphics/2d.hh"
-#include "hud/hudbrackets.hh"
-#include "io/key.hh"
-#include "lab/wmcgui.hh"
-#include "localization/localize.hh"
-#include "parse/parselo.hh"
+#include <hud/hudbrackets.hh>
+#include <io/key.hh>
+#include <lab/wmcgui.hh>
+#include <localization/localize.hh>
+#include <parse/parselo.hh>
 
 // Gobals
 GUISystem GUI_system;

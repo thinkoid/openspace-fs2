@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_OBSERVER_OBSERVER_HH
 #define FREESPACE2_OBSERVER_OBSERVER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 class object;
 struct vec3d;

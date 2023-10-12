@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_CUTSCENE_FFMPEG_VIDEODECODER_HH
 #define FREESPACE2_CUTSCENE_FFMPEG_VIDEODECODER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "cutscene/ffmpeg/internal.hh"
 #include "cutscene/ffmpeg/FFMPEGDecoder.hh"

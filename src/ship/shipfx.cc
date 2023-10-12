@@ -1,40 +1,40 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "assert/assert.hh"
-#include "asteroid/asteroid.hh"
-#include "bmpman/bmpman.hh"
-#include "cmdline/cmdline.hh"
-#include "debris/debris.hh"
-#include "debugconsole/console.hh"
-#include "fireball/fireballs.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
-#include "hud/hudmessage.hh"
-#include "io/timer.hh"
-#include "lighting/lighting.hh"
-#include "log/log.hh"
-#include "math/floating.hh"
-#include "math/fvi.hh"
-#include "math/prng.hh"
-#include "model/model.hh"
-#include "object/object.hh"
-#include "object/objectdock.hh"
-#include "object/objectsnd.hh"
-#include "parse/parselo.hh"
-#include "particle/particle.hh"
-#include "playerman/player.hh"
+#include <assert/assert.hh>
+#include <asteroid/asteroid.hh>
+#include <bmpman/bmpman.hh>
+#include <cmdline/cmdline.hh>
+#include <debris/debris.hh>
+#include <debugconsole/console.hh>
+#include <fireball/fireballs.hh>
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
+#include <hud/hudmessage.hh>
+#include <io/timer.hh>
+#include <lighting/lighting.hh>
+#include <log/log.hh>
+#include <math/floating.hh>
+#include <math/fvi.hh>
+#include <math/prng.hh>
+#include <model/model.hh>
+#include <object/object.hh>
+#include <object/objectdock.hh>
+#include <object/objectsnd.hh>
+#include <parse/parselo.hh>
+#include <particle/particle.hh>
+#include <playerman/player.hh>
 #include "render/3d.hh" // needed for View_position, which is used when playing a 3D sound
-#include "render/batching.hh"
-#include "ship/ship.hh"
-#include "ship/shipfx.hh"
-#include "ship/shiphit.hh"
-#include "util/list.hh"
-#include "util/strings.hh"
-#include "weapon/muzzleflash.hh"
-#include "weapon/shockwave.hh"
-#include "weapon/weapon.hh"
+#include <render/batching.hh>
+#include <ship/ship.hh>
+#include <ship/shipfx.hh>
+#include <ship/shiphit.hh>
+#include <util/list.hh>
+#include <util/strings.hh>
+#include <weapon/muzzleflash.hh>
+#include <weapon/shockwave.hh>
+#include <weapon/weapon.hh>
 
 #ifndef NDEBUG
 extern float flFrametime;

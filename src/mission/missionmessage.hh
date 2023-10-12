@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_MISSION_MISSIONMESSAGE_HH
 #define FREESPACE2_MISSION_MISSIONMESSAGE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "anim/packunpack.hh"
-#include "graphics/generic.hh"
-#include "sound/sound.hh"
+#include <anim/packunpack.hh>
+#include <graphics/generic.hh>
+#include <sound/sound.hh>
 
 class ship;
 

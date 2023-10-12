@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_LOCALIZATION_LOCALIZE_HH
 #define FREESPACE2_LOCALIZATION_LOCALIZE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "graphics/font.hh"
+#include <graphics/font.hh>
 
 // ------------------------------------------------------------------------------------------------------------
 // LOCALIZE DEFINES/VARS

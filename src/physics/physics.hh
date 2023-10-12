@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_PHYSICS_PHYSICS_HH
 #define FREESPACE2_PHYSICS_PHYSICS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "math/vecmat.hh"
+#include <math/vecmat.hh>
 
 #define PF_ACCELERATES (1 << 1)
 #define PF_USE_VEL \

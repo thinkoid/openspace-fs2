@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MENUUI_MAINHALLTEMP_HH
 #define FREESPACE2_MENUUI_MAINHALLTEMP_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // ------------------------------------------------------------------------------------------------------------------------
 // TEMP MAIN HALL DEFINES/VARS

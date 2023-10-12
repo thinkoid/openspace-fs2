@@ -1,19 +1,19 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "assert/assert.hh"
-#include "bmpman/bmpman.hh"
-#include "debugconsole/console.hh"
+#include <assert/assert.hh>
+#include <bmpman/bmpman.hh>
+#include <debugconsole/console.hh>
 #include "graphics/2d.hh"
-#include "math/prng.hh"
-#include "particle/ParticleManager.hh"
-#include "particle/particle.hh"
+#include <math/prng.hh>
+#include <particle/ParticleManager.hh>
+#include <particle/particle.hh>
 #include "render/3d.hh"
-#include "render/batching.hh"
-#include "shared/globals.hh"
-#include "tracing/Monitor.hh"
-#include "tracing/tracing.hh"
+#include <render/batching.hh>
+#include <shared/globals.hh>
+#include <tracing/Monitor.hh>
+#include <tracing/tracing.hh>
 
 using namespace particle;
 

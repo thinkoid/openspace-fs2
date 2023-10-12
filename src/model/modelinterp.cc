@@ -1,36 +1,36 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 #define MODEL_LIB
 
-#include "assert/assert.hh"
-#include "bmpman/bmpman.hh"
-#include "cmdline/cmdline.hh"
-#include "debugconsole/console.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
+#include <assert/assert.hh>
+#include <bmpman/bmpman.hh>
+#include <cmdline/cmdline.hh>
+#include <debugconsole/console.hh>
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
 #include "graphics/2d.hh"
 #include "graphics/util/GPUMemoryHeap.hh"
-#include "io/key.hh"
-#include "io/timer.hh"
-#include "log/log.hh"
-#include "math/fvi.hh"
-#include "math/prng.hh"
-#include "mission/missionparse.hh"
-#include "model/modelrender.hh"
-#include "model/modelsinc.hh"
-#include "nebula/neb.hh"
-#include "parse/parselo.hh"
-#include "particle/particle.hh"
+#include <io/key.hh>
+#include <io/timer.hh>
+#include <log/log.hh>
+#include <math/fvi.hh>
+#include <math/prng.hh>
+#include <mission/missionparse.hh>
+#include <model/modelrender.hh>
+#include <model/modelsinc.hh>
+#include <nebula/neb.hh>
+#include <parse/parselo.hh>
+#include <particle/particle.hh>
 #include "render/3dinternal.hh"
-#include "shared/alphacolors.hh"
-#include "ship/ship.hh"
-#include "ship/shipfx.hh"
-#include "tracing/Monitor.hh"
-#include "tracing/tracing.hh"
-#include "util/list.hh"
-#include "weapon/shockwave.hh"
+#include <shared/alphacolors.hh>
+#include <ship/ship.hh>
+#include <ship/shipfx.hh>
+#include <tracing/Monitor.hh>
+#include <tracing/tracing.hh>
+#include <util/list.hh>
+#include <weapon/shockwave.hh>
 
 #include <climits>
 

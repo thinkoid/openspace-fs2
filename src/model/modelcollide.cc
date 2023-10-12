@@ -1,19 +1,19 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 #define MODEL_LIB
 
-#include "cmdline/cmdline.hh"
-#include "graphics/tmapper.hh"
-#include "math/fvi.hh"
-#include "math/vecmat.hh"
-#include "model/model.hh"
-#include "model/modelsinc.hh"
-#include "tracing/tracing.hh"
-#include "tracing/Monitor.hh"
+#include <cmdline/cmdline.hh>
+#include <graphics/tmapper.hh>
+#include <math/fvi.hh>
+#include <math/vecmat.hh>
+#include <model/model.hh>
+#include <model/modelsinc.hh>
+#include <tracing/tracing.hh>
+#include <tracing/Monitor.hh>
 
 #define TOL 1E-4
 #define DIST_TOL 1.0

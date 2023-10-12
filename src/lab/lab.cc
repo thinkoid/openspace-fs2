@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <log/log.hh>
 
 /*
  * lab.cpp
@@ -12,33 +12,33 @@
  *
  */
 
-#include "cmdline/cmdline.hh"
+#include <cmdline/cmdline.hh>
 #include "freespace2/freespace.hh"
-#include "gamesequence/gamesequence.hh"
-#include "graphics/matrix.hh"
-#include "graphics/shadows.hh"
-#include "graphics/light.hh"
-#include "hud/hudshield.hh"
-#include "io/key.hh"
-#include "io/timer.hh"
-#include "lab/wmcgui.hh"
-#include "lighting/lighting.hh"
-#include "mission/missionparse.hh"
-#include "missionui/missionscreencommon.hh"
-#include "model/model.hh"
-#include "object/objectsnd.hh"
-#include "playerman/managepilot.hh"
+#include <gamesequence/gamesequence.hh>
+#include <graphics/matrix.hh>
+#include <graphics/shadows.hh>
+#include <graphics/light.hh>
+#include <hud/hudshield.hh>
+#include <io/key.hh>
+#include <io/timer.hh>
+#include <lab/wmcgui.hh>
+#include <lighting/lighting.hh>
+#include <mission/missionparse.hh>
+#include <missionui/missionscreencommon.hh>
+#include <model/model.hh>
+#include <object/objectsnd.hh>
+#include <playerman/managepilot.hh>
 #include "render/3d.hh"
-#include "render/batching.hh"
-#include "ship/ship.hh"
-#include "species_defs/species_defs.hh"
-#include "weapon/beam.hh"
-#include "weapon/weapon.hh"
-#include "starfield/starfield.hh"
-#include "starfield/nebula.hh"
-#include "nebula/neb.hh"
-#include "model/modelrender.hh"
-#include "tracing/tracing.hh"
+#include <render/batching.hh>
+#include <ship/ship.hh>
+#include <species_defs/species_defs.hh>
+#include <weapon/beam.hh>
+#include <weapon/weapon.hh>
+#include <starfield/starfield.hh>
+#include <starfield/nebula.hh>
+#include <nebula/neb.hh>
+#include <model/modelrender.hh>
+#include <tracing/tracing.hh>
 
 // flags
 #define LAB_FLAG_NORMAL (0)             // default
@@ -2040,7 +2040,7 @@ void lab_init () {
     Lab_skybox_orientation = vmd_identity_matrix;
 }
 
-#include "controlconfig/controlsconfig.hh"
+#include <controlconfig/controlsconfig.hh>
 #include "lab.hh"
 
 void lab_do_frame (float frametime) {

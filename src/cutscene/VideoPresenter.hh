@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_CUTSCENE_VIDEOPRESENTER_HH
 #define FREESPACE2_CUTSCENE_VIDEOPRESENTER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
-#include "graphics/material.hh"
-#include "cutscene/Decoder.hh"
+#include <graphics/material.hh>
+#include <cutscene/Decoder.hh>
 
 #include <memory>
 

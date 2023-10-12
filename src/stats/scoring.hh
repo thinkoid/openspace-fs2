@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_STATS_SCORING_HH
 #define FREESPACE2_STATS_SCORING_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <ctime>
 #include <map>

@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_PARTICLE_EFFECTS_PARTICLEEMITTEREFFECT_HH
 #define FREESPACE2_PARTICLE_EFFECTS_PARTICLEEMITTEREFFECT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "particle/ParticleEffect.hh"
-#include "particle/particle.hh"
+#include <particle/ParticleEffect.hh>
+#include <particle/particle.hh>
 
 namespace particle {
 namespace effects {

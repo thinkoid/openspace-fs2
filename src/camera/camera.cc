@@ -1,22 +1,22 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "assert/assert.hh"
-#include "camera/camera.hh"
-#include "graphics/matrix.hh"
-#include "hud/hud.hh" //hud_get_draw
-#include "log/log.hh"
-#include "math/prng.hh"
-#include "math/vecmat.hh"
-#include "mod_table/mod_table.hh"
-#include "model/model.hh" //polymodel, model_get
-#include "parse/parselo.hh"
-#include "playerman/player.hh" //player_get_padlock_orient
-#include "shared/alphacolors.hh"
-#include "shared/globals.hh" //VM_FREECAMERA etc
-#include "ship/ship.hh"        //compute_slew_matrix
-#include "util/list.hh"
+#include <assert/assert.hh>
+#include <camera/camera.hh>
+#include <graphics/matrix.hh>
+#include <hud/hud.hh> //hud_get_draw
+#include <log/log.hh>
+#include <math/prng.hh>
+#include <math/vecmat.hh>
+#include <mod_table/mod_table.hh>
+#include <model/model.hh> //polymodel, model_get
+#include <parse/parselo.hh>
+#include <playerman/player.hh> //player_get_padlock_orient
+#include <shared/alphacolors.hh>
+#include <shared/globals.hh> //VM_FREECAMERA etc
+#include <ship/ship.hh>        //compute_slew_matrix
+#include <util/list.hh>
 
 //*************************IMPORTANT GLOBALS*************************
 float VIEWER_ZOOM_DEFAULT = 0.75f; // Default viewer zoom, 0.625 as per

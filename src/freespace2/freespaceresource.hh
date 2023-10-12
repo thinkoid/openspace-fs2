@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_FREESPACE2_FREESPACERESOURCE_HH
 #define FREESPACE2_FREESPACE2_FREESPACERESOURCE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 //{{NO_DEPENDENCIES}}
 // Microsoft Developer Studio generated include file.

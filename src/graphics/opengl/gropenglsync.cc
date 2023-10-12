@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
 #include "graphics/opengl/gropenglsync.hh"
-#include "assert/assert.hh"
+#include <assert/assert.hh>
 
 gr_sync gr_opengl_sync_fence () {
     auto fence = glFenceSync (GL_SYNC_GPU_COMMANDS_COMPLETE, 0);

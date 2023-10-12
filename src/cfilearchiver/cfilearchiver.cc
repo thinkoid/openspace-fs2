@@ -1,6 +1,6 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,8 +11,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "shared/types.hh"
-#include "cfile/cfile.hh"
+#include <shared/types.hh>
+#include <cfile/cfile.hh>
 
 static int data_error;
 static int no_dir;

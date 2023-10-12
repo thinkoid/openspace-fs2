@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GRAPHICS_GRBATCH_HH
 #define FREESPACE2_GRAPHICS_GRBATCH_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 class geometry_batcher {
 private:

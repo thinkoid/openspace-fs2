@@ -6,7 +6,7 @@
 #include "line_draw_list.hh"
 #include "2d.hh"
 #include "material.hh"
-#include "tracing/tracing.hh"
+#include <tracing/tracing.hh>
 
 namespace graphics {
 

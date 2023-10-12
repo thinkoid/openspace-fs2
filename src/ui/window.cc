@@ -1,17 +1,17 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "bmpman/bmpman.hh"
-#include "cmdline/cmdline.hh"
-#include "shared/alphacolors.hh"
-#include "io/timer.hh"
-#include "localization/localize.hh"
-#include "osapi/osapi.hh"
-#include "parse/parselo.hh"
-#include "ui/ui.hh"
-#include "ui/uidefs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <bmpman/bmpman.hh>
+#include <cmdline/cmdline.hh>
+#include <shared/alphacolors.hh>
+#include <io/timer.hh>
+#include <localization/localize.hh>
+#include <osapi/osapi.hh>
+#include <parse/parselo.hh>
+#include <ui/ui.hh>
+#include <ui/uidefs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 // global xstr colors
 color* Xstr_colors[UI_NUM_XSTR_COLORS][3] = {

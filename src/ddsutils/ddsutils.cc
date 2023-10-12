@@ -1,10 +1,10 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "ddsutils/ddsutils.hh"
-#include "cfile/cfile.hh"
-#include "osapi/osregistry.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <ddsutils/ddsutils.hh>
+#include <cfile/cfile.hh>
+#include <osapi/osregistry.hh>
+#include <log/log.hh>
 
 /*      Currently supported formats:
  *              DXT1a   (compressed)

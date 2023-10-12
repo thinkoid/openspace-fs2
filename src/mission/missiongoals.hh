@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MISSION_MISSIONGOALS_HH
 #define FREESPACE2_MISSION_MISSIONGOALS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 struct ai_goal;
 struct ai_info;

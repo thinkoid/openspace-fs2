@@ -2,18 +2,18 @@
 
 #include <cctype> // for 'tolower'
 
-#include "defs.hh"
-#include "shared/alphacolors.hh"
-#include "util/list.hh"
-#include "hud/hudtargetbox.hh"
-#include "hud/hudwingmanstatus.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "mission/missionparse.hh"
-#include "object/object.hh"
-#include "ship/ship.hh"
-#include "weapon/emp.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <shared/alphacolors.hh>
+#include <util/list.hh>
+#include <hud/hudtargetbox.hh>
+#include <hud/hudwingmanstatus.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <mission/missionparse.hh>
+#include <object/object.hh>
+#include <ship/ship.hh>
+#include <weapon/emp.hh>
+#include <log/log.hh>
 
 #define HUD_WINGMAN_STATUS_NUM_FRAMES 5
 #define BACKGROUND_LEFT 0

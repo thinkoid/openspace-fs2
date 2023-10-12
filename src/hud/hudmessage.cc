@@ -4,29 +4,29 @@
 #include <cstdarg>
 #include <cstdarg>
 
-#include "defs.hh"
-#include "anim/animplay.hh"
+#include <defs.hh>
+#include <anim/animplay.hh>
 #include "freespace2/freespace.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "util/list.hh"
-#include "hud/hudconfig.hh"
-#include "hud/hudmessage.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/key.hh"
-#include "io/timer.hh"
-#include "mission/missiongoals.hh"
-#include "mission/missionlog.hh"
-#include "mission/missionmessage.hh" // for MAX_MISSION_MESSAGES
-#include "missionui/missionscreencommon.hh"
-#include "parse/parselo.hh"
-#include "playerman/player.hh"
-#include "ship/ship.hh"
-#include "sound/audiostr.hh"
-#include "ui/ui.hh"
-#include "weapon/weapon.hh"
-#include "log/log.hh"
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <util/list.hh>
+#include <hud/hudconfig.hh>
+#include <hud/hudmessage.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/key.hh>
+#include <io/timer.hh>
+#include <mission/missiongoals.hh>
+#include <mission/missionlog.hh>
+#include <mission/missionmessage.hh> // for MAX_MISSION_MESSAGES
+#include <missionui/missionscreencommon.hh>
+#include <parse/parselo.hh>
+#include <playerman/player.hh>
+#include <ship/ship.hh>
+#include <sound/audiostr.hh>
+#include <ui/ui.hh>
+#include <weapon/weapon.hh>
+#include <log/log.hh>
 
 /* replaced with those static ints that follow
 #define LIST_X          46

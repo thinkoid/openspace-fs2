@@ -1,12 +1,12 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <cstdlib>
 #include <memory.h>
 #include <cstring>
-#include "shared/types.hh"
-#include "localization/fhash.hh"
+#include <shared/types.hh>
+#include <localization/fhash.hh>
 
 // -----------------------------------------------------------------------------------------------
 // HASH DEFINES/VARS

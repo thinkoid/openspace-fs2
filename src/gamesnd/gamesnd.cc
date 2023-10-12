@@ -3,15 +3,15 @@
 #include <sstream>
 #include <climits>
 
-#include "defs.hh"
-#include "gamesnd/gamesnd.hh"
-#include "localization/localize.hh"
-#include "parse/parselo.hh"
-#include "sound/ds.hh"
-#include "species_defs/species_defs.hh"
-#include "tracing/tracing.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <gamesnd/gamesnd.hh>
+#include <localization/localize.hh>
+#include <parse/parselo.hh>
+#include <sound/ds.hh>
+#include <species_defs/species_defs.hh>
+#include <tracing/tracing.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 std::vector< game_snd > Snds;
 std::vector< game_snd > Snds_iface;

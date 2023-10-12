@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_POPUP_POPUP_HH
 #define FREESPACE2_POPUP_POPUP_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // standardized text used for common buttons
 // Special note (JH): The leading '&' is expected for these 4 defines in the

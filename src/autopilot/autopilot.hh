@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_AUTOPILOT_AUTOPILOT_HH
 #define FREESPACE2_AUTOPILOT_AUTOPILOT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "object/object.hh"
+#include <object/object.hh>
 
 #include <map>
 

@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_UTIL_ENCODING_HH
 #define FREESPACE2_UTIL_ENCODING_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "cfile/cfile.hh"
+#include <cfile/cfile.hh>
 
 namespace util {
 

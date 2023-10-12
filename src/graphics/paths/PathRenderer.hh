@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GRAPHICS_PATHS_PATHRENDERER_HH
 #define FREESPACE2_GRAPHICS_PATHS_PATHRENDERER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <memory>
 

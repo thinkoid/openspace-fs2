@@ -1,11 +1,11 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 #include "gropenglshader.hh"
-#include "graphics/material.hh"
+#include <graphics/material.hh>
 #include "gropenglstate.hh"
-#include "math/vecmat.hh"
-#include "assert/assert.hh"
+#include <math/vecmat.hh>
+#include <assert/assert.hh>
 
 extern GLfloat GL_max_anisotropy;
 

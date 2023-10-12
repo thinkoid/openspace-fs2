@@ -1,16 +1,16 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 #include "graphics/software/FontManager.hh"
 #include "graphics/software/VFNTFont.hh"
 #include "graphics/software/NVGFont.hh"
 #include "graphics/software/font.hh"
 #include "graphics/software/font_internal.hh"
 #include "graphics/paths/PathRenderer.hh"
-#include "bmpman/bmpman.hh"
-#include "cfile/cfile.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <bmpman/bmpman.hh>
+#include <cfile/cfile.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 namespace font {
 

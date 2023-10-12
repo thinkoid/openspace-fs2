@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GRAPHICS_UTIL_UNIFORM_STRUCTS_HH
 #define FREESPACE2_GRAPHICS_UTIL_UNIFORM_STRUCTS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 namespace graphics {
 

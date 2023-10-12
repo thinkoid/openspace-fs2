@@ -1,11 +1,11 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh" // Needed for w,h,aspect of canvas
-#include "graphics/matrix.hh"
-#include "graphics/tmapper.hh"
-#include "lighting/lighting.hh"
+#include <graphics/matrix.hh>
+#include <graphics/tmapper.hh>
+#include <lighting/lighting.hh>
 #include "render/3dinternal.hh"
 
 matrix View_matrix;     // The matrix to convert local coordinates to screen

@@ -3,21 +3,21 @@
 #include <cstdarg>
 #include <cstdarg>
 
-#include "defs.hh"
-#include "anim/animplay.hh"
+#include <defs.hh>
+#include <anim/animplay.hh>
 #include "freespace2/freespace.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
-#include "graphics/font.hh"
-#include "io/key.hh"
-#include "io/mouse.hh"
-#include "osapi/osapi.hh"
-#include "parse/parselo.hh"
-#include "playerman/player.hh"
-#include "popup/popup.hh"
-#include "shared/alphacolors.hh"
-#include "ui/ui.hh"
-#include "util/strings.hh"
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
+#include <graphics/font.hh>
+#include <io/key.hh>
+#include <io/mouse.hh>
+#include <osapi/osapi.hh>
+#include <parse/parselo.hh>
+#include <playerman/player.hh>
+#include <popup/popup.hh>
+#include <shared/alphacolors.hh>
+#include <ui/ui.hh>
+#include <util/strings.hh>
 
 #define POPUP_MAX_CHOICES 3 // max number of buttons allowed on popup
 

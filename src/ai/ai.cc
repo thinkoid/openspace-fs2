@@ -1,8 +1,8 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 /**
  * @file
@@ -10,9 +10,9 @@
  * them to ships. See AiCode.cpp for the actual AI code.
  */
 
-#include "ai/ai.hh"
-#include "object/object.hh"
-#include "ship/ship.hh"
+#include <ai/ai.hh>
+#include <object/object.hh>
+#include <ship/ship.hh>
 
 int Total_goal_target_names = 0;
 char Goal_target_names[MAX_GOAL_TARGET_NAMES][NAME_LENGTH];

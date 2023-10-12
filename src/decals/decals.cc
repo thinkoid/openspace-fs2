@@ -2,17 +2,17 @@
 
 #include <utility>
 
-#include "defs.hh"
-#include "decals/decals.hh"
+#include <defs.hh>
+#include <decals/decals.hh>
 #include "graphics/2d.hh"
-#include "graphics/decal_draw_list.hh"
+#include <graphics/decal_draw_list.hh>
 #include "graphics/util/uniform_structs.hh"
-#include "nebula/neb.hh"
-#include "parse/parselo.hh"
-#include "ship/ship.hh"
-#include "tracing/tracing.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <nebula/neb.hh>
+#include <parse/parselo.hh>
+#include <ship/ship.hh>
+#include <tracing/tracing.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 namespace {
 

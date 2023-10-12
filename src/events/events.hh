@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_EVENTS_EVENTS_HH
 #define FREESPACE2_EVENTS_EVENTS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "util/event.hh"
+#include <util/event.hh>
 
 namespace events {
 

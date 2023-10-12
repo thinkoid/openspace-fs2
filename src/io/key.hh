@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_IO_KEY_HH
 #define FREESPACE2_IO_KEY_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 /*
 #ifdef __cplusplus

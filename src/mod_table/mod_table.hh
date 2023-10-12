@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MOD_TABLE_MOD_TABLE_HH
 #define FREESPACE2_MOD_TABLE_MOD_TABLE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 /*
  * Created by Hassan "Karajorma" Kazmi for the FreeSpace2 Source Code Project.

@@ -3,12 +3,12 @@
 #ifndef FREESPACE2_SPECIES_DEFS_SPECIES_DEFS_HH
 #define FREESPACE2_SPECIES_DEFS_SPECIES_DEFS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "gamesnd/gamesnd.hh"
-#include "graphics/generic.hh"
-#include "hud/hudparse.hh"
-#include "mission/missionbriefcommon.hh"
+#include <gamesnd/gamesnd.hh>
+#include <graphics/generic.hh>
+#include <hud/hudparse.hh>
+#include <mission/missionbriefcommon.hh>
 
 // for bitmap thrusters
 struct thrust_pair_bitmap  {

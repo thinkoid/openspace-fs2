@@ -3,15 +3,15 @@
 #include <cstdio>
 #include <cstdarg>
 
-#include "defs.hh"
-#include "cfile/cfile.hh"
-#include "controlconfig/controlsconfig.hh"
-#include "shared/globals.hh"
-#include "io/joy.hh"
-#include "io/key.hh"
-#include "localization/localize.hh"
-#include "parse/parselo.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <cfile/cfile.hh>
+#include <controlconfig/controlsconfig.hh>
+#include <shared/globals.hh>
+#include <io/joy.hh>
+#include <io/key.hh>
+#include <localization/localize.hh>
+#include <parse/parselo.hh>
+#include <log/log.hh>
 
 // z64: These enumerations MUST equal to those in controlsconfig.cpp...
 // z64: Really need a better way than this.

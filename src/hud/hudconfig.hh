@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_HUD_HUDCONFIG_HH
 #define FREESPACE2_HUD_HUDCONFIG_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "hud/hud.hh"
+#include <hud/hud.hh>
 
 class player;
 class ship;

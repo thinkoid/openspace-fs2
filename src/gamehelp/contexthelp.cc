@@ -3,28 +3,28 @@
 #include <cstring>
 #include <csetjmp>
 
-#include "defs.hh"
-#include "controlconfig/controlsconfig.hh"
-#include "debugconsole/console.hh"
-#include "gamehelp/contexthelp.hh"
-#include "gamesequence/gamesequence.hh"
-#include "shared/alphacolors.hh"
-#include "shared/globals.hh"
+#include <defs.hh>
+#include <controlconfig/controlsconfig.hh>
+#include <debugconsole/console.hh>
+#include <gamehelp/contexthelp.hh>
+#include <gamesequence/gamesequence.hh>
+#include <shared/alphacolors.hh>
+#include <shared/globals.hh>
 #include "graphics/2d.hh"
-#include "localization/localize.hh"
-#include "menuui/barracks.hh"
-#include "menuui/mainhallmenu.hh"
-#include "menuui/readyroom.hh"
-#include "menuui/techmenu.hh"
-#include "mission/missionhotkey.hh"
-#include "missionui/missionbrief.hh"
-#include "missionui/missioncmdbrief.hh"
-#include "missionui/missiondebrief.hh"
-#include "missionui/missionshipchoice.hh"
-#include "missionui/missionweaponchoice.hh"
-#include "parse/parselo.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <localization/localize.hh>
+#include <menuui/barracks.hh>
+#include <menuui/mainhallmenu.hh>
+#include <menuui/readyroom.hh>
+#include <menuui/techmenu.hh>
+#include <mission/missionhotkey.hh>
+#include <missionui/missionbrief.hh>
+#include <missionui/missioncmdbrief.hh>
+#include <missionui/missiondebrief.hh>
+#include <missionui/missionshipchoice.hh>
+#include <missionui/missionweaponchoice.hh>
+#include <parse/parselo.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 ////////////////////////////////////////////////////////////////////
 // private function prototypes / structs

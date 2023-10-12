@@ -1,37 +1,37 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 #define REDALERT_INTERNAL
 #include <stdexcept>
 
-#include "ai/aigoals.hh"
-#include "cfile/cfile.hh"
+#include <ai/aigoals.hh>
+#include <cfile/cfile.hh>
 #include "freespace2/freespace.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "util/list.hh"
-#include "graphics/font.hh"
-#include "hud/hudwingmanstatus.hh"
-#include "io/key.hh"
-#include "io/mouse.hh"
-#include "io/timer.hh"
-#include "mission/missionbriefcommon.hh"
-#include "mission/missioncampaign.hh"
-#include "mission/missiongoals.hh"
-#include "missionui/missionscreencommon.hh"
-#include "missionui/missionweaponchoice.hh"
-#include "missionui/redalert.hh"
-#include "mod_table/mod_table.hh"
-#include "model/model.hh"
-#include "object/deadobjectdock.hh"
-#include "object/objectdock.hh"
-#include "ship/ship.hh"
-#include "sound/audiostr.hh"
-#include "weapon/weapon.hh"
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <util/list.hh>
+#include <graphics/font.hh>
+#include <hud/hudwingmanstatus.hh>
+#include <io/key.hh>
+#include <io/mouse.hh>
+#include <io/timer.hh>
+#include <mission/missionbriefcommon.hh>
+#include <mission/missioncampaign.hh>
+#include <mission/missiongoals.hh>
+#include <missionui/missionscreencommon.hh>
+#include <missionui/missionweaponchoice.hh>
+#include <missionui/redalert.hh>
+#include <mod_table/mod_table.hh>
+#include <model/model.hh>
+#include <object/deadobjectdock.hh>
+#include <object/objectdock.hh>
+#include <ship/ship.hh>
+#include <sound/audiostr.hh>
+#include <weapon/weapon.hh>
 
 /////////////////////////////////////////////////////////////////////////////
 // Red Alert Mission-Level

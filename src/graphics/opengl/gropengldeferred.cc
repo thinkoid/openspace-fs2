@@ -1,23 +1,23 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
 #include "gropenglstate.hh"
 #include "gropengldraw.hh"
 #include "gropengldeferred.hh"
 #include "gropengltnl.hh"
-#include "graphics/matrix.hh"
+#include <graphics/matrix.hh>
 #include "graphics/util/UniformAligner.hh"
 #include "graphics/util/uniform_structs.hh"
 #include "graphics/util/UniformBuffer.hh"
-#include "tracing/tracing.hh"
-#include "lighting/lighting.hh"
+#include <tracing/tracing.hh>
+#include <lighting/lighting.hh>
 #include "render/3d.hh"
 #include "ShaderProgram.hh"
-#include "nebula/neb.hh"
-#include "mission/missionparse.hh"
-#include "mission/mission_flags.hh"
+#include <nebula/neb.hh>
+#include <mission/missionparse.hh>
+#include <mission/mission_flags.hh>
 
 void gr_opengl_deferred_init () {
     gr_opengl_deferred_light_cylinder_init (16);

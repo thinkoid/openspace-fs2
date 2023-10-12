@@ -1,12 +1,12 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "anim/animplay.hh"
-#include "bmpman/bmpman.hh"
-#include "ui/ui.hh"
-#include "ui/uidefs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <anim/animplay.hh>
+#include <bmpman/bmpman.hh>
+#include <ui/ui.hh>
+#include <ui/uidefs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 // constructor
 UI_GADGET::UI_GADGET () { bm_filename = NULL; }

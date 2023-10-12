@@ -3,32 +3,32 @@
 #include <climits>
 #include <cctype>
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "assert/assert.hh"
-#include "cfile/cfile.hh"
-#include "cmdline/cmdline.hh"
-#include "debugconsole/console.hh"
+#include <assert/assert.hh>
+#include <cfile/cfile.hh>
+#include <cmdline/cmdline.hh>
+#include <debugconsole/console.hh>
 #include "freespace2/freespace.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
 #include "graphics/paths/PathRenderer.hh"
-#include "io/key.hh"
-#include "localization/localize.hh"
-#include "log/log.hh"
-#include "math/prng.hh"
-#include "menuui/mainhallmenu.hh"
-#include "menuui/playermenu.hh"
-#include "mission/missioncampaign.hh"
-#include "mod_table/mod_table.hh"
-#include "osapi/osregistry.hh"
-#include "parse/parselo.hh"
-#include "pilotfile/pilotfile.hh"
-#include "playerman/managepilot.hh"
-#include "playerman/player.hh"
-#include "popup/popup.hh"
-#include "shared/alphacolors.hh"
-#include "ui/ui.hh"
+#include <io/key.hh>
+#include <localization/localize.hh>
+#include <log/log.hh>
+#include <math/prng.hh>
+#include <menuui/mainhallmenu.hh>
+#include <menuui/playermenu.hh>
+#include <mission/missioncampaign.hh>
+#include <mod_table/mod_table.hh>
+#include <osapi/osregistry.hh>
+#include <parse/parselo.hh>
+#include <pilotfile/pilotfile.hh>
+#include <playerman/managepilot.hh>
+#include <playerman/player.hh>
+#include <popup/popup.hh>
+#include <shared/alphacolors.hh>
+#include <ui/ui.hh>
 
 // --------------------------------------------------------------------------------------------------------
 // PLAYER SELECT defines

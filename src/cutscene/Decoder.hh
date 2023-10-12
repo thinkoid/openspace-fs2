@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_CUTSCENE_DECODER_HH
 #define FREESPACE2_CUTSCENE_DECODER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <memory>
 

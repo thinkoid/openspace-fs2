@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_HUD_HUDLOCK_HH
 #define FREESPACE2_HUD_HUDLOCK_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "hud/hud.hh"
+#include <hud/hud.hh>
 
 void hud_init_missile_lock ();
 void hud_draw_lock_triangles (int center_x, int center_y, float frametime);

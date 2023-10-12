@@ -1,17 +1,17 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "cfile/cfile.hh"
+#include <defs.hh>
+#include <cfile/cfile.hh>
 #include "freespace2/freespace.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "graphics/font.hh"
-#include "io/key.hh"
-#include "io/mouse.hh"
-#include "localization/localize.hh"
-#include "menuui/snazzyui.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <graphics/font.hh>
+#include <io/key.hh>
+#include <io/mouse.hh>
+#include <localization/localize.hh>
+#include <menuui/snazzyui.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 extern int ascii_table[];
 extern int shifted_ascii_table[];

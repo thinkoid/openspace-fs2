@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GRAPHICS_UTIL_UNIFORMALIGNER_HH
 #define FREESPACE2_GRAPHICS_UTIL_UNIFORMALIGNER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <cstddef>
 #include <cstdint>

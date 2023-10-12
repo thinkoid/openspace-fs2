@@ -3,12 +3,12 @@
 #ifndef FREESPACE2_NEBULA_NEB_HH
 #define FREESPACE2_NEBULA_NEB_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // --------------------------------------------------------------------------------------------------------
 // NEBULA DEFINES/VARS
 //
-#include "camera/camera.hh"
+#include <camera/camera.hh>
 
 class ship;
 class object;

@@ -1,18 +1,18 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "hud/hudshield.hh"
-#include "hud/hudwingmanstatus.hh"
-#include "io/timer.hh"
-#include "object/objcollide.hh"
-#include "object/object.hh"
-#include "math/fix.hh"
-#include "playerman/player.hh"
-#include "ship/ship.hh"
-#include "ship/shipfx.hh"
-#include "ship/shiphit.hh"
-#include "weapon/weapon.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <hud/hudshield.hh>
+#include <hud/hudwingmanstatus.hh>
+#include <io/timer.hh>
+#include <object/objcollide.hh>
+#include <object/object.hh>
+#include <math/fix.hh>
+#include <playerman/player.hh>
+#include <ship/ship.hh>
+#include <ship/shipfx.hh>
+#include <ship/shiphit.hh>
+#include <weapon/weapon.hh>
+#include <log/log.hh>
 
 extern float ai_endangered_time (object* ship_objp, object* weapon_objp);
 static int check_inside_radius_for_big_ships (

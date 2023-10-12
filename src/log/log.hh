@@ -8,8 +8,8 @@
 #include <boost/log/sources/severity_channel_logger.hpp>
 #include <string>
 
-#include "defs.hh"
-#include "util/fmt.hh"
+#include <defs.hh>
+#include <util/fmt.hh>
 
 using fs2_logger_type = boost::log::sources::severity_channel_logger_mt<
     boost::log::trivial::severity_level, std::string >;

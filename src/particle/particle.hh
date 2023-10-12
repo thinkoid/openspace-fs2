@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_PARTICLE_PARTICLE_HH
 #define FREESPACE2_PARTICLE_PARTICLE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "object/object.hh"
+#include <object/object.hh>
 
 #include <memory>
 

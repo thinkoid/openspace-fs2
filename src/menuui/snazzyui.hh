@@ -3,12 +3,12 @@
 #ifndef FREESPACE2_MENUUI_SNAZZYUI_HH
 #define FREESPACE2_MENUUI_SNAZZYUI_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #define MAX_CHAR 150
 #define ESC_PRESSED -2
 
-#include "gamesnd/gamesnd.hh"
+#include <gamesnd/gamesnd.hh>
 
 struct MENU_REGION {
     int mask;            // mask color for the region

@@ -1,15 +1,15 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "util/list.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "mission/missionparse.hh"
-#include "nebula/neb.hh"
-#include "ship/awacs.hh"
-#include "ship/ship.hh"
-#include "species_defs/species_defs.hh"
+#include <util/list.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <mission/missionparse.hh>
+#include <nebula/neb.hh>
+#include <ship/awacs.hh>
+#include <ship/ship.hh>
+#include <species_defs/species_defs.hh>
 
 // ----------------------------------------------------------------------------------------------------
 // AWACS DEFINES/VARS

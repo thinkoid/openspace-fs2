@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_TRACING_SCOPES_HH
 #define FREESPACE2_TRACING_SCOPES_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 /** @file
  *  @ingroup tracing

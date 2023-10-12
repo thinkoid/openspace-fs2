@@ -3,14 +3,14 @@
 #ifndef FREESPACE2_PARTICLE_PARTICLESOURCE_HH
 #define FREESPACE2_PARTICLE_PARTICLESOURCE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "object/object.hh"
+#include <object/object.hh>
 
-#include "particle/particle.hh"
-#include "particle/ParticleEffect.hh"
+#include <particle/particle.hh>
+#include <particle/ParticleEffect.hh>
 
-#include "io/timer.hh"
+#include <io/timer.hh>
 
 struct weapon;
 

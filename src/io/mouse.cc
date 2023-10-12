@@ -1,15 +1,15 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "io/mouse.hh"
+#include <io/mouse.hh>
 #include "graphics/2d.hh"
 
 #define THREADED // to use the proper set of macros
-#include "osapi/osapi.hh"
-#include "cmdline/cmdline.hh"
+#include <osapi/osapi.hh>
+#include <cmdline/cmdline.hh>
 
-#include "gamesequence/gamesequence.hh"
+#include <gamesequence/gamesequence.hh>
 
 int mouse_inited = 0;
 

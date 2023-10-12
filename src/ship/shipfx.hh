@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_SHIP_SHIPFX_HH
 #define FREESPACE2_SHIP_SHIPFX_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "graphics/grbatch.hh"
-#include "model/modelrender.hh"
+#include <graphics/grbatch.hh>
+#include <model/modelrender.hh>
 
 class object;
 class ship;

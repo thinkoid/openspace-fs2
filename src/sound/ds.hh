@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_SOUND_DS_HH
 #define FREESPACE2_SOUND_DS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "sound/ffmpeg/WaveFile.hh"
-#include "util/id.hh"
+#include <util/id.hh>
 
 // Constants that DirectSound should assign, but doesn't
 #define MIN_PITCH 100

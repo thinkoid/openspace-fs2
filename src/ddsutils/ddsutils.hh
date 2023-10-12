@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_DDSUTILS_DDSUTILS_HH
 #define FREESPACE2_DDSUTILS_DDSUTILS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "cfile/cfile.hh"
+#include <cfile/cfile.hh>
 
 #define DDS_ERROR_NONE 0             // everything went fine
 #define DDS_ERROR_INVALID_FILENAME 1 // bad or missing file

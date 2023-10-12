@@ -1,35 +1,35 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "asteroid/asteroid.hh"
-#include "cmdline/cmdline.hh"
-#include "debris/debris.hh"
-#include "debugconsole/console.hh"
+#include <asteroid/asteroid.hh>
+#include <cmdline/cmdline.hh>
+#include <debris/debris.hh>
+#include <debugconsole/console.hh>
 #include "freespace2/freespace.hh"
-#include "gamesnd/gamesnd.hh"
-#include "hud/hudmessage.hh"
-#include "hud/hudshield.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "lighting/lighting.hh"
-#include "log/log.hh"
-#include "math/prng.hh"
-#include "mod_table/mod_table.hh"
-#include "object/objcollide.hh"
-#include "object/object.hh"
-#include "object/objectshield.hh"
-#include "parse/parselo.hh"
-#include "particle/particle.hh"
-#include "playerman/player.hh"
+#include <gamesnd/gamesnd.hh>
+#include <hud/hudmessage.hh>
+#include <hud/hudshield.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <lighting/lighting.hh>
+#include <log/log.hh>
+#include <math/prng.hh>
+#include <mod_table/mod_table.hh>
+#include <object/objcollide.hh>
+#include <object/object.hh>
+#include <object/objectshield.hh>
+#include <parse/parselo.hh>
+#include <particle/particle.hh>
+#include <playerman/player.hh>
 #include "render/3d.hh"
-#include "shared/globals.hh"
-#include "ship/ship.hh"
-#include "ship/shiphit.hh"
-#include "tracing/tracing.hh"
-#include "util/list.hh"
-#include "weapon/beam.hh"
-#include "weapon/weapon.hh"
+#include <shared/globals.hh>
+#include <ship/ship.hh>
+#include <ship/shiphit.hh>
+#include <tracing/tracing.hh>
+#include <util/list.hh>
+#include <weapon/beam.hh>
+#include <weapon/weapon.hh>
 
 #include <algorithm>
 

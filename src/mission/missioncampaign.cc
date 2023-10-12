@@ -8,34 +8,34 @@
 #include <cerrno>
 #include <filesystem>
 
-#include "defs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 namespace fs = std::filesystem;
 
 #include "freespace2/freespace.hh"
-#include "cfile/cfile.hh"
-#include "cutscene/cutscenes.hh"
-#include "cutscene/movie.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/eventmusic.hh"
-#include "localization/localize.hh"
-#include "menuui/mainhallmenu.hh"
-#include "menuui/techmenu.hh"
-#include "mission/missioncampaign.hh"
-#include "mission/missiongoals.hh"
-#include "missionui/missionscreencommon.hh"
-#include "missionui/redalert.hh"
-#include "parse/parselo.hh"
-#include "parse/sexp.hh"
-#include "pilotfile/pilotfile.hh"
-#include "playerman/player.hh"
-#include "popup/popup.hh"
-#include "ship/ship.hh"
-#include "starfield/supernova.hh"
-#include "ui/ui.hh"
-#include "weapon/weapon.hh"
+#include <cfile/cfile.hh>
+#include <cutscene/cutscenes.hh>
+#include <cutscene/movie.hh>
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/eventmusic.hh>
+#include <localization/localize.hh>
+#include <menuui/mainhallmenu.hh>
+#include <menuui/techmenu.hh>
+#include <mission/missioncampaign.hh>
+#include <mission/missiongoals.hh>
+#include <missionui/missionscreencommon.hh>
+#include <missionui/redalert.hh>
+#include <parse/parselo.hh>
+#include <parse/sexp.hh>
+#include <pilotfile/pilotfile.hh>
+#include <playerman/player.hh>
+#include <popup/popup.hh>
+#include <ship/ship.hh>
+#include <starfield/supernova.hh>
+#include <ui/ui.hh>
+#include <weapon/weapon.hh>
 
 // campaign wasn't ended
 int Campaign_ending_via_supernova = 0;

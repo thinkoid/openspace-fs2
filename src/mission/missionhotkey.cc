@@ -1,28 +1,28 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "freespace2/freespace.hh"
-#include "gamehelp/contexthelp.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "util/list.hh"
-#include "shared/types.hh"
-#include "graphics/font.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/key.hh"
-#include "io/timer.hh"
-#include "mission/missionhotkey.hh"
-#include "missionui/missionscreencommon.hh"
-#include "object/object.hh"
-#include "parse/parselo.hh"
-#include "playerman/player.hh"
-#include "ship/ship.hh"
-#include "sound/audiostr.hh"
-#include "ui/ui.hh"
-#include "ui/uidefs.hh"
-#include "weapon/weapon.hh"
+#include <gamehelp/contexthelp.hh>
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <util/list.hh>
+#include <shared/types.hh>
+#include <graphics/font.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/key.hh>
+#include <io/timer.hh>
+#include <mission/missionhotkey.hh>
+#include <missionui/missionscreencommon.hh>
+#include <object/object.hh>
+#include <parse/parselo.hh>
+#include <playerman/player.hh>
+#include <ship/ship.hh>
+#include <sound/audiostr.hh>
+#include <ui/ui.hh>
+#include <ui/uidefs.hh>
+#include <weapon/weapon.hh>
 
 static int Key_sets[MAX_KEYED_TARGETS] = { KEY_F5, KEY_F6,  KEY_F7,  KEY_F8,
                                            KEY_F9, KEY_F10, KEY_F11, KEY_F12 };

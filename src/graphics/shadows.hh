@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_GRAPHICS_SHADOWS_HH
 #define FREESPACE2_GRAPHICS_SHADOWS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "object/object.hh"
+#include <object/object.hh>
 
 #define MAX_SHADOW_CASCADES 4
 

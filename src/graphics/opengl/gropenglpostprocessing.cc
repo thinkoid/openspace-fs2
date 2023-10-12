@@ -1,22 +1,22 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "cmdline/cmdline.hh"
+#include <defs.hh>
+#include <cmdline/cmdline.hh>
 #include "freespace2/freespace.hh"
 #include "gropengl.hh"
 #include "gropengldraw.hh"
 #include "gropenglpostprocessing.hh"
 #include "gropenglshader.hh"
 #include "gropenglstate.hh"
-#include "io/timer.hh"
-#include "lighting/lighting.hh"
-#include "mod_table/mod_table.hh"
-#include "nebula/neb.hh"
-#include "parse/parselo.hh"
-#include "ship/ship.hh"
-#include "tracing/tracing.hh"
+#include <io/timer.hh>
+#include <lighting/lighting.hh>
+#include <mod_table/mod_table.hh>
+#include <nebula/neb.hh>
+#include <parse/parselo.hh>
+#include <ship/ship.hh>
+#include <tracing/tracing.hh>
 #include "ShaderProgram.hh"
-#include "log/log.hh"
+#include <log/log.hh>
 
 extern bool PostProcessing_override;
 extern int opengl_check_framebuffer ();

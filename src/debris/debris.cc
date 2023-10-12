@@ -1,28 +1,28 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "cmdline/cmdline.hh"
-#include "debris/debris.hh"
-#include "fireball/fireballs.hh"
+#include <cmdline/cmdline.hh>
+#include <debris/debris.hh>
+#include <fireball/fireballs.hh>
 #include "freespace2/freespace.hh"
-#include "gamesnd/gamesnd.hh"
-#include "io/timer.hh"
-#include "log/log.hh"
-#include "math/fix.hh"
-#include "math/prng.hh"
-#include "object/objcollide.hh"
-#include "object/objectsnd.hh"
-#include "particle/particle.hh"
-#include "radar/radar.hh"
-#include "radar/radarsetup.hh"
+#include <gamesnd/gamesnd.hh>
+#include <io/timer.hh>
+#include <log/log.hh>
+#include <math/fix.hh>
+#include <math/prng.hh>
+#include <object/objcollide.hh>
+#include <object/objectsnd.hh>
+#include <particle/particle.hh>
+#include <radar/radar.hh>
+#include <radar/radarsetup.hh>
 #include "render/3d.hh"
-#include "ship/ship.hh"
-#include "ship/shipfx.hh"
-#include "species_defs/species_defs.hh"
-#include "tracing/Monitor.hh"
-#include "util/list.hh"
-#include "weapon/weapon.hh"
+#include <ship/ship.hh>
+#include <ship/shipfx.hh>
+#include <species_defs/species_defs.hh>
+#include <tracing/Monitor.hh>
+#include <util/list.hh>
+#include <weapon/weapon.hh>
 
 #define MAX_LIFE 10.0f
 #define MIN_RADIUS_FOR_PERSISTANT_DEBRIS \

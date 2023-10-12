@@ -5,33 +5,33 @@
 #include <climits>
 #include <algorithm>
 
-#include "defs.hh"
-#include "cmdline/cmdline.hh"
-#include "debugconsole/console.hh"
-#include "gamesequence/gamesequence.hh" //WMC - for scripting hooks in gr_flip()
-#include "shared/globals.hh"
+#include <defs.hh>
+#include <cmdline/cmdline.hh>
+#include <debugconsole/console.hh>
+#include <gamesequence/gamesequence.hh> //WMC - for scripting hooks in gr_flip()
+#include <shared/globals.hh>
 #include "graphics/2d.hh"
-#include "graphics/font.hh"
-#include "graphics/grbatch.hh"
-#include "graphics/grinternal.hh"
-#include "graphics/grstub.hh"
-#include "graphics/light.hh"
-#include "graphics/matrix.hh"
+#include <graphics/font.hh>
+#include <graphics/grbatch.hh>
+#include <graphics/grinternal.hh>
+#include <graphics/grstub.hh>
+#include <graphics/light.hh>
+#include <graphics/matrix.hh>
 #include "graphics/opengl/gropengl.hh"
 #include "graphics/opengl/gropengldraw.hh"
 #include "graphics/paths/PathRenderer.hh"
 #include "graphics/util/GPUMemoryHeap.hh"
 #include "graphics/util/UniformBuffer.hh"
 #include "graphics/util/UniformBufferManager.hh"
-#include "io/keycontrol.hh" // m!m
-#include "io/timer.hh"
-#include "osapi/osapi.hh"
-#include "parse/parselo.hh"
-#include "popup/popup.hh"
+#include <io/keycontrol.hh> // m!m
+#include <io/timer.hh>
+#include <osapi/osapi.hh>
+#include <parse/parselo.hh>
+#include <popup/popup.hh>
 #include "render/3d.hh"
-#include "tracing/tracing.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <tracing/tracing.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 #include <boost/format.hpp>
 using fmt = boost::format;

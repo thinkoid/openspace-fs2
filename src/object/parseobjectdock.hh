@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_OBJECT_PARSEOBJECTDOCK_HH
 #define FREESPACE2_OBJECT_PARSEOBJECTDOCK_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 class p_object;
 

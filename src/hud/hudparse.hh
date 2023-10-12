@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_HUD_HUDPARSE_HH
 #define FREESPACE2_HUD_HUDPARSE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "ai/ai.hh"
+#include <ai/ai.hh>
 #include "graphics/2d.hh"
 
 // Variables

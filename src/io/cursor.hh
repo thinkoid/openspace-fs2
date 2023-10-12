@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_IO_CURSOR_HH
 #define FREESPACE2_IO_CURSOR_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <SDL_mouse.h>
 
-#include "cmdline/cmdline.hh"
+#include <cmdline/cmdline.hh>
 
 #include <memory>
 

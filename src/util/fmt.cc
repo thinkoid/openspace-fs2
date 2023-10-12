@@ -3,11 +3,11 @@
 #include <filesystem>
 #include <cstdarg>
 
-#include "defs.hh"
-#include "log/log.hh"
-#include "util/fmt.hh"
+#include <defs.hh>
+#include <log/log.hh>
+#include <util/fmt.hh>
 #include "config.hh"
-#include "log/log.hh"
+#include <log/log.hh>
 
 namespace fs = std::filesystem;
 

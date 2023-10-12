@@ -2,16 +2,16 @@
 
 #include <cmath>
 
-#include "defs.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <log/log.hh>
 
 #define MODEL_LIB
 
-#include "cmdline/cmdline.hh"
-#include "math/vecmat.hh"
-#include "model/model.hh"
-#include "model/modelsinc.hh"
-#include "tracing/tracing.hh"
+#include <cmdline/cmdline.hh>
+#include <math/vecmat.hh>
+#include <model/model.hh>
+#include <model/modelsinc.hh>
+#include <tracing/tracing.hh>
 
 // returns 1 if a point is in an octant.
 int point_in_octant (polymodel* /*pm*/, model_octant* oct, vec3d* vert) {

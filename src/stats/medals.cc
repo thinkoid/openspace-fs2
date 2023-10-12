@@ -2,26 +2,26 @@
 
 #include <filesystem>
 
-#include "defs.hh"
-#include "debugconsole/console.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "io/key.hh"
-#include "localization/localize.hh"
-#include "menuui/snazzyui.hh"
-#include "parse/parselo.hh"
-#include "playerman/player.hh"
-#include "popup/popup.hh"
-#include "stats/medals.hh"
-#include "ui/ui.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <debugconsole/console.hh>
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <io/key.hh>
+#include <localization/localize.hh>
+#include <menuui/snazzyui.hh>
+#include <parse/parselo.hh>
+#include <playerman/player.hh>
+#include <popup/popup.hh>
+#include <stats/medals.hh>
+#include <ui/ui.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 namespace fs = std::filesystem;
 
 #ifndef NDEBUG
-#include "cmdline/cmdline.hh"
+#include <cmdline/cmdline.hh>
 #endif
 
 int Num_medals = 0;

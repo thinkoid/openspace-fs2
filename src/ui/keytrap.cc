@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
-#include "ui/ui.hh"
-#include "ui/uidefs.hh"
+#include <ui/ui.hh>
+#include <ui/uidefs.hh>
 
 void UI_KEYTRAP::create (
     UI_WINDOW* wnd, int key, void (*_user_function) (void)) {

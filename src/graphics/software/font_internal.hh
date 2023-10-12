@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GRAPHICS_SOFTWARE_FONT_INTERNAL_HH
 #define FREESPACE2_GRAPHICS_SOFTWARE_FONT_INTERNAL_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 namespace font {
 struct font_char  {

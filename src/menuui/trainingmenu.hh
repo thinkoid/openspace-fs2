@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MENUUI_TRAININGMENU_HH
 #define FREESPACE2_MENUUI_TRAININGMENU_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #define TRAINING_MENU_MAX_CHOICES \
     3 // keep up to date if any more choices added!

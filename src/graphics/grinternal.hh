@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_GRAPHICS_GRINTERNAL_HH
 #define FREESPACE2_GRAPHICS_GRINTERNAL_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "graphics/font.hh"
+#include <graphics/font.hh>
 
 extern ubyte Gr_original_palette[768]; // The palette
 extern ubyte Gr_current_palette[768];

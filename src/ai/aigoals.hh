@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_AI_AIGOALS_HH
 #define FREESPACE2_AI_AIGOALS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 struct wing;
 struct ai_info;

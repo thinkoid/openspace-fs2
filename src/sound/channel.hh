@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_SOUND_CHANNEL_HH
 #define FREESPACE2_SOUND_CHANNEL_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "sound/ds.hh"
-#include "sound/openal.hh"
+#include <sound/ds.hh>
+#include <sound/openal.hh>
 
 struct channel  {
     ds_sound_handle

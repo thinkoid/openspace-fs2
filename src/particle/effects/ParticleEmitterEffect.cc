@@ -1,11 +1,11 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "particle/ParticleSource.hh"
+#include <particle/ParticleSource.hh>
 #include "particle/effects/ParticleEmitterEffect.hh"
-#include "bmpman/bmpman.hh"
-#include "parse/parselo.hh"
+#include <bmpman/bmpman.hh>
+#include <parse/parselo.hh>
 
 namespace particle {
 namespace effects {

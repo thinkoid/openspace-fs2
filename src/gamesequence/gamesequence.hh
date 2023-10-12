@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GAMESEQUENCE_GAMESEQUENCE_HH
 #define FREESPACE2_GAMESEQUENCE_GAMESEQUENCE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 /**
  *  @brief Enum's for Game Sequence Events.

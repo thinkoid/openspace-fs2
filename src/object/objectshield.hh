@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_OBJECT_OBJECTSHIELD_HH
 #define FREESPACE2_OBJECT_OBJECTSHIELD_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #define FRONT_QUAD 1
 #define REAR_QUAD 2

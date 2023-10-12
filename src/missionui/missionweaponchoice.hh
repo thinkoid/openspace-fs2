@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MISSIONUI_MISSIONWEAPONCHOICE_HH
 #define FREESPACE2_MISSIONUI_MISSIONWEAPONCHOICE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 class p_object;
 struct wss_unit;

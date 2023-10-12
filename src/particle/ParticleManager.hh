@@ -3,12 +3,12 @@
 #ifndef FREESPACE2_PARTICLE_PARTICLEMANAGER_HH
 #define FREESPACE2_PARTICLE_PARTICLEMANAGER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "particle/ParticleEffect.hh"
-#include "particle/ParticleSource.hh"
-#include "particle/ParticleSourceWrapper.hh"
-#include "util/id.hh"
+#include <particle/ParticleEffect.hh>
+#include <particle/ParticleSource.hh>
+#include <particle/ParticleSourceWrapper.hh>
+#include <util/id.hh>
 
 namespace particle {
 struct particle_effect_tag {};

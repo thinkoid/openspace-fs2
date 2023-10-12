@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_WEAPON_SWARM_HH
 #define FREESPACE2_WEAPON_SWARM_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 class object;
 class ship_subsys;

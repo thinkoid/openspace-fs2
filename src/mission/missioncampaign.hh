@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_MISSION_MISSIONCAMPAIGN_HH
 #define FREESPACE2_MISSION_MISSIONCAMPAIGN_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "stats/scoring.hh"
-#include "parse/sexp.hh"
+#include <stats/scoring.hh>
+#include <parse/sexp.hh>
 
 struct sexp_variable;
 

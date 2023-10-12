@@ -3,12 +3,12 @@
 #ifndef FREESPACE2_GRAPHICS_OPENGL_GROPENGLSTATE_HH
 #define FREESPACE2_GRAPHICS_OPENGL_GROPENGLSTATE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "gropengl.hh"
 #include "gropengltexture.hh"
 #include "gropenglshader.hh"
-#include "graphics/material.hh"
+#include <graphics/material.hh>
 
 #include "glad/glad.h"
 

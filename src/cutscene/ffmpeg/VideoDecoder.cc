@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
 #include "cutscene/ffmpeg/VideoDecoder.hh"
-#include "tracing/tracing.hh"
+#include <tracing/tracing.hh>
 
 namespace {
 SwsContext* getSWSContext (

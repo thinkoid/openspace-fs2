@@ -1,16 +1,16 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "cmdline/cmdline.hh"
-#include "debugconsole/console.hh"
-#include "shared/globals.hh"
+#include <defs.hh>
+#include <cmdline/cmdline.hh>
+#include <debugconsole/console.hh>
+#include <shared/globals.hh>
 #include "graphics/2d.hh"
-#include "graphics/light.hh"
-#include "lighting/lighting.hh"
-#include "math/vecmat.hh"
-#include "model/modelrender.hh"
+#include <graphics/light.hh>
+#include <lighting/lighting.hh>
+#include <math/vecmat.hh>
+#include <model/modelrender.hh>
 #include "render/3d.hh"
-#include "assert/assert.hh"
+#include <assert/assert.hh>
 
 std::vector< light > Lights;
 std::vector< light > Static_light;

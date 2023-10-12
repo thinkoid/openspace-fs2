@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_LOCALIZATION_FHASH_HH
 #define FREESPACE2_LOCALIZATION_FHASH_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // -----------------------------------------------------------------------------------------------
 // HASH DEFINES/VARS

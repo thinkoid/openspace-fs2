@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_CFILE_CFILE_HH
 #define FREESPACE2_CFILE_CFILE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <ctime>
 #include <sys/stat.h>

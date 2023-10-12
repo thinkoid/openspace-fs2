@@ -2,16 +2,16 @@
 
 #include <cctype>
 
-#include "defs.hh"
-#include "cfile/cfile.hh"
-#include "localization/localize.hh"
-#include "osapi/osregistry.hh"
-#include "parse/encrypt.hh"
-#include "parse/parselo.hh"
-#include "playerman/player.hh"
-#include "mod_table/mod_table.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <cfile/cfile.hh>
+#include <localization/localize.hh>
+#include <osapi/osregistry.hh>
+#include <parse/encrypt.hh>
+#include <parse/parselo.hh>
+#include <playerman/player.hh>
+#include <mod_table/mod_table.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 // ------------------------------------------------------------------------------------------------------------
 // LOCALIZE DEFINES/VARS

@@ -3,18 +3,18 @@
 #include <algorithm>
 #include <memory>
 
-#include "defs.hh"
-#include "particle/ParticleManager.hh"
+#include <defs.hh>
+#include <particle/ParticleManager.hh>
 #include "particle/effects/SingleParticleEffect.hh"
 #include "particle/effects/CompositeEffect.hh"
 #include "particle/effects/ConeShape.hh"
 #include "particle/effects/SphereShape.hh"
 #include "particle/effects/GenericShapeEffect.hh"
-#include "bmpman/bmpman.hh"
-#include "shared/globals.hh"
-#include "tracing/tracing.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <bmpman/bmpman.hh>
+#include <shared/globals.hh>
+#include <tracing/tracing.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 /**
  * @defgroup particleSystems Particle System

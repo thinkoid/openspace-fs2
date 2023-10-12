@@ -1,8 +1,8 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 /*
  * Created by Hassan "Karajorma" Kazmi for the FreeSpace2 Source Code Project.
@@ -10,16 +10,16 @@
  * create based on the source.
  */
 
-#include "gamesnd/eventmusic.hh"
-#include "shared/version.hh"
-#include "localization/localize.hh"
-#include "mission/missioncampaign.hh"
-#include "mission/missionload.hh"
-#include "mission/missionmessage.hh"
-#include "missionui/fictionviewer.hh"
-#include "mod_table/mod_table.hh"
-#include "parse/parselo.hh"
-#include "sound/sound.hh"
+#include <gamesnd/eventmusic.hh>
+#include <shared/version.hh>
+#include <localization/localize.hh>
+#include <mission/missioncampaign.hh>
+#include <mission/missionload.hh>
+#include <mission/missionmessage.hh>
+#include <missionui/fictionviewer.hh>
+#include <mod_table/mod_table.hh>
+#include <parse/parselo.hh>
+#include <sound/sound.hh>
 
 int Directive_wait_time;
 bool True_loop_argument_sexps;

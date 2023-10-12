@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_OBJECT_OBJCOLLIDE_HH
 #define FREESPACE2_OBJECT_OBJCOLLIDE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 class object;
 struct CFILE;

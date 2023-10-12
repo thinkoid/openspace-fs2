@@ -1,26 +1,26 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "cfile/cfile.hh"
-#include "gamesequence/gamesequence.hh"
-#include "hud/hudmessage.hh"
-#include "io/timer.hh"
-#include "math/fix.hh"
-#include "mission/missiongoals.hh"
-#include "mission/missionmessage.hh"
-#include "mission/missionparse.hh"
-#include "mission/missiontraining.hh"
-#include "mod_table/mod_table.hh"
-#include "parse/parselo.hh"
-#include "parse/sexp.hh"
-#include "playerman/player.hh"
-#include "popup/popup.hh"
-#include "shared/alphacolors.hh"
-#include "ship/ship.hh"
-#include "sound/audiostr.hh"
-#include "sound/sound.hh"
-#include "weapon/emp.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <cfile/cfile.hh>
+#include <gamesequence/gamesequence.hh>
+#include <hud/hudmessage.hh>
+#include <io/timer.hh>
+#include <math/fix.hh>
+#include <mission/missiongoals.hh>
+#include <mission/missionmessage.hh>
+#include <mission/missionparse.hh>
+#include <mission/missiontraining.hh>
+#include <mod_table/mod_table.hh>
+#include <parse/parselo.hh>
+#include <parse/sexp.hh>
+#include <playerman/player.hh>
+#include <popup/popup.hh>
+#include <shared/alphacolors.hh>
+#include <ship/ship.hh>
+#include <sound/audiostr.hh>
+#include <sound/sound.hh>
+#include <weapon/emp.hh>
+#include <log/log.hh>
 
 #define MAX_TRAINING_MESSAGE_LINES 10
 #define TRAINING_MESSAGE_WINDOW_WIDTH 266

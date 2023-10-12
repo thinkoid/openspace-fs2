@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_WEAPON_SHOCKWAVE_HH
 #define FREESPACE2_WEAPON_SHOCKWAVE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 class object;
 class model_draw_list;

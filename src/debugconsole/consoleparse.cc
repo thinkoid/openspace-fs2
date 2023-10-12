@@ -1,6 +1,6 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Command-line parsing functions for z64555's debug console, created for the
@@ -29,8 +29,8 @@
 #include <algorithm>
 #include <cstdarg>
 
-#include "debugconsole/consoleparse.hh"
-#include "parse/parselo.hh"
+#include <debugconsole/consoleparse.hh>
+#include <parse/parselo.hh>
 
 // ========================= LOCALS =========================
 char Command_string[MAX_CLI_LEN]; //!< Command string buffer.

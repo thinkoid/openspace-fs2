@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_IO_KEYCONTROL_HH
 #define FREESPACE2_IO_KEYCONTROL_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "controlconfig/controlsconfig.hh"
+#include <controlconfig/controlsconfig.hh>
 
 // Holds the bit arrays that indicate which action is to be executed.
 #define NUM_BUTTON_FIELDS ((CCFG_MAX + 31) / 32)

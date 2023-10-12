@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_MISSIONUI_MISSIONSCREENCOMMON_HH
 #define FREESPACE2_MISSIONUI_MISSIONSCREENCOMMON_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "gamesnd/gamesnd.hh"
-#include "model/model.hh"
-#include "ui/ui.hh"
+#include <gamesnd/gamesnd.hh>
+#include <model/model.hh>
+#include <ui/ui.hh>
 
 #define BACKGROUND_FRAME_TO_START_SHIP_ANIM 87
 #define BUTTON_SLIDE_IN_FRAME 1

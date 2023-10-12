@@ -6,8 +6,8 @@
 
 #define ENCRYPT_NEW // new, better encryption scheme
 
-#include "defs.hh"
-#include "parse/encrypt.hh"
+#include <defs.hh>
+#include <parse/encrypt.hh>
 
 const uint Encrypt_new_signature = 0x5c331a55; // new encryption
 const uint Encrypt_signature = 0xdeadbeef;     // full encryption

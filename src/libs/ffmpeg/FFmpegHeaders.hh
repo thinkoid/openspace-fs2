@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_LIBS_FFMPEG_FFMPEGHEADERS_HH
 #define FREESPACE2_LIBS_FFMPEG_FFMPEGHEADERS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // Disable a few warnings that happen in the ffmpeg headers
 // TODO: Also do this for other compilers

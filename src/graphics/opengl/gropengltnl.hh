@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_GRAPHICS_OPENGL_GROPENGLTNL_HH
 #define FREESPACE2_GRAPHICS_OPENGL_GROPENGLTNL_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "gropengl.hh"
-#include "graphics/shadows.hh"
-#include "model/model.hh"
+#include <graphics/shadows.hh>
+#include <model/model.hh>
 
 #include "glad/glad.h"
 

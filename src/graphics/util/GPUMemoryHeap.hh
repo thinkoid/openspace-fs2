@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_GRAPHICS_UTIL_GPUMEMORYHEAP_HH
 #define FREESPACE2_GRAPHICS_UTIL_GPUMEMORYHEAP_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "util/HeapAllocator.hh"
+#include <util/HeapAllocator.hh>
 #include "graphics/2d.hh"
 
 namespace graphics {

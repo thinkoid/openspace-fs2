@@ -1,14 +1,14 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "bmpman/bmpman.hh"
-#include "cfile/cfile.hh"
-#include "cmdline/cmdline.hh"
-#include "ddsutils/ddsutils.hh"
-#include "debugconsole/console.hh"
-#include "shared/globals.hh"
+#include <defs.hh>
+#include <bmpman/bmpman.hh>
+#include <cfile/cfile.hh>
+#include <cmdline/cmdline.hh>
+#include <ddsutils/ddsutils.hh>
+#include <debugconsole/console.hh>
+#include <shared/globals.hh>
 #include "graphics/2d.hh"
-#include "graphics/matrix.hh"
+#include <graphics/matrix.hh>
 #include "graphics/paths/PathRenderer.hh"
 #include "gropengl.hh"
 #include "gropenglbmpman.hh"
@@ -21,22 +21,22 @@
 #include "gropengltexture.hh"
 #include "gropengltnl.hh"
 #include "gropengldeferred.hh"
-#include "graphics/line.hh"
-#include "io/mouse.hh"
-#include "io/timer.hh"
-#include "math/floating.hh"
-#include "model/model.hh"
-#include "nebula/neb.hh"
+#include <graphics/line.hh>
+#include <io/mouse.hh>
+#include <io/timer.hh>
+#include <math/floating.hh>
+#include <model/model.hh>
+#include <nebula/neb.hh>
 #include "libs/renderdoc/renderdoc.hh"
-#include "osapi/osapi.hh"
-#include "osapi/osregistry.hh"
+#include <osapi/osapi.hh>
+#include <osapi/osregistry.hh>
 #include "render/3d.hh"
-#include "popup/popup.hh"
-#include "tracing/tracing.hh"
-#include "pngutils/pngutils.hh"
+#include <popup/popup.hh>
+#include <tracing/tracing.hh>
+#include <pngutils/pngutils.hh>
 #include "glad/glad.h"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 // minimum GL version we can reliably support is 3.2
 static const int MIN_REQUIRED_GL_VERSION = 32;

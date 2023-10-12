@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GRAPHICS_OPENGL_SHADERPROGRAM_HH
 #define FREESPACE2_GRAPHICS_OPENGL_SHADERPROGRAM_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "gropenglshader.hh"
 

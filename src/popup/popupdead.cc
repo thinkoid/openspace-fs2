@@ -1,6 +1,6 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 #define POPUPDEAD_NUM_CHOICES 3      // normal
 #define POPUPDEAD_NUM_CHOICES_RA 4   // red alert
@@ -9,18 +9,18 @@
 #define POPUPDEAD_NUM_CHOICES_MAX 4
 
 #include "freespace2/freespace.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "hud/hudmessage.hh"
-#include "io/key.hh"
-#include "io/timer.hh"
-#include "mission/missionparse.hh"
-#include "mission/missioncampaign.hh"
-#include "playerman/player.hh"
-#include "popup/popup.hh"
-#include "popup/popupdead.hh"
-#include "ui/ui.hh"
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <hud/hudmessage.hh>
+#include <io/key.hh>
+#include <io/timer.hh>
+#include <mission/missionparse.hh>
+#include <mission/missioncampaign.hh>
+#include <playerman/player.hh>
+#include <popup/popup.hh>
+#include <popup/popupdead.hh>
+#include <ui/ui.hh>
 
 UI_WINDOW Popupdead_window;
 UI_BUTTON Popupdead_buttons[POPUPDEAD_NUM_CHOICES_MAX]; // actual lit buttons

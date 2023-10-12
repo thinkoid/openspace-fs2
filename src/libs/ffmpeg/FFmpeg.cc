@@ -1,10 +1,10 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 #include "libs/ffmpeg/FFmpeg.hh"
 #include "FFmpegHeaders.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 namespace {
 const int MIN_LOG_LEVEL = AV_LOG_WARNING;

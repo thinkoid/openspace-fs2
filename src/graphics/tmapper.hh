@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GRAPHICS_TMAPPER_HH
 #define FREESPACE2_GRAPHICS_TMAPPER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 /*
 struct vertex;

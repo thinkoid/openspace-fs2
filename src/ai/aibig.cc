@@ -1,21 +1,21 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "ai/aibig.hh"
-#include "ai/aigoals.hh"
-#include "assert/assert.hh"
+#include <ai/aibig.hh>
+#include <ai/aigoals.hh>
+#include <assert/assert.hh>
 #include "freespace2/freespace.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "math/fix.hh"
-#include "math/prng.hh"
-#include "mission/missionparse.hh"
-#include "object/object.hh"
-#include "ship/afterburner.hh"
-#include "ship/ship.hh"
-#include "util/list.hh"
-#include "weapon/weapon.hh"
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <math/fix.hh>
+#include <math/prng.hh>
+#include <mission/missionparse.hh>
+#include <object/object.hh>
+#include <ship/afterburner.hh>
+#include <ship/ship.hh>
+#include <util/list.hh>
+#include <weapon/weapon.hh>
 
 #define SCAN_FIGHTERS_INTERVAL \
     2000 // how often an AI fighter/bomber should scan for enemy

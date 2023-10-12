@@ -1,42 +1,42 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "assert/assert.hh"
-#include "asteroid/asteroid.hh"
-#include "cmeasure/cmeasure.hh"
-#include "debris/debris.hh"
-#include "debugconsole/console.hh"
-#include "fireball/fireballs.hh"
+#include <assert/assert.hh>
+#include <asteroid/asteroid.hh>
+#include <cmeasure/cmeasure.hh>
+#include <debris/debris.hh>
+#include <debugconsole/console.hh>
+#include <fireball/fireballs.hh>
 #include "freespace2/freespace.hh"
-#include "graphics/light.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "jumpnode/jumpnode.hh"
-#include "lighting/lighting.hh"
-#include "log/log.hh"
-#include "math/prng.hh"
-#include "mission/missionparse.hh" //For 2D Mode
-#include "object/deadobjectdock.hh"
-#include "object/objcollide.hh"
-#include "object/object.hh"
-#include "object/objectdock.hh"
-#include "object/objectshield.hh"
-#include "object/objectsnd.hh"
-#include "observer/observer.hh"
-#include "playerman/player.hh"
-#include "radar/radar.hh"
-#include "radar/radarsetup.hh"
+#include <graphics/light.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <jumpnode/jumpnode.hh>
+#include <lighting/lighting.hh>
+#include <log/log.hh>
+#include <math/prng.hh>
+#include <mission/missionparse.hh> //For 2D Mode
+#include <object/deadobjectdock.hh>
+#include <object/objcollide.hh>
+#include <object/object.hh>
+#include <object/objectdock.hh>
+#include <object/objectshield.hh>
+#include <object/objectsnd.hh>
+#include <observer/observer.hh>
+#include <playerman/player.hh>
+#include <radar/radar.hh>
+#include <radar/radarsetup.hh>
 #include "render/3d.hh"
-#include "ship/afterburner.hh"
-#include "ship/ship.hh"
-#include "tracing/Monitor.hh"
-#include "tracing/tracing.hh"
-#include "util/list.hh"
-#include "weapon/beam.hh"
-#include "weapon/shockwave.hh"
-#include "weapon/swarm.hh"
-#include "weapon/weapon.hh"
+#include <ship/afterburner.hh>
+#include <ship/ship.hh>
+#include <tracing/Monitor.hh>
+#include <tracing/tracing.hh>
+#include <util/list.hh>
+#include <weapon/beam.hh>
+#include <weapon/shockwave.hh>
+#include <weapon/swarm.hh>
+#include <weapon/weapon.hh>
 
 /*
  *  Global variables

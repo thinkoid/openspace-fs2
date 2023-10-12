@@ -1,10 +1,10 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "particle/particle.hh"
-#include "particle/ParticleEffect.hh"
-#include "particle/ParticleSource.hh"
+#include <particle/particle.hh>
+#include <particle/ParticleEffect.hh>
+#include <particle/ParticleSource.hh>
 #include "particle/effects/CompositeEffect.hh"
 
 namespace particle {

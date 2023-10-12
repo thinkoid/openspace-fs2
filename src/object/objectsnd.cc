@@ -1,21 +1,21 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "cmdline/cmdline.hh"
-#include "debugconsole/console.hh"
-#include "gamesnd/gamesnd.hh"
-#include "util/list.hh"
-#include "io/joy_ff.hh"
-#include "io/timer.hh"
-#include "object/object.hh"
-#include "object/objectsnd.hh"
+#include <defs.hh>
+#include <cmdline/cmdline.hh>
+#include <debugconsole/console.hh>
+#include <gamesnd/gamesnd.hh>
+#include <util/list.hh>
+#include <io/joy_ff.hh>
+#include <io/timer.hh>
+#include <object/object.hh>
+#include <object/objectsnd.hh>
 #include "render/3d.hh"
-#include "ship/ship.hh"
-#include "sound/ds.hh"
+#include <ship/ship.hh>
+#include <sound/ds.hh>
 #include "sound/ds3d.hh"
-#include "species_defs/species_defs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <species_defs/species_defs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 // // --mharris port hack--
 // int ds_using_ds3d();

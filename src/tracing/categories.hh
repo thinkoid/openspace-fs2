@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_TRACING_CATEGORIES_HH
 #define FREESPACE2_TRACING_CATEGORIES_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 /** @file
  *  @ingroup tracing

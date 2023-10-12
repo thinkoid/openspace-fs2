@@ -1,17 +1,17 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "gamesnd/gamesnd.hh"
-#include "hud/hudreticle.hh"
-#include "hud/hudtargetbox.hh"
-#include "io/timer.hh"
-#include "localization/localize.hh"
-#include "playerman/player.hh"
-#include "ship/ship.hh"
-#include "weapon/emp.hh"
-#include "weapon/weapon.hh"
-#include "shared/alphacolors.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <gamesnd/gamesnd.hh>
+#include <hud/hudreticle.hh>
+#include <hud/hudtargetbox.hh>
+#include <io/timer.hh>
+#include <localization/localize.hh>
+#include <playerman/player.hh>
+#include <ship/ship.hh>
+#include <weapon/emp.hh>
+#include <weapon/weapon.hh>
+#include <shared/alphacolors.hh>
+#include <log/log.hh>
 
 #define NUM_RETICLE_ANIS \
     11 // keep up to date when modifying the number of reticle ani files

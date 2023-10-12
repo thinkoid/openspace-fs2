@@ -2,11 +2,11 @@
 
 #include <algorithm>
 
-#include "defs.hh"
-#include "shared/types.hh"
-#include "cmdline/cmdline.hh"
+#include <defs.hh>
+#include <shared/types.hh>
+#include <cmdline/cmdline.hh>
 #include "freespace2/freespace.hh"
-#include "graphics/matrix.hh"
+#include <graphics/matrix.hh>
 #include "gropengl.hh"
 #include "gropengldraw.hh"
 #include "gropenglpostprocessing.hh"
@@ -15,12 +15,12 @@
 #include "gropengldeferred.hh"
 #include "gropengltnl.hh"
 #include "graphics/paths/PathRenderer.hh"
-#include "graphics/light.hh"
-#include "tracing/tracing.hh"
+#include <graphics/light.hh>
+#include <tracing/tracing.hh>
 #include "render/3d.hh"
 #include "ShaderProgram.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 GLuint Scene_framebuffer;
 GLuint Scene_ldr_texture;

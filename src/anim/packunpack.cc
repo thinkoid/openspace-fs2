@@ -1,10 +1,10 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "anim/animplay.hh"
-#include "anim/packunpack.hh"
-#include "bmpman/bmpman.hh"
+#include <anim/animplay.hh>
+#include <anim/packunpack.hh>
+#include <bmpman/bmpman.hh>
 #include "graphics/2d.hh"
 
 const int packer_code = PACKER_CODE;

@@ -1,6 +1,6 @@
 // -*- mode: c++; -*-
 
-#include "tracing/categories.hh"
+#include <tracing/categories.hh>
 
 namespace tracing {
 

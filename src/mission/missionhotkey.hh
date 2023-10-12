@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MISSION_MISSIONHOTKEY_HH
 #define FREESPACE2_MISSION_MISSIONHOTKEY_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 void mission_hotkey_init ();
 void mission_hotkey_close ();

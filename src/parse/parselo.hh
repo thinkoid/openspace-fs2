@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_PARSE_PARSELO_HH
 #define FREESPACE2_PARSE_PARSELO_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "cfile/cfile.hh"
-#include "util/flagset.hh"
-#include "util/unicode.hh"
+#include <cfile/cfile.hh>
+#include <util/flagset.hh>
+#include <util/unicode.hh>
 
 #include <cinttypes>
 #include <exception>

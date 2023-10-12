@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_GRAPHICS_DECAL_DRAW_LIST_HH
 #define FREESPACE2_GRAPHICS_DECAL_DRAW_LIST_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "graphics/material.hh"
+#include <graphics/material.hh>
 #include "graphics/util/UniformBuffer.hh"
 
 namespace graphics {

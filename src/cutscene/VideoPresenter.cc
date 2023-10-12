@@ -1,10 +1,10 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "VideoPresenter.hh"
 
-#include "graphics/matrix.hh"
+#include <graphics/matrix.hh>
 
 using namespace cutscene;
 using namespace cutscene::player;

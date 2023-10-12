@@ -3,13 +3,13 @@
 #ifndef FREESPACE2_MODEL_MODEL_HH
 #define FREESPACE2_MODEL_MODEL_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
-#include "gamesnd/gamesnd.hh"
-#include "object/object.hh"
-#include "ship/ship_flags.hh"
-#include "model/model_flags.hh"
+#include <gamesnd/gamesnd.hh>
+#include <object/object.hh>
+#include <ship/ship_flags.hh>
+#include <model/model_flags.hh>
 
 class object;
 class model_render_params;

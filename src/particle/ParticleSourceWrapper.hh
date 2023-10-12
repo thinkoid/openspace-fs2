@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_PARTICLE_PARTICLESOURCEWRAPPER_HH
 #define FREESPACE2_PARTICLE_PARTICLESOURCEWRAPPER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "ParticleSource.hh"
 

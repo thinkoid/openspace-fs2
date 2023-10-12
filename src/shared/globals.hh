@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_SHARED_GLOBALS_HH
 #define FREESPACE2_SHARED_GLOBALS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "shared/types.hh"
+#include <shared/types.hh>
 
 #include <cmath>
 #include <cstdint>

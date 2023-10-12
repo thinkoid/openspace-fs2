@@ -1,15 +1,15 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 //
 //
 
 #include "WaveFile.hh"
 #include "FFmpegAudioReader.hh"
-#include "sound/ds.hh"
+#include <sound/ds.hh>
 
 // -- from parselo.cpp --
 extern const char* stristr (const char* str, const char* substr);

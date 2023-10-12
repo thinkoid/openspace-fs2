@@ -1,21 +1,21 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "ai/ai.hh"
-#include "debugconsole/console.hh"
-#include "gamesnd/gamesnd.hh"
-#include "util/list.hh"
-#include "hud/hudlock.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "mission/missionparse.hh"
-#include "object/object.hh"
-#include "playerman/player.hh"
+#include <ai/ai.hh>
+#include <debugconsole/console.hh>
+#include <gamesnd/gamesnd.hh>
+#include <util/list.hh>
+#include <hud/hudlock.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <mission/missionparse.hh>
+#include <object/object.hh>
+#include <playerman/player.hh>
 #include "render/3d.hh"
-#include "ship/ship.hh"
-#include "weapon/emp.hh"
-#include "weapon/weapon.hh"
+#include <ship/ship.hh>
+#include <weapon/emp.hh>
+#include <weapon/weapon.hh>
 
 // Used for aspect locks. -MageKing17
 #define VIRTUAL_FRAME_HALF_WIDTH 320.0f

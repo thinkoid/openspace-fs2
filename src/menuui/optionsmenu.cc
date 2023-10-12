@@ -1,29 +1,29 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "bmpman/bmpman.hh"
+#include <bmpman/bmpman.hh>
 #include "freespace2/freespace.hh"
-#include "controlconfig/controlsconfig.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/eventmusic.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "io/joy.hh"
-#include "io/key.hh"
-#include "io/mouse.hh"
-#include "io/timer.hh"
-#include "menuui/mainhallmenu.hh"
-#include "menuui/optionsmenu.hh"
-#include "mission/missionbriefcommon.hh"
-#include "missionui/missionscreencommon.hh"
-#include "nebula/neb.hh"
-#include "osapi/osregistry.hh"
-#include "pilotfile/pilotfile.hh"
-#include "popup/popup.hh"
-#include "popup/popupdead.hh"
-#include "sound/audiostr.hh"
-#include "weapon/weapon.hh"
+#include <controlconfig/controlsconfig.hh>
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/eventmusic.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <io/joy.hh>
+#include <io/key.hh>
+#include <io/mouse.hh>
+#include <io/timer.hh>
+#include <menuui/mainhallmenu.hh>
+#include <menuui/optionsmenu.hh>
+#include <mission/missionbriefcommon.hh>
+#include <missionui/missionscreencommon.hh>
+#include <nebula/neb.hh>
+#include <osapi/osregistry.hh>
+#include <pilotfile/pilotfile.hh>
+#include <popup/popup.hh>
+#include <popup/popupdead.hh>
+#include <sound/audiostr.hh>
+#include <weapon/weapon.hh>
 
 // will display a notification warning message
 #define OPTIONS_NOTIFY_TIME 3500

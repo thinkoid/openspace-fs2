@@ -1,20 +1,20 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "cfile/cfile.hh"
-#include "cmdline/cmdline.hh"
-#include "math/floating.hh"
-#include "osapi/osapi.hh"
-#include "shared/types.hh"
-#include "sound/audiostr.hh"
-#include "sound/channel.hh"
-#include "sound/ds.hh"
+#include <defs.hh>
+#include <cfile/cfile.hh>
+#include <cmdline/cmdline.hh>
+#include <math/floating.hh>
+#include <osapi/osapi.hh>
+#include <shared/types.hh>
+#include <sound/audiostr.hh>
+#include <sound/channel.hh>
+#include <sound/ds.hh>
 #include "sound/ds3d.hh"
-#include "sound/dscap.hh"
-#include "sound/openal.hh"
-#include "sound/sound.hh" // jg18 - for enhanced sound
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <sound/dscap.hh>
+#include <sound/openal.hh>
+#include <sound/sound.hh> // jg18 - for enhanced sound
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 typedef struct sound_buffer {
     ALuint buf_id;  // OpenAL buffer id

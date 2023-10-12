@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_LAB_WMCGUI_HH
 #define FREESPACE2_LAB_WMCGUI_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 /*
  * wmcgui.h
@@ -14,11 +14,11 @@
  *
  */
 
-#include "shared/alphacolors.hh"
-#include "util/list.hh"
-#include "io/mouse.hh"
-#include "ship/ship.hh"
-#include "weapon/weapon.hh"
+#include <shared/alphacolors.hh>
+#include <util/list.hh>
+#include <io/mouse.hh>
+#include <ship/ship.hh>
+#include <weapon/weapon.hh>
 
 #include <string>
 #include <climits>

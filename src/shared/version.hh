@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_SHARED_VERSION_HH
 #define FREESPACE2_SHARED_VERSION_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 //
 // VERSION DEFINES/VARS

@@ -1,15 +1,15 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <log/log.hh>
 
 /*
  *  All states for game sequencing are defined in GameSequence.h.
  *  States should always be referred to using the macros.
  */
 
-#include "gamesequence/gamesequence.hh"
-#include "shared/types.hh"
+#include <gamesequence/gamesequence.hh>
+#include <shared/types.hh>
 
 // local defines
 #define MAX_GAMESEQ_EVENTS \

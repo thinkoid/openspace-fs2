@@ -9,17 +9,17 @@
  *
  */
 
-#include "asteroid/asteroid.hh"
-#include "cmdline/cmdline.hh"
-#include "debris/debris.hh"
-#include "graphics/shadows.hh"
-#include "graphics/matrix.hh"
-#include "lighting/lighting.hh"
-#include "math/vecmat.hh"
-#include "model/model.hh"
-#include "model/modelrender.hh"
+#include <asteroid/asteroid.hh>
+#include <cmdline/cmdline.hh>
+#include <debris/debris.hh>
+#include <graphics/shadows.hh>
+#include <graphics/matrix.hh>
+#include <lighting/lighting.hh>
+#include <math/vecmat.hh>
+#include <model/model.hh>
+#include <model/modelrender.hh>
 #include "render/3d.hh"
-#include "tracing/tracing.hh"
+#include <tracing/tracing.hh>
 
 extern vec3d check_offsets[8];
 

@@ -1,13 +1,13 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "shared/types.hh"
-#include "graphics/grinternal.hh"
+#include <defs.hh>
+#include <shared/types.hh>
+#include <graphics/grinternal.hh>
 #include "graphics/2d.hh"
-#include "graphics/material.hh"
-#include "shared/globals.hh"
-#include "cmdline/cmdline.hh"
-#include "assert/assert.hh"
+#include <graphics/material.hh>
+#include <shared/globals.hh>
+#include <cmdline/cmdline.hh>
+#include <assert/assert.hh>
 
 gr_alpha_blend material_determine_blend_mode (int base_bitmap, bool blending) {
     if (blending) {

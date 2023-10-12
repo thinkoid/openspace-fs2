@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GRAPHICS_UTIL_UNIFORMBUFFER_HH
 #define FREESPACE2_GRAPHICS_UTIL_UNIFORMBUFFER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
 #include "UniformAligner.hh"

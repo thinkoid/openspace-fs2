@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_IO_MOUSE_HH
 #define FREESPACE2_IO_MOUSE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 extern int Mouse_sensitivity;
 extern int Use_mouse_to_fly;

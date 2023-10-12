@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_LAB_LAB_HH
 #define FREESPACE2_LAB_LAB_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 /*
  * lab.h

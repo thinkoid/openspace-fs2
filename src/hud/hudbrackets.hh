@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_HUD_HUDBRACKETS_HH
 #define FREESPACE2_HUD_HUDBRACKETS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "hud/hud.hh"
-#include "graphics/line_draw_list.hh"
+#include <hud/hud.hh>
+#include <graphics/line_draw_list.hh>
 
 void hud_init_brackets ();
 // two unused functions, candidates for removal?

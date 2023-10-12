@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_HUD_HUDMESSAGE_HH
 #define FREESPACE2_HUD_HUDMESSAGE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "anim/packunpack.hh"
-#include "graphics/generic.hh"
-#include "hud/hud.hh"
+#include <anim/packunpack.hh>
+#include <graphics/generic.hh>
+#include <hud/hud.hh>
 
 #include <queue>
 

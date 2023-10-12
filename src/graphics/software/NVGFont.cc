@@ -2,12 +2,12 @@
 
 #include <limits>
 
-#include "defs.hh"
+#include <defs.hh>
 #include "graphics/software/NVGFont.hh"
 #include "graphics/paths/PathRenderer.hh"
-#include "mod_table/mod_table.hh"
-#include "localization/localize.hh"
-#include "assert/assert.hh"
+#include <mod_table/mod_table.hh>
+#include <localization/localize.hh>
+#include <assert/assert.hh>
 
 namespace {
 const char* const TOKEN_SEPARATORS = "\n\t\r";

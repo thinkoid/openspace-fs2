@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_OBJECT_WAYPOINT_HH
 #define FREESPACE2_OBJECT_WAYPOINT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <list>
 

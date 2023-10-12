@@ -1,33 +1,33 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "anim/animplay.hh"
-#include "anim/packunpack.hh"
-#include "cmdline/cmdline.hh"
-#include "gamehelp/contexthelp.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "graphics/font.hh"
-#include "graphics/shadows.hh"
-#include "graphics/matrix.hh"
-#include "io/key.hh"
-#include "io/mouse.hh"
-#include "lighting/lighting.hh"
-#include "localization/localize.hh"
-#include "menuui/techmenu.hh"
-#include "missionui/missionscreencommon.hh"
-#include "parse/parselo.hh"
-#include "playerman/player.hh"
-#include "popup/popup.hh"
+#include <defs.hh>
+#include <anim/animplay.hh>
+#include <anim/packunpack.hh>
+#include <cmdline/cmdline.hh>
+#include <gamehelp/contexthelp.hh>
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <graphics/font.hh>
+#include <graphics/shadows.hh>
+#include <graphics/matrix.hh>
+#include <io/key.hh>
+#include <io/mouse.hh>
+#include <lighting/lighting.hh>
+#include <localization/localize.hh>
+#include <menuui/techmenu.hh>
+#include <missionui/missionscreencommon.hh>
+#include <parse/parselo.hh>
+#include <playerman/player.hh>
+#include <popup/popup.hh>
 #include "render/3d.hh"
-#include "render/batching.hh"
-#include "ship/ship.hh"
-#include "ui/ui.hh"
-#include "ui/uidefs.hh"
-#include "weapon/weapon.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <render/batching.hh>
+#include <ship/ship.hh>
+#include <ui/ui.hh>
+#include <ui/uidefs.hh>
+#include <weapon/weapon.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 #define REVOLUTION_RATE 5.2f
 

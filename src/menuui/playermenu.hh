@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MENUUI_PLAYERMENU_HH
 #define FREESPACE2_MENUUI_PLAYERMENU_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // general defines
 #define PLAYER_SELECT_MODE_SINGLE 0 // looking through single player pilots

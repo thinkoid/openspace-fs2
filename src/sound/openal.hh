@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_SOUND_OPENAL_HH
 #define FREESPACE2_SOUND_OPENAL_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <AL/al.h>
 #include <AL/alc.h>

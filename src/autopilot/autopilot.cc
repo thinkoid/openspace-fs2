@@ -1,8 +1,8 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 // Autopilot.cpp
 // Derek Meek
@@ -10,26 +10,26 @@
 
 #include <map>
 
-#include "ai/ai.hh"
-#include "ai/aigoals.hh"
-#include "asteroid/asteroid.hh"
-#include "autopilot/autopilot.hh"
-#include "camera/camera.hh"
-#include "cfile/cfile.hh"
+#include <ai/ai.hh>
+#include <ai/aigoals.hh>
+#include <asteroid/asteroid.hh>
+#include <autopilot/autopilot.hh>
+#include <camera/camera.hh>
+#include <cfile/cfile.hh>
 #include "freespace2/freespace.hh"
-#include "gamesnd/eventmusic.hh"
-#include "util/list.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "localization/localize.hh"
-#include "mission/missionmessage.hh"
-#include "mission/missiontraining.hh"
-#include "object/objcollide.hh"
-#include "object/waypoint.hh"
-#include "parse/parselo.hh"
-#include "parse/sexp.hh"
-#include "ship/ship.hh"
-#include "sound/audiostr.hh"
+#include <gamesnd/eventmusic.hh>
+#include <util/list.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <localization/localize.hh>
+#include <mission/missionmessage.hh>
+#include <mission/missiontraining.hh>
+#include <object/objcollide.hh>
+#include <object/waypoint.hh>
+#include <parse/parselo.hh>
+#include <parse/sexp.hh>
+#include <ship/ship.hh>
+#include <sound/audiostr.hh>
 
 // Extern functions/variables
 extern int Player_use_ai;

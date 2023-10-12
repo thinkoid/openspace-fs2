@@ -3,12 +3,12 @@
 #ifndef FREESPACE2_GRAPHICS_OPENGL_GROPENGLTEXTURE_HH
 #define FREESPACE2_GRAPHICS_OPENGL_GROPENGLTEXTURE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "gropengl.hh"
 
 #define BMPMAN_INTERNAL
-#include "bmpman/bm_internal.hh"
+#include <bmpman/bm_internal.hh>
 
 #include "glad/glad.h"
 

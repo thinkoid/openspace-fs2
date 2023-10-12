@@ -1,25 +1,25 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "cutscene/cutscenes.hh"
+#include <defs.hh>
+#include <cutscene/cutscenes.hh>
 #include "freespace2/freespace.hh"
-#include "gamesnd/eventmusic.hh"
-#include "hud/hudconfig.hh"
-#include "io/joy.hh"
-#include "io/mouse.hh"
-#include "menuui/techmenu.hh"
-#include "mission/missioncampaign.hh"
-#include "mission/missionload.hh"
-#include "missionui/missionscreencommon.hh"
-#include "missionui/missionshipchoice.hh"
-#include "pilotfile/pilotfile.hh"
-#include "playerman/player.hh"
-#include "ship/ship.hh"
-#include "sound/audiostr.hh"
-#include "stats/medals.hh"
-#include "weapon/weapon.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <gamesnd/eventmusic.hh>
+#include <hud/hudconfig.hh>
+#include <io/joy.hh>
+#include <io/mouse.hh>
+#include <menuui/techmenu.hh>
+#include <mission/missioncampaign.hh>
+#include <mission/missionload.hh>
+#include <missionui/missionscreencommon.hh>
+#include <missionui/missionshipchoice.hh>
+#include <pilotfile/pilotfile.hh>
+#include <playerman/player.hh>
+#include <ship/ship.hh>
+#include <sound/audiostr.hh>
+#include <stats/medals.hh>
+#include <weapon/weapon.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 #define REDALERT_INTERNAL
 #include <iostream>
@@ -27,7 +27,7 @@
 #include <limits>
 #include <filesystem>
 
-#include "missionui/redalert.hh"
+#include <missionui/redalert.hh>
 
 namespace fs = std::filesystem;
 

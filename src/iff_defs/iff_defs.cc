@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <log/log.hh>
 
 /*
  * Created by Ian "Goober5000" Warfield for the FreeSpace2 Source Code Project.
@@ -9,12 +9,12 @@
  * create based on the source.
  */
 
-#include "hud/hud.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "mission/missionparse.hh"
-#include "parse/parselo.hh"
-#include "ship/ship.hh"
+#include <hud/hud.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <mission/missionparse.hh>
+#include <parse/parselo.hh>
+#include <ship/ship.hh>
 
 extern int radar_target_id_flags;
 

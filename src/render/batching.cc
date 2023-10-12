@@ -1,6 +1,6 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 /*
  * Copyright (C) Freespace Open 2015.  All rights reserved.
@@ -11,13 +11,13 @@
  *
  */
 
-#include "render/batching.hh"
-#include "shared/types.hh"
-#include "shared/globals.hh"
+#include <render/batching.hh>
+#include <shared/types.hh>
+#include <shared/globals.hh>
 #include "graphics/2d.hh"
 #include "render/3d.hh"
-#include "graphics/material.hh"
-#include "tracing/tracing.hh"
+#include <graphics/material.hh>
+#include <tracing/tracing.hh>
 
 static std::map< batch_info, primitive_batch > Batching_primitives;
 static std::map< batch_buffer_key, primitive_batch_buffer > Batching_buffers;

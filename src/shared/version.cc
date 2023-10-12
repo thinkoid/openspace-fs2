@@ -1,11 +1,11 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "shared/types.hh"
-#include "shared/version.hh"
+#include <shared/types.hh>
+#include <shared/version.hh>
 
-#include "parse/parselo.hh"
+#include <parse/parselo.hh>
 
 #include <sstream>
 

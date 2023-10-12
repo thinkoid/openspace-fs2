@@ -3,12 +3,12 @@
 #ifndef FREESPACE2_AI_AI_HH
 #define FREESPACE2_AI_AI_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "ai/ai_profiles.hh"
-#include "object/waypoint.hh"
-#include "physics/physics.hh"
-#include "ship/ship_flags.hh"
+#include <ai/ai_profiles.hh>
+#include <object/waypoint.hh>
+#include <physics/physics.hh>
+#include <ship/ship_flags.hh>
 
 ////////////////////////////////////////////////////////////////////////
 

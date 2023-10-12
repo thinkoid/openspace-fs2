@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_IO_JOY_FF_HH
 #define FREESPACE2_IO_JOY_FF_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 int joy_ff_init ();
 void joy_ff_shutdown ();

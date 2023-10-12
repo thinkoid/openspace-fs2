@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_AI_AI_FLAGS_HH
 #define FREESPACE2_AI_AI_FLAGS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "util/flagset.hh"
+#include <util/flagset.hh>
 
 namespace AI {
 FLAG_LIST (AI_Flags){

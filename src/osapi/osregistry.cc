@@ -1,12 +1,12 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "cmdline/cmdline.hh"
-#include "log/log.hh"
-#include "osapi/osapi.hh"
-#include "osapi/osregistry.hh"
-#include "shared/types.hh"
+#include <cmdline/cmdline.hh>
+#include <log/log.hh>
+#include <osapi/osapi.hh>
+#include <osapi/osregistry.hh>
+#include <shared/types.hh>
 
 #include <filesystem>
 #include <mutex>

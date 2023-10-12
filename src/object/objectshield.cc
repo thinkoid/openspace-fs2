@@ -1,12 +1,12 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "math/prng.hh"
-#include "object/object.hh"
-#include "object/objectshield.hh"
-#include "ship/ship.hh"
-#include "ship/subsysdamage.hh"
+#include <math/prng.hh>
+#include <object/object.hh>
+#include <object/objectshield.hh>
+#include <ship/ship.hh>
+#include <ship/subsysdamage.hh>
 
 #include <climits>
 

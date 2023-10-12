@@ -1,23 +1,23 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 #include "freespace2/freespace.hh"
-#include "gamesnd/eventmusic.hh"
-#include "hud/hudconfig.hh"
-#include "hud/hudsquadmsg.hh"
-#include "io/joy.hh"
-#include "io/mouse.hh"
-#include "localization/localize.hh"
-#include "menuui/techmenu.hh"
-#include "osapi/osregistry.hh"
-#include "pilotfile/pilotfile.hh"
-#include "playerman/managepilot.hh"
-#include "playerman/player.hh"
-#include "ship/ship.hh"
-#include "sound/audiostr.hh"
-#include "stats/medals.hh"
-#include "weapon/weapon.hh"
-#include "log/log.hh"
+#include <gamesnd/eventmusic.hh>
+#include <hud/hudconfig.hh>
+#include <hud/hudsquadmsg.hh>
+#include <io/joy.hh>
+#include <io/mouse.hh>
+#include <localization/localize.hh>
+#include <menuui/techmenu.hh>
+#include <osapi/osregistry.hh>
+#include <pilotfile/pilotfile.hh>
+#include <playerman/managepilot.hh>
+#include <playerman/player.hh>
+#include <ship/ship.hh>
+#include <sound/audiostr.hh>
+#include <stats/medals.hh>
+#include <weapon/weapon.hh>
+#include <log/log.hh>
 
 void pilotfile::plr_read_flags () {
     // tips?

@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GRAPHICS_OPENGL_GROPENGLPOSTPROCESSING_HH
 #define FREESPACE2_GRAPHICS_OPENGL_GROPENGLPOSTPROCESSING_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 void opengl_post_process_init ();
 void opengl_post_process_shutdown ();

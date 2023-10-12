@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <string>
 
-#include "defs.hh"
+#include <defs.hh>
 
 char* fs2_snfmt  (char*, size_t, char const*, ...);
 char* fs2_vsnfmt (char*, size_t, char const*, va_list);

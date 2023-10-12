@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_CUTSCENE_FFMPEG_FFMPEGDECODER_HH
 #define FREESPACE2_CUTSCENE_FFMPEG_FFMPEGDECODER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "cutscene/Decoder.hh"
+#include <cutscene/Decoder.hh>
 
 namespace cutscene {
 namespace ffmpeg {

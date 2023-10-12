@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_PILOTFILE_PILOTFILE_HH
 #define FREESPACE2_PILOTFILE_PILOTFILE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "cfile/cfile.hh"
-#include "stats/scoring.hh"
+#include <cfile/cfile.hh>
+#include <stats/scoring.hh>
 
 #include <memory>
 

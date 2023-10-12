@@ -3,14 +3,14 @@
 #ifndef FREESPACE2_PNGUTILS_PNGUTILS_HH
 #define FREESPACE2_PNGUTILS_PNGUTILS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // see comments in (1.2) pngconf.h on Linux
 // libpng wants to check that the version of setjmp it uses is the same as the
 // one that FSO uses; and it is
 #define PNG_SKIP_SETJMP_CHECK
 
-#include "cfile/cfile.hh"
+#include <cfile/cfile.hh>
 #include <png.h>
 
 #define PNG_ERROR_INVALID -1

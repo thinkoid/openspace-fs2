@@ -3,15 +3,15 @@
 #ifndef FREESPACE2_PLAYERMAN_PLAYER_HH
 #define FREESPACE2_PLAYERMAN_PLAYER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "hud/hudtarget.hh" // for targeting hotkey lists
-#include "io/keycontrol.hh" // for button_info
-#include "localization/localize.hh"
-#include "parse/sexp.hh"
-#include "physics/physics.hh"
-#include "sound/sound.hh"
-#include "stats/scoring.hh" // for scoring/stats
+#include <hud/hudtarget.hh> // for targeting hotkey lists
+#include <io/keycontrol.hh> // for button_info
+#include <localization/localize.hh>
+#include <parse/sexp.hh>
+#include <physics/physics.hh>
+#include <sound/sound.hh>
+#include <stats/scoring.hh> // for scoring/stats
 
 struct campaign_info;
 

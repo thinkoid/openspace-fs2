@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_OBJECT_OBJECTSND_HH
 #define FREESPACE2_OBJECT_OBJECTSND_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #define OS_USED (1 << 0)
 #define OS_DS3D (1 << 1)

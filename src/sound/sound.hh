@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_SOUND_SOUND_HH
 #define FREESPACE2_SOUND_SOUND_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "sound/ds.hh"
-#include "util/RandomRange.hh"
-#include "util/id.hh"
+#include <sound/ds.hh>
+#include <util/RandomRange.hh>
+#include <util/id.hh>
 
 // Used for keeping track which low-level sound library is being used
 #define SOUND_LIB_DIRECTSOUND 0

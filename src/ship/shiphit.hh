@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_SHIP_SHIPHIT_HH
 #define FREESPACE2_SHIP_SHIPHIT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 struct vec3d;
 class ship;

@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MISSION_MISSIONLOG_HH
 #define FREESPACE2_MISSION_MISSIONLOG_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // defined for different mission log entries
 

@@ -1,15 +1,15 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "cmdline/cmdline.hh"
-#include "shared/types.hh"
-#include "object/object.hh"
-#include "sound/channel.hh"
-#include "sound/ds.hh"
+#include <defs.hh>
+#include <cmdline/cmdline.hh>
+#include <shared/types.hh>
+#include <object/object.hh>
+#include <sound/channel.hh>
+#include <sound/ds.hh>
 #include "sound/ds3d.hh"
-#include "sound/openal.hh"
-#include "sound/sound.hh"
-#include "log/log.hh"
+#include <sound/openal.hh>
+#include <sound/sound.hh>
+#include <log/log.hh>
 
 // ---------------------------------------------------------------------------------------
 // ds3d_update_buffer()

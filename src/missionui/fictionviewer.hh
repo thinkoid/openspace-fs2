@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MISSIONUI_FICTIONVIEWER_HH
 #define FREESPACE2_MISSIONUI_FICTIONVIEWER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
 

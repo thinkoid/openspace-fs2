@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GRAPHICS_LINE_DRAW_LIST_HH
 #define FREESPACE2_GRAPHICS_LINE_DRAW_LIST_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "2d.hh"
 

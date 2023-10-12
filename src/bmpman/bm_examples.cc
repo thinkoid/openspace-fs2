@@ -5,7 +5,7 @@
  * This file contains example code for using bmpman.
  */
 
-#include "bmpman/bmpman.hh"
+#include <bmpman/bmpman.hh>
 #include "graphics/2d.hh"
 
 void bm_create_example () {

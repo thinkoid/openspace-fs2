@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_MISSIONUI_MISSIONBRIEF_HH
 #define FREESPACE2_MISSIONUI_MISSIONBRIEF_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "ui/ui.hh"
+#include <ui/ui.hh>
 
 // #defines to identify which screen we are on
 #define ON_BRIEFING_SELECT 1

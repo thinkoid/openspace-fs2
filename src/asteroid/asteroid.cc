@@ -2,37 +2,37 @@
 
 #include <algorithm>
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "assert/assert.hh"
-#include "asteroid/asteroid.hh"
-#include "debugconsole/console.hh"
-#include "fireball/fireballs.hh"
+#include <assert/assert.hh>
+#include <asteroid/asteroid.hh>
+#include <debugconsole/console.hh>
+#include <fireball/fireballs.hh>
 #include "freespace2/freespace.hh"
-#include "gamesnd/gamesnd.hh"
-#include "hud/hud.hh"
-#include "hud/hudescort.hh"
-#include "hud/hudgauges.hh"
-#include "hud/hudtarget.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "localization/localize.hh"
-#include "log/log.hh"
-#include "math/prng.hh"
-#include "math/vecmat.hh"
-#include "model/model.hh"
-#include "object/objcollide.hh"
-#include "object/object.hh"
-#include "parse/parselo.hh"
-#include "particle/particle.hh"
+#include <gamesnd/gamesnd.hh>
+#include <hud/hud.hh>
+#include <hud/hudescort.hh>
+#include <hud/hudgauges.hh>
+#include <hud/hudtarget.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <localization/localize.hh>
+#include <log/log.hh>
+#include <math/prng.hh>
+#include <math/vecmat.hh>
+#include <model/model.hh>
+#include <object/objcollide.hh>
+#include <object/object.hh>
+#include <parse/parselo.hh>
+#include <particle/particle.hh>
 #include "render/3d.hh"
-#include "shared/globals.hh"
-#include "ship/ship.hh"
-#include "ship/shiphit.hh"
-#include "species_defs/species_defs.hh"
-#include "stats/scoring.hh"
-#include "util/list.hh"
-#include "weapon/weapon.hh"
+#include <shared/globals.hh>
+#include <ship/ship.hh>
+#include <ship/shiphit.hh>
+#include <species_defs/species_defs.hh>
+#include <stats/scoring.hh>
+#include <util/list.hh>
+#include <weapon/weapon.hh>
 
 #define ASTEROID_OBJ_USED (1 << 0) // flag used in asteroid_obj struct
 #define MAX_ASTEROID_OBJS \

@@ -1,9 +1,9 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 #include "cutscene/ffmpeg/AudioDecoder.hh"
-#include "tracing/tracing.hh"
-#include "log/log.hh"
+#include <tracing/tracing.hh>
+#include <log/log.hh>
 
 namespace {
 const int OUT_CH_LAYOUT = AV_CH_LAYOUT_STEREO;

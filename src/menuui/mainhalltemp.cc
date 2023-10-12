@@ -1,17 +1,17 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 #include "freespace2/freespace.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
-#include "io/key.hh"
-#include "menuui/mainhallmenu.hh"
-#include "menuui/mainhalltemp.hh"
-#include "mission/missioncampaign.hh"
-#include "mission/missionload.hh"
-#include "playerman/player.hh"
-#include "ui/ui.hh"
-#include "log/log.hh"
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
+#include <io/key.hh>
+#include <menuui/mainhallmenu.hh>
+#include <menuui/mainhalltemp.hh>
+#include <mission/missioncampaign.hh>
+#include <mission/missionload.hh>
+#include <playerman/player.hh>
+#include <ui/ui.hh>
+#include <log/log.hh>
 
 // ------------------------------------------------------------------------------------------------------------------------
 // TEMP MAIN HALL DEFINES/VARS

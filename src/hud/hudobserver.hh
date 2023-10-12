@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_HUD_HUDOBSERVER_HH
 #define FREESPACE2_HUD_HUDOBSERVER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // prototypes
 class ship;

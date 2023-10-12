@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_JUMPNODE_JUMPNODE_HH
 #define FREESPACE2_JUMPNODE_JUMPNODE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <cstdlib>
 

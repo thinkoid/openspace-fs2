@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_SHIP_SHIP_FLAGS_HH
 #define FREESPACE2_SHIP_SHIP_FLAGS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "util/flagset.hh"
+#include <util/flagset.hh>
 
 namespace Ship {
 

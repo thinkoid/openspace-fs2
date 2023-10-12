@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_STARFIELD_SUPERNOVA_HH
 #define FREESPACE2_STARFIELD_SUPERNOVA_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // --------------------------------------------------------------------------------------------------------------------------
 // SUPERNOVA DEFINES/VARS

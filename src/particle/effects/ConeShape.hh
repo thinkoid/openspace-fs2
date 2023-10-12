@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_PARTICLE_EFFECTS_CONESHAPE_HH
 #define FREESPACE2_PARTICLE_EFFECTS_CONESHAPE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "util/RandomRange.hh"
+#include <util/RandomRange.hh>
 
 namespace particle {
 namespace effects {

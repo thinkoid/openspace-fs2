@@ -1,24 +1,24 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "cfile/cfile.hh"
-#include "cmdline/cmdline.hh"
+#include <defs.hh>
+#include <cfile/cfile.hh>
+#include <cmdline/cmdline.hh>
 #include "graphics/2d.hh"
-#include "graphics/matrix.hh"
-#include "graphics/grinternal.hh"
+#include <graphics/matrix.hh>
+#include <graphics/grinternal.hh>
 #include "graphics/opengl/gropengldraw.hh"
 #include "graphics/opengl/gropenglpostprocessing.hh"
 #include "graphics/opengl/gropenglshader.hh"
 #include "graphics/opengl/gropenglstate.hh"
 #include "graphics/opengl/gropengltexture.hh"
 #include "graphics/opengl/gropengltnl.hh"
-#include "lighting/lighting.hh"
-#include "math/vecmat.hh"
-#include "mod_table/mod_table.hh"
+#include <lighting/lighting.hh>
+#include <math/vecmat.hh>
+#include <mod_table/mod_table.hh>
 #include "render/3d.hh"
 #include "ShaderProgram.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 std::vector< opengl_shader_t > GL_shader;
 

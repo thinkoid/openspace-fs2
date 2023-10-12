@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GRAPHICS_LINE_HH
 #define FREESPACE2_GRAPHICS_LINE_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // void gr8_line(int x1,int y1,int x2,int y2, bool b);
 // void gr8_aaline(vertex *v1, vertex *v2);

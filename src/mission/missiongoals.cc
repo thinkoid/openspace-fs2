@@ -1,30 +1,30 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "debugconsole/console.hh"
+#include <defs.hh>
+#include <debugconsole/console.hh>
 #include "freespace2/freespace.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/eventmusic.hh"
-#include "gamesnd/gamesnd.hh"
-#include "hud/hud.hh"
-#include "hud/hudmessage.hh"
-#include "io/key.hh"
-#include "io/timer.hh"
-#include "localization/localize.hh"
-#include "math/fix.hh"
-#include "mission/missiongoals.hh"
-#include "mission/missionlog.hh"
-#include "mission/missionparse.hh"
-#include "missionui/missionscreencommon.hh"
-#include "mod_table/mod_table.hh"
-#include "parse/parselo.hh"
-#include "parse/sexp.hh"
-#include "playerman/player.hh"
-#include "shared/alphacolors.hh"
-#include "tracing/tracing.hh"
-#include "ui/ui.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/eventmusic.hh>
+#include <gamesnd/gamesnd.hh>
+#include <hud/hud.hh>
+#include <hud/hudmessage.hh>
+#include <io/key.hh>
+#include <io/timer.hh>
+#include <localization/localize.hh>
+#include <math/fix.hh>
+#include <mission/missiongoals.hh>
+#include <mission/missionlog.hh>
+#include <mission/missionparse.hh>
+#include <missionui/missionscreencommon.hh>
+#include <mod_table/mod_table.hh>
+#include <parse/parselo.hh>
+#include <parse/sexp.hh>
+#include <playerman/player.hh>
+#include <shared/alphacolors.hh>
+#include <tracing/tracing.hh>
+#include <ui/ui.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 // timestamp stuff for evaluating mission goals
 #define GOAL_TIMESTAMP 0            // make immediately eval

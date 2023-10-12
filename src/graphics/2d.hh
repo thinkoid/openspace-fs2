@@ -3,16 +3,16 @@
 #ifndef FREESPACE2_GRAPHICS_2D_HH
 #define FREESPACE2_GRAPHICS_2D_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "bmpman/bmpman.hh"
-#include "cfile/cfile.hh"
-#include "cfile/cfile.hh"
-#include "graphics/grinternal.hh"
-#include "graphics/tmapper.hh"
-#include "io/cursor.hh"
-#include "math/vecmat.hh"
-#include "osapi/osapi.hh"
+#include <bmpman/bmpman.hh>
+#include <cfile/cfile.hh>
+#include <cfile/cfile.hh>
+#include <graphics/grinternal.hh>
+#include <graphics/tmapper.hh>
+#include <io/cursor.hh>
+#include <math/vecmat.hh>
+#include <osapi/osapi.hh>
 
 #include <functional>
 
@@ -1328,6 +1328,6 @@ void gr_heap_allocate (
 void gr_heap_deallocate (GpuHeap heap_type, size_t data_offset);
 
 // Include this last to make the 2D rendering function available everywhere
-#include "graphics/render.hh"
+#include <graphics/render.hh>
 
 #endif // FREESPACE2_GRAPHICS_2D_HH

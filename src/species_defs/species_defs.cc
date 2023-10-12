@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <log/log.hh>
 
 /*
  * Species_Defs.CPP
@@ -12,11 +12,11 @@
  *
  */
 
-#include "cfile/cfile.hh"
-#include "iff_defs/iff_defs.hh"
-#include "localization/localize.hh"
-#include "parse/parselo.hh"
-#include "species_defs/species_defs.hh"
+#include <cfile/cfile.hh>
+#include <iff_defs/iff_defs.hh>
+#include <localization/localize.hh>
+#include <parse/parselo.hh>
+#include <species_defs/species_defs.hh>
 
 std::vector< species_info > Species_info;
 

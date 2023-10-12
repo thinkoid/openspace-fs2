@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_BMPMAN_BM_INTERNAL_HH
 #define FREESPACE2_BMPMAN_BM_INTERNAL_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 /**
  * @file bm_internal.h
@@ -18,7 +18,7 @@
 #error The file header "bmpman/bm_internal.h" is protected. Make sure you know what you are doing!
 #endif
 
-#include "bmpman/bmpman.hh"
+#include <bmpman/bmpman.hh>
 
 #include <array>
 

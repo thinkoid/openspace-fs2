@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_SHARED_TYPES_HH
 #define FREESPACE2_SHARED_TYPES_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <cstdio>
 #include <cstdlib>

@@ -2,30 +2,30 @@
 
 #include <cctype>
 
-#include "defs.hh"
-#include "cfile/cfile.hh"
+#include <defs.hh>
+#include <cfile/cfile.hh>
 #include "freespace2/freespace.hh"
-#include "gamehelp/contexthelp.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "graphics/font.hh"
-#include "io/key.hh"
-#include "menuui/mainhallmenu.hh"
-#include "menuui/readyroom.hh"
-#include "menuui/techmenu.hh" // for tech menu reset stuff
-#include "mission/missionload.hh"
-#include "mission/missionparse.hh"
-#include "mission/missioncampaign.hh"
-#include "missionui/missionscreencommon.hh"
-#include "parse/parselo.hh"
-#include "pilotfile/pilotfile.hh"
-#include "playerman/managepilot.hh"
-#include "playerman/player.hh"
-#include "popup/popup.hh"
-#include "ui/ui.hh"
-#include "ui/uidefs.hh"
-#include "log/log.hh"
+#include <gamehelp/contexthelp.hh>
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <graphics/font.hh>
+#include <io/key.hh>
+#include <menuui/mainhallmenu.hh>
+#include <menuui/readyroom.hh>
+#include <menuui/techmenu.hh> // for tech menu reset stuff
+#include <mission/missionload.hh>
+#include <mission/missionparse.hh>
+#include <mission/missioncampaign.hh>
+#include <missionui/missionscreencommon.hh>
+#include <parse/parselo.hh>
+#include <pilotfile/pilotfile.hh>
+#include <playerman/managepilot.hh>
+#include <playerman/player.hh>
+#include <popup/popup.hh>
+#include <ui/ui.hh>
+#include <ui/uidefs.hh>
+#include <log/log.hh>
 
 #define MAX_MISSIONS 1024
 

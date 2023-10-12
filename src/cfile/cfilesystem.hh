@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_CFILE_CFILESYSTEM_HH
 #define FREESPACE2_CFILE_CFILESYSTEM_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "cfile/cfile.hh"
+#include <cfile/cfile.hh>
 
 // Builds a list of all the files
 void cf_build_secondary_filelist (const char* cdrom_path);

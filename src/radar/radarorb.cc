@@ -1,28 +1,28 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "bmpman/bmpman.hh"
+#include <bmpman/bmpman.hh>
 #include "freespace2/freespace.hh"
-#include "gamesnd/gamesnd.hh"
-#include "graphics/font.hh"
-#include "graphics/matrix.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "jumpnode/jumpnode.hh"
-#include "localization/localize.hh"
-#include "log/log.hh"
-#include "math/prng.hh"
-#include "object/object.hh"
-#include "playerman/player.hh"
-#include "radar/radarorb.hh"
+#include <gamesnd/gamesnd.hh>
+#include <graphics/font.hh>
+#include <graphics/matrix.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <jumpnode/jumpnode.hh>
+#include <localization/localize.hh>
+#include <log/log.hh>
+#include <math/prng.hh>
+#include <object/object.hh>
+#include <playerman/player.hh>
+#include <radar/radarorb.hh>
 #include "render/3d.hh"
-#include "ship/awacs.hh"
-#include "ship/ship.hh"
-#include "ship/subsysdamage.hh"
-#include "util/list.hh"
-#include "weapon/emp.hh"
-#include "weapon/weapon.hh"
+#include <ship/awacs.hh>
+#include <ship/ship.hh>
+#include <ship/subsysdamage.hh>
+#include <util/list.hh>
+#include <weapon/emp.hh>
+#include <weapon/weapon.hh>
 
 extern rcol Radar_color_rgb[MAX_RADAR_COLORS][MAX_RADAR_LEVELS];
 

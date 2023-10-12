@@ -1,6 +1,6 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 /*
  * Created by Olivier "LuaPineapple" Hamel for the Freespace 2 Source Code
@@ -9,31 +9,31 @@
  *
  */
 
-#include "bmpman/bmpman.hh"
+#include <bmpman/bmpman.hh>
 #include "freespace2/freespace.hh"
-#include "gamesnd/gamesnd.hh"
-#include "graphics/font.hh"
-#include "graphics/matrix.hh"
-#include "hud/hudwingmanstatus.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/timer.hh"
-#include "jumpnode/jumpnode.hh"
-#include "localization/localize.hh"
-#include "log/log.hh"
-#include "math/prng.hh"
-#include "object/object.hh"
-#include "playerman/player.hh"
-#include "radar/radardradis.hh"
-#include "radar/radarorb.hh"
+#include <gamesnd/gamesnd.hh>
+#include <graphics/font.hh>
+#include <graphics/matrix.hh>
+#include <hud/hudwingmanstatus.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/timer.hh>
+#include <jumpnode/jumpnode.hh>
+#include <localization/localize.hh>
+#include <log/log.hh>
+#include <math/prng.hh>
+#include <object/object.hh>
+#include <playerman/player.hh>
+#include <radar/radardradis.hh>
+#include <radar/radarorb.hh>
 #include "render/3d.hh"
-#include "shared/alphacolors.hh"
-#include "shared/globals.hh"
-#include "ship/awacs.hh"
-#include "ship/ship.hh"
-#include "ship/subsysdamage.hh"
-#include "util/list.hh"
-#include "weapon/emp.hh"
-#include "weapon/weapon.hh"
+#include <shared/alphacolors.hh>
+#include <shared/globals.hh>
+#include <ship/awacs.hh>
+#include <ship/ship.hh>
+#include <ship/subsysdamage.hh>
+#include <util/list.hh>
+#include <weapon/emp.hh>
+#include <weapon/weapon.hh>
 
 #define RADIANS_PER_DEGREE (PI / 180.0f)
 

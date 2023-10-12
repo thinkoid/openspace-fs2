@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_UTIL_LIST_HH
 #define FREESPACE2_UTIL_LIST_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // Initializes a list of zero elements
 #define list_init(head)        \

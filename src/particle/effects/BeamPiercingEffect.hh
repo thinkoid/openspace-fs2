@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_PARTICLE_EFFECTS_BEAMPIERCINGEFFECT_HH
 #define FREESPACE2_PARTICLE_EFFECTS_BEAMPIERCINGEFFECT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "particle/ParticleEffect.hh"
+#include <particle/ParticleEffect.hh>
 
 namespace particle {
 namespace effects {

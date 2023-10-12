@@ -1,10 +1,10 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "cfile/cfile.hh"
-#include "pcxutils/pcxutils.hh"
-#include "bmpman/bmpman.hh"
+#include <cfile/cfile.hh>
+#include <pcxutils/pcxutils.hh>
+#include <bmpman/bmpman.hh>
 
 /* PCX Header data type */
 typedef struct {

@@ -1,6 +1,6 @@
 // -*- mode: c++; -*-
 
-#include "tracing/scopes.hh"
+#include <tracing/scopes.hh>
 
 namespace tracing {
 

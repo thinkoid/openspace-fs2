@@ -1,20 +1,20 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "cmdline/cmdline.hh"
-#include "debugconsole/console.hh"
+#include <cmdline/cmdline.hh>
+#include <debugconsole/console.hh>
 #include "freespace2/freespace.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/gamesnd.hh"
-#include "io/timer.hh"
-#include "math/vecmat.hh"
-#include "mission/missioncampaign.hh"
-#include "particle/particle.hh"
-#include "popup/popupdead.hh"
-#include "ship/ship.hh"
-#include "starfield/starfield.hh"
-#include "starfield/supernova.hh"
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/gamesnd.hh>
+#include <io/timer.hh>
+#include <math/vecmat.hh>
+#include <mission/missioncampaign.hh>
+#include <particle/particle.hh>
+#include <popup/popupdead.hh>
+#include <ship/ship.hh>
+#include <starfield/starfield.hh>
+#include <starfield/supernova.hh>
 
 // --------------------------------------------------------------------------------------------------------------------------
 // SUPERNOVA DEFINES/VARS

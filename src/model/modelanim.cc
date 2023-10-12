@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <log/log.hh>
 
 /*
  * Created by Mike "Bobboau" Abegg for the FreeSpace2 Source Code Project.
@@ -9,11 +9,11 @@
  * create based on the source.
  */
 
-#include "util/list.hh"
-#include "io/timer.hh"
-#include "model/model.hh"
-#include "model/modelanim.hh"
-#include "ship/ship.hh"
+#include <util/list.hh>
+#include <io/timer.hh>
+#include <model/model.hh>
+#include <model/modelanim.hh>
+#include <ship/ship.hh>
 
 extern float flFrametime;
 

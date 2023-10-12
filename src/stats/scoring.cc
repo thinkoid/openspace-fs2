@@ -1,23 +1,23 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "ai/ai_profiles.hh"
-#include "debugconsole/console.hh"
+#include <defs.hh>
+#include <ai/ai_profiles.hh>
+#include <debugconsole/console.hh>
 #include "freespace2/freespace.hh"
-#include "hud/hud.hh"
-#include "hud/hudmessage.hh"
-#include "iff_defs/iff_defs.hh"
-#include "localization/localize.hh"
-#include "mission/missionparse.hh"
-#include "object/object.hh"
-#include "parse/parselo.hh"
-#include "pilotfile/pilotfile.hh"
-#include "playerman/player.hh"
-#include "ship/ship.hh"
-#include "stats/medals.hh"
-#include "stats/scoring.hh"
-#include "weapon/weapon.hh"
-#include "log/log.hh"
+#include <hud/hud.hh>
+#include <hud/hudmessage.hh>
+#include <iff_defs/iff_defs.hh>
+#include <localization/localize.hh>
+#include <mission/missionparse.hh>
+#include <object/object.hh>
+#include <parse/parselo.hh>
+#include <pilotfile/pilotfile.hh>
+#include <playerman/player.hh>
+#include <ship/ship.hh>
+#include <stats/medals.hh>
+#include <stats/scoring.hh>
+#include <weapon/weapon.hh>
+#include <log/log.hh>
 
 /*
 // uncomment to get extra debug messages when a player scores

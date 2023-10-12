@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_PCXUTILS_PCXUTILS_HH
 #define FREESPACE2_PCXUTILS_PCXUTILS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "cfile/cfile.hh"
+#include <cfile/cfile.hh>
 
 /*
 #ifdef __cplusplus

@@ -4,7 +4,7 @@
 //
 
 #include "UniformAligner.hh"
-#include "assert/assert.hh"
+#include <assert/assert.hh>
 
 namespace {
 

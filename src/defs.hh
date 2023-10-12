@@ -6,8 +6,8 @@
 #define BOOST_LOG_DYN_LINK 1
 
 #include "config.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 #ifdef NDEBUG
 #  define BOOST_DISABLE_ASSERTS
@@ -203,7 +203,7 @@
 
 #define NOISE_NUM_FRAMES 15
 
-#include "shared/types.hh"
-#include "shared/globals.hh"
+#include <shared/types.hh>
+#include <shared/globals.hh>
 
 #endif // FREESPACE2_DEFS_HH

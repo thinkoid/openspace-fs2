@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_CAMERA_CAMERA_HH
 #define FREESPACE2_CAMERA_CAMERA_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
-#include "object/object.hh"
-#include "physics/physics.hh" //for avd
+#include <object/object.hh>
+#include <physics/physics.hh> //for avd
 
 #include <string>
 

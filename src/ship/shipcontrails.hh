@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_SHIP_SHIPCONTRAILS_HH
 #define FREESPACE2_SHIP_SHIPCONTRAILS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // ----------------------------------------------------------------------------------------------
 // CONTRAIL DEFINES/VARS

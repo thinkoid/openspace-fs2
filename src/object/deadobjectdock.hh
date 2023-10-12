@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_OBJECT_DEADOBJECTDOCK_HH
 #define FREESPACE2_OBJECT_DEADOBJECTDOCK_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "object/objectdock.hh"
+#include <object/objectdock.hh>
 
 // get the first object in objp's dock list
 object* dock_get_first_dead_docked_object (object* objp);

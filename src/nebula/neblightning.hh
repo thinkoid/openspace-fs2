@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_NEBULA_NEBLIGHTNING_HH
 #define FREESPACE2_NEBULA_NEBLIGHTNING_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // ------------------------------------------------------------------------------------------------------
 // NEBULA LIGHTNING DEFINES/VARS

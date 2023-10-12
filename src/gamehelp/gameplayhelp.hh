@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GAMEHELP_GAMEPLAYHELP_HH
 #define FREESPACE2_GAMEHELP_GAMEPLAYHELP_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 void gameplay_help_init ();
 void gameplay_help_close ();

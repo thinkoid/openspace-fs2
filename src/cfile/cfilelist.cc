@@ -6,10 +6,10 @@
 #include <string>
 #include <algorithm>
 
-#include "defs.hh"
-#include "cfile/cfile.hh"
-#include "shared/types.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <cfile/cfile.hh>
+#include <shared/types.hh>
+#include <log/log.hh>
 
 void cf_sort_filenames (
     std::vector< std::string >& list, int sort,

@@ -9,21 +9,21 @@
 #include <cctype>
 #include <cstdarg>
 
-#include "defs.hh"
-#include "shared/version.hh"
-#include "localization/fhash.hh"
-#include "localization/localize.hh"
-#include "mission/missionparse.hh"
-#include "parse/encrypt.hh"
-#include "parse/parselo.hh"
-#include "parse/sexp.hh"
-#include "ship/ship.hh"
-#include "weapon/weapon.hh"
-#include "mod_table/mod_table.hh"
-#include "util/encoding.hh"
-#include "util/unicode.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <shared/version.hh>
+#include <localization/fhash.hh>
+#include <localization/localize.hh>
+#include <mission/missionparse.hh>
+#include <parse/encrypt.hh>
+#include <parse/parselo.hh>
+#include <parse/sexp.hh>
+#include <ship/ship.hh>
+#include <weapon/weapon.hh>
+#include <mod_table/mod_table.hh>
+#include <util/encoding.hh>
+#include <util/unicode.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 #define ERROR_LENGTH 64
 #define RS_MAX_TRIES 5

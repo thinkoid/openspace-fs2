@@ -1,11 +1,11 @@
 // -*- mode: c++; -*-
 
-#include "particle/particle.hh"
-#include "particle/ParticleEffect.hh"
-#include "particle/ParticleSource.hh"
+#include <particle/particle.hh>
+#include <particle/ParticleEffect.hh>
+#include <particle/ParticleSource.hh>
 #include "particle/effects/SingleParticleEffect.hh"
-#include "bmpman/bmpman.hh"
-#include "assert/assert.hh"
+#include <bmpman/bmpman.hh>
+#include <assert/assert.hh>
 
 /**
  * @defgroup particleEffects Particle Effects

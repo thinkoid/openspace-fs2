@@ -2,35 +2,35 @@
 
 #include <filesystem>
 
-#include "defs.hh"
-#include "cfile/cfile.hh"
-#include "cutscene/cutscenes.hh"
+#include <defs.hh>
+#include <cfile/cfile.hh>
+#include <cutscene/cutscenes.hh>
 #include "freespace2/freespace.hh"
-#include "gamesnd/eventmusic.hh"
-#include "graphics/font.hh"
-#include "hud/hudconfig.hh"
-#include "hud/hudsquadmsg.hh"
-#include "io/joy.hh"
-#include "io/mouse.hh"
-#include "menuui/playermenu.hh"
-#include "menuui/techmenu.hh"
-#include "mission/missionbriefcommon.hh"
-#include "mission/missioncampaign.hh"
-#include "mission/missionload.hh"
-#include "missionui/missionscreencommon.hh"
-#include "missionui/missionshipchoice.hh"
-#include "missionui/redalert.hh"
-#include "mod_table/mod_table.hh"
-#include "osapi/osregistry.hh"
-#include "pilotfile/pilotfile.hh"
-#include "playerman/managepilot.hh"
-#include "playerman/player.hh"
-#include "popup/popup.hh"
-#include "ship/ship.hh"
-#include "sound/audiostr.hh"
-#include "sound/sound.hh"
-#include "weapon/weapon.hh"
-#include "log/log.hh"
+#include <gamesnd/eventmusic.hh>
+#include <graphics/font.hh>
+#include <hud/hudconfig.hh>
+#include <hud/hudsquadmsg.hh>
+#include <io/joy.hh>
+#include <io/mouse.hh>
+#include <menuui/playermenu.hh>
+#include <menuui/techmenu.hh>
+#include <mission/missionbriefcommon.hh>
+#include <mission/missioncampaign.hh>
+#include <mission/missionload.hh>
+#include <missionui/missionscreencommon.hh>
+#include <missionui/missionshipchoice.hh>
+#include <missionui/redalert.hh>
+#include <mod_table/mod_table.hh>
+#include <osapi/osregistry.hh>
+#include <pilotfile/pilotfile.hh>
+#include <playerman/managepilot.hh>
+#include <playerman/player.hh>
+#include <popup/popup.hh>
+#include <ship/ship.hh>
+#include <sound/audiostr.hh>
+#include <sound/sound.hh>
+#include <weapon/weapon.hh>
+#include <log/log.hh>
 
 namespace fs = std::filesystem;
 

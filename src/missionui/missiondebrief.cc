@@ -1,35 +1,35 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "cfile/cfile.hh"
-#include "gamehelp/contexthelp.hh"
-#include "gamesequence/gamesequence.hh"
-#include "gamesnd/eventmusic.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "shared/globals.hh"
-#include "graphics/font.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/key.hh"
-#include "io/timer.hh"
-#include "localization/localize.hh"
-#include "mission/missionbriefcommon.hh"
-#include "mission/missioncampaign.hh"
-#include "mission/missiongoals.hh"
-#include "missionui/missiondebrief.hh"
-#include "missionui/missionpause.hh"
-#include "missionui/missionscreencommon.hh"
-#include "osapi/osapi.hh"
-#include "parse/parselo.hh"
-#include "pilotfile/pilotfile.hh"
-#include "playerman/player.hh"
-#include "popup/popup.hh"
-#include "ship/ship.hh"
-#include "sound/audiostr.hh"
-#include "stats/medals.hh"
-#include "stats/stats.hh"
-#include "ui/uidefs.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <cfile/cfile.hh>
+#include <gamehelp/contexthelp.hh>
+#include <gamesequence/gamesequence.hh>
+#include <gamesnd/eventmusic.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <shared/globals.hh>
+#include <graphics/font.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/key.hh>
+#include <io/timer.hh>
+#include <localization/localize.hh>
+#include <mission/missionbriefcommon.hh>
+#include <mission/missioncampaign.hh>
+#include <mission/missiongoals.hh>
+#include <missionui/missiondebrief.hh>
+#include <missionui/missionpause.hh>
+#include <missionui/missionscreencommon.hh>
+#include <osapi/osapi.hh>
+#include <parse/parselo.hh>
+#include <pilotfile/pilotfile.hh>
+#include <playerman/player.hh>
+#include <popup/popup.hh>
+#include <ship/ship.hh>
+#include <sound/audiostr.hh>
+#include <stats/medals.hh>
+#include <stats/stats.hh>
+#include <ui/uidefs.hh>
+#include <log/log.hh>
 
 #define MAX_TOTAL_DEBRIEF_LINES 200
 

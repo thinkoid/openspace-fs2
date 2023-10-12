@@ -3,11 +3,11 @@
 #ifndef FREESPACE2_TRACING_MAINFRAMETIMER_HH
 #define FREESPACE2_TRACING_MAINFRAMETIMER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "tracing/tracing.hh"
+#include <tracing/tracing.hh>
 
-#include "tracing/ThreadedEventProcessor.hh"
+#include <tracing/ThreadedEventProcessor.hh>
 
 #include <fstream>
 

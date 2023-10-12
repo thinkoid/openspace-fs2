@@ -1,15 +1,15 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "cfile/cfile.hh"
-#include "shared/types.hh"
-#include "io/timer.hh"
-#include "sound/audiostr.hh"
+#include <defs.hh>
+#include <cfile/cfile.hh>
+#include <shared/types.hh>
+#include <io/timer.hh>
+#include <sound/audiostr.hh>
 #include "sound/ffmpeg/WaveFile.hh"
-#include "sound/ds.hh"
-#include "sound/sound.hh"
+#include <sound/ds.hh>
+#include <sound/sound.hh>
 #include "libs/ffmpeg/FFmpegContext.hh"
-#include "log/log.hh"
+#include <log/log.hh>
 
 #define MAX_STREAM_BUFFERS 4
 

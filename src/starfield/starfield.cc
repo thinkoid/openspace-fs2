@@ -2,28 +2,28 @@
 
 #include <climits>
 
-#include "defs.hh"
-#include "cmdline/cmdline.hh"
-#include "debugconsole/console.hh"
+#include <defs.hh>
+#include <cmdline/cmdline.hh>
+#include <debugconsole/console.hh>
 #include "freespace2/freespace.hh"
 #include "graphics/paths/PathRenderer.hh"
-#include "graphics/matrix.hh"
-#include "hud/hud.hh"
-#include "hud/hudtarget.hh"
-#include "io/timer.hh"
-#include "lighting/lighting.hh"
-#include "math/vecmat.hh"
-#include "mission/missionparse.hh"
-#include "model/modelrender.hh"
-#include "nebula/neb.hh"
-#include "parse/parselo.hh"
+#include <graphics/matrix.hh>
+#include <hud/hud.hh>
+#include <hud/hudtarget.hh>
+#include <io/timer.hh>
+#include <lighting/lighting.hh>
+#include <math/vecmat.hh>
+#include <mission/missionparse.hh>
+#include <model/modelrender.hh>
+#include <nebula/neb.hh>
+#include <parse/parselo.hh>
 #include "render/3d.hh"
-#include "starfield/nebula.hh"
-#include "starfield/starfield.hh"
-#include "starfield/supernova.hh"
-#include "tracing/tracing.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <starfield/nebula.hh>
+#include <starfield/starfield.hh>
+#include <starfield/supernova.hh>
+#include <tracing/tracing.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 #define MAX_DEBRIS_VCLIPS 4
 #define DEBRIS_ROT_MIN 10000

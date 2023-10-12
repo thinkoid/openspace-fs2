@@ -1,34 +1,34 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "anim/animplay.hh"
-#include "anim/packunpack.hh"
-#include "cfile/cfile.hh"
-#include "cmdline/cmdline.hh"
-#include "gamehelp/contexthelp.hh"
-#include "gamesnd/gamesnd.hh"
-#include "shared/alphacolors.hh"
-#include "graphics/shadows.hh"
-#include "graphics/matrix.hh"
-#include "hud/hudbrackets.hh"
-#include "io/mouse.hh"
-#include "io/timer.hh"
-#include "lighting/lighting.hh"
-#include "localization/localize.hh"
-#include "menuui/snazzyui.hh"
-#include "missionui/missionbrief.hh"
-#include "missionui/missionscreencommon.hh"
-#include "missionui/missionshipchoice.hh"
-#include "missionui/missionweaponchoice.hh"
-#include "model/model.hh"
-#include "parse/parselo.hh"
-#include "popup/popup.hh"
+#include <defs.hh>
+#include <anim/animplay.hh>
+#include <anim/packunpack.hh>
+#include <cfile/cfile.hh>
+#include <cmdline/cmdline.hh>
+#include <gamehelp/contexthelp.hh>
+#include <gamesnd/gamesnd.hh>
+#include <shared/alphacolors.hh>
+#include <graphics/shadows.hh>
+#include <graphics/matrix.hh>
+#include <hud/hudbrackets.hh>
+#include <io/mouse.hh>
+#include <io/timer.hh>
+#include <lighting/lighting.hh>
+#include <localization/localize.hh>
+#include <menuui/snazzyui.hh>
+#include <missionui/missionbrief.hh>
+#include <missionui/missionscreencommon.hh>
+#include <missionui/missionshipchoice.hh>
+#include <missionui/missionweaponchoice.hh>
+#include <model/model.hh>
+#include <parse/parselo.hh>
+#include <popup/popup.hh>
 #include "render/3d.hh"
-#include "render/batching.hh"
-#include "ship/ship.hh"
-#include "weapon/weapon.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <render/batching.hh>
+#include <ship/ship.hh>
+#include <weapon/weapon.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 #define IS_BANK_PRIMARY(x) (x < MAX_SHIP_PRIMARY_BANKS)
 #define IS_BANK_SECONDARY(x) (x >= MAX_SHIP_PRIMARY_BANKS)

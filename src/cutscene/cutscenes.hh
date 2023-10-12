@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_CUTSCENE_CUTSCENES_HH
 #define FREESPACE2_CUTSCENE_CUTSCENES_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 struct cutscene_info  {
     char filename[MAX_FILENAME_LEN];

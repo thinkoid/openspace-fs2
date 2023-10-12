@@ -1,11 +1,11 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "shared/types.hh"
-#include "sound/ds.hh"
-#include "sound/dscap.hh"
-#include "sound/openal.hh"
+#include <shared/types.hh>
+#include <sound/ds.hh>
+#include <sound/dscap.hh>
+#include <sound/openal.hh>
 
 #include <string>
 

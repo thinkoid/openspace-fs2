@@ -1,8 +1,8 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <defs.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 /*
  * Created by WMCoolmon for the FreeSpace2 Source Code Project.
@@ -12,31 +12,31 @@
 
 #include <cstddef>
 
-#include "cmdline/cmdline.hh"
-#include "graphics/font.hh" //for gr_force_fit_string
-#include "hud/hud.hh"
-#include "hud/hudbrackets.hh"
-#include "hud/hudconfig.hh" // for retrieving user's hud config
-#include "hud/hudescort.hh"
-#include "hud/hudets.hh"
-#include "hud/hudlock.hh"
-#include "hud/hudmessage.hh"
-#include "hud/hudparse.hh" //Duh.
-#include "hud/hudreticle.hh"
-#include "hud/hudshield.hh"
-#include "hud/hudsquadmsg.hh"
-#include "hud/hudtarget.hh"
-#include "hud/hudtargetbox.hh"
-#include "hud/hudwingmanstatus.hh"
-#include "localization/localize.hh"
-#include "mission/missionmessage.hh"
-#include "mission/missiontraining.hh"
-#include "parse/parselo.hh"
-#include "radar/radar.hh"
-#include "radar/radardradis.hh"
-#include "radar/radarorb.hh"
-#include "radar/radarsetup.hh"
-#include "ship/ship.hh" //for ship struct
+#include <cmdline/cmdline.hh>
+#include <graphics/font.hh> //for gr_force_fit_string
+#include <hud/hud.hh>
+#include <hud/hudbrackets.hh>
+#include <hud/hudconfig.hh> // for retrieving user's hud config
+#include <hud/hudescort.hh>
+#include <hud/hudets.hh>
+#include <hud/hudlock.hh>
+#include <hud/hudmessage.hh>
+#include <hud/hudparse.hh> //Duh.
+#include <hud/hudreticle.hh>
+#include <hud/hudshield.hh>
+#include <hud/hudsquadmsg.hh>
+#include <hud/hudtarget.hh>
+#include <hud/hudtargetbox.hh>
+#include <hud/hudwingmanstatus.hh>
+#include <localization/localize.hh>
+#include <mission/missionmessage.hh>
+#include <mission/missiontraining.hh>
+#include <parse/parselo.hh>
+#include <radar/radar.hh>
+#include <radar/radardradis.hh>
+#include <radar/radarorb.hh>
+#include <radar/radarsetup.hh>
+#include <ship/ship.hh> //for ship struct
 
 // Global stuffs
 extern int ships_inited; // Need this

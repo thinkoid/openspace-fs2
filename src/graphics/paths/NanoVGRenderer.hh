@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_GRAPHICS_PATHS_NANOVGRENDERER_HH
 #define FREESPACE2_GRAPHICS_PATHS_NANOVGRENDERER_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
-#include "graphics/material.hh"
+#include <graphics/material.hh>
 #include "nanovg/nanovg.h"
 #include "graphics/util/UniformBuffer.hh"
 #include "graphics/util/uniform_structs.hh"

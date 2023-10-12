@@ -2,15 +2,15 @@
 
 #include <cstdarg>
 
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <assert/assert.hh>
+#include <log/log.hh>
 #ifndef NDEBUG
 
 #include <cstdarg>
 #include <cstddef>
 
-#include "log/log.hh"
-#include "util/fmt.hh"
+#include <log/log.hh>
+#include <util/fmt.hh>
 
 void
 assert_format (

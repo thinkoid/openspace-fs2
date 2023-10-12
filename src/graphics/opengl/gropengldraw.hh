@@ -3,12 +3,12 @@
 #ifndef FREESPACE2_GRAPHICS_OPENGL_GROPENGLDRAW_HH
 #define FREESPACE2_GRAPHICS_OPENGL_GROPENGLDRAW_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
 #include "gropenglstate.hh"
 #include "gropenglshader.hh"
-#include "graphics/shadows.hh"
+#include <graphics/shadows.hh>
 #include "glad/glad.h"
 
 extern GLuint Scene_framebuffer;

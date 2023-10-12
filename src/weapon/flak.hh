@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_WEAPON_FLAK_HH
 #define FREESPACE2_WEAPON_FLAK_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "physics/physics.hh"
-#include "weapon/weapon.hh"
+#include <physics/physics.hh>
+#include <weapon/weapon.hh>
 
 // --------------------------------------------------------------------------------------------------------------------------------------
 // FLAK DEFINES/VARS

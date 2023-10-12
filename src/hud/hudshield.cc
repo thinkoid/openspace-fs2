@@ -1,22 +1,22 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "gamesnd/gamesnd.hh"
-#include "hud/hudescort.hh"
-#include "hud/hudparse.hh"
-#include "hud/hudshield.hh"
-#include "hud/hudtargetbox.hh"
-#include "io/timer.hh"
-#include "object/object.hh"
-#include "object/objectshield.hh"
-#include "parse/parselo.hh"
-#include "playerman/player.hh"
+#include <defs.hh>
+#include <gamesnd/gamesnd.hh>
+#include <hud/hudescort.hh>
+#include <hud/hudparse.hh>
+#include <hud/hudshield.hh>
+#include <hud/hudtargetbox.hh>
+#include <io/timer.hh>
+#include <object/object.hh>
+#include <object/objectshield.hh>
+#include <parse/parselo.hh>
+#include <playerman/player.hh>
 #include "render/3d.hh" //For g3_start_frame
-#include "ship/ship.hh"
-#include "weapon/emp.hh"
-#include "graphics/matrix.hh"
-#include "assert/assert.hh"
-#include "log/log.hh"
+#include <ship/ship.hh>
+#include <weapon/emp.hh>
+#include <graphics/matrix.hh>
+#include <assert/assert.hh>
+#include <log/log.hh>
 
 #define NUM_SHIELD_LEVELS 8
 

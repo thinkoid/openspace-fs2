@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_LIBS_FFMPEG_FFMPEG_HH
 #define FREESPACE2_LIBS_FFMPEG_FFMPEG_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <exception>
 #include <stdexcept>

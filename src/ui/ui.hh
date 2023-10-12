@@ -3,12 +3,12 @@
 #ifndef FREESPACE2_UI_UI_HH
 #define FREESPACE2_UI_UI_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include "graphics/2d.hh"
-#include "graphics/font.hh"
+#include <graphics/font.hh>
 
-#include "io/cursor.hh"
+#include <io/cursor.hh>
 
 #define UI_KIND_BUTTON 1
 #define UI_KIND_KEYTRAP 2

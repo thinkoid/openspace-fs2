@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_FREESPACE2_SDLGRAPHICSOPERATIONS_HH
 #define FREESPACE2_FREESPACE2_SDLGRAPHICSOPERATIONS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "osapi/osapi.hh"
+#include <osapi/osapi.hh>
 
 class SDLGraphicsOperations : public fs2::os::GraphicsOperations {
 public:

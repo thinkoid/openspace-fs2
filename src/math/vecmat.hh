@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_MATH_VECMAT_HH
 #define FREESPACE2_MATH_VECMAT_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "math/floating.hh"
+#include <math/floating.hh>
 
 #define vm_is_vec_nan(v) \
     (IS_NAN ((v)->xyz.x) || IS_NAN ((v)->xyz.y) || IS_NAN ((v)->xyz.z))

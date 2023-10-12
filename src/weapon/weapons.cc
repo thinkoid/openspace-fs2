@@ -1,46 +1,46 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "ai/aibig.hh"
-#include "assert/assert.hh"
-#include "asteroid/asteroid.hh"
-#include "cmdline/cmdline.hh"
-#include "cmeasure/cmeasure.hh"
-#include "debugconsole/console.hh"
-#include "fireball/fireballs.hh"
+#include <ai/aibig.hh>
+#include <assert/assert.hh>
+#include <asteroid/asteroid.hh>
+#include <cmdline/cmdline.hh>
+#include <cmeasure/cmeasure.hh>
+#include <debugconsole/console.hh>
+#include <fireball/fireballs.hh>
 #include "freespace2/freespace.hh"
-#include "gamesnd/gamesnd.hh"
-#include "hud/hud.hh"
-#include "hud/hudartillery.hh"
-#include "iff_defs/iff_defs.hh"
-#include "io/joy_ff.hh"
-#include "io/timer.hh"
-#include "log/log.hh"
-#include "math/fix.hh"
-#include "math/prng.hh"
-#include "missionui/missionweaponchoice.hh"
-#include "object/objcollide.hh"
+#include <gamesnd/gamesnd.hh>
+#include <hud/hud.hh>
+#include <hud/hudartillery.hh>
+#include <iff_defs/iff_defs.hh>
+#include <io/joy_ff.hh>
+#include <io/timer.hh>
+#include <log/log.hh>
+#include <math/fix.hh>
+#include <math/prng.hh>
+#include <missionui/missionweaponchoice.hh>
+#include <object/objcollide.hh>
 #include "particle/effects/BeamPiercingEffect.hh"
 #include "particle/effects/ParticleEmitterEffect.hh"
 #include "particle/effects/SingleParticleEffect.hh"
-#include "particle/particle.hh"
-#include "playerman/player.hh"
-#include "radar/radar.hh"
+#include <particle/particle.hh>
+#include <playerman/player.hh>
+#include <radar/radar.hh>
 #include "render/3d.hh"
-#include "render/batching.hh"
-#include "ship/ship.hh"
-#include "ship/shiphit.hh"
-#include "tracing/Monitor.hh"
-#include "tracing/tracing.hh"
-#include "util/list.hh"
+#include <render/batching.hh>
+#include <ship/ship.hh>
+#include <ship/shiphit.hh>
+#include <tracing/Monitor.hh>
+#include <tracing/tracing.hh>
+#include <util/list.hh>
 #include "weapon.hh"
-#include "weapon/beam.hh" // for BEAM_TYPE_? definitions
-#include "weapon/corkscrew.hh"
-#include "weapon/emp.hh"
-#include "weapon/flak.hh"
-#include "weapon/muzzleflash.hh"
-#include "weapon/swarm.hh"
+#include <weapon/beam.hh> // for BEAM_TYPE_? definitions
+#include <weapon/corkscrew.hh>
+#include <weapon/emp.hh>
+#include <weapon/flak.hh>
+#include <weapon/muzzleflash.hh>
+#include <weapon/swarm.hh>
 
 // Since SSMs are parsed after weapons, if we want to allow SSM strikes to be
 // specified by name, we need to store those names until after SSMs are parsed.

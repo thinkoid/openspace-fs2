@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_SHIP_AWACS_HH
 #define FREESPACE2_SHIP_AWACS_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // ----------------------------------------------------------------------------------------------------
 // AWACS DEFINES/VARS

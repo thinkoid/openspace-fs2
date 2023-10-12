@@ -1,14 +1,14 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
+#include <defs.hh>
 
 /*
  * Copyright (C) 2005  Taylor Richards
  *
  */
 
-#include "cfile/cfile.hh"
-#include "shared/types.hh"
+#include <cfile/cfile.hh>
+#include <shared/types.hh>
 
 #include <vector>
 #include <iostream>

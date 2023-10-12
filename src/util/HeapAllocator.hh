@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_UTIL_HEAPALLOCATOR_HH
 #define FREESPACE2_UTIL_HEAPALLOCATOR_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 #include <functional>
 

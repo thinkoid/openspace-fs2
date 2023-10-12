@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_GAMEHELP_CONTEXTHELP_HH
 #define FREESPACE2_GAMEHELP_CONTEXTHELP_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 // Help overlays
 //

@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
-#include "tracing/Monitor.hh"
-#include "tracing/tracing.hh"
+#include <tracing/Monitor.hh>
+#include <tracing/tracing.hh>
 
 using namespace tracing;
 

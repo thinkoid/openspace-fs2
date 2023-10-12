@@ -3,9 +3,9 @@
 #ifndef FREESPACE2_MISSION_MISSIONGRID_HH
 #define FREESPACE2_MISSION_MISSIONGRID_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "physics/physics.hh"
+#include <physics/physics.hh>
 
 #define MAX_GRIDLINE_POINTS 201
 #define L_MAX_LINES 128

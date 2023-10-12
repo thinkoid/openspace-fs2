@@ -1,11 +1,11 @@
 // -*- mode: c++; -*-
 
-#include "defs.hh"
-#include "math/fix.hh"
-#include "pilotfile/pilotfile.hh"
-#include "ship/ship.hh"
-#include "stats/medals.hh"
-#include "assert/assert.hh"
+#include <defs.hh>
+#include <math/fix.hh>
+#include <pilotfile/pilotfile.hh>
+#include <ship/ship.hh>
+#include <stats/medals.hh>
+#include <assert/assert.hh>
 
 pilotfile Pilot;
 

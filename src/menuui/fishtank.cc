@@ -1,11 +1,11 @@
 // -*- mode: c++; -*-
 
-#include "anim/animplay.hh"
-#include "anim/packunpack.hh"
+#include <anim/animplay.hh>
+#include <anim/packunpack.hh>
 #include "freespace2/freespace.hh"
-#include "gamesequence/gamesequence.hh"
-#include "math/prng.hh"
-#include "menuui/fishtank.hh"
+#include <gamesequence/gamesequence.hh>
+#include <math/prng.hh>
+#include <menuui/fishtank.hh>
 
 // fish
 typedef struct fish {

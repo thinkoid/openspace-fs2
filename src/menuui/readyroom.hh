@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_MENUUI_READYROOM_HH
 #define FREESPACE2_MENUUI_READYROOM_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 extern int Sim_room_overlay_id;
 extern int Campaign_room_overlay_id;

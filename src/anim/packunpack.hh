@@ -3,7 +3,7 @@
 #ifndef FREESPACE2_ANIM_PACKUNPACK_HH
 #define FREESPACE2_ANIM_PACKUNPACK_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
 struct CFILE;
 

@@ -3,10 +3,10 @@
 #ifndef FREESPACE2_AI_AIINTERNAL_HH
 #define FREESPACE2_AI_AIINTERNAL_HH
 
-#include "defs.hh"
+#include <defs.hh>
 
-#include "ship/ship.hh"
-#include "weapon/weapon.hh"
+#include <ship/ship.hh>
+#include <weapon/weapon.hh>
 
 // Returns true if the specified object is a stealth ship, false if not
 bool is_object_stealth_ship (object* objp);
