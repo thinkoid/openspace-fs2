@@ -81,7 +81,10 @@ void camera::reset () {
 }
 
 void camera::set_name (const char* in_name) {
-    if (in_name != NULL) strncpy (name, in_name, NAME_LENGTH - 1);
+        if (in_name && in_name[0]) {
+                strncpy (name, in_name, NAME_LENGTH - 1);
+                name[NAME_LENGTH - 1] = 0;
+        }
 }
 
 void camera::set_fov (
