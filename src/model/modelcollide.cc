@@ -780,8 +780,8 @@ void model_collide_parse_bsp (
 
     p += chunk_size;
 
-    bsp_collision_node new_node;
-    bsp_collision_leaf new_leaf;
+    bsp_collision_node new_node{};
+    bsp_collision_leaf new_leaf{};
 
     std::vector< bsp_collision_node > node_buffer;
     std::vector< bsp_collision_leaf > leaf_buffer;

@@ -21985,9 +21985,8 @@ void sexp_reset_fov () {
 void sexp_reset_camera (int node) {
     camera* cam = cam_get_current ().getCamera ();
 
-    if (!cam && is_sexp_true (node)) {
+    if (cam && is_sexp_true (node))
         cam->reset ();
-    }
 
     cam_reset_camera ();
 }
@@ -25160,7 +25159,7 @@ int get_sexp_main () {
 
     if (*Mp != '(') {
         char buf[512];
-        strncpy (buf, Mp, 512);
+        strncpy (buf, Mp, 511);
         if (buf[511] != '\0') strcpy (&buf[506], "[...]");
 
         ASSERTX (0, "Expected to find an open parenthesis in the following sexp:\n%s",buf);

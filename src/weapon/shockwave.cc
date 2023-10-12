@@ -196,11 +196,7 @@ void shockwave_set_framenum (int index) {
     shockwave* sw;
     shockwave_info* si;
 
-    ASSERTX (
-        (index >= 0) && (index < MAX_SHOCKWAVES),
-        "shockwave_set_framenum called with an index of %d (should be 0-%d); "
-        "get a coder!\n",
-        index, MAX_SHOCKWAVES - 1);
+    ASSERT(0 <= index && index < MAX_SHOCKWAVES);
 
     sw = &Shockwaves[index];
     si = &Shockwave_info[sw->shockwave_info_index];

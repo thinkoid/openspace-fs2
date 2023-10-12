@@ -10,9 +10,8 @@ text_iterator::text_iterator (
     const char* in_range_end_byte)
     : current_byte (in_current_byte), range_end_byte (in_range_end_byte),
       range_start_byte (in_range_start_byte) {
-    if (range_end_byte == nullptr) {
-        range_end_byte = in_current_byte + strlen (in_current_byte);
-    }
+    if (0 == range_end_byte && in_current_byte && in_current_byte[0])
+            range_end_byte = in_current_byte + strlen (in_current_byte);
 }
 
 text_iterator& unicode::text_iterator::operator++ () {

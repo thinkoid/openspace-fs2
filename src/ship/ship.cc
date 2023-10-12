@@ -4173,7 +4173,7 @@ static int parse_ship_values (
                     for (auto it = Ship_info.cbegin ();
                          it != Ship_info.cend (); ++it) {
                         // find the index number of the current ship info type
-                        if (it->name == sip->name) {
+                        if (&it->name[0] == &sip->name[0]) {
                             Ai_tp_list[i].ship_class.push_back (
                                 (int)std::distance (Ship_info.cbegin (), it));
                             break;
