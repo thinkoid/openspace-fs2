@@ -976,22 +976,22 @@ void ai_add_goal_sub_sexp (
         aigp->ai_mode = AI_GOAL_KEEP_SAFE_DISTANCE;
         break;
 
-    case OP_AI_FORM_ON_WING:
-        aigp->priority = 99;
-        aigp->target_name = ai_get_goal_target_name (
-            CTEXT (CDR (node)), &aigp->target_name_index);
-        aigp->ai_mode = AI_GOAL_FORM_ON_WING;
-        break;
+    // case OP_AI_FORM_ON_WING:
+    //     aigp->priority = 99;
+    //     aigp->target_name = ai_get_goal_target_name (
+    //         CTEXT (CDR (node)), &aigp->target_name_index);
+    //     aigp->ai_mode = AI_GOAL_FORM_ON_WING;
+    //     break;
 
     case OP_AI_CHASE:
     case OP_AI_CHASE_WING:
-    case OP_AI_CHASE_SHIP_CLASS:
+    // case OP_AI_CHASE_SHIP_CLASS:
     case OP_AI_GUARD:
     case OP_AI_GUARD_WING:
     case OP_AI_EVADE_SHIP:
     case OP_AI_STAY_NEAR_SHIP:
     case OP_AI_IGNORE:
-    case OP_AI_IGNORE_NEW:
+    // case OP_AI_IGNORE_NEW:
         aigp->target_name = ai_get_goal_target_name (
             CTEXT (CDR (node)), &aigp->target_name_index);
         aigp->priority = atoi (CTEXT (CDR (CDR (node))));
@@ -1020,18 +1020,18 @@ void ai_add_goal_sub_sexp (
         else if (op == OP_AI_CHASE_WING) {
             aigp->ai_mode = AI_GOAL_CHASE_WING;
         }
-        else if (op == OP_AI_CHASE_SHIP_CLASS) {
-            aigp->ai_mode = AI_GOAL_CHASE_SHIP_CLASS;
-        }
+        // else if (op == OP_AI_CHASE_SHIP_CLASS) {
+        //     aigp->ai_mode = AI_GOAL_CHASE_SHIP_CLASS;
+        // }
         else if (op == OP_AI_STAY_NEAR_SHIP) {
             aigp->ai_mode = AI_GOAL_STAY_NEAR_SHIP;
         }
         else if (op == OP_AI_IGNORE) {
             aigp->ai_mode = AI_GOAL_IGNORE;
         }
-        else if (op == OP_AI_IGNORE_NEW) {
-            aigp->ai_mode = AI_GOAL_IGNORE_NEW;
-        }
+        // else if (op == OP_AI_IGNORE_NEW) {
+        //     aigp->ai_mode = AI_GOAL_IGNORE_NEW;
+        // }
         else
             ASSERT (0);
 
@@ -1048,8 +1048,10 @@ void ai_add_goal_sub_sexp (
 
     // Goober5000 - we now have an extra optional chase argument to allow
     // chasing our own team
-    if (op == OP_AI_CHASE || op == OP_AI_CHASE_WING ||
-        op == OP_AI_CHASE_SHIP_CLASS || op == OP_AI_DISABLE_SHIP ||
+    if (op == OP_AI_CHASE ||
+        op == OP_AI_CHASE_WING ||
+        // op == OP_AI_CHASE_SHIP_CLASS ||
+        op == OP_AI_DISABLE_SHIP ||
         op == OP_AI_DISARM_SHIP) {
         if ((CDDDR (node) != -1) && is_sexp_true (CDDDR (node)))
             aigp->flags.set (AI::Goal_Flags::Target_own_team);
@@ -1206,11 +1208,11 @@ int ai_remove_goal_sexp_sub (int sexp, ai_goal* aigp) {
             (CDR (CDR (node)) >= 0) ? atoi (CTEXT (CDR (CDR (node)))) : -1;
         goalmode = AI_GOAL_CHASE_WING;
         break;
-    case OP_AI_CHASE_SHIP_CLASS:
-        priority =
-            (CDR (CDR (node)) >= 0) ? atoi (CTEXT (CDR (CDR (node)))) : -1;
-        goalmode = AI_GOAL_CHASE_SHIP_CLASS;
-        break;
+    // case OP_AI_CHASE_SHIP_CLASS:
+    //     priority =
+    //         (CDR (CDR (node)) >= 0) ? atoi (CTEXT (CDR (CDR (node)))) : -1;
+    //     goalmode = AI_GOAL_CHASE_SHIP_CLASS;
+    //     break;
     case OP_AI_EVADE_SHIP:
         priority =
             (CDR (CDR (node)) >= 0) ? atoi (CTEXT (CDR (CDR (node)))) : -1;
@@ -1226,11 +1228,11 @@ int ai_remove_goal_sexp_sub (int sexp, ai_goal* aigp) {
             (CDR (CDR (node)) >= 0) ? atoi (CTEXT (CDR (CDR (node)))) : -1;
         goalmode = AI_GOAL_IGNORE;
         break;
-    case OP_AI_IGNORE_NEW:
-        priority =
-            (CDR (CDR (node)) >= 0) ? atoi (CTEXT (CDR (CDR (node)))) : -1;
-        goalmode = AI_GOAL_IGNORE_NEW;
-        break;
+    // case OP_AI_IGNORE_NEW:
+    //     priority =
+    //         (CDR (CDR (node)) >= 0) ? atoi (CTEXT (CDR (CDR (node)))) : -1;
+    //     goalmode = AI_GOAL_IGNORE_NEW;
+    //     break;
     default: ASSERT (0); break;
     };
 
