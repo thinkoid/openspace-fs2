@@ -1862,7 +1862,7 @@ void stars_draw (
 #endif
 
     if (!Rendering_to_env && (Game_detail_flags & DETAIL_FLAG_MOTION) &&
-        supernova_active () < 3 && !Cmdline_nomotiondebris) && in_mission) {
+        supernova_active () < 3 && !Cmdline_nomotiondebris && in_mission) {
         stars_draw_debris ();
     }
 
