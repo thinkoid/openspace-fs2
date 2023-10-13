@@ -352,59 +352,21 @@ void mission_brief_common_init () {
     mission_brief_common_reset ();
     mission_debrief_common_reset ();
 
-    if (Fred_running) {
-        // If Fred is running malloc out max space
-        for (i = 0; i < MAX_TVT_TEAMS; i++) {
-            for (j = 0; j < MAX_BRIEF_STAGES; j++) {
-                Briefings[i].stages[j].text = "";
-
-                if (Briefings[i].stages[j].icons == NULL) {
-                    Briefings[i].stages[j].icons = (brief_icon*)malloc (
-                        sizeof (brief_icon) * MAX_STAGE_ICONS);
-                    ASSERT (Briefings[i].stages[j].icons != NULL);
-                    memset (
-                        Briefings[i].stages[j].icons, 0,
-                        sizeof (brief_icon) * MAX_STAGE_ICONS);
-                }
-
-                if (Briefings[i].stages[j].lines == NULL) {
-                    Briefings[i].stages[j].lines = (brief_line*)malloc (
-                        sizeof (brief_line) * MAX_BRIEF_STAGE_LINES);
-                    ASSERT (Briefings[i].stages[j].lines != NULL);
-                    memset (
-                        Briefings[i].stages[j].lines, 0,
-                        sizeof (brief_line) * MAX_BRIEF_STAGE_LINES);
-                }
-
-                Briefings[i].stages[j].num_icons = 0;
-                Briefings[i].stages[j].num_lines = 0;
-            }
-        }
-
-        for (i = 0; i < MAX_TVT_TEAMS; i++) {
-            for (j = 0; j < MAX_DEBRIEF_STAGES; j++) {
-                Debriefings[i].stages[j].text = "";
-                Debriefings[i].stages[j].recommendation_text = "";
-            }
+    // If game is running don't malloc anything
+    for (i = 0; i < MAX_TVT_TEAMS; i++) {
+        for (j = 0; j < MAX_BRIEF_STAGES; j++) {
+            Briefings[i].stages[j].text = "";
+            Briefings[i].stages[j].num_icons = 0;
+            Briefings[i].stages[j].icons = NULL;
+            Briefings[i].stages[j].num_lines = 0;
+            Briefings[i].stages[j].lines = NULL;
         }
     }
-    else {
-        // If game is running don't malloc anything
-        for (i = 0; i < MAX_TVT_TEAMS; i++) {
-            for (j = 0; j < MAX_BRIEF_STAGES; j++) {
-                Briefings[i].stages[j].text = "";
-                Briefings[i].stages[j].num_icons = 0;
-                Briefings[i].stages[j].icons = NULL;
-                Briefings[i].stages[j].num_lines = 0;
-                Briefings[i].stages[j].lines = NULL;
-            }
-        }
 
-        for (i = 0; i < MAX_TVT_TEAMS; i++) {
-            for (j = 0; j < MAX_DEBRIEF_STAGES; j++) {
-                Debriefings[i].stages[j].text = "";
-                Debriefings[i].stages[j].recommendation_text = "";
-            }
+    for (i = 0; i < MAX_TVT_TEAMS; i++) {
+        for (j = 0; j < MAX_DEBRIEF_STAGES; j++) {
+            Debriefings[i].stages[j].text = "";
+            Debriefings[i].stages[j].recommendation_text = "";
         }
     }
 }
@@ -424,31 +386,14 @@ void mission_brief_common_reset () {
             Briefings[i].stages[j].num_lines = 0;
             Briefings[i].stages[j].text = "";
 
-            if (Fred_running) {
-                if (Briefings[i].stages[j].icons) {
-                    memset (
-                        Briefings[i].stages[j].icons, 0,
-                        sizeof (brief_icon) * MAX_STAGE_ICONS);
-                    Briefings[i].stages[j].icons->ship_class = -1;
-                    Briefings[i].stages[j].icons->modelnum = -1;
-                    Briefings[i].stages[j].icons->bitmap_id = -1;
-                }
-
-                if (Briefings[i].stages[j].lines)
-                    memset (
-                        Briefings[i].stages[j].lines, 0,
-                        sizeof (brief_line) * MAX_BRIEF_STAGE_LINES);
+            if (Briefings[i].stages[j].icons) {
+                free (Briefings[i].stages[j].icons);
+                Briefings[i].stages[j].icons = NULL;
             }
-            else {
-                if (Briefings[i].stages[j].icons) {
-                    free (Briefings[i].stages[j].icons);
-                    Briefings[i].stages[j].icons = NULL;
-                }
 
-                if (Briefings[i].stages[j].lines) {
-                    free (Briefings[i].stages[j].lines);
-                    Briefings[i].stages[j].lines = NULL;
-                }
+            if (Briefings[i].stages[j].lines) {
+                free (Briefings[i].stages[j].lines);
+                Briefings[i].stages[j].lines = NULL;
             }
         }
     }
@@ -886,8 +831,7 @@ void brief_render_icon (
         bc = int (sx);
 
         if (((bx < 0) || (bx > gr_screen.max_w_unscaled) || (by < 0) ||
-             (by > gr_screen.max_h_unscaled)) &&
-            !Fred_running) {
+             (by > gr_screen.max_h_unscaled))) {
             bi->x = bx;
             bi->y = by;
             return;
@@ -914,11 +858,8 @@ void brief_render_icon (
                     ha, frametime, 1, 0, 1, 0, GR_RESIZE_MENU, mirror_icon);
 
                 if (!Brief_stage_highlight_sound_handle.isValid ()) {
-                    if (!Fred_running) {
-                        Brief_stage_highlight_sound_handle =
-                            snd_play (gamesnd_get_interface_sound (
-                                InterfaceSounds::ICON_HIGHLIGHT));
-                    }
+                    Brief_stage_highlight_sound_handle = snd_play (
+                        gamesnd_get_interface_sound (InterfaceSounds::ICON_HIGHLIGHT));
                 }
             }
         }

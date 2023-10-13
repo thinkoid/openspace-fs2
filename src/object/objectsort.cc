@@ -221,7 +221,7 @@ void obj_render_all (
 
     bool full_neb =
         ((The_mission.flags[Mission::Mission_Flags::Fullneb]) &&
-         (Neb2_render_mode != NEB2_RENDER_NONE) && !Fred_running);
+         (Neb2_render_mode != NEB2_RENDER_NONE));
     bool c_viewer =
         (!Viewer_mode || (Viewer_mode & VM_PADLOCK_ANY) ||
          (Viewer_mode & VM_OTHER_SHIP) || (Viewer_mode & VM_TRACK));
@@ -281,7 +281,7 @@ void obj_render_all (
 
         // if we're fullneb, fire up the fog - this also generates a fog table
         if ((The_mission.flags[Mission::Mission_Flags::Fullneb]) &&
-            (Neb2_render_mode != NEB2_RENDER_NONE) && !Fred_running) {
+            (Neb2_render_mode != NEB2_RENDER_NONE)) {
             // get the fog values
             neb2_get_adjusted_fog_values (&fog_near, &fog_far, obj);
 
@@ -321,7 +321,7 @@ void obj_render_queue_all () {
             if (!obj_in_view_cone (objp)) { continue; }
 
             if ((The_mission.flags[Mission::Mission_Flags::Fullneb]) &&
-                (Neb2_render_mode != NEB2_RENDER_NONE) && !Fred_running) {
+                (Neb2_render_mode != NEB2_RENDER_NONE)) {
                 vec3d to_obj;
                 vm_vec_sub (&to_obj, &objp->pos, &Eye_position);
                 float z = vm_vec_dot (&Eye_matrix.vec.fvec, &to_obj);

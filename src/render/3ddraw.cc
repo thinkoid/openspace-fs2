@@ -55,13 +55,6 @@ free_points:
  * Draws a line. takes two points.  returns true if drew
  */
 int g3_draw_line (vertex* p0, vertex* p1) {
-#ifdef FRED_OGL_COMMENT_OUT_FOR_NOW
-    if (Fred_running) {
-        gr_aaline (p0, p1);
-        return 0;
-    }
-#endif
-
     ubyte codes_or;
 
     ASSERT (G3_count == 1);

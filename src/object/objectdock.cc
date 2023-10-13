@@ -399,16 +399,13 @@ void dock_move_docked_objects (object* objp) {
     object* fastest_objp;
 
     // in FRED, objp is the object everyone moves with
-    if (Fred_running) { fastest_objp = objp; }
-    else {
-        // find the object with the highest max speed
-        dock_evaluate_all_docked_objects (
-            objp, &dfi, dock_find_max_speed_helper);
-        fastest_objp = dfi.maintained_variables.objp_value;
+    // find the object with the highest max speed
+    dock_evaluate_all_docked_objects (
+        objp, &dfi, dock_find_max_speed_helper);
+    fastest_objp = dfi.maintained_variables.objp_value;
 
-        // if we have no max speed, just use the first one
-        if (fastest_objp == NULL) fastest_objp = objp;
-    }
+    // if we have no max speed, just use the first one
+    if (0 == fastest_objp) fastest_objp = objp;
 
     // start a tree with that object as the parent... do NOT use the
     // überfunction for this, because we must use a tree for the parent

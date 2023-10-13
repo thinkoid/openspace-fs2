@@ -1576,12 +1576,10 @@ cmdline_parm::cmdline_parm (
 
 // destructor - frees any allocated memory
 cmdline_parm::~cmdline_parm () {
-#ifndef FRED
     if (args) {
         delete[] args;
-        args = NULL;
+        args = 0;
     }
-#endif
 }
 
 // checks if the objects args variable is valid

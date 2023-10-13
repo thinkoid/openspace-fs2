@@ -491,10 +491,7 @@ void fiction_viewer_unpause () {
 }
 
 bool mission_has_fiction () {
-    if (Fred_running)
-        return !Fiction_viewer_stages.empty ();
-    else
-        return (Fiction_viewer_text != nullptr);
+    return (Fiction_viewer_text != nullptr);
 }
 
 int fiction_viewer_ui_name_to_index (const char* ui_name) {

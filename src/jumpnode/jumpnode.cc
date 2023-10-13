@@ -297,53 +297,45 @@ void CJumpNode::Render (model_draw_list* scene, vec3d* pos, vec3d* view_pos) {
     render_info.set_detail_level_lock (0);
     render_info.set_flags (mr_flags);
 
-    if (Fred_running) {
+    if (m_flags & JN_USE_DISPLAY_COLOR) {
+        // gr_set_color_fast(&m_display_color);
         render_info.set_color (m_display_color);
-
-        model_render_queue (
-            &render_info, scene, m_modelnum, &node_orient, pos);
     }
-    else {
-        if (m_flags & JN_USE_DISPLAY_COLOR) {
-            // gr_set_color_fast(&m_display_color);
-            render_info.set_color (m_display_color);
-        }
-        else if (view_pos != NULL) {
-            int alpha_index = HUD_color_alpha;
+    else if (view_pos != NULL) {
+        int alpha_index = HUD_color_alpha;
 
-            // generate alpha index based on distance to jump this
-            float dist;
+        // generate alpha index based on distance to jump this
+        float dist;
 
-            dist = vm_vec_dist_quick (view_pos, pos);
+        dist = vm_vec_dist_quick (view_pos, pos);
 
-            // linearly interpolate alpha.  At 1000m or less, full intensity.
-            // At 10000m or more 1/2 intensity.
-            if (dist < 1000) { alpha_index = HUD_COLOR_ALPHA_USER_MAX - 2; }
-            else if (dist > 10000) {
-                alpha_index = HUD_COLOR_ALPHA_USER_MIN;
-            }
-            else {
-                alpha_index = (int)std::lround (
-                    HUD_COLOR_ALPHA_USER_MAX - 2 +
-                    (dist - 1000) *
-                        (HUD_COLOR_ALPHA_USER_MIN - HUD_COLOR_ALPHA_USER_MAX -
-                         2) /
-                        (9000));
-                if (alpha_index < HUD_COLOR_ALPHA_USER_MIN) {
-                    alpha_index = HUD_COLOR_ALPHA_USER_MIN;
-                }
-            }
-
-            render_info.set_color (HUD_color_defaults[alpha_index]);
+        // linearly interpolate alpha.  At 1000m or less, full intensity.
+        // At 10000m or more 1/2 intensity.
+        if (dist < 1000) { alpha_index = HUD_COLOR_ALPHA_USER_MAX - 2; }
+        else if (dist > 10000) {
+            alpha_index = HUD_COLOR_ALPHA_USER_MIN;
         }
         else {
-            render_info.set_color (
-                HUD_color_red, HUD_color_green, HUD_color_blue);
+            alpha_index = (int)std::lround (
+                HUD_COLOR_ALPHA_USER_MAX - 2 +
+                (dist - 1000) *
+                (HUD_COLOR_ALPHA_USER_MIN - HUD_COLOR_ALPHA_USER_MAX -
+                 2) /
+                (9000));
+            if (alpha_index < HUD_COLOR_ALPHA_USER_MIN) {
+                alpha_index = HUD_COLOR_ALPHA_USER_MIN;
+            }
         }
 
-        model_render_queue (
-            &render_info, scene, m_modelnum, &node_orient, pos);
+        render_info.set_color (HUD_color_defaults[alpha_index]);
     }
+    else {
+        render_info.set_color (
+            HUD_color_red, HUD_color_green, HUD_color_blue);
+    }
+
+    model_render_queue (
+        &render_info, scene, m_modelnum, &node_orient, pos);
 }
 
 /**
@@ -386,19 +378,6 @@ CJumpNode* jumpnode_get_which_in (object* objp) {
 }
 
 /**
- * Render all function
- *
- * @note Only called by FRED
- */
-void jumpnode_render_all () {
-    std::list< CJumpNode >::iterator jnp;
-
-    for (jnp = Jump_nodes.begin (); jnp != Jump_nodes.end (); ++jnp) {
-        jnp->Render (&jnp->GetSCPObject ()->pos);
-    }
-}
-
-/**
- * Level cleanup
+ * Level cleanup -- TODO: is it needed?
  */
 void jumpnode_level_close () { Jump_nodes.clear (); }

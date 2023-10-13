@@ -1922,10 +1922,6 @@ static int parse_ship (const char* filename, bool replace) {
         create_if_not_found = false;
     }
 
-#ifdef NDEBUG
-    if (get_pointer_to_first_hash_symbol (buf) && Fred_running) rtn = 1;
-#endif
-
     // Remove @ symbol
     // these used to be used to denote weapons that would
     // only be parsed in demo builds
@@ -6159,24 +6155,15 @@ static void ship_set (int ship_index, int objnum, int ship_type) {
     ai_object_init (objp, shipp->ai_index);
     physics_ship_init (objp);
 
-    if (!Fred_running) { ship_set_warp_effects (objp, sip); }
+    ship_set_warp_effects (objp, sip);
 
-    if (Fred_running) { shipp->ship_max_hull_strength = 100.0f; }
-    else {
-        shipp->ship_max_hull_strength = sip->max_hull_strength;
-    }
+    shipp->ship_max_hull_strength = sip->max_hull_strength;
     objp->hull_strength = shipp->ship_max_hull_strength;
 
     shipp->max_shield_recharge = sip->max_shield_recharge;
 
-    if (Fred_running) {
-        shipp->ship_max_shield_strength = 100.0f;
-        objp->shield_quadrant[0] = 100.0f;
-    }
-    else {
-        shipp->ship_max_shield_strength = sip->max_shield_strength;
-        shield_set_strength (objp, shield_get_max_strength (objp));
-    }
+    shipp->ship_max_shield_strength = sip->max_shield_strength;
+    shield_set_strength (objp, shield_get_max_strength (objp));
 
     if (sip->flags[Ship::Info_Flags::Model_point_shields]) {
         objp->n_quadrants = (int)pm->shield_points.size ();
@@ -6196,9 +6183,7 @@ static void ship_set (int ship_index, int objnum, int ship_type) {
             Num_ship_subsystems_allocated, Num_ship_subsystems,
             shipp->ship_name);
 
-        if (Fred_running) { EE << err_msg; }
-        else
-            ASSERTX (0, "%s", err_msg);
+        ASSERTX (0, "%s", err_msg);
     }
 
     ets_init_ship (objp); // init ship fields that are used for the ETS
@@ -6249,11 +6234,8 @@ static void ship_set (int ship_index, int objnum, int ship_type) {
             Weapon_info[sip->primary_bank_weapons[i]].cargo_size;
 
         if (weapon_size > 0.0f) {
-            if (Fred_running)
-                swp->primary_bank_ammo[i] = 100;
-            else
-                swp->primary_bank_ammo[i] = (int)std::lround (
-                    sip->primary_bank_ammo_capacity[i] / weapon_size);
+            swp->primary_bank_ammo[i] = (int)std::lround (
+                sip->primary_bank_ammo_capacity[i] / weapon_size);
         }
     }
 
@@ -6266,11 +6248,8 @@ static void ship_set (int ship_index, int objnum, int ship_type) {
             "than 0.\n",
             Weapon_info[sip->secondary_bank_weapons[i]].name);
 
-        if (Fred_running)
-            swp->secondary_bank_ammo[i] = 100;
-        else
-            swp->secondary_bank_ammo[i] = (int)std::lround (
-                sip->secondary_bank_ammo_capacity[i] / weapon_size);
+        swp->secondary_bank_ammo[i] = (int)std::lround (
+            sip->secondary_bank_ammo_capacity[i] / weapon_size);
     }
 
     shipp->armor_type_idx = sip->armor_type_idx;
@@ -6699,19 +6678,11 @@ static int subsys_set (int objnum, int ignore_subsys_info) {
         // Goober5000 - this has to be moved outside back to
         // parse_create_object, because a lot of the ship creation code is
         // duplicated in several points and overwrites previous things... ugh.
-        ship_system->max_hits =
-            model_system
-                ->max_subsys_strength; // * shipp->ship_max_hull_strength /
-                                       // sinfo->max_hull_strength;
+        ship_system->max_hits = model_system->max_subsys_strength;
+        // * shipp->ship_max_hull_strength /
+        // sinfo->max_hull_strength;
 
-        if (!Fred_running) {
-            ship_system->current_hits =
-                ship_system->max_hits; // set the current hits
-        }
-        else {
-            ship_system->current_hits =
-                0.0f; // Jason wants this to be 0 in Fred.
-        }
+        ship_system->current_hits = ship_system->max_hits; // set the current hits
 
         ship_system->subsys_guardian_threshold = 0;
         ship_system->armor_type_idx = model_system->armor_type_idx;
@@ -6859,18 +6830,16 @@ static int subsys_set (int objnum, int ignore_subsys_info) {
             float weapon_size =
                 Weapon_info[ship_system->weapons.secondary_bank_weapons[k]]
                     .cargo_size;
+
             ASSERTX (
                 weapon_size > 0.0f,
                 "Cargo size for secondary weapon %s is invalid, must be "
                 "greater than 0.\n",
                 Weapon_info[ship_system->weapons.secondary_bank_weapons[k]]
                     .name);
-            ship_system->weapons.secondary_bank_ammo[k] =
-                (Fred_running
-                     ? 100
-                     : (int)std::lround (
-                           ship_system->weapons.secondary_bank_capacity[k] /
-                           weapon_size));
+
+            ship_system->weapons.secondary_bank_ammo[k] = (int)std::lround (
+                ship_system->weapons.secondary_bank_capacity[k] / weapon_size);
 
             ship_system->weapons.secondary_next_slot[k] = 0;
         }
@@ -6883,12 +6852,9 @@ static int subsys_set (int objnum, int ignore_subsys_info) {
 
             if (weapon_size > 0.0f) { // Non-ballistic primaries are supposed
                                       // to have a cargo_size of 0
-                ship_system->weapons.primary_bank_ammo[k] =
-                    (Fred_running
-                         ? 100
-                         : (int)std::lround (
-                               ship_system->weapons.primary_bank_capacity[k] /
-                               weapon_size));
+                ship_system->weapons.primary_bank_ammo[k] = (int)std::lround (
+                    ship_system->weapons.primary_bank_capacity[k] /
+                    weapon_size);
             }
         }
 
@@ -9372,32 +9338,24 @@ static void ship_set_default_weapons (ship* shipp, ship_info* sip) {
         wip = &Weapon_info[swp->primary_bank_weapons[i]];
 
         if (wip->wi_flags[Weapon::Info_Flags::Ballistic]) {
-            if (Fred_running) { swp->primary_bank_ammo[i] = 100; }
-            else {
-                float capacity, size;
-                capacity = (float)sip->primary_bank_ammo_capacity[i];
-                size = (float)wip->cargo_size;
-                swp->primary_bank_ammo[i] = (int)std::lround (capacity / size);
-                swp->primary_bank_start_ammo[i] = swp->primary_bank_ammo[i];
-            }
-
+            float capacity, size;
+            capacity = (float)sip->primary_bank_ammo_capacity[i];
+            size = (float)wip->cargo_size;
+            swp->primary_bank_ammo[i] = (int)std::lround (capacity / size);
+            swp->primary_bank_start_ammo[i] = swp->primary_bank_ammo[i];
             swp->primary_bank_capacity[i] = sip->primary_bank_ammo_capacity[i];
         }
     }
 
     swp->num_secondary_banks = sip->num_secondary_banks;
     for (i = 0; i < swp->num_secondary_banks; i++) {
-        if (Fred_running) { swp->secondary_bank_ammo[i] = 100; }
-        else {
-            wip = &Weapon_info[swp->secondary_bank_weapons[i]];
-            float size = (float)wip->cargo_size;
-            swp->secondary_bank_ammo[i] =
-                int (sip->secondary_bank_ammo_capacity[i] / size);
-            // Karajorma - Support ships will use the wrong values if we don't
-            // set this.
-            swp->secondary_bank_start_ammo[i] = swp->secondary_bank_ammo[i];
-        }
-
+        wip = &Weapon_info[swp->secondary_bank_weapons[i]];
+        float size = (float)wip->cargo_size;
+        swp->secondary_bank_ammo[i] =
+            int (sip->secondary_bank_ammo_capacity[i] / size);
+        // Karajorma - Support ships will use the wrong values if we don't
+        // set this.
+        swp->secondary_bank_start_ammo[i] = swp->secondary_bank_ammo[i];
         swp->secondary_bank_capacity[i] = sip->secondary_bank_ammo_capacity[i];
     }
 
@@ -9606,14 +9564,9 @@ int ship_create (matrix* orient, vec3d* pos, int ship_type, char* ship_name) {
     // however, we will reduce it, thus FreeSpace needs to check against what
     // this limit will be, otherwise testing the missions before release could
     // work fine, yet not work anymore once a release build is made.
-    if (Fred_running) {
-        if (t >= MAX_SHIPS) return -1;
-    }
-    else {
-        if (t >= SHIPS_LIMIT) {
-            ASSERTX (0, XSTR ("There is a limit of %d ships in the mission at once.  Please be sure that you do not have more than %d ships present in the mission at the same time.",1495),SHIPS_LIMIT, SHIPS_LIMIT);
-            return -1;
-        }
+    if (t >= SHIPS_LIMIT) {
+        ASSERTX (0, XSTR ("There is a limit of %d ships in the mission at once.  Please be sure that you do not have more than %d ships present in the mission at the same time.",1495),SHIPS_LIMIT, SHIPS_LIMIT);
+        return -1;
     }
 
     for (n = 0; n < MAX_SHIPS; n++) {
@@ -9844,7 +9797,7 @@ static void ship_model_change (int n, int ship_type) {
     Objects[sp->objnum].radius = model_get_radius (pm->id);
 
     // page in nondims in game
-    if (!Fred_running) model_page_in_textures (sip->model_num, ship_type);
+    model_page_in_textures (sip->model_num, ship_type);
 
     // allocate memory for keeping glow point bank status (enabled/disabled)
     {
@@ -9969,9 +9922,8 @@ void change_ship_type (int n, int ship_type, int by_sexp) {
 
     std::list< std::pair< int, int > > last_targeted_subsystem_matches;
 
-    if (!(Fred_running) &&
-        (Game_mode & GM_IN_MISSION)) { // Doing this effort only makes sense in
-                                       // the middle of a mission.
+    if (Game_mode & GM_IN_MISSION) { // Doing this effort only makes sense in
+                                     // the middle of a mission.
         // Delete ship sparks if the model changed
         if (sip_orig->model_num != sip->model_num) {
             memset (sp->sparks, 0, MAX_SHIP_HITS * sizeof (ship_spark));
@@ -10040,41 +9992,36 @@ void change_ship_type (int n, int ship_type, int by_sexp) {
     // ...except when in FRED, because this stuff is handled in the
     // missionparse/missionsave part. The E
 
-    if (!Fred_running) {
-        // hull
-        if (sp->special_hitpoints) {
-            hull_pct = objp->hull_strength / sp->ship_max_hull_strength;
-        }
-        else {
-            ASSERT (Ship_info[sp->ship_info_index].max_hull_strength > 0.0f);
-            hull_pct = objp->hull_strength /
-                       Ship_info[sp->ship_info_index].max_hull_strength;
-        }
-
-        // extra check
-        CLAMP (hull_pct, 0.01f, 1.0f);
-
-        // shield
-        if (sp->special_shield > 0) {
-            shield_pct =
-                shield_get_strength (objp) / shield_get_max_strength (objp);
-        }
-        else if (Ship_info[sp->ship_info_index].max_shield_strength > 0.0f) {
-            shield_pct =
-                shield_get_strength (objp) / (sip_orig->max_shield_strength *
-                                              sip_orig->max_shield_recharge);
-        }
-        else {
-            shield_pct = 0.0f;
-        }
-
-        // extra check
-        ASSERT (shield_pct >= 0.0f && shield_pct <= 1.0f);
-        CLAMP (shield_pct, 0.0f, 1.0f);
+    // hull
+    if (sp->special_hitpoints) {
+        hull_pct = objp->hull_strength / sp->ship_max_hull_strength;
     }
     else {
-        shield_pct = hull_pct = 1.0f;
+        ASSERT (Ship_info[sp->ship_info_index].max_hull_strength > 0.0f);
+        hull_pct = objp->hull_strength /
+            Ship_info[sp->ship_info_index].max_hull_strength;
     }
+
+    // extra check
+    CLAMP (hull_pct, 0.01f, 1.0f);
+
+    // shield
+    if (sp->special_shield > 0) {
+        shield_pct =
+            shield_get_strength (objp) / shield_get_max_strength (objp);
+    }
+    else if (Ship_info[sp->ship_info_index].max_shield_strength > 0.0f) {
+        shield_pct =
+            shield_get_strength (objp) / (sip_orig->max_shield_strength *
+                                          sip_orig->max_shield_recharge);
+    }
+    else {
+        shield_pct = 0.0f;
+    }
+
+    // extra check
+    ASSERT (shield_pct >= 0.0f && shield_pct <= 1.0f);
+    CLAMP (shield_pct, 0.0f, 1.0f);
 
     // subsystems
     int num_saved_subsystems = 0;
@@ -10090,7 +10037,7 @@ void change_ship_type (int n, int ship_type, int by_sexp) {
 
         // MageKing17 - Update subsystem pointers if changing classes
         // mid-mission
-        if (!(Fred_running) && (Game_mode & GM_IN_MISSION)) {
+        if (Game_mode & GM_IN_MISSION) {
             // If any of our AI info objects targeting a subsystem on this ship
             // are targeting this specific subsystem, add them to the
             // subsystem_matches vector and remove them from our "to be
@@ -10217,46 +10164,31 @@ void change_ship_type (int n, int ship_type, int by_sexp) {
     ship_model_change (n, ship_type);
     sp->ship_info_index = ship_type;
 
-    if (!Fred_running) {
-        // WMC - set warp effects
-        ship_set_warp_effects (objp, sip);
-    }
+    // WMC - set warp effects
+    ship_set_warp_effects (objp, sip);
 
     // set the correct hull strength
-    if (Fred_running) {
-        sp->ship_max_hull_strength = 100.0f;
-        objp->hull_strength = 100.0f;
+    if (sp->special_hitpoints > 0) {
+        sp->ship_max_hull_strength = (float)sp->special_hitpoints;
     }
     else {
-        if (sp->special_hitpoints > 0) {
-            sp->ship_max_hull_strength = (float)sp->special_hitpoints;
-        }
-        else {
-            sp->ship_max_hull_strength = sip->max_hull_strength;
-        }
-
-        objp->hull_strength = hull_pct * sp->ship_max_hull_strength;
+        sp->ship_max_hull_strength = sip->max_hull_strength;
     }
+
+    objp->hull_strength = hull_pct * sp->ship_max_hull_strength;
 
     sp->max_shield_recharge = sip->max_shield_recharge;
 
     // set the correct shield strength
-    if (Fred_running) {
-        if (sp->ship_max_shield_strength)
-            sp->ship_max_shield_strength = 100.0f;
-        objp->shield_quadrant[0] = 100.0f;
+    if (sp->special_shield >= 0) {
+        sp->ship_max_shield_strength = (float)sp->special_shield;
     }
     else {
-        if (sp->special_shield >= 0) {
-            sp->ship_max_shield_strength = (float)sp->special_shield;
-        }
-        else {
-            sp->ship_max_shield_strength = sip->max_shield_strength;
-        }
-
-        shield_set_strength (
-            objp, shield_pct * shield_get_max_strength (objp));
+        sp->ship_max_shield_strength = sip->max_shield_strength;
     }
+
+    shield_set_strength (
+        objp, shield_pct * shield_get_max_strength (objp));
 
     // Goober5000: div-0 checks
     ASSERT (sp->ship_max_hull_strength > 0.0f);
@@ -10265,31 +10197,29 @@ void change_ship_type (int n, int ship_type, int by_sexp) {
     // Mantis 2763: moved down to have access to the right
     // ship_max_shield_strength value make sure that shields are
     // disabled/enabled if they need to be - Chief1983
-    if (!Fred_running) {
-        if ((p_objp
-                 ->flags[Mission::Parse_Object_Flags::OF_Force_shields_on]) &&
-            (sp->ship_max_shield_strength > 0.0f)) {
-            objp->flags.remove (Object::Object_Flags::No_shields);
-        }
-        else if (
-            (p_objp->flags[Mission::Parse_Object_Flags::OF_No_shields]) ||
-            (sp->ship_max_shield_strength == 0.0f)) {
-            objp->flags.set (Object::Object_Flags::No_shields);
-            // Since there's not a mission flag set to be adjusting this, see
-            // if there was a change from a ship that normally has shields to
-            // one that doesn't, and vice versa
-        }
-        else if (
-            !(sip_orig->flags[Info_Flags::Intrinsic_no_shields]) &&
-            (sip->flags[Info_Flags::Intrinsic_no_shields])) {
-            objp->flags.set (Object::Object_Flags::No_shields);
-        }
-        else if (
-            (sip_orig->flags[Info_Flags::Intrinsic_no_shields]) &&
-            !(sip->flags[Info_Flags::Intrinsic_no_shields]) &&
-            (sp->ship_max_shield_strength > 0.0f)) {
-            objp->flags.remove (Object::Object_Flags::No_shields);
-        }
+    if ((p_objp
+         ->flags[Mission::Parse_Object_Flags::OF_Force_shields_on]) &&
+        (sp->ship_max_shield_strength > 0.0f)) {
+        objp->flags.remove (Object::Object_Flags::No_shields);
+    }
+    else if (
+        (p_objp->flags[Mission::Parse_Object_Flags::OF_No_shields]) ||
+        (sp->ship_max_shield_strength == 0.0f)) {
+        objp->flags.set (Object::Object_Flags::No_shields);
+        // Since there's not a mission flag set to be adjusting this, see
+        // if there was a change from a ship that normally has shields to
+        // one that doesn't, and vice versa
+    }
+    else if (
+        !(sip_orig->flags[Info_Flags::Intrinsic_no_shields]) &&
+        (sip->flags[Info_Flags::Intrinsic_no_shields])) {
+        objp->flags.set (Object::Object_Flags::No_shields);
+    }
+    else if (
+        (sip_orig->flags[Info_Flags::Intrinsic_no_shields]) &&
+        !(sip->flags[Info_Flags::Intrinsic_no_shields]) &&
+        (sp->ship_max_shield_strength > 0.0f)) {
+        objp->flags.remove (Object::Object_Flags::No_shields);
     }
 
     // niffiwan: set new armor types
@@ -10627,7 +10557,7 @@ void change_ship_type (int n, int ship_type, int by_sexp) {
 
     // zookeeper - If we're switching in the loadout screen, make sure we
     // retain initial velocity set in FRED
-    if (!(Game_mode & GM_IN_MISSION) && !(Fred_running)) {
+    if (!(Game_mode & GM_IN_MISSION)) {
         Objects[sp->objnum].phys_info.speed =
             (float)p_objp->initial_velocity * sip->max_speed / 100.0f;
         Objects[sp->objnum].phys_info.vel.xyz.z =
@@ -10636,16 +10566,6 @@ void change_ship_type (int n, int ship_type, int by_sexp) {
             Objects[sp->objnum].phys_info.vel;
         Objects[sp->objnum].phys_info.desired_vel =
             Objects[sp->objnum].phys_info.vel;
-    }
-
-    // Goober5000 - if we're changing to a ship class that has a different
-    // default set of orders, update the orders (this avoids wiping the orders
-    // if we're e.g. changing between fighter classes)
-    if (Fred_running) {
-        int old_defaults = ship_get_default_orders_accepted (sip_orig);
-        int new_defaults = ship_get_default_orders_accepted (sip);
-
-        if (old_defaults != new_defaults) sp->orders_accepted = new_defaults;
     }
 
     // Goober5000 - deal with texture replacement by re-applying the same code
@@ -13148,14 +13068,12 @@ void wing_bash_ship_name (char* ship_name, const char* wing_name, int index) {
 int wing_name_lookup (const char* name, int ignore_count) {
     int i, wing_limit;
 
-    if (name == NULL) return -1;
+    if (0 == name || 0 == name[0])
+        return -1;
 
-    if (Fred_running)
-        wing_limit = MAX_WINGS;
-    else
-        wing_limit = Num_wings;
+    wing_limit = Num_wings;
 
-    if (Fred_running || ignore_count) { // current_count not used for Fred..
+    if (ignore_count) { // current_count not used for Fred..
         for (i = 0; i < wing_limit; i++)
             if (Wings[i].wave_count && !strcasecmp (Wings[i].name, name))
                 return i;

@@ -917,17 +917,16 @@ void ship_draw_shield (object* objp) {
     vec3d pnt;
     polymodel* pm;
 
-    if (objp->flags[Object::Object_Flags::No_shields]) return;
+    if (objp->flags[Object::Object_Flags::No_shields])
+        return;
 
     ASSERT (objp->instance >= 0);
 
     model_num = Ship_info[Ships[objp->instance].ship_info_index].model_num;
-
-    if (Fred_running) return;
-
     pm = model_get (model_num);
 
-    if (pm->shield.ntris < 1) return;
+    if (pm->shield.ntris < 1)
+        return;
 
     // Scan all the triangles in the mesh.
     for (i = 0; i < pm->shield.ntris; i++) {

@@ -671,20 +671,11 @@ int ds_init () {
     if (alcIsExtensionPresent (
             ds_sound_device, (const ALchar*)"ALC_EXT_EFX") == AL_TRUE) {
         II << "found OpenAL extension ALC_EXT_EFX";
-        Ds_use_eax = fs2::registry::read ("Sound.EnableEFX", Fred_running);
+        Ds_use_eax = fs2::registry::read ("Sound.EnableEFX", false);
     }
 
     if (Ds_use_eax == 1) {
         if (ds_eax_init () != 0) { Ds_use_eax = 0; }
-    }
-
-    // the presets always need to be available to FRED
-    if (!Ds_use_eax && Fred_running) {
-        EFX_presets.reserve (EAX_ENVIRONMENT_COUNT);
-
-        for (size_t i = 0; i < EAX_ENVIRONMENT_COUNT; i++) {
-            EFX_presets.push_back (EFX_Reverb_Defaults[i]);
-        }
     }
 
     if (!Cmdline_no_enhanced_sound) {

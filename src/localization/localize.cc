@@ -589,8 +589,6 @@ int lcl_add_dir_to_path_with_filename (char* current_path, size_t path_max) {
 // externalization of table/mission files -----------------------
 
 void lcl_replace_stuff (char* text, size_t max_len) {
-    if (Fred_running) return;
-
     ASSERT (text); // Goober5000
 
     // delegate to std::string for the replacements
@@ -607,8 +605,6 @@ void lcl_replace_stuff (char* text, size_t max_len) {
 // also replace $quote with double quotation marks now will also replace
 // $semicolon with semicolon mark now will also replace $slash and $backslash
 void lcl_replace_stuff (std::string& text) {
-    if (Fred_running) return;
-
     if (Player != NULL) {
         replace_all (text, "$callsign", Player->callsign);
         replace_all (text, "$rank", Ranks[Player->stats.rank].name);
@@ -617,29 +613,6 @@ void lcl_replace_stuff (std::string& text) {
     replace_all (text, "$semicolon", ";");
     replace_all (text, "$slash", "/");
     replace_all (text, "$backslash", "\\");
-}
-
-void lcl_fred_replace_stuff (char* text, size_t max_len) {
-    if (!Fred_running) return;
-
-    ASSERT (text); // Goober5000
-
-    // delegate to std::string for the replacements
-    std::string temp_text = text;
-    lcl_fred_replace_stuff (temp_text);
-
-    // fill up the original string
-    size_t len = temp_text.copy (text, max_len);
-    text[len] = 0;
-}
-
-void lcl_fred_replace_stuff (std::string& text) {
-    if (!Fred_running) return;
-
-    replace_all (text, "\"", "$quote");
-    replace_all (text, ";", "$semicolon");
-    replace_all (text, "/", "$slash");
-    replace_all (text, "\\", "$backslash");
 }
 
 // get the localized version of the string. if none exists, return the original

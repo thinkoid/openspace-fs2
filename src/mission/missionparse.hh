@@ -309,8 +309,6 @@ struct texture_replace  {
     int new_texture_id;
 };
 
-extern std::vector< texture_replace > Fred_texture_replacements;
-
 struct alt_class  {
     int ship_class;
     int variable_index; // if set allows the class to be set by a variable

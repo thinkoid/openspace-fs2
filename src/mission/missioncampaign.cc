@@ -413,7 +413,7 @@ int mission_campaign_load (
 
     if (pl == NULL) pl = Player;
 
-    if (!Fred_running && load_savefile && (pl == NULL)) {
+    if (load_savefile && 0 == pl) {
         ASSERT (0);
         load_savefile = 0;
     }
@@ -428,11 +428,7 @@ int mission_campaign_load (
 
         strcpy (Campaign.filename, filename);
 
-        // only initialize the sexpression stuff when Fred isn't running. It'll
-        // screw things up major if it does
-        if (!Fred_running) {
-            init_sexp (); // must initialize the sexpression stuff
-        }
+        init_sexp (); // must initialize the sexpression stuff
 
         read_file_text (filename);
         reset_parse ();
@@ -531,16 +527,8 @@ int mission_campaign_load (
             cm->formula = -1;
             if (optional_string ("+Formula:")) {
                 cm->formula = get_sexp_main ();
-                if (!Fred_running) {
-                    ASSERT (cm->formula != -1);
-                    sexp_mark_persistent (cm->formula);
-                }
-                else {
-                    if (cm->formula == -1) {
-                        Campaign_load_failure = CAMPAIGN_ERROR_SEXP_EXHAUSTED;
-                        return CAMPAIGN_ERROR_SEXP_EXHAUSTED;
-                    }
-                }
+                ASSERT (cm->formula != -1);
+                sexp_mark_persistent (cm->formula);
             }
 
             // Do mission branching stuff
@@ -575,23 +563,14 @@ int mission_campaign_load (
             cm->mission_loop_formula = -1;
             if (optional_string ("+Formula:")) {
                 cm->mission_loop_formula = get_sexp_main ();
-                if (!Fred_running) {
-                    ASSERT (cm->mission_loop_formula != -1);
-                    sexp_mark_persistent (cm->mission_loop_formula);
-                }
-                else {
-                    if (cm->mission_loop_formula == -1) {
-                        Campaign_load_failure = CAMPAIGN_ERROR_SEXP_EXHAUSTED;
-                        return CAMPAIGN_ERROR_SEXP_EXHAUSTED;
-                    }
-                }
+                ASSERT (cm->mission_loop_formula != -1);
+                sexp_mark_persistent (cm->mission_loop_formula);
             }
 
             cm->level = 0;
             if (optional_string ("+Level:")) {
                 stuff_int (&cm->level);
-                if (cm->level ==
-                    0) // check if the top (root) of the whole tree
+                if (cm->level == 0) // check if the top (root) of the whole tree
                     Campaign.next_mission = Campaign.num_missions;
             }
             else
@@ -603,16 +582,9 @@ int mission_campaign_load (
             else
                 Campaign.realign_required = 1;
 
-            if (Fred_running) {
-                cm->num_goals = -1;
-                cm->num_events = -1;
-                cm->num_variables = -1;
-            }
-            else {
-                cm->num_goals = 0;
-                cm->num_events = 0;
-                cm->num_variables = 0;
-            }
+            cm->num_goals = 0;
+            cm->num_events = 0;
+            cm->num_variables = 0;
 
             // it's possible to have data already loaded from the pilotfile
             // if so free it to avoid memory leaks
@@ -640,13 +612,10 @@ int mission_campaign_load (
         Campaign.filename[0] = 0;
         Campaign.num_missions = 0;
 
-        if (!Fred_running && !(Game_mode & GM_MULTIPLAYER)) {
-            Campaign_file_missing = 1;
-            Campaign_load_failure = CAMPAIGN_ERROR_MISSING;
-            return CAMPAIGN_ERROR_MISSING;
-        }
+        Campaign_file_missing = 1;
+        Campaign_load_failure = CAMPAIGN_ERROR_MISSING;
 
-        return CAMPAIGN_ERROR_CORRUPT;
+        return CAMPAIGN_ERROR_MISSING;
     }
 
     // set up the other variables for the campaign stuff.  After initializing,
@@ -663,8 +632,7 @@ int mission_campaign_load (
     // loading the campaign will get us to the current and next mission that
     // the player must fly plus load all of the old goals that future missions
     // might rely on.
-    if (!Fred_running && load_savefile &&
-        (Campaign.type == CAMPAIGN_TYPE_SINGLE)) {
+    if (load_savefile && Campaign.type == CAMPAIGN_TYPE_SINGLE) {
         // savefile can fail to load for numerous otherwise non-fatal reasons
         // if it doesn't load in that case then it will be (re)created at save
         if (!Pilot.load_savefile (Campaign.filename)) {
@@ -1294,11 +1262,8 @@ void mission_campaign_clear () {
             Campaign.missions[i].mission_branch_brief_sound = NULL;
         }
 
-        if (!Fred_running) {
-            sexp_unmark_persistent (
-                Campaign.missions[i]
-                    .formula); // free any sexpression nodes used by campaign.
-        }
+        // free any sexpression nodes used by campaign.
+        sexp_unmark_persistent (Campaign.missions[i].formula);
 
         memset (Campaign.missions[i].briefing_cutscene, 0, NAME_LENGTH);
         Campaign.missions[i].formula = 0;

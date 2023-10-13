@@ -148,21 +148,20 @@ void ai_post_process_mission () {
     // order (2) if they have an order, they are free to act on it.
     //
     // So basically, we are checking for (1)
-    if (!Fred_running) {
-        // MK, 5/9/98: Used to iterate through MAX_STARTING_WINGS, but this
-        // was too many ships forming on player.
-        // Goober5000 - MK originally iterated on only the first wing; now we
-        // iterate on only the player wing because the player wing may not be
-        // first
-        for (i = 0; i < MAX_STARTING_WINGS; i++) {
-            if (Starting_wings[i] >= 0 &&
-                Starting_wings[i] == Player_ship->wingnum) {
-                wing* wingp;
 
-                wingp = &Wings[Starting_wings[i]];
+    // MK, 5/9/98: Used to iterate through MAX_STARTING_WINGS, but this
+    // was too many ships forming on player.
+    // Goober5000 - MK originally iterated on only the first wing; now we
+    // iterate on only the player wing because the player wing may not be
+    // first
+    for (i = 0; i < MAX_STARTING_WINGS; i++) {
+        if (Starting_wings[i] >= 0 &&
+            Starting_wings[i] == Player_ship->wingnum) {
+            wing* wingp;
 
-                ai_maybe_add_form_goal (wingp);
-            }
+            wingp = &Wings[Starting_wings[i]];
+
+            ai_maybe_add_form_goal (wingp);
         }
     }
 
@@ -178,7 +177,9 @@ void ai_post_process_mission () {
     }
     for (objp = GET_FIRST (&obj_create_list);
          objp != END_OF_LIST (&obj_create_list); objp = GET_NEXT (objp)) {
-        if ((objp->type != OBJ_SHIP) || Fred_running) continue;
+        if (objp->type != OBJ_SHIP)
+            continue;
+
         ai_process_mission_orders (
             OBJ_INDEX (objp), &Ai_info[Ships[objp->instance].ai_index]);
     }
@@ -821,14 +822,12 @@ void ai_add_wing_goal_player (
     wing* wingp = &Wings[wingnum];
 
     // add the ai goal for any ship that is currently arrived in the game.
-    if (!Fred_running) { // only add goals to ships if fred isn't running
-        for (i = 0; i < wingp->current_count; i++) {
-            int num = wingp->ship_index[i];
-            if (num == -1) // ship must have been destroyed or departed
-                continue;
-            ai_add_ship_goal_player (
-                type, mode, submode, shipname, &Ai_info[Ships[num].ai_index]);
-        }
+    for (i = 0; i < wingp->current_count; i++) {
+        int num = wingp->ship_index[i];
+        if (num == -1) // ship must have been destroyed or departed
+            continue;
+        ai_add_ship_goal_player (
+            type, mode, submode, shipname, &Ai_info[Ships[num].ai_index]);
     }
 
     // add the sexpression index into the wing's list of goal sexpressions if
@@ -1259,19 +1258,17 @@ void ai_remove_wing_goal_sexp (int sexp, int wingnum) {
 
     // add the ai goal for any ship that is currently arrived in the game (only
     // if fred isn't running)
-    if (!Fred_running) {
-        for (i = 0; i < wingp->current_count; i++) {
-            int num = wingp->ship_index[i];
-            if (num == -1) // ship must have been destroyed or departed
-                continue;
-            goalindex = ai_remove_goal_sexp_sub (
-                sexp, Ai_info[Ships[num].ai_index].goals);
-            if (Ai_info[Ships[num].ai_index].active_goal == goalindex)
-                Ai_info[Ships[num].ai_index].active_goal = AI_GOAL_NONE;
-        }
+    for (i = 0; i < wingp->current_count; i++) {
+        int num = wingp->ship_index[i];
+        if (num == -1) // ship must have been destroyed or departed
+            continue;
+        goalindex = ai_remove_goal_sexp_sub (
+            sexp, Ai_info[Ships[num].ai_index].goals);
+        if (Ai_info[Ships[num].ai_index].active_goal == goalindex)
+            Ai_info[Ships[num].ai_index].active_goal = AI_GOAL_NONE;
     }
 
-    if ((wingp->num_waves - wingp->current_wave > 0) || Fred_running) {
+    if ((wingp->num_waves - wingp->current_wave > 0)) {
         ai_remove_goal_sexp_sub (sexp, wingp->ai_goals);
     }
 }
@@ -1294,18 +1291,16 @@ void ai_add_wing_goal_sexp (int sexp, int type, int wingnum) {
 
     // add the ai goal for any ship that is currently arrived in the game (only
     // if fred isn't running)
-    if (!Fred_running) {
-        for (i = 0; i < wingp->current_count; i++) {
-            int num = wingp->ship_index[i];
-            if (num == -1) // ship must have been destroyed or departed
-                continue;
-            ai_add_ship_goal_sexp (sexp, type, &Ai_info[Ships[num].ai_index]);
-        }
+    for (i = 0; i < wingp->current_count; i++) {
+        int num = wingp->ship_index[i];
+        if (num == -1) // ship must have been destroyed or departed
+            continue;
+        ai_add_ship_goal_sexp (sexp, type, &Ai_info[Ships[num].ai_index]);
     }
 
     // add the sexpression index into the wing's list of goal sexpressions if
     // there are more waves to come
-    if ((wingp->num_waves - wingp->current_wave > 0) || Fred_running) {
+    if ((wingp->num_waves - wingp->current_wave > 0)) {
         int gindex;
 
         gindex = ai_goal_find_empty_slot (wingp->ai_goals, -1);

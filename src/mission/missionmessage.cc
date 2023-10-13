@@ -374,10 +374,7 @@ void message_parse (bool importing_from_fsm) {
             WARNINGF (LOCATION,"Unknown persona in message %s in messages.tbl -- %s",msg.name, persona_name);
     }
 
-    if (!Fred_running)
-        msg.avi_info.index = -1;
-    else
-        msg.avi_info.name = NULL;
+    msg.avi_info.index = -1;
 
     if (optional_string ("+AVI Name:")) {
         char avi_name[MAX_FILENAME_LEN];
@@ -389,25 +386,15 @@ void message_parse (bool importing_from_fsm) {
         if (importing_from_fsm && !strncasecmp (avi_name, "Head-TP1", 8))
             avi_name[7] = '4';
 
-        if (!Fred_running) { msg.avi_info.index = add_avi (avi_name); }
-        else {
-            msg.avi_info.name = strdup (avi_name);
-        }
+        msg.avi_info.index = add_avi (avi_name);
     }
 
-    if (!Fred_running)
-        msg.wave_info.index = -1;
-    else
-        msg.wave_info.name = NULL;
+    msg.wave_info.index = -1;
 
     if (optional_string ("+Wave Name:")) {
         char wave_name[MAX_FILENAME_LEN];
-
         stuff_string (wave_name, F_NAME, MAX_FILENAME_LEN);
-        if (!Fred_running) { msg.wave_info.index = add_wave (wave_name); }
-        else {
-            msg.wave_info.name = strdup (wave_name);
-        }
+        msg.wave_info.index = add_wave (wave_name);
     }
 
     if (optional_string ("$Mood:")) {

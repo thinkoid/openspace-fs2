@@ -92,8 +92,7 @@ static std::unique_ptr< fs2::os::GraphicsOperations > graphic_operations = nullp
 static fs2::os::Viewport* current_viewport = nullptr;
 
 void opengl_go_fullscreen () {
-    if (Cmdline_fullscreen_window || Cmdline_window || GL_fullscreen ||
-        Fred_running)
+    if (Cmdline_fullscreen_window || Cmdline_window || GL_fullscreen)
         return;
 
     gr_opengl_set_gamma (FreeSpace_gamma);
@@ -104,8 +103,7 @@ void opengl_go_fullscreen () {
 }
 
 void opengl_go_windowed () {
-    if ((!Cmdline_fullscreen_window && !Cmdline_window) /*|| GL_windowed*/ ||
-        Fred_running)
+    if (!Cmdline_fullscreen_window && !Cmdline_window)
         return;
 
     GL_windowed = 1;
@@ -372,7 +370,7 @@ void gr_opengl_shutdown () {
 void gr_opengl_cleanup (bool closing, int /*minimize*/) {
     if (!GL_initted) { return; }
 
-    if (!closing && !Fred_running) {
+    if (!closing) {
         gr_reset_clip ();
         gr_clear ();
         gr_flip ();
@@ -575,10 +573,7 @@ void gr_opengl_set_gamma (float gamma) {
     Gr_gamma = gamma;
     Gr_gamma_int = int(Gr_gamma * 10);
 
-    // new way - but not while running FRED
-    if (!Fred_running && !Cmdline_no_set_gamma &&
-        fs2::os::getSDLMainWindow () != nullptr) {
-
+    if (!Cmdline_no_set_gamma && fs2::os::getSDLMainWindow ()) {
         gamma_ramp = (ushort*)malloc (3 * 256 * sizeof (ushort));
 
         if (gamma_ramp == NULL) {

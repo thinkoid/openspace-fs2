@@ -12,7 +12,6 @@
 
 ////////////////////////////////////////////////////////////////////////
 
-extern int Fred_running;
 extern bool running_unittests;
 
 extern float Cutscene_bars_progress, Cutscene_delta_time;

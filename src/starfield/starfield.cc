@@ -765,42 +765,40 @@ void stars_pre_level_init (bool clear_backgrounds) {
     // the handle to -1 so
     // be aware that this is NOT a bug. also, bmpman should NEVER return
     // 0 as a valid handle!
-    if (!Fred_running) {
-        for (idx = 0; idx < Starfield_bitmaps.size (); idx++) {
-            sb = &Starfield_bitmaps[idx];
+    for (idx = 0; idx < Starfield_bitmaps.size (); idx++) {
+        sb = &Starfield_bitmaps[idx];
 
-            if (sb->bitmap_id > 0) {
-                bm_release (sb->bitmap_id);
-                sb->bitmap_id = -1;
-            }
-
-            sb->used_this_level = 0;
-            sb->preload = 0;
+        if (sb->bitmap_id > 0) {
+            bm_release (sb->bitmap_id);
+            sb->bitmap_id = -1;
         }
 
-        for (idx = 0; idx < Sun_bitmaps.size (); idx++) {
-            sb = &Sun_bitmaps[idx];
+        sb->used_this_level = 0;
+        sb->preload = 0;
+    }
 
-            if (sb->bitmap_id > 0) {
-                bm_release (sb->bitmap_id);
-                sb->bitmap_id = -1;
-            }
+    for (idx = 0; idx < Sun_bitmaps.size (); idx++) {
+        sb = &Sun_bitmaps[idx];
 
-            if (sb->glow_bitmap > 0) {
-                bm_release (sb->glow_bitmap);
-                sb->glow_bitmap = -1;
-            }
-
-            for (i = 0; i < MAX_FLARE_BMP; i++) {
-                if (sb->flare_bitmaps[i].bitmap_id > 0) {
-                    bm_release (sb->flare_bitmaps[i].bitmap_id);
-                    sb->flare_bitmaps[i].bitmap_id = -1;
-                }
-            }
-
-            sb->used_this_level = 0;
-            sb->preload = 0;
+        if (sb->bitmap_id > 0) {
+            bm_release (sb->bitmap_id);
+            sb->bitmap_id = -1;
         }
+
+        if (sb->glow_bitmap > 0) {
+            bm_release (sb->glow_bitmap);
+            sb->glow_bitmap = -1;
+        }
+
+        for (i = 0; i < MAX_FLARE_BMP; i++) {
+            if (sb->flare_bitmaps[i].bitmap_id > 0) {
+                bm_release (sb->flare_bitmaps[i].bitmap_id);
+                sb->flare_bitmaps[i].bitmap_id = -1;
+            }
+        }
+
+        sb->used_this_level = 0;
+        sb->preload = 0;
     }
 
     Dynamic_environment = false;
@@ -912,10 +910,6 @@ void stars_post_level_init () {
             Suns.push_back (def_sun);
         }
     }
-
-    // FRED doesn't do normal page_in stuff so we need to load up the bitmaps
-    // here instead
-    if (Fred_running) { stars_load_all_bitmaps (); }
 
     starfield_generate_bitmap_buffers ();
 
@@ -1868,8 +1862,7 @@ void stars_draw (
 #endif
 
     if (!Rendering_to_env && (Game_detail_flags & DETAIL_FLAG_MOTION) &&
-        (!Fred_running) && (supernova_active () < 3) &&
-        (!Cmdline_nomotiondebris) && in_mission) {
+        supernova_active () < 3 && !Cmdline_nomotiondebris) && in_mission) {
         stars_draw_debris ();
     }
 
@@ -2336,12 +2329,10 @@ int stars_add_sun_entry (starfield_list_entry* sun_ptr) {
 
     // now check if we can make use of a previously discarded instance entry
     // this should never happen with FRED
-    if (!Fred_running) {
-        for (i = 0; i < (int)Suns.size (); i++) {
-            if (Suns[i].star_bitmap_index < 0) {
-                Suns[i] = sbi;
-                return i;
-            }
+    for (i = 0; i < (int)Suns.size (); i++) {
+        if (Suns[i].star_bitmap_index < 0) {
+            Suns[i] = sbi;
+            return i;
         }
     }
 
@@ -2535,15 +2526,7 @@ void stars_set_nebula (bool activate) {
     if (activate) {
         Toggle_text_alpha = TOGGLE_TEXT_NEBULA_ALPHA;
         HUD_contrast = 1;
-        if (Fred_running) {
-            Neb2_render_mode = NEB2_RENDER_POF;
-            stars_set_background_model (
-                BACKGROUND_MODEL_FILENAME, Neb2_texture_name);
-            stars_set_background_orientation ();
-        }
-        else {
-            Neb2_render_mode = NEB2_RENDER_HTL;
-        }
+        Neb2_render_mode = NEB2_RENDER_HTL;
         neb2_eye_changed ();
     }
     else {
@@ -2559,94 +2542,6 @@ void stars_set_nebula (bool activate) {
 
     // We need to reload the environment map now
     stars_invalidate_environment_map ();
-}
-
-// retrieves the name from starfield_bitmap, really only used by FRED2
-// NOTE: it is unsafe to return NULL here, but because that's bad anyway it
-// really shouldn't happen, so we do return NULL.
-const char* stars_get_name_FRED (int index, bool is_a_sun) {
-    if (!Fred_running) return NULL;
-
-    int max_index =
-        (is_a_sun) ? (int)Sun_bitmaps.size () : (int)Starfield_bitmaps.size ();
-
-    ASSERT ((index >= 0) && (index < max_index));
-
-    if ((index < 0) || (index >= max_index)) return NULL;
-
-    if (is_a_sun) { return Sun_bitmaps[index].filename; }
-    else {
-        return Starfield_bitmaps[index].filename;
-    }
-}
-
-// modify an existing starfield bitmap instance, or add a new one if needed
-void stars_modify_entry_FRED (
-    int index, const char* name, starfield_list_entry* sbi_new,
-    bool is_a_sun) {
-    if (!Fred_running) return;
-
-    starfield_bitmap_instance sbi;
-    int idx;
-    int add_new = index > ((is_a_sun) ? (int)Sun_bitmaps.size ()
-                                      : (int)Starfield_bitmaps.size ());
-
-    ASSERT (index >= 0);
-    ASSERT (sbi_new != NULL);
-
-    // copy information
-    sbi.ang.p = sbi_new->ang.p;
-    sbi.ang.b = sbi_new->ang.b;
-    sbi.ang.h = sbi_new->ang.h;
-    sbi.scale_x = sbi_new->scale_x;
-    sbi.scale_y = sbi_new->scale_y;
-    sbi.div_x = sbi_new->div_x;
-    sbi.div_y = sbi_new->div_y;
-
-    if (is_a_sun) { idx = stars_find_sun ((char*)name); }
-    else {
-        idx = stars_find_bitmap ((char*)name);
-    }
-
-    // this shouldn't ever happen from FRED since you select the name from a
-    // list of those available
-    if (idx == -1) return;
-
-    sbi.star_bitmap_index = idx;
-
-    if (add_new) {
-        if (is_a_sun) { Suns.push_back (sbi); }
-        else {
-            Starfield_bitmap_instances.push_back (sbi);
-        }
-    }
-    else {
-        if (is_a_sun) { Suns[index] = sbi; }
-        else {
-            Starfield_bitmap_instances[index] = sbi;
-        }
-    }
-
-    if (!is_a_sun) { starfield_create_bitmap_buffer (index); }
-}
-
-// erase an instance, note that this is very slow so it should only be done in
-// FRED
-void stars_delete_entry_FRED (int index, bool is_a_sun) {
-    if (!Fred_running) return;
-
-    int max_index = (is_a_sun) ? (int)Suns.size ()
-                               : (int)Starfield_bitmap_instances.size ();
-
-    ASSERT ((index >= 0) && (index < max_index));
-
-    if ((index < 0) || (index >= max_index)) return;
-
-    if (is_a_sun) { Suns.erase (Suns.begin () + index); }
-    else {
-        Starfield_bitmap_instances.erase (
-            Starfield_bitmap_instances.begin () + index);
-    }
 }
 
 // Goober5000
@@ -2704,8 +2599,7 @@ void stars_load_background (int background_idx) {
 
         int failed_suns = 0;
         for (j = 0; j < background->suns.size (); j++) {
-            if ((stars_add_sun_entry (&background->suns[j]) < 0) &&
-                !Fred_running) {
+            if (stars_add_sun_entry (&background->suns[j]) < 0) {
                 WARNINGF (LOCATION, "Failed to add sun '%s' to the mission!",background->suns[j].filename);
                 failed_suns++;
             }
@@ -2715,8 +2609,7 @@ void stars_load_background (int background_idx) {
 
         int failed_stars = 0;
         for (j = 0; j < background->bitmaps.size (); j++) {
-            if ((stars_add_bitmap_entry (&background->bitmaps[j]) < 0) &&
-                !Fred_running) {
+            if (stars_add_bitmap_entry (&background->bitmaps[j]) < 0) {
                 WARNINGF (LOCATION,"Failed to add starfield bitmap '%s' to the mission!",background->bitmaps[j].filename);
                 failed_stars++;
             }

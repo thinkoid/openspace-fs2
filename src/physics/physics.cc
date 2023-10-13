@@ -1249,9 +1249,8 @@ int check_rotvel_limit (physics_info* pi) {
     if (0 == pi->flags) // weapon
         return 0;
 
-    if (Fred_running) return 0;
-
     int change_made = 0;
+
     if (!(pi->flags & PF_DEAD_DAMP)) {
         // case of normal, live ship
         // -- Commented out by MK: ASSERT (vm_vec_mag_squared(&pi->max_rotvel)

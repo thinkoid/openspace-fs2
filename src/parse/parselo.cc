@@ -1475,56 +1475,40 @@ int maybe_convert_foreign_character (int ch) {
 // TODO: suspiciously stupid
 size_t
 maybe_convert_foreign_characters (const char* in, char* out, bool add_null) {
-    if (Fred_running) {
-        size_t len = strlen (in);
+    auto inp = in;
+    auto outp = out;
 
-        if (add_null) {
-            strcpy (out, in);
-            return len + 1;
+    while (*inp) {
+        if (*inp == SHARP_S) {
+            *outp++ = 's';
+            *outp++ = 's';
+        }
+        else if (Lcl_pl) {
+            *outp++ = *inp;
         }
         else {
-            strncpy (out, in, len);
-            return len;
+            *outp++ = (char)maybe_convert_foreign_character (*inp);
         }
+        inp++;
     }
-    else {
-        auto inp = in;
-        auto outp = out;
 
-        while (*inp != '\0') {
-            if (*inp == SHARP_S) {
-                *outp++ = 's';
-                *outp++ = 's';
-            }
-            else if (Lcl_pl) {
-                *outp++ = *inp;
-            }
-            else {
-                *outp++ = (char)maybe_convert_foreign_character (*inp);
-            }
-            inp++;
-        }
+    if (add_null) { *outp++ = 0; }
 
-        if (add_null) { *outp++ = '\0'; }
-
-        return outp - out;
-    }
+    return outp - out;
 }
 
 // Goober5000
 void maybe_convert_foreign_characters (std::string& text) {
-    if (!Fred_running) {
-        for (std::string::iterator ii = text.begin (); ii != text.end ();
-             ++ii) {
-            text.reserve (get_converted_string_length (text));
+    for (std::string::iterator ii = text.begin (); ii != text.end ();
+         ++ii) {
+        text.reserve (get_converted_string_length (text));
 
-            if (*ii == SHARP_S) {
-                text.replace (ii, ii + 1, "ss");
-                ++ii;
-            }
-            else if (!Lcl_pl) {
-                *ii = (char)maybe_convert_foreign_character (*ii);
-            }
+        if (*ii == SHARP_S) {
+            text.replace (ii, ii + 1, "ss");
+            ++ii;
+        }
+        else if (!Lcl_pl) {
+            *ii = (char)maybe_convert_foreign_character (*ii);
         }
     }
 }
@@ -1532,29 +1516,23 @@ void maybe_convert_foreign_characters (std::string& text) {
 // Yarn - Returns what the length of the text will be after it's processed by
 // maybe_convert_foreign_characters, not including the null terminator.
 size_t get_converted_string_length (const char* text) {
-    if (Fred_running) { return strlen (text); }
-    else {
-        size_t count = 0;
-        auto s = strchr (text, SHARP_S);
-        while (s != nullptr) {
-            count++;
-            s = strchr (s + 1, SHARP_S);
-        }
-        return strlen (text) + count;
+    size_t count = 0;
+    auto s = strchr (text, SHARP_S);
+    while (s) {
+        count++;
+        s = strchr (s + 1, SHARP_S);
     }
+    return strlen (text) + count;
 }
 
 // Yarn - Returns what the length of the text will be after it's processed by
 // maybe_convert_foreign_characters.
 size_t get_converted_string_length (const std::string& text) {
-    if (Fred_running) { return text.size (); }
-    else {
-        size_t count = 0;
-        for (auto ii = text.begin (); ii != text.end (); ++ii) {
-            if (*ii == SHARP_S) { count++; }
-        }
-        return text.size () + count;
+    size_t count = 0;
+    for (auto ii = text.begin (); ii != text.end (); ++ii) {
+        if (*ii == SHARP_S) { count++; }
     }
+    return text.size () + count;
 }
 
 // Goober5000

@@ -3155,9 +3155,6 @@ void weapon_release_bitmaps () {
     int i, j;
     weapon_info* wip;
 
-    // not for FRED...
-    if (Fred_running) return;
-
     // if we are just going to load them all again any, keep everything
     if (Cmdline_load_all_weapons) return;
 
@@ -3252,17 +3249,9 @@ bool weapon_is_used (int weapon_index) {
 }
 
 void weapon_load_bitmaps (int weapon_index) {
-    weapon_info* wip;
+    ASSERT (0 <= weapon_index && weapon_index < Num_weapon_types);
 
-    // not for FRED...
-    if (Fred_running) return;
-
-    if ((weapon_index < 0) || (weapon_index >= Num_weapon_types)) {
-        ASSERT (0);
-        return;
-    }
-
-    wip = &Weapon_info[weapon_index];
+    weapon_info* wip = &Weapon_info[weapon_index];
 
     if ((wip->render_type == WRT_LASER) &&
         (wip->laser_bitmap.first_frame < 0)) {

@@ -30,9 +30,6 @@ int Weapon_energy_cheat = 0;
 void ets_init_ship (object* obj) {
     ship* sp;
 
-    // fred should bail here
-    if (Fred_running) { return; }
-
     ASSERT (obj->type == OBJ_SHIP);
     sp = &Ships[obj->instance];
 

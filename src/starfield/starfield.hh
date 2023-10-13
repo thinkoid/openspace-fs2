@@ -130,18 +130,6 @@ void stars_set_nebula (bool activate);
 
 void stars_load_debris (int fullneb = 0);
 
-// Starfield functions that should be used only by FRED ...
-
-// get a name based on the index into starfield_bitmap, only FRED should ever
-// need this
-const char* stars_get_name_FRED (int index, bool is_a_sun);
-// erase an instance, note that this is very slow so it should only be done in
-// FRED
-void stars_delete_entry_FRED (int index, bool is_a_sun);
-// modify an existing starfield bitmap instance, or add a new one if needed
-void stars_modify_entry_FRED (
-    int index, const char* name, starfield_list_entry* sbi_new, bool is_a_sun);
-
 // Goober5000
 void stars_load_first_valid_background ();
 int stars_get_first_valid_background ();

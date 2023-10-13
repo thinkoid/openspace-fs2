@@ -186,12 +186,12 @@ void nebl_init () {
             // texture
             required_string ("+b_texture:");
             stuff_string (name, F_NAME, sizeof (name));
-            if (!Fred_running) { new_bolt_type.texture = bm_load (name); }
+            new_bolt_type.texture = bm_load (name);
 
             // glow
             required_string ("+b_glow:");
             stuff_string (name, F_NAME, sizeof (name));
-            if (!Fred_running) { new_bolt_type.glow = bm_load (name); }
+            new_bolt_type.glow = bm_load (name);
 
             // brightness
             required_string ("+b_bright:");

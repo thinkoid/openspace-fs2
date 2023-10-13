@@ -471,6 +471,5 @@ void waypoint_remove (waypoint* wpt) {
         }
     }
 
-    // FRED has its own object removal logic
-    if (!Fred_running) obj_delete (objnum);
+    obj_delete (objnum);
 }

@@ -104,10 +104,6 @@ int lcl_add_dir_to_path_with_filename (char* current_path, size_t path_max);
 void lcl_replace_stuff (char* text, size_t max_len);
 void lcl_replace_stuff (std::string& text);
 
-// Karajorma
-void lcl_fred_replace_stuff (char* text, size_t max_len);
-void lcl_fred_replace_stuff (std::string& text);
-
 // get the localized version of the string. if none exists, return the original
 // string valid input to this function includes : "this is some text"
 // XSTR("wheeee", -1)

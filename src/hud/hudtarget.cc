@@ -5300,8 +5300,6 @@ void hud_stuff_ship_name (char* ship_name_text, ship* shipp) {
     }
 }
 
-extern char Fred_callsigns[MAX_SHIPS][NAME_LENGTH + 1];
-
 void hud_stuff_ship_callsign (char* ship_callsign_text, ship* shipp) {
     *ship_callsign_text = 0;
     if (shipp->callsign_index >= 0) {
@@ -5321,7 +5319,6 @@ void hud_stuff_ship_callsign (char* ship_callsign_text, ship* shipp) {
     }
 }
 
-extern char Fred_alt_names[MAX_SHIPS][NAME_LENGTH + 1];
 void hud_stuff_ship_class (char* ship_class_text, ship* shipp) {
     *ship_class_text = 0;
     if (shipp->alt_type_index >= 0) {

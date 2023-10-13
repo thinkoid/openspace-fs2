@@ -2511,10 +2511,6 @@ void model_load_texture (polymodel* pm, int i, char* file) {
     texture_map* tmap = &pm->maps[i];
     tmap->Clear ();
 
-    // WMC - IMPORTANT!!
-    // The Fred_running checks are there so that FRED will see those textures
-    // and put them in the texture replacement box.
-
     // base maps
     // ---------------------------------------------------------------
     texture_info* tbase = &tmap->textures[TM_BASE_TYPE];
@@ -2547,7 +2543,7 @@ void model_load_texture (polymodel* pm, int i, char* file) {
     // glow maps
     // ---------------------------------------------------------------
     texture_info* tglow = &tmap->textures[TM_GLOW_TYPE];
-    if ((!Cmdline_glow && !Fred_running) || (tbase->GetTexture () < 0)) {
+    if (!Cmdline_glow || tbase->GetTexture () < 0) {
         tglow->clear ();
     }
     else {
@@ -2563,7 +2559,7 @@ void model_load_texture (polymodel* pm, int i, char* file) {
     // -----------------------------------------------------------
     texture_info* tspec = &tmap->textures[TM_SPECULAR_TYPE];
     texture_info* tspecgloss = &tmap->textures[TM_SPEC_GLOSS_TYPE];
-    if ((!Cmdline_spec && !Fred_running) || (tbase->GetTexture () < 0)) {
+    if (!Cmdline_spec || tbase->GetTexture () < 0) {
         tspec->clear ();
         tspecgloss->clear ();
     }
@@ -2588,7 +2584,7 @@ void model_load_texture (polymodel* pm, int i, char* file) {
     // bump maps
     // ---------------------------------------------------------------
     texture_info* tnorm = &tmap->textures[TM_NORMAL_TYPE];
-    if ((!Cmdline_normal && !Fred_running) || (tbase->GetTexture () < 0)) {
+    if (!Cmdline_normal || tbase->GetTexture () < 0) {
         tnorm->clear ();
     }
     else {
@@ -2601,7 +2597,7 @@ void model_load_texture (polymodel* pm, int i, char* file) {
 
     // try to get a height map too
     texture_info* theight = &tmap->textures[TM_HEIGHT_TYPE];
-    if ((!Cmdline_height && !Fred_running) || (tbase->GetTexture () < 0)) {
+    if (!Cmdline_height || tbase->GetTexture () < 0) {
         theight->clear ();
     }
     else {
@@ -2781,13 +2777,6 @@ int model_load (
     }
 
     pm->used_this_mission++;
-
-#ifdef _DEBUG
-    if (Fred_running && Parse_normal_problem_count > 0) {
-        EE << "loading model " << filename << " failed ("
-                       << Parse_normal_problem_count << " errors)";
-    }
-#endif
 
     //=============================
     // Find the destroyed replacement models

@@ -565,7 +565,7 @@ void obj_delete (int objnum) {
     switch (objp->type) {
     case OBJ_WEAPON: weapon_delete (objp); break;
     case OBJ_SHIP:
-        if ((objp == Player_obj) && !Fred_running) {
+        if (objp == Player_obj) {
             objp->type = OBJ_GHOST;
             objp->flags.remove (Object::Object_Flags::Should_be_dead);
 
@@ -686,12 +686,6 @@ int physics_paused = 0, ai_paused = 0;
 // Goober5000
 extern void call_doa (object* child, object* parent);
 void obj_move_one_docked_object (object* objp, object* parent_objp) {
-    // in FRED, just move and return
-    if (Fred_running) {
-        call_doa (objp, parent_objp);
-        return;
-    }
-
     // support ships (and anyone else, for that matter) don't keep up if
     // they're undocking
     ai_info* aip = &Ai_info[Ships[objp->instance].ai_index];

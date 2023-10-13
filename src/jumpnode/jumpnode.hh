@@ -80,7 +80,6 @@ extern std::list< CJumpNode > Jump_nodes;
 CJumpNode* jumpnode_get_by_name (const char* name);
 CJumpNode* jumpnode_get_which_in (object* objp);
 
-void jumpnode_render_all ();
 void jumpnode_level_close ();
 
 #endif // FREESPACE2_JUMPNODE_JUMPNODE_HH

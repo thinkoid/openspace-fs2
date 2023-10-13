@@ -340,12 +340,6 @@ void neb2_post_level_init () {
     // standalone servers can bail here
     if (Game_mode & GM_STANDALONE_SERVER) { return; }
 
-    // Skip actual rendering if we're in FRED.
-    if (Fred_running) {
-        Neb2_render_mode = NEB2_RENDER_NONE;
-        return;
-    }
-
     // if the mission is not a fullneb mission, skip
     if (!((The_mission.flags[Mission::Mission_Flags::Fullneb]) ||
           Nebula_sexp_used)) {

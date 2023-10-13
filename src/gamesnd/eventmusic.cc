@@ -248,16 +248,16 @@ int Mission_music[NUM_SCORES];
 // Called once at game start-up to parse music.tbl and set some state variables
 //
 void event_music_init () {
-    if (!Fred_running) {
-        if (snd_is_inited () == FALSE) {
-            Event_music_enabled = FALSE;
-            return;
-        }
-
-        if (Cmdline_freespace_no_music) { return; }
-
-        if (Event_music_inited == TRUE) return;
+    if (snd_is_inited () == FALSE) {
+        Event_music_enabled = FALSE;
+        return;
     }
+
+    if (Cmdline_freespace_no_music)
+        return;
+
+    if (Event_music_inited == TRUE)
+        return;
 
     int i, j;
 

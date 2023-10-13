@@ -792,12 +792,6 @@ static bool gr_init_sub (
 
     res = gr_get_resolution_class (gr_screen.center_w, gr_screen.center_h);
 
-    if (Fred_running) {
-        gr_screen.custom_size = false;
-        res = GR_640;
-        mode = GR_OPENGL;
-    }
-
     Save_custom_screen_size = gr_screen.custom_size;
 
     Gr_save_full_resize_X = Gr_full_resize_X =
