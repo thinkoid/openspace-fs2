@@ -8,11 +8,11 @@ AlignEscapedNewlinesLeft:	true
 AlignOperands:	true
 AlignTrailingComments:	true
 AllowAllParametersOfDeclarationOnNextLine:	true
-AllowShortBlocksOnASingleLine:	true
-AllowShortCaseLabelsOnASingleLine:	true
-AllowShortFunctionsOnASingleLine:	All
-AllowShortIfStatementsOnASingleLine:	true
-AllowShortLoopsOnASingleLine:	true
+AllowShortBlocksOnASingleLine:	false
+AllowShortCaseLabelsOnASingleLine:	false
+AllowShortFunctionsOnASingleLine:	false
+AllowShortIfStatementsOnASingleLine:	false
+AllowShortLoopsOnASingleLine:	false
 #AlwaysBreakAfterDefinitionReturnType : None
 AlwaysBreakAfterReturnType:	None
 AlwaysBreakBeforeMultilineStrings:	true
@@ -37,7 +37,7 @@ BreakBeforeTernaryOperators:	true
 BreakConstructorInitializers:	BeforeColon
 BreakAfterJavaFieldAnnotations:	false
 BreakStringLiterals:	true
-ColumnLimit:	80
+ColumnLimit:	120
 CommentPragmas:	'^ IWYU pragma:'
 ConstructorInitializerAllOnOneLineOrOnePerLine:	false
 ConstructorInitializerIndentWidth:	4
