@@ -28,11 +28,9 @@ typedef struct alphacolor {
 	int	r,g,b,alpha;
 	int	type;						// See AC_TYPE_??? define
 	color	*clr;
-	/*
 	union {
 		ubyte		lookup[16][256];		// For 8-bpp rendering modes
 	} table;
-	*/
 } alphacolor;
 
 // for backwards fred aabitmap compatibility

@@ -827,7 +827,7 @@ static void bm_convert_format( int bitmapnum, bitmap *bmp, ubyte bpp, ubyte flag
 	int idx;	
 	int r, g, b, a;
 
-	if(Fred_running || Pofview_running || Is_standalone){
+	if(Fred_running || Pofview_running || Is_standalone || ((gr_screen.mode == GR_SOFTWARE) && (bmp->bpp == 8))){
 		Assert(bmp->bpp == 8);
 
 		return;
@@ -1227,8 +1227,10 @@ bitmap * bm_lock( int handle, ubyte bpp, ubyte flags )
 	} 
 	// otherwise do it as normal
 	else {
-		if(Fred_running || Pofview_running){
-			Assert( bpp == 8 );
+		if(Fred_running || Pofview_running || (gr_screen.mode == GR_SOFTWARE)){
+			// software renderer: 8bpp is the norm; a few FS2-era paths
+			// (beam section info) lock at 16 and work via the 1555 guns
+			Assert( bpp == 8 || bpp == 16 );
 			Assert( (bm_bitmaps[bitmapnum].type == BM_TYPE_PCX) || (bm_bitmaps[bitmapnum].type == BM_TYPE_ANI) || (bm_bitmaps[bitmapnum].type == BM_TYPE_TGA));
 		} else {
 			if(flags & BMP_AABITMAP){

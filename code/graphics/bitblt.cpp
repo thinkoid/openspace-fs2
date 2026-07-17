@@ -23,7 +23,7 @@ MONITOR( Num2dBitmaps );
 
 void gr8_aabitmap_ex(int x,int y,int w,int h,int sx,int sy)
 {
-#if 0
+// #if 0 (re-enabled: software blitter was compiled out in the hardware-only era)
 	int hi;
 	bitmap * bmp;
 
@@ -37,11 +37,11 @@ void gr8_aabitmap_ex(int x,int y,int w,int h,int sx,int sy)
 	//	mprintf(( "x=%d, y=%d, w=%d, h=%d\n", x, y, w, h ));
 	//	mprintf(( "sx=%d, sy=%d, bw=%d, bh=%d\n", sx, sy, bmp->w, bmp->h ));
 
-	bmp = bm_lock( gr_screen.current_bitmap, 8, BMP_RLE|BMP_NO_PALETTE_MAP );	 
+	bmp = bm_lock( gr_screen.current_bitmap, 8, BMP_AABITMAP );	// FS1 locked RLE|NO_PALETTE_MAP; FS2 bmpman knows neither
 
 	gr_lock();
 
-	if (bmp->flags & BMP_RLE)	{
+	if (0)	{	// FS2 bmpman never returns RLE data
 		int * offsets = (int *)(bmp->data);
 		ubyte *lookup = &Current_alphacolor->table.lookup[0][0];
 			
@@ -191,7 +191,7 @@ void gr8_aabitmap_ex(int x,int y,int w,int h,int sx,int sy)
 
 	gr_unlock();
 	bm_unlock(gr_screen.current_bitmap);
-#endif
+// #endif (re-enabled: software blitter was compiled out in the hardware-only era)
 }
 
 void grx_aabitmap_ex(int x,int y,int w,int h,int sx,int sy)
@@ -288,7 +288,7 @@ void grx_aabitmap_ex(int x,int y,int w,int h,int sx,int sy)
 
 void gr8_bitmap_ex(int x,int y,int w,int h,int sx,int sy)
 {
-#if 0
+// #if 0 (re-enabled: software blitter was compiled out in the hardware-only era)
 	MONITOR_INC( Num2dBitmaps, 1 );	
 
 	gr_lock();
@@ -304,7 +304,7 @@ void gr8_bitmap_ex(int x,int y,int w,int h,int sx,int sy)
 	//mprintf(( "x=%d, y=%d, w=%d, h=%d\n", x, y, w, h ));
 	//mprintf(( "sx=%d, sy=%d, bw=%d, bh=%d\n", sx, sy, bmp->w, bmp->h ));
 
-	if ( bmp->flags & BMP_XPARENT )	{
+	if ( bmp->flags & BMP_TEX_XPARENT )	{	// was BMP_XPARENT (FS1); flag unset today -> opaque memcpy path
 		for (i=0; i<h; i++ )	{
 			int j;
 			ubyte c, * sp = sptr;	
@@ -326,7 +326,7 @@ void gr8_bitmap_ex(int x,int y,int w,int h,int sx,int sy)
 	bm_unlock(gr_screen.current_bitmap);
 
 	gr_unlock();
-#endif
+// #endif (re-enabled: software blitter was compiled out in the hardware-only era)
 }
 
 

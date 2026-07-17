@@ -325,17 +325,13 @@ void common_set_interface_palette(char *filename)
 		InterfacePaletteBitmap = -1;
 	}
 
-	// ugh - we don't need this anymore
-	/*
+	// restored for the software renderer (retail hardware builds skipped it)
 	InterfacePaletteBitmap = bm_load(filename);
 	if (InterfacePaletteBitmap < 0) {
 		Error(LOCATION, "Could not load in \"%s\"!", filename);
 	}
-	*/
 
-#ifndef HARDWARE_ONLY
 	palette_use_bm_palette(InterfacePaletteBitmap);
-#endif
 }
 
 // release the interface palette .pcx file, and restore the game palette

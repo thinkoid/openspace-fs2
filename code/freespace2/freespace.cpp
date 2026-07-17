@@ -1181,7 +1181,7 @@ void game_loading_callback_init()
 	Assert( Game_loading_callback_inited==0 );
 
 	Game_loading_background = bm_load(Game_loading_bground_fname[gr_screen.res]);
-	//common_set_interface_palette("InterfacePalette");  // set the interface palette
+	common_set_interface_palette(NULL);  // palette01 - the interface palette; software mode needs it before any interface art locks
 
 
 	Game_loading_ani = anim_load( Game_loading_ani_fname[gr_screen.res]);

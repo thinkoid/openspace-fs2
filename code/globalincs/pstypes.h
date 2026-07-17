@@ -103,7 +103,7 @@ typedef unsigned char ubyte;
 typedef unsigned short ushort;
 typedef unsigned int uint;
 
-#define HARDWARE_ONLY
+// HARDWARE_ONLY undefined: this build IS the software renderer
 
 //Stucture to store clipping codes in a word
 typedef struct ccodes {
