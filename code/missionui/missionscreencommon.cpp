@@ -328,7 +328,13 @@ void common_set_interface_palette(char *filename)
 	// restored for the software renderer (retail hardware builds skipped it)
 	InterfacePaletteBitmap = bm_load(filename);
 	if (InterfacePaletteBitmap < 0) {
-		Error(LOCATION, "Could not load in \"%s\"!", filename);
+		// several callers name "InterfacePalette", which was never shipped
+		// in the retail VPs; fall back to the standard interface palette
+		mprintf(("No '%s' palette bitmap, using palette01\n", filename));
+		InterfacePaletteBitmap = bm_load(NOX("palette01"));
+		if (InterfacePaletteBitmap < 0) {
+			Error(LOCATION, "Could not load in \"%s\" or palette01!", filename);
+		}
 	}
 
 	palette_use_bm_palette(InterfacePaletteBitmap);

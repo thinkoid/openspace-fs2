@@ -1728,9 +1728,12 @@ void bm_page_in_stop()
 	Bm_ram_freed = 0;
 	#endif
 
-	int d3d_preloading = 1;
+	// VRAM preload is a Direct3D concept; software mode pages into RAM only
+	int d3d_preloading = (gr_screen.mode == GR_DIRECT3D);
 
-	gr_d3d_preload_init();
+	if ( d3d_preloading )	{
+		gr_d3d_preload_init();
+	}
 
 	for (i = 0; i < MAX_BITMAPS; i++)	{
 		if ( bm_bitmaps[i].type != BM_TYPE_NONE )	{
@@ -1754,7 +1757,7 @@ void bm_page_in_stop()
 				if(bm_bitmaps[i].used_flags == BMP_AABITMAP){
 					bm_lock( bm_bitmaps[i].handle, 8, bm_bitmaps[i].used_flags );
 				} else {
-					bm_lock( bm_bitmaps[i].handle, 16, bm_bitmaps[i].used_flags );
+					bm_lock( bm_bitmaps[i].handle, (ubyte)((gr_screen.mode == GR_SOFTWARE) ? 8 : 16), bm_bitmaps[i].used_flags );
 				}
 				bm_unlock( bm_bitmaps[i].handle );
 

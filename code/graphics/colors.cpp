@@ -237,16 +237,35 @@ void grx_init_alphacolor( color *clr, int r, int g, int b, int alpha, int type )
 	if ( alpha < 0 ) alpha = 0;
 	if ( alpha > 255 ) alpha = 255;
 
+	int need_calc = 1;
+
 	n = -1;
 	if ( (clr->magic == 0xAC01) && (clr->is_alphacolor) )	{
 		if ( (clr->alphacolor >= 0) && (clr->alphacolor < MAX_ALPHACOLORS))	{
 			if ( Alphacolors[clr->alphacolor].used && (Alphacolors[clr->alphacolor].clr==clr) )	{
 				n = clr->alphacolor;
+				alphacolor *pac = &Alphacolors[n];
+				if ( pac->r==r && pac->g==g && pac->b==b && pac->alpha==alpha && pac->type==type )	{
+					need_calc = 0;	// same slot, same values: table still valid
+				}
 			}
 		}
 	}
 
-	int changed = 0;
+	if ( n==-1 )	{
+		// value dedup: FS2's HUD passes stack-local color objects every
+		// frame; identical (r,g,b,alpha,type) shares the slot and skips
+		// the table calc.  (Retail hardware never allocated from this
+		// pool at all - the leak is an FS2-HUD-on-FS1-renderer artifact.)
+		for (int k=0; k<MAX_ALPHACOLORS; k++ )	{
+			alphacolor *kac = &Alphacolors[k];
+			if ( kac->used && kac->r==r && kac->g==g && kac->b==b && kac->alpha==alpha && kac->type==type )	{
+				n = k;
+				need_calc = 0;
+				break;
+			}
+		}
+	}
 
 	if ( n==-1 )	{
 		for (n=0; n<MAX_ALPHACOLORS; n++ )	{
@@ -254,19 +273,10 @@ void grx_init_alphacolor( color *clr, int r, int g, int b, int alpha, int type )
 		}
 		if ( n == MAX_ALPHACOLORS )	
 			Error( LOCATION, "Out of alphacolors!\n" );
-	} else {
-		changed = 1;
 	}
-
 
 	// Create the alphacolor
 	ac = &Alphacolors[n];
-
-	if ( changed && (ac->r!=r || ac->g!=g || ac->b!=b || ac->alpha!=alpha || ac->type != type ) )	{
-		// we're changing the color, so delete the old cache file
-		//mprintf(( "Changing ac from %d,%d,%d,%d to %d,%d,%d,%d\n", ac->r, ac->g, ac->b, ac->alpha, r, g, b, alpha ));
-		//ac_delete_cached(ac);
-	}
 
 	ac->used = 1;
 	ac->r = r;
@@ -275,8 +285,10 @@ void grx_init_alphacolor( color *clr, int r, int g, int b, int alpha, int type )
 	ac->alpha = alpha;
 	ac->type = type;
 	ac->clr=clr;
-	
-	calc_alphacolor(ac);
+
+	if ( need_calc )	{
+		calc_alphacolor(ac);
+	}
 
 	grx_init_color( clr, r, g, b );
 

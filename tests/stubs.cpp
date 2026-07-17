@@ -58,3 +58,9 @@ ushort netmisc_calc_checksum( void * vptr, int len )
 
 	return (unsigned short)((sum1<<8)+ sum2);
 }
+
+// network/multi.cpp — retail multi_init pointed Net_player at slot 0 even in
+// single-player; plenty of gameplay code indexes Net_players through it
+#include "multi.h"
+net_player Net_players[MAX_PLAYERS];
+net_player *Net_player = &Net_players[0];

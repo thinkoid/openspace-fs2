@@ -1041,10 +1041,10 @@ void freespace_stop_mission()
 // called at frame interval to process networking stuff
 void game_do_networking()
 {
-	Assert( Net_player != NULL );
 	if (!(Game_mode & GM_MULTIPLAYER)){
 		return;
 	}
+	Assert( Net_player != NULL );	// multi init owns this; single-player returns above
 
 	// see if this player should be reading/writing data.  Bit is set when at join
 	// screen onward until quits back to main menu.

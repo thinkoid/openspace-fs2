@@ -127,74 +127,74 @@ void debug_console(void (*)())
 {
 }
 
-void demo_close()
+long demo_close()
 {
-	oracle_trap("demo_close");
+	return -1;	// demo recorder is gone
 }
 
-void demo_do_frame_end()
+long demo_do_frame_end()
 {
-	oracle_trap("demo_do_frame_end");
+	return -1;	// demo recorder is gone
 }
 
-void demo_do_frame_start()
+long demo_do_frame_start()
 {
-	oracle_trap("demo_do_frame_start");
+	return -1;	// demo recorder is gone
 }
 
-void demo_POST_builtin_message(int, ship*, int, int)
+long demo_POST_builtin_message(int, ship*, int, int)
 {
-	oracle_trap("demo_POST_builtin_message");
+	return -1;	// demo recorder is gone
 }
 
-void demo_POST_departed(int, int)
+long demo_POST_departed(int, int)
 {
-	oracle_trap("demo_POST_departed");
+	return -1;	// demo recorder is gone
 }
 
-void demo_POST_obj_create(char*, int)
+long demo_POST_obj_create(char*, int)
 {
-	oracle_trap("demo_POST_obj_create");
+	return -1;	// demo recorder is gone
 }
 
-void demo_POST_primary_fired(object*, int, int)
+long demo_POST_primary_fired(object*, int, int)
 {
-	oracle_trap("demo_POST_primary_fired");
+	return -1;	// demo recorder is gone
 }
 
-void demo_POST_ship_kill(object*)
+long demo_POST_ship_kill(object*)
 {
-	oracle_trap("demo_POST_ship_kill");
+	return -1;	// demo recorder is gone
 }
 
-void demo_POST_unique_message(char*, char*, int, int)
+long demo_POST_unique_message(char*, char*, int, int)
 {
-	oracle_trap("demo_POST_unique_message");
+	return -1;	// demo recorder is gone
 }
 
-void demo_POST_warpin(int, int)
+long demo_POST_warpin(int, int)
 {
-	oracle_trap("demo_POST_warpin");
+	return -1;	// demo recorder is gone
 }
 
-void demo_POST_warpout(int, int)
+long demo_POST_warpout(int, int)
 {
-	oracle_trap("demo_POST_warpout");
+	return -1;	// demo recorder is gone
 }
 
-void demo_should_sim(object*)
+long demo_should_sim(object*)
 {
-	oracle_trap("demo_should_sim");
+	return -1;	// demo recorder is gone
 }
 
-void demo_start_playback(char*)
+long demo_start_playback(char*)
 {
-	oracle_trap("demo_start_playback");
+	return -1;	// demo recorder is gone
 }
 
-void demo_start_record(char*)
+long demo_start_record(char*)
 {
-	oracle_trap("demo_start_record");
+	return -1;	// demo recorder is gone
 }
 
 long ds3d_update_buffer(int, float, float, vector*, vector*)
@@ -330,76 +330,6 @@ void gr_opengl_cleanup()
 void gr_opengl_init()
 {
 	oracle_trap("gr_opengl_init");
-}
-
-void joy_ff_adjust_handling(int)
-{
-	oracle_trap("joy_ff_adjust_handling");
-}
-
-void joy_ff_afterburn_off()
-{
-	oracle_trap("joy_ff_afterburn_off");
-}
-
-void joy_ff_afterburn_on()
-{
-	oracle_trap("joy_ff_afterburn_on");
-}
-
-void joy_ff_deathroll()
-{
-	oracle_trap("joy_ff_deathroll");
-}
-
-void joy_ff_docked()
-{
-	oracle_trap("joy_ff_docked");
-}
-
-void joy_ff_explode()
-{
-	oracle_trap("joy_ff_explode");
-}
-
-void joy_ff_fly_by(int)
-{
-	oracle_trap("joy_ff_fly_by");
-}
-
-void joy_ff_mission_init(vector)
-{
-	oracle_trap("joy_ff_mission_init");
-}
-
-void joy_ff_play_dir_effect(float, float)
-{
-	oracle_trap("joy_ff_play_dir_effect");
-}
-
-void joy_ff_play_primary_shoot(int)
-{
-	oracle_trap("joy_ff_play_primary_shoot");
-}
-
-void joy_ff_play_reload_effect()
-{
-	oracle_trap("joy_ff_play_reload_effect");
-}
-
-void joy_ff_play_secondary_shoot(int)
-{
-	oracle_trap("joy_ff_play_secondary_shoot");
-}
-
-void joy_ff_play_vector_effect(vector*, float)
-{
-	oracle_trap("joy_ff_play_vector_effect");
-}
-
-void joy_ff_stop_effects()
-{
-	oracle_trap("joy_ff_stop_effects");
 }
 
 long multi_assign_network_signature(int)
@@ -977,9 +907,9 @@ long multi_voice_test_record_stop()
 	return -1;
 }
 
-void oo_display()
+long oo_display()
 {
-	oracle_trap("oo_display");
+	return -1;	// multiplayer machinery, silent
 }
 
 long psnet_close()
@@ -1027,199 +957,199 @@ long rtvoice_uncompress(unsigned char*, int, double, unsigned char*, int)
 	return -1;
 }
 
-void send_ai_info_update_packet(object*, char)
+long send_ai_info_update_packet(object*, char)
 {
-	oracle_trap("send_ai_info_update_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_asteroid_create(object*, object*, int, vector*)
+long send_asteroid_create(object*, object*, int, vector*)
 {
-	oracle_trap("send_asteroid_create");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_asteroid_hit(object*, object*, vector*, float)
+long send_asteroid_hit(object*, object*, vector*, float)
 {
-	oracle_trap("send_asteroid_hit");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_asteroid_throw(object*)
+long send_asteroid_throw(object*)
 {
-	oracle_trap("send_asteroid_throw");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_beam_fired_packet(object*, ship_subsys*, object*, int, beam_info*)
+long send_beam_fired_packet(object*, ship_subsys*, object*, int, beam_info*)
 {
-	oracle_trap("send_beam_fired_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_cargo_revealed_packet(ship*)
+long send_cargo_revealed_packet(ship*)
 {
-	oracle_trap("send_cargo_revealed_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_change_iff_packet(unsigned short, int)
+long send_change_iff_packet(unsigned short, int)
 {
-	oracle_trap("send_change_iff_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_countermeasure_success_packet(int)
+long send_countermeasure_success_packet(int)
 {
-	oracle_trap("send_countermeasure_success_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_debrief_info(int*, int**)
+long send_debrief_info(int*, int**)
 {
-	oracle_trap("send_debrief_info");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_debris_update_packet(object*, int)
+long send_debris_update_packet(object*, int)
 {
-	oracle_trap("send_debris_update_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_emp_effect(unsigned short, float, float)
+long send_emp_effect(unsigned short, float, float)
 {
-	oracle_trap("send_emp_effect");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_event_update_packet(int)
+long send_event_update_packet(int)
 {
-	oracle_trap("send_event_update_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_flak_fired_packet(int, int, int, float)
+long send_flak_fired_packet(int, int, int, float)
 {
-	oracle_trap("send_flak_fired_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_game_chat_packet(net_player*, char*, int, net_player*, char*, int)
+long send_game_chat_packet(net_player*, char*, int, net_player*, char*, int)
 {
-	oracle_trap("send_game_chat_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_homing_weapon_info(int)
+long send_homing_weapon_info(int)
 {
-	oracle_trap("send_homing_weapon_info");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_lightning_packet(int, vector*, vector*)
+long send_lightning_packet(int, vector*, vector*)
 {
-	oracle_trap("send_lightning_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_mission_goal_info_packet(int, int, int)
+long send_mission_goal_info_packet(int, int, int)
 {
-	oracle_trap("send_mission_goal_info_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_mission_log_packet(int)
+long send_mission_log_packet(int)
 {
-	oracle_trap("send_mission_log_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_mission_message_packet(int, char*, int, int, int, int, int, int)
+long send_mission_message_packet(int, char*, int, int, int, int, int, int)
 {
-	oracle_trap("send_mission_message_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_mission_sync_packet(int, int)
+long send_mission_sync_packet(int, int)
 {
-	oracle_trap("send_mission_sync_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_netplayer_update_packet(net_player*)
+long send_netplayer_update_packet(net_player*)
 {
-	oracle_trap("send_netplayer_update_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_NEW_countermeasure_fired_packet(object*, int, int)
+long send_NEW_countermeasure_fired_packet(object*, int, int)
 {
-	oracle_trap("send_NEW_countermeasure_fired_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_NEW_primary_fired_packet(ship*, int)
+long send_NEW_primary_fired_packet(ship*, int)
 {
-	oracle_trap("send_NEW_primary_fired_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_player_order_packet(int, int, int)
+long send_player_order_packet(int, int, int)
 {
-	oracle_trap("send_player_order_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_player_pain_packet(net_player*, int, float, vector*, vector*)
+long send_player_pain_packet(net_player*, int, float, vector*, vector*)
 {
-	oracle_trap("send_player_pain_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_player_stats_block_packet(net_player*, int, net_player*)
+long send_player_stats_block_packet(net_player*, int, net_player*)
 {
-	oracle_trap("send_player_stats_block_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_reinforcement_avail(int)
+long send_reinforcement_avail(int)
 {
-	oracle_trap("send_reinforcement_avail");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_secondary_fired_packet(ship*, unsigned short, int, int, int)
+long send_secondary_fired_packet(ship*, unsigned short, int, int, int)
 {
-	oracle_trap("send_secondary_fired_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_self_destruct_packet()
+long send_self_destruct_packet()
 {
-	oracle_trap("send_self_destruct_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_ship_create_packet(object*, int)
+long send_ship_create_packet(object*, int)
 {
-	oracle_trap("send_ship_create_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_ship_depart_packet(object*)
+long send_ship_depart_packet(object*)
 {
-	oracle_trap("send_ship_depart_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_ship_kill_packet(object*, object*, float, int)
+long send_ship_kill_packet(object*, object*, float, int)
 {
-	oracle_trap("send_ship_kill_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_subsystem_cargo_revealed_packet(ship*, int)
+long send_subsystem_cargo_revealed_packet(ship*, int)
 {
-	oracle_trap("send_subsystem_cargo_revealed_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_subsystem_destroyed_packet(ship*, int, vector)
+long send_subsystem_destroyed_packet(ship*, int, vector)
 {
-	oracle_trap("send_subsystem_destroyed_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_turret_fired_packet(int, int, int)
+long send_turret_fired_packet(int, int, int)
 {
-	oracle_trap("send_turret_fired_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_weapon_detonate_packet(object*)
+long send_weapon_detonate_packet(object*)
 {
-	oracle_trap("send_weapon_detonate_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_wing_create_packet(wing*, int, int)
+long send_wing_create_packet(wing*, int, int)
 {
-	oracle_trap("send_wing_create_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_wss_request_packet(short, int, int, int, int, int, int, int, net_player*)
+long send_wss_request_packet(short, int, int, int, int, int, int, int, net_player*)
 {
-	oracle_trap("send_wss_request_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
-void send_wss_update_packet(int, unsigned char*, int)
+long send_wss_update_packet(int, unsigned char*, int)
 {
-	oracle_trap("send_wss_update_packet");
+	return -1;	// multiplayer machinery, silent
 }
 
 long snd_chg_loop_status(int, int)
@@ -1442,8 +1372,6 @@ unsigned char Multi_update_fireup_launcher_on_exit[1 << 20];
 unsigned char Multi_voice_can_record[1 << 20];
 unsigned char Multi_voice_local_prefs[1 << 20];
 unsigned char Netgame[1 << 20];
-unsigned char Net_player[1 << 20];
-unsigned char Net_players[1 << 20];
 unsigned char oo_arrive_time_count[1 << 20];
 unsigned char oo_interp_count[1 << 20];
 unsigned char OO_update_index[1 << 20];

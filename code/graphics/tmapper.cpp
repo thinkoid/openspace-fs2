@@ -298,6 +298,14 @@ void grx_tmapper( int nverts, vertex **verts, uint flags )
 	flags &= (~TMAP_FLAG_NONDARKENING);
 	flags &= (~TMAP_FLAG_PIXEL_FOG);
 
+	// FS2-era callers request hardware modes freely; the software tmapper
+	// keeps only the bits its table knows.  RGB lighting doesn't exist
+	// here (and gouraud requires ramp, so it goes with it).
+	if ( flags & TMAP_FLAG_RGB )	{
+		flags &= ~(TMAP_FLAG_RGB|TMAP_FLAG_GOURAUD);
+	}
+	flags &= (TMAP_FLAG_TEXTURED|TMAP_FLAG_CORRECT|TMAP_FLAG_RAMP|TMAP_FLAG_GOURAUD|TMAP_FLAG_XPARENT|TMAP_FLAG_TILED|TMAP_FLAG_NEBULA);
+
 	// Check for invalid flags
 #ifndef NDEBUG
 	if ( (flags & (TMAP_FLAG_RAMP|TMAP_FLAG_RGB))==(TMAP_FLAG_RAMP|TMAP_FLAG_RGB))	{
@@ -335,6 +343,15 @@ void grx_tmapper( int nverts, vertex **verts, uint flags )
 
 	tmap_scanline = tmap_scanline_table[flags];
 //	tmap_scanline = tmap_scan_generic;
+
+	// combos retail's table never listed (e.g. TEXTURED|CORRECT|XPARENT
+	// from laser quads) degrade gracefully instead of asserting
+	if ( tmap_scanline == NULL )
+		tmap_scanline = tmap_scanline_table[flags & ~TMAP_FLAG_CORRECT];
+	if ( tmap_scanline == NULL )
+		tmap_scanline = tmap_scanline_table[flags & (TMAP_FLAG_TEXTURED|TMAP_FLAG_XPARENT)];
+	if ( tmap_scanline == NULL )
+		tmap_scanline = tmap_scanline_table[flags & TMAP_FLAG_TEXTURED];
 
 #ifndef NDEBUG
 	Assert( tmap_scanline != NULL );
