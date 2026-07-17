@@ -245,8 +245,9 @@ void grx_init_alphacolor( color *clr, int r, int g, int b, int alpha, int type )
 			if ( Alphacolors[clr->alphacolor].used && (Alphacolors[clr->alphacolor].clr==clr) )	{
 				n = clr->alphacolor;
 				alphacolor *pac = &Alphacolors[n];
-				if ( pac->r==r && pac->g==g && pac->b==b && pac->alpha==alpha && pac->type==type )	{
-					need_calc = 0;	// same slot, same values: table still valid
+				if ( pac->r==r && pac->g==g && pac->b==b && pac->alpha==alpha && pac->type==type
+						&& pac->palette_checksum == gr_palette_checksum )	{
+					need_calc = 0;	// same slot, same values, same palette
 				}
 			}
 		}
@@ -259,7 +260,8 @@ void grx_init_alphacolor( color *clr, int r, int g, int b, int alpha, int type )
 		// pool at all - the leak is an FS2-HUD-on-FS1-renderer artifact.)
 		for (int k=0; k<MAX_ALPHACOLORS; k++ )	{
 			alphacolor *kac = &Alphacolors[k];
-			if ( kac->used && kac->r==r && kac->g==g && kac->b==b && kac->alpha==alpha && kac->type==type )	{
+			if ( kac->used && kac->r==r && kac->g==g && kac->b==b && kac->alpha==alpha && kac->type==type
+					&& kac->palette_checksum == gr_palette_checksum )	{
 				n = k;
 				need_calc = 0;
 				break;
@@ -288,6 +290,7 @@ void grx_init_alphacolor( color *clr, int r, int g, int b, int alpha, int type )
 
 	if ( need_calc )	{
 		calc_alphacolor(ac);
+		ac->palette_checksum = gr_palette_checksum;
 	}
 
 	grx_init_color( clr, r, g, b );

@@ -27,6 +27,7 @@ typedef struct alphacolor {
 	int	used;
 	int	r,g,b,alpha;
 	int	type;						// See AC_TYPE_??? define
+	uint	palette_checksum;		// palette the table below was computed against
 	color	*clr;
 	union {
 		ubyte		lookup[16][256];		// For 8-bpp rendering modes
