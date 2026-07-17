@@ -153,7 +153,7 @@ void game_busy()
 static int Num_monitors = 0;
 static monitor *Monitor[MAX_MONITORS];
 
-monitor::monitor( char *_name )
+monitor::monitor( const char *_name )
 {
 	int i;
 

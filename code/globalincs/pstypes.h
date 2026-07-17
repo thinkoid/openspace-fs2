@@ -30,27 +30,18 @@
 	#define GAME_CD_CHECK
 #endif
 
-// 4127 is constant conditional (assert)
-// 4100 is unreferenced formal parameters,
-// 4514 is unreferenced inline function removed, 
-// 4201 is nameless struct extension used. (used by windows header files)
-// 4410 illegal size for operand... ie... 	fxch st(1)
-// 4611 is _setjmp warning.  Since we use setjmp alot, and we don't really use constructors or destructors, this warning doesn't really apply to us.
-// 4725 is the pentium division bug warning, and I can't seem to get rid of it, even with this pragma.
-//      JS: I figured out the disabling 4725 works, but not on the first function in the module.
-//      So to disable this, I add in a stub function at the top of each module that does nothing.
-// 4710 is inline function not expanded (who cares?)
-// 4711 tells us an inline function was expanded (who cares?)
-// 4702 unreachable code.  I care, but too many to deal with
-// 4201 nonstandard extension used : nameless struct/union (happens a lot in Windows include headers)
-// 4390 emptry control statement (triggered by nprintf and mprintf's inside of one-line if's, etc)
-#pragma warning(disable: 4127 4100 4514 4201 4410 4611 4725 4710 4711 4702 4201 4390)
-
+#include <math.h>
 #include <stdio.h>	// For NULL, etc
 #include <stdlib.h>
-#include <memory.h>
-#include <malloc.h>
 #include <string.h>
+#include <strings.h>	// strcasecmp
+
+// MSVC runtime spellings used throughout the retail sources
+#define stricmp strcasecmp
+#define strnicmp strncasecmp
+#define _isnan isnan
+#define _cdecl
+#define __cdecl
 
 // value to represent an uninitialized state in any int or uint
 #define UNINITIALIZED 0x7f8e6d9c
@@ -63,12 +54,11 @@
 
 #define MAX_TEAMS		3
 
-#define USE_INLINE_ASM 1		// Define this to use inline assembly
 #define STRUCT_CMP(a, b) memcmp((void *) &a, (void *) &b, sizeof(a))
 
 #define LOCAL static			// make module local varilable static.
 
-typedef __int64 longlong;
+typedef long long longlong;
 typedef long fix;
 typedef unsigned char ubyte;
 typedef unsigned short ushort;
@@ -78,7 +68,7 @@ typedef unsigned int uint;
 
 //Stucture to store clipping codes in a word
 typedef struct ccodes {
-	ubyte or,and;	//or is low byte, and is high byte
+	ubyte cc_or, cc_and;	//or is low byte, and is high byte ("or"/"and" are C++ keywords)
 } ccodes;
 
 typedef struct vector {
@@ -165,10 +155,10 @@ typedef struct bitmap {
 	bitmap_section_info sections;
 } bitmap;
 
-//This are defined in MainWin.c
-extern void _cdecl WinAssert(char * text,char *filename, int line);
-extern void _cdecl Error( char * filename, int line, char * format, ... );
-extern void _cdecl Warning( char * filename, int line, char * format, ... );
+//These are defined in globalincs/debug.cpp
+extern void WinAssert(const char * text, const char *filename, int line);
+extern void Error( const char * filename, int line, const char * format, ... );
+extern void Warning( const char * filename, int line, const char * format, ... );
 
 #include "outwnd.h"
 
@@ -218,8 +208,9 @@ void gr_activate(int);
 	#endif	// NDEBUG && DEMO
 #endif	// INTERPLAYQA
 
-#define min(a,b) (((a) < (b)) ? (a) : (b))
-#define max(a,b) (((a) > (b)) ? (a) : (b))
+// min/max were macros; as templates they no longer poison standard headers.
+template <class A, class B> constexpr auto min(A a, B b) { return (b < a) ? b : a; }
+template <class A, class B> constexpr auto max(A a, B b) { return (a < b) ? b : a; }
 
 #define PI					3.141592654f
 #define PI2					(3.141592654f*2.0f)	// PI*2
@@ -256,10 +247,10 @@ DCF(toggle_it,"description")
 
 class debug_command {
 	public:
-	char *name;
-	char *help;
+	const char *name;
+	const char *help;
 	void (*func)();
-	debug_command(char *name,char *help,void (*func)());	// constructor
+	debug_command(const char *name, const char *help, void (*func)());	// constructor
 };
 
 #define DCF(function_name,help_text)			\
@@ -296,7 +287,7 @@ extern int Dc_arg_int;		// If Dc_arg_type & ARG_INT or ARG_HEX is set, then this
 extern float Dc_arg_float;	// If Dc_arg_type & ARG_FLOAT is set, then this is the value
 
 // Outputs text to the console
-void dc_printf( char *format, ... );
+void dc_printf( const char *format, ... );
 
 // Each dc_arg_type can have one or more of these flags set.
 // This is because some things can fit into two catagories.
@@ -405,10 +396,10 @@ extern void game_busy();
 
 class monitor {
 	public:
-	char	*name;			
+	const char	*name;
 	int	value;			// Value that gets cleared to 0 each frame.
-	int	min, max, sum, cnt;		// Min & Max of value.  Sum is used to calculate average 
-	monitor(char *name);	// constructor
+	int	min, max, sum, cnt;		// Min & Max of value.  Sum is used to calculate average
+	monitor(const char *name);	// constructor
 };
 
 // Creates a monitor variable
@@ -433,7 +424,7 @@ void monitor_update();
 
 #define NOX(s) s
 
-char *XSTR(char *str, int index);
+char *XSTR(const char *str, int index);
 
 // Caps V between MN and MX.
 template <class T> void CAP( T& v, T mn, T mx )
@@ -477,58 +468,27 @@ template <class T> void CAP( T& v, T mn, T mx )
 // Memory management functions
 //=========================================================
 
-#ifndef NDEBUG
-	// Debug versions
+// Thin wrappers over the C heap; the Win32 tracking heap and the
+// malloc/free/strdup macro redefinitions are gone.
 
-	// Returns 0 if not enough RAM.
-	int vm_init(int min_heap_size);
+// Returns 0 if not enough RAM.
+int vm_init(int min_heap_size);
 
-	// Allocates some RAM.
-	void *vm_malloc( int size, char *filename=NULL, int line=-1 );
+// Allocates some RAM.
+void *vm_malloc( int size );
 
-	// 
-	char *vm_strdup( const char *ptr, char *filename, int line );
+//
+char *vm_strdup( const char *ptr );
 
-	// Frees some RAM. 
-	void vm_free( void *ptr, char *filename=NULL, int line=-1 );
+// Frees some RAM.
+void vm_free( void *ptr );
 
-	// Frees all RAM.
-	void vm_free_all();
+// Frees all RAM.
+void vm_free_all();
 
-	// Easy to use macros
-	#define VM_MALLOC(size) vm_malloc((size),__FILE__,__LINE__)
-	#define VM_FREE(ptr) vm_free((ptr),__FILE__,__LINE__)
-
-	#define malloc(size) vm_malloc((size),__FILE__,__LINE__)
-	#define free(ptr) vm_free((ptr),__FILE__,__LINE__)
-	#define strdup(ptr) vm_strdup((ptr),__FILE__,__LINE__)
-	
-#else
-	// Release versions
-
-	// Returns 0 if not enough RAM.
-	int vm_init(int min_heap_size);
-
-	// Allocates some RAM.
-	void *vm_malloc( int size );
-
-	// 
-	char *vm_strdup( const char *ptr );
-
-	// Frees some RAM. 
-	void vm_free( void *ptr );
-
-	// Frees all RAM.
-	void vm_free_all();
-
-	// Easy to use macros
-	#define VM_MALLOC(size) vm_malloc(size)
-	#define VM_FREE(ptr) vm_free(ptr)
-
-	#define malloc(size) vm_malloc(size)
-	#define free(ptr) vm_free(ptr)
-	#define strdup(ptr) vm_strdup(ptr)
-#endif
+// Easy to use macros
+#define VM_MALLOC(size) vm_malloc(size)
+#define VM_FREE(ptr) vm_free(ptr)
 
 
 #endif		// PS_TYPES_H

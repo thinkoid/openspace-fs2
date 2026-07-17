@@ -17,6 +17,8 @@ extern int Semirand[SEMIRAND_MAX];			// this array is saved by the ai code on sa
 extern void init_semirand();
 extern int static_rand(int num);
 extern float static_randf(int num);
+#include "pstypes.h"
+
 extern void static_randvec(int num, vector *vp);
 extern float static_randf_range(int num, float min, float max);
 

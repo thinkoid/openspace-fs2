@@ -100,7 +100,7 @@ extern uint Unreliable_socket;	// all PXO API modules should use this to send an
 //
 
 struct sockaddr;
-struct fd_set;
+#include <sys/select.h>	// fd_set is a typedef here, not a struct tag
 struct timeval;
 
 // wrappers around select() and recvfrom() for lagging/losing data, and for sorting through different packet types
