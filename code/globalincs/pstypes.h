@@ -43,6 +43,7 @@
 #define stricmp strcasecmp
 #define strnicmp strncasecmp
 #define _isnan isnan
+#define _hypot hypot
 #define _cdecl
 #define __cdecl
 #define _MAX_PATH 260
@@ -69,6 +70,14 @@ inline char *strlwr(char *str)
 	return str;
 }
 #define _strlwr strlwr
+#define _strnicmp strncasecmp
+
+// MSVC itoa; radix 10 and 16 cover every call site
+inline char *itoa(int value, char *str, int radix)
+{
+	sprintf(str, radix == 16 ? "%x" : "%d", value);
+	return str;
+}
 
 // _filelength(fileno(fp)) idiom from the MSVC runtime
 long filelength(int fd);

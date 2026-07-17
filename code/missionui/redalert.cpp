@@ -97,7 +97,7 @@ static int Ra_flash_coords[GR_NUM_RESOLUTIONS][2] = {
 #define RA_REPLAY_MISSION				0
 #define RA_CONTINUE						1
 
-ui_button_info Buttons[GR_NUM_RESOLUTIONS][NUM_BUTTONS] = {
+static ui_button_info Buttons[GR_NUM_RESOLUTIONS][NUM_BUTTONS] = {
 	{	// GR_640
 		ui_button_info("RAB_00",	2,		445,	-1,	-1, 0),
 		ui_button_info("RAB_01",	575,	432,	-1,	-1, 1),

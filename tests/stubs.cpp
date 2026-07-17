@@ -7,10 +7,6 @@
 
 #include "pstypes.h"
 
-// freespace2/freespace.cpp
-int Fred_running = 0;
-int Pofview_running = 0;
-int Nebedit_running = 0;
 
 // debugconsole/console.cpp
 int Dc_command;
@@ -43,7 +39,3 @@ debug_command::debug_command(const char *_name, const char *_help, void (*_func)
 	func = _func;
 }
 
-// nebula/neb.cpp
-void neb2_set_detail_level(int /*level*/)
-{
-}

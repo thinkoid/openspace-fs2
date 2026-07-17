@@ -1486,7 +1486,7 @@ void ship_self_destruct( object *objp )
 	ship_hit_kill(objp, NULL, 1.0f, 1);	
 }
 
-extern Homing_hits, Homing_misses;
+extern int Homing_hits, Homing_misses;
 
 // Call this instead of physics_apply_whack directly to 
 // deal with two ships docking properly.

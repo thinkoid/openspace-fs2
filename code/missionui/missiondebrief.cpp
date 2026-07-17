@@ -224,7 +224,7 @@ typedef struct {
 	char callsign[CALLSIGN_LEN];
 } debrief_multi_list_info;
 
-ui_button_info Buttons[GR_NUM_RESOLUTIONS][NUM_BUTTONS] = {
+static ui_button_info Buttons[GR_NUM_RESOLUTIONS][NUM_BUTTONS] = {
 	{ // GR_640
 		ui_button_info("DB_00",		6,		1,		37,	7,		0),		// debriefing
 		ui_button_info("DB_01",		6,		21,	37,	23,	1),		// statistics

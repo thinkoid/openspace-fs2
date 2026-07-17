@@ -1463,7 +1463,7 @@ void validate_mission_goals(int objnum, ai_info *aip)
 }
 
 //XSTR:OFF
-char *Goal_text[5] = {
+static char *Goal_text[5] = {
 "EVENT_SHIP",
 "EVENT_WING",
 "PLAYER_SHIP",

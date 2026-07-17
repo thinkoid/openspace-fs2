@@ -10,6 +10,8 @@
 #ifndef _BMPMAN_H
 #define _BMPMAN_H
 
+#include "pstypes.h"
+
 #ifdef FS2_DEMO
 	#define MAX_BITMAPS 3500
 #else

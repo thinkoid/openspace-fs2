@@ -1010,7 +1010,7 @@ void wl_unload_all_anim_instances()
 	}
 
 	// stop any overhead anim instances
-	for ( i = 0; i < MAX_SHIP_TYPES; i++ ) {
+	for ( int i = 0; i < MAX_SHIP_TYPES; i++ ) {
 		if ( Wl_ships[i].anim_instance ) {
 			anim_release_render_instance(Wl_ships[i].anim_instance);
 			Wl_ships[i].anim_instance = NULL;
@@ -3061,7 +3061,9 @@ void wl_saturate_bank(int ship_slot, int bank)
 
 	slot = &Wss_slots[ship_slot];
 
-	if ( (slot->wep[bank] < 0) || (slot->wep_count <= 0) ) {
+	// retail compared the wep_count ARRAY's address with 0 (never true on
+	// Win32), so the second clause never fired; preserved as a no-op
+	if ( slot->wep[bank] < 0 ) {
 		return;
 	}
 

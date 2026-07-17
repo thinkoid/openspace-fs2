@@ -7,12 +7,10 @@
  *
 */
 
-#include <windows.h>
-
 #include <stdlib.h>
-#include <process.h>
 #include <time.h>
-#include <direct.h>
+#include <limits.h>
+#include <unistd.h>
 
 #include "pstypes.h"
 #include "systemvars.h"
@@ -104,7 +102,8 @@
 #include "shipfx.h"
 #include "readyroom.h"
 #include "mainhallmenu.h"
-#include "multilag.h"
+// multilag.h forward-declares Winsock's struct fd_set (a typedef on Linux);
+// nothing from it is used here (MULTI_USE_LAG is off)
 #include "trails.h"
 #include "particle.h"
 #include "popup.h"
@@ -116,7 +115,6 @@
 #include "missioncmdbrief.h"
 #include "redalert.h"
 #include "gameplayhelp.h"
-#include "multilag.h"
 #include "staticrand.h"
 #include "multi_pmsg.h"
 #include "levelpaging.h"
@@ -150,10 +148,8 @@
 #include "version.h"
 #include "mainhalltemp.h"
 #include "exceptionhandler.h"
-#include "glide.h"
 #include "supernova.h"
 #include "hudshield.h"
-#include <io.h>
 // #include "names.h"
 #include "shiphit.h"
 #include "missionloopbrief.h"
@@ -538,7 +534,7 @@ static char *Game_demo_title_screen_fname[GR_NUM_RESOLUTIONS] = {
 char Game_CDROM_dir[MAX_PATH_LEN];
 int init_cdrom();
 
-// How much RAM is on this machine. Set in WinMain
+// How much RAM is on this machine. Set in main()
 uint Freespace_total_ram = 0;
 
 // game flash stuff
@@ -605,43 +601,13 @@ void game_framerate_check_init()
 	// zero critical time
 	Gf_critical_time = 0.0f;
 		
+	// retail rated Glide cards by framebuffer RAM (voodoo 1 vs 2/3) here;
+	// only the non-glide numbers remain
 	// nebula missions
 	if(The_mission.flags & MISSION_FLAG_FULLNEB){
-		// if this is a glide card
-		if(gr_screen.mode == GR_GLIDE){
-			extern GrHwConfiguration hwconfig;
-
-			// voodoo 2/3
-			if(hwconfig.SSTs[0].sstBoard.VoodooConfig.fbRam >= 4){
-				Gf_critical = 15.0f;
-			}
-			// voodoo 1
-			else {
-				Gf_critical = 10.0f;
-			}
-		}
-		// d3d. only care about good cards here I guess (TNT)
-		else {
-			Gf_critical = 15.0f;			
-		}
+		Gf_critical = 15.0f;
 	} else {
-		// if this is a glide card
-		if(gr_screen.mode == GR_GLIDE){
-			extern GrHwConfiguration hwconfig;
-
-			// voodoo 2/3
-			if(hwconfig.SSTs[0].sstBoard.VoodooConfig.fbRam >= 4){
-				Gf_critical = 25.0f;
-			}
-			// voodoo 1
-			else {
-				Gf_critical = 20.0f;
-			}
-		}
-		// d3d. only care about good cards here I guess (TNT)
-		else {
-			Gf_critical = 25.0f;
-		}
+		Gf_critical = 25.0f;
 	}
 }
 
@@ -907,7 +873,7 @@ void game_flash_diminish(float frametime)
 	
 	if ( Use_palette_flash )	{
 		int r,g,b;
-		static int or=0, og=0, ob=0;
+		static int old_r=0, old_g=0, old_b=0;	// was or/og/ob; "or" is a C++ keyword
 
 		// Change the 200 to change the color range of colors.
 		r = fl2i( Game_flash_red*128.0f );  
@@ -935,9 +901,9 @@ void game_flash_diminish(float frametime)
 
 			//mprintf(( "Flash! %d,%d,%d\n", r, g, b ));
 
-			or = r;
-			og = g;
-			ob = b;
+			old_r = r;
+			old_g = g;
+			old_b = b;
 		}
 	}
 	
@@ -1578,7 +1544,6 @@ DCF(gamma,"Sets Gamma factor")
 void game_init()
 {
 	char *ptr;
-	int depth = 16;
 
 	Game_current_mission_filename[0] = 0;
 
@@ -1605,8 +1570,8 @@ void game_init()
 	// int s2, e2;
 
 	char whee[1024];
-	GetCurrentDirectory(1024, whee);
-	strcat(whee, "\\");
+	getcwd(whee, 1024);
+	strcat(whee, "/");
 	strcat(whee, EXE_FNAME);
 
 	//Initialize the libraries
@@ -1694,125 +1659,28 @@ void game_init()
 // SOUND INIT END
 /////////////////////////////
 	
-	ptr = os_config_read_string(NULL, NOX("Videocard"), NULL);	
-	if (ptr == NULL) {
-		MessageBox((HWND)os_get_window(), XSTR("Please configure your system in the Launcher before running FS2.\n\n The Launcher will now be started!", 1446), XSTR("Attention!", 1447), MB_OK);
+	// Retail dispatched on the launcher's "Videocard" registry string here
+	// (Glide / Direct3D / DirectDraw, restarting the Launcher when unset).
+	// Those backends are gone; the software renderer at 640x480x8 is the
+	// mode, regardless of any leftover config value.
+	ptr = os_config_read_string(NULL, NOX("Videocard"), NULL);
+	mprintf(("videocard = %s (using software renderer)\n", ptr ? ptr : "<nothing>"));
 
-		// fire up the UpdateLauncher executable
-		STARTUPINFO si;
-		PROCESS_INFORMATION pi;
-
-		memset( &si, 0, sizeof(STARTUPINFO) );
-		si.cb = sizeof(si);
-
-		BOOL ret = CreateProcess(	LAUNCHER_FNAME,	// pointer to name of executable module 
-									NULL,							// pointer to command line string
-									NULL,							// pointer to process security attributes 
-									NULL,							// pointer to thread security attributes 
-									FALSE,							// handle inheritance flag 
-									CREATE_DEFAULT_ERROR_MODE,		// creation flags 
-									NULL,							// pointer to new environment block 
-									NULL,	// pointer to current directory name 
-									&si,	// pointer to STARTUPINFO 
-									&pi 	// pointer to PROCESS_INFORMATION  
-								);			
-
-		// If the Launcher could not be started up, let the user know
-		if (!ret) {
-			MessageBox((HWND)os_get_window(), XSTR("The Launcher could not be restarted.", 1450), XSTR("Error", 1451), MB_OK);
-		}
-		exit(1);
-	}
-
-	if(!Is_standalone){
-		
-		if(!stricmp(ptr, "Aucune acc\xe9l\xe9ration 3D") || !stricmp(ptr, "Keine 3D-Beschleunigerkarte") || !stricmp(ptr, "No 3D acceleration")){
-			MessageBox((HWND)os_get_window(), XSTR("Warning, Freespace 2 requires Glide or Direct3D hardware accleration. You will not be able to run Freespace 2 without it.", 1448), XSTR("Warning", 1449), MB_OK);		
-			exit(1);
-		}
-	}
-
-	// check for hi res pack file 
+	// check for hi res pack file
 	int has_sparky_hi = 0;
 
 	// check if sparky_hi exists -- access mode 0 means does file exist
 	char dir[128];
-	_getcwd(dir, 128);
-	if ( _access("sparky_hi_fs2.vp", 0) == 0) {
+	getcwd(dir, 128);
+	if ( access("sparky_hi_fs2.vp", 0) == 0) {
 		has_sparky_hi = 1;
 	} else {
 		mprintf(("No sparky_hi_fs2.vp in directory %s\n", dir));
 	}
+	// hi-res needs the hardware backends; unused until then
+	(void)has_sparky_hi;
 
-	// see if we've got 32 bit in the string
-	if(strstr(ptr, "32 bit")){
-		depth = 32;
-	}
-
-	int trying_d3d = 0;
-	
-	if (!Is_standalone && ptr && (strstr(ptr, NOX("3DFX Glide")))) {
-#ifdef E3_BUILD
-		// always 640 for E3
-		gr_init(GR_640, GR_GLIDE);
-#else
-		// regular or hi-res ?
-#ifdef NDEBUG
-		if(has_sparky_hi && strstr(ptr, NOX("(1024x768)"))){
-#else
-		if(strstr(ptr, NOX("(1024x768)"))){
-#endif
-			gr_init(GR_1024, GR_GLIDE);
-		} else {			
-			gr_init(GR_640, GR_GLIDE);
-		}
-#endif
-	} else if (!Is_standalone && ptr && (strstr(ptr, NOX("Direct 3D -") )))	{
-#ifdef E3_BUILD		
-		// always 640 for E3
-		trying_d3d = 1;
-		gr_init(GR_640, GR_DIRECT3D, depth);		
-#else
-		// regular or hi-res ?
-#ifdef NDEBUG
-		if(has_sparky_hi && strstr(ptr, NOX("(1024x768)"))){
-#else
-		if(strstr(ptr, NOX("(1024x768)"))){
-#endif
-			// Direct 3D
-			trying_d3d = 1;
-			gr_init(GR_1024, GR_DIRECT3D, depth);
-		} else {
-			// Direct 3D
-			trying_d3d = 1;
-			gr_init(GR_640, GR_DIRECT3D, depth);
-		}
-#endif
-	} else {
-		// Software
-		#ifndef NDEBUG
-			if ( Use_fullscreen_at_startup && !Is_standalone)	{		
-				gr_init(GR_640, GR_DIRECTDRAW);
-			} else {
-				gr_init(GR_640, GR_SOFTWARE);
-			}
-		#else
-			if ( !Is_standalone ) {
-				gr_init(GR_640, GR_DIRECTDRAW);
-			} else {
-				gr_init(GR_640, GR_SOFTWARE);
-			}
-		#endif
-	}
-
-	// tried d3d ?
-	extern int Gr_inited;
-	if(trying_d3d && !Gr_inited){
-		extern char Device_init_error[512];		
-		MessageBox( NULL, Device_init_error, "Error intializing Direct3D", MB_OK|MB_TASKMODAL|MB_SETFOREGROUND );
-		exit(1);
-		return;
-	}
+	gr_init(GR_640, GR_SOFTWARE, 8);
 
 	// Set the gamma
 	ptr = os_config_read_string(NULL,NOX("Gamma"),NOX("1.80"));
@@ -1939,7 +1807,7 @@ void game_init()
 //	Game_music_paused = 0;
 	Game_paused = 0;
 
-	timeBeginPeriod(1);	
+	// timeBeginPeriod(1) -- Win32 timer-resolution tweak, not needed
 
 	nprintf(("General", "Ships.tbl is : %s\n", Game_ships_tbl_valid ? "VALID" : "INVALID!!!!"));
 	nprintf(("General", "Weapons.tbl is : %s\n", Game_weapons_tbl_valid ? "VALID" : "INVALID!!!!"));
@@ -3954,7 +3822,7 @@ void game_set_frametime(int state)
 		if (Frametime < cap) {
 			thistime = cap - Frametime;
 			//mprintf(("Sleeping for %6.3f seconds.\n", f2fl(thistime)));
-			Sleep( DWORD(f2fl(thistime) * 1000.0f) );
+			os_sleep( (int)(f2fl(thistime) * 1000.0f) );
 			Frametime = cap;
 			thistime = timer_get_fixed_seconds();
 		}
@@ -3964,7 +3832,7 @@ void game_set_frametime(int state)
 		(f2fl(Frametime) < ((float)1.0/(float)Multi_options_g.std_framecap))){
 
 		frame_cap_diff = ((float)1.0/(float)Multi_options_g.std_framecap) - f2fl(Frametime);		
-		Sleep((DWORD)(frame_cap_diff*1000)); 				
+		os_sleep((int)(frame_cap_diff*1000));
 		
 		thistime += fl2f((frame_cap_diff));		
 
@@ -4291,7 +4159,7 @@ int game_poll()
 
 		case KEY_PRINT_SCRN: 
 			{
-				static counter = 0;
+				static int counter = 0;	// implicit int in retail
 				char tmp_name[127];
 
 				game_stop_time();
@@ -4578,14 +4446,8 @@ void game_process_event( int current_state, int event )
 			break;
 
 		case GS_EVENT_TOGGLE_GLIDE:
-			#ifndef NDEBUG
-			if ( gr_screen.mode != GR_GLIDE )	{
-				gr_init( GR_640, GR_GLIDE );
-			} else {
-				gr_init( GR_640, GR_SOFTWARE );
-			}
-			#endif
-			break;						
+			// Glide backend is gone; software is the only renderer
+			break;
  
 		case GS_EVENT_LOAD_MISSION_MENU:
 			gameseq_set_state(GS_STATE_LOAD_MISSION_MENU);
@@ -5969,31 +5831,10 @@ void game_do_state(int state)
 // return 0 if there is enough RAM to run FreeSpace, otherwise return -1
 int game_do_ram_check(int ram_in_bytes)
 {
+	// retail popped a "Not Enough RAM" MessageBox below 30MB and refused to
+	// run below 25MB; any machine this port runs on clears the 1999 bar
 	if ( ram_in_bytes < 30*1024*1024 )	{
-		int allowed_to_run = 1;
-		if ( ram_in_bytes < 25*1024*1024 ) {
-			allowed_to_run = 0;
-		}
-
-		char tmp[1024];
-		int Freespace_total_ram_MB;
-		Freespace_total_ram_MB = fl2i(ram_in_bytes/(1024*1024));
-
-		if ( allowed_to_run ) {
-
-			sprintf( tmp, XSTR( "FreeSpace has detected that you only have %dMB of free memory.\n\nFreeSpace requires at least 32MB of memory to run.  If you think you have more than %dMB of physical memory, ensure that you aren't running SmartDrive (SMARTDRV.EXE).  Any memory allocated to SmartDrive is not usable by applications\n\nPress 'OK' to continue running with less than the minimum required memory\n", 193), Freespace_total_ram_MB, Freespace_total_ram_MB);
-
-			int msgbox_rval;
-			msgbox_rval = MessageBox( NULL, tmp, XSTR( "Not Enough RAM", 194), MB_OKCANCEL );
-			if ( msgbox_rval == IDCANCEL ) {
-				return -1;
-			}
-
-		} else {
-			sprintf( tmp, XSTR( "FreeSpace has detected that you only have %dMB of free memory.\n\nFreeSpace requires at least 32MB of memory to run.  If you think you have more than %dMB of physical memory, ensure that you aren't running SmartDrive (SMARTDRV.EXE).  Any memory allocated to SmartDrive is not usable by applications\n", 195), Freespace_total_ram_MB, Freespace_total_ram_MB);
-			MessageBox( NULL, tmp, XSTR( "Not Enough RAM", 194), MB_OK );
-			return -1;
-		}
+		mprintf(( "Only %d bytes of RAM detected, running anyway\n", ram_in_bytes ));
 	}
 
 	return 0;
@@ -6003,39 +5844,10 @@ int game_do_ram_check(int ram_in_bytes)
 // If so, copy it over and remove the update directory.
 void game_maybe_update_launcher(char *exe_dir)
 {
-	char src_filename[MAX_PATH];
-	char dest_filename[MAX_PATH];
-
-	strcpy(src_filename, exe_dir);
-	strcat(src_filename, NOX("\\update\\freespace.exe"));
-
-	strcpy(dest_filename, exe_dir);
-	strcat(dest_filename, NOX("\\freespace.exe"));
-
-	// see if src_filename exists
-	FILE *fp;
-	fp = fopen(src_filename, "rb");
-	if ( !fp ) {
-		return;
-	}
-	fclose(fp);
-
-	SetFileAttributes(dest_filename, FILE_ATTRIBUTE_NORMAL);
-
-	// copy updated freespace.exe to freespace exe dir
-	if ( CopyFile(src_filename, dest_filename, 0) == 0 ) {
-		MessageBox( NULL, XSTR("Unable to copy freespace.exe from update directory to installed directory.  You should copy freespace.exe from the update directory (located in your FreeSpace install directory) to your install directory", 988), NULL, MB_OK|MB_TASKMODAL|MB_SETFOREGROUND );
-		return;
-	}
-
-	// delete the file in the update directory
-	DeleteFile(src_filename);
-
-	// safe to assume directory is empty, since freespace.exe should only be the file ever in the update dir
-	char update_dir[MAX_PATH];
-	strcpy(update_dir, exe_dir);
-	strcat(update_dir, NOX("\\update"));
-	RemoveDirectory(update_dir);
+	// retail self-update: copy update\freespace.exe over the installed exe
+	// (CopyFile/DeleteFile/RemoveDirectory).  A Windows-installer mechanism;
+	// nothing to do here.
+	(void)exe_dir;
 }
 
 void game_spew_pof_info_sub(int model_num, polymodel *pm, int sm, CFILE *out, int *out_total, int *out_destroyed_total)
@@ -6159,115 +5971,54 @@ DCF(pofspew, "")
 	game_spew_pof_info();
 }
 
-int PASCAL WinMainSub(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int nCmdShow)
+int main(int argc, char *argv[])
 {
-	int state;		
+	int state;
 
-	// Don't let more than one instance of Freespace run.
-	HWND hwnd = FindWindow( NOX( "FreeSpaceClass" ), NULL );
-	if ( hwnd )	{
-		SetForegroundWindow(hwnd);
-		return 0;
+	// Retail refused to start a second copy here (FindWindow on
+	// "FreeSpaceClass" + SetForegroundWindow); the window belongs to osapi
+	// now and a second instance is harmless.
+
+	// Find out how much RAM is on this machine (was GlobalMemoryStatus)
+	{
+		long pages = sysconf(_SC_PHYS_PAGES);
+		long page_size = sysconf(_SC_PAGE_SIZE);
+		long long total = (long long)pages * page_size;
+		if ( (pages < 0) || (page_size < 0) || (total > INT_MAX) )	{
+			total = INT_MAX;
+		}
+		Freespace_total_ram = (uint)total;
 	}
-
-	// Find out how much RAM is on this machine
-	MEMORYSTATUS ms;
-	ms.dwLength = sizeof(MEMORYSTATUS);
-	GlobalMemoryStatus(&ms);
-	Freespace_total_ram = ms.dwTotalPhys;
 
 	if ( game_do_ram_check(Freespace_total_ram) == -1 ) {
 		return 0;
 	}
 
-	if ( ms.dwTotalVirtual < 1024 )	{
-		MessageBox( NULL, XSTR( "FreeSpace requires virtual memory to run.\r\n", 196), XSTR( "No Virtual Memory", 197), MB_OK );
+	// (retail also required 1KB of Win32 virtual address space here)
+
+	if (!vm_init(24*1024*1024)) {
+		fprintf( stderr, "%s", XSTR( "Not enough memory to run Freespace.\r\nTry closing down some other applications.\r\n", 198) );
 		return 0;
 	}
 
-	if (!vm_init(24*1024*1024)) {
-		MessageBox( NULL, XSTR( "Not enough memory to run Freespace.\r\nTry closing down some other applications.\r\n", 198), XSTR( "Not Enough Memory", 199), MB_OK );
-		return 0;
-	}
-		
 	char *tmp_mem = (char *) malloc(16 * 1024 * 1024);
 	if (!tmp_mem) {
-		MessageBox(NULL, XSTR( "Not enough memory to run Freespace.\r\nTry closing down some other applications.\r\n", 198), XSTR( "Not Enough Memory", 199), MB_OK);
+		fprintf( stderr, "%s", XSTR( "Not enough memory to run Freespace.\r\nTry closing down some other applications.\r\n", 198) );
 		return 0;
 	}
 
 	free(tmp_mem);
 	tmp_mem = NULL;
 
-/* this code doesn't work, and we will hit an error about being unable to load the direct draw
-	dll before we get here anyway if it's not installed (unless we load it manually, which doesn't
-	seem worth bothering with.
+	// (a long-dead, commented-out DirectX-version registry check lived here)
 
-	LONG lResult;
-
-	lResult = RegOpenKeyEx(
-		HKEY_LOCAL_MACHINE,					// Where it is
-		"Software\\Microsoft\\DirectX",	// name of key
-		NULL,										// DWORD reserved
-		KEY_QUERY_VALUE,						// Allows all changes
-		&hKey										// Location to store key
-	);
-
-	if (lResult == ERROR_SUCCESS) {
-		char version[32];
-		DWORD dwType, dwLen;
-
-		dwLen = 32;
-		lResult = RegQueryValueEx(
-			hKey,									// Handle to key
-			"Version",							// The values name
-			NULL,									// DWORD reserved
-			&dwType,								// What kind it is
-			(ubyte *) version, 				// value to set
-			&dwLen								// How many bytes to set
-		);
-
-		if (lResult == ERROR_SUCCESS) {
-			dx_version = atoi(strstr(version, ".") + 1);
-
-		} else {
-			int val;
-			DWORD dwType, dwLen;
-
-			dwLen = 4;
-			lResult = RegQueryValueEx(
-				hKey,									// Handle to key
-				"InstalledVersion",				// The values name
-				NULL,									// DWORD reserved
-				&dwType,								// What kind it is
-				(ubyte *) &val,					// value to set
-				&dwLen								// How many bytes to set
-			);
-
-			if (lResult == ERROR_SUCCESS) {
-				dx_version = val;
-			}
-		}
-
-		RegCloseKey(hKey);
-	}
-
-	if (dx_version < 3) {
-		MessageBox(NULL, "DirectX 3.0 or higher is required and wasn't detected.  You can get the\n"
-			"latest version of DirectX at:\n\n"
-			"http://www.microsoft.com/msdownload/directx/dxf/enduser5.0/default.htm", "DirectX required", MB_OK);
-
-		MessageBox(NULL, "DirectX 3.0 or higher is required and wasn't detected.  You can install\n"
-			"DirectX 5.2 by pressing the 'Install DirectX' button on the FreeSpace Launcher", "DirectX required", MB_OK);
-
-		return 0;
-	}
-*/
 	//=====================================================
 	// Make sure we're running in the right directory.
 	char exe_dir[1024];
 
-	if ( GetModuleFileName( hInst, exe_dir, 1023 ) > 0 )	{
+	ssize_t exe_len = readlink("/proc/self/exe", exe_dir, sizeof(exe_dir)-1);
+	if ( exe_len > 0 )	{
+		exe_dir[exe_len] = 0;
 		char *p = exe_dir + strlen(exe_dir);
 
 		// chop off the filename
@@ -6278,22 +6029,37 @@ int PASCAL WinMainSub(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int nCm
 
 		// Set directory
 		if ( strlen(exe_dir) > 0 )	{
-			SetCurrentDirectory(exe_dir);
+			if ( chdir(exe_dir) != 0 )	{
+				fprintf( stderr, "Could not chdir to %s\n", exe_dir );
+			}
 		}
 
 		// check for updated freespace.exe
 		game_maybe_update_launcher(exe_dir);
 	}
 
-	
-	#ifndef NDEBUG				
+
+	#ifndef NDEBUG
 	{
 		extern void windebug_memwatch_init();
 		windebug_memwatch_init();
 	}
 	#endif
-	
-	parse_cmdline(szCmdLine);	
+
+	// WinMain got the arguments as a single string; rebuild one for the
+	// retail parser (which strtok's it in place)
+	char cmdline[1024] = "";
+	for (int i = 1; i < argc; i++)	{
+		if ( strlen(cmdline) + strlen(argv[i]) + 2 > sizeof(cmdline) )	{
+			break;
+		}
+		if ( i > 1 )	{
+			strcat(cmdline, " ");
+		}
+		strcat(cmdline, argv[i]);
+	}
+
+	parse_cmdline(cmdline);
 
 #ifdef STANDALONE_ONLY_BUILD
 	Is_standalone = 1;
@@ -6312,7 +6078,7 @@ int PASCAL WinMainSub(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int nCm
 	if(Cmdline_spew_pof_info){
 		game_spew_pof_info();
 		game_shutdown();
-		return 1;
+		return 0;	// was 1 -- WinMain success; 0 is success for main()
 	}
 
 	// non-demo, non-standalone, play the intro movie
@@ -6382,60 +6148,18 @@ int PASCAL WinMainSub(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int nCm
 #endif
 
 	game_shutdown();
-	return 1;
+	return 0;	// was 1 -- WinMain success; 0 is success for main()
 }
 
-int PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int nCmdShow)
-{
-	int result = -1;
-
-	__try
-	{
-		result = WinMainSub(hInst, hPrev, szCmdLine, nCmdShow);
-	}
-	__except(RecordExceptionInfo(GetExceptionInformation(), "Freespace 2 Main Thread"))
-	{
-		// Do nothing here - RecordExceptionInfo() has already done
-		// everything that is needed. Actually this code won't even
-		// get called unless you return EXCEPTION_EXECUTE_HANDLER from
-		// the __except clause.
-	}
-	return result;
-}
+// Retail wrapped the body above (as WinMainSub) in a WinMain with a
+// __try/__except SEH handler around RecordExceptionInfo(); a core dump
+// serves that purpose here.
 
 // launcher the fslauncher program on exit
 void game_launch_launcher_on_exit()
 {
-	STARTUPINFO si;
-	PROCESS_INFORMATION pi;
-	char cmd_line[2048];
-	char original_path[1024] = "";
-	
-	memset( &si, 0, sizeof(STARTUPINFO) );
-	si.cb = sizeof(si);
-
-	// directory
-	_getcwd(original_path, 1023);
-
-	// set up command line
-	strcpy(cmd_line, original_path);
-	strcat(cmd_line, "\\");
-	strcat(cmd_line, LAUNCHER_FNAME);
-	strcat(cmd_line, " -straight_to_update");		
-
-	BOOL ret = CreateProcess(	NULL,									// pointer to name of executable module 
-										cmd_line,							// pointer to command line string
-										NULL,									// pointer to process security attributes 
-										NULL,									// pointer to thread security attributes 
-										FALSE,								// handle inheritance flag 
-										CREATE_DEFAULT_ERROR_MODE,		// creation flags 
-										NULL,									// pointer to new environment block 
-										NULL,									// pointer to current directory name 
-										&si,									// pointer to STARTUPINFO 
-										&pi									// pointer to PROCESS_INFORMATION  
-										);			
-	// to eliminate build warnings
-	ret;
+	// retail CreateProcess'd the Windows launcher with -straight_to_update
+	// (multi auto-patching); there is no launcher here, so do nothing
 }
 
 
@@ -6445,7 +6169,7 @@ void game_launch_launcher_on_exit()
 //
 void game_shutdown(void)
 {
-	timeEndPeriod(1);
+	// timeEndPeriod(1) -- Win32 timer-resolution tweak, not needed
 
 	// don't ever flip a page on the standalone!
 	if(!(Game_mode & GM_STANDALONE_SERVER)){
@@ -7527,156 +7251,22 @@ void game_stop_subspace_ambient_sound()
 
 uint game_get_cd_used_space(char *path)
 {
-	uint total = 0;
-	char use_path[512] = "";
-	char sub_path[512] = "";
-	WIN32_FIND_DATA	find;
-	HANDLE find_handle;
-
-	// recurse through all files and directories
-	strcpy(use_path, path);
-	strcat(use_path, "*.*");
-	find_handle = FindFirstFile(use_path, &find);
-
-	// bogus
-	if(find_handle == INVALID_HANDLE_VALUE){
-		return 0;
-	}	
-
-	// whee
-	do {
-		// subdirectory. make sure to ignore . and ..
-		if((find.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && stricmp(find.cFileName, ".") && stricmp(find.cFileName, "..")){
-			// subsearch
-			strcpy(sub_path, path);
-			strcat(sub_path, find.cFileName);
-			strcat(sub_path, "\\");
-			total += game_get_cd_used_space(sub_path);	
-		} else {
-			total += (uint)find.nFileSizeLow;
-		}				
-	} while(FindNextFile(find_handle, &find));	
-
-	// close
-	FindClose(find_handle);
-
-	// total
-	return total;
+	// retail recursed over the disc (FindFirstFile) summing file sizes to
+	// reject ripped CDs; the game data sits in the filesystem now
+	(void)path;
+	return 0;
 }
 
 
 // if volume_name is non-null, the CD name must match that
 int find_freespace_cd(char *volume_name)
 {
-	char oldpath[MAX_PATH];
-	char volume[256];
-	int i;
-	int cdrom_drive=-1;
-	int volume_match = 0;
-	_finddata_t find;
-	int find_handle;
-
-	GetCurrentDirectory(MAX_PATH, oldpath);
-
-	for (i = 0; i < 26; i++) 
-	{
-//XSTR:OFF
-		char path[]="d:\\";
-//XSTR:ON
-
-		path[0] = (char)('A'+i);
-		if (GetDriveType(path) == DRIVE_CDROM) {
-			cdrom_drive = -3;
-			if ( GetVolumeInformation(path, volume, 256, NULL, NULL, NULL, NULL, 0) == TRUE ) {
-				nprintf(("CD", "CD volume: %s\n", volume));
-			
-				// check for any CD volume
-				int volume1_present = 0;
-				int volume2_present = 0;
-				int volume3_present = 0;		
-
-				char full_check[512] = "";
-
-				// look for setup.exe
-				strcpy(full_check, path);
-				strcat(full_check, "setup.exe");				
-				find_handle = _findfirst(full_check, &find);
-				if(find_handle != -1){
-					volume1_present = 1;				
-					_findclose(find_handle);				
-				}
-
-				// look for intro.mve
-				strcpy(full_check, path);
-				strcat(full_check, "intro.mve");				
-				find_handle = _findfirst(full_check, &find);
-				if(find_handle != -1){
-					volume2_present = 1;
-					_findclose(find_handle);						
-				}				
-
-				// look for endpart1.mve
-				strcpy(full_check, path);
-				strcat(full_check, "endpart1.mve");				
-				find_handle = _findfirst(full_check, &find);
-				if(find_handle != -1){
-					volume3_present = 1;
-					_findclose(find_handle);				
-				}				
-			
-				// see if we have the specific CD we're looking for
-				if ( volume_name ) {
-					// volume 1
-					if ( !stricmp(volume_name, FS_CDROM_VOLUME_1) && volume1_present) {
-						volume_match = 1;
-					}
-					// volume 2
-					if ( !stricmp(volume_name, FS_CDROM_VOLUME_2) && volume2_present) {
-						volume_match = 1;
-					}
-					// volume 3
-					if ( !stricmp(volume_name, FS_CDROM_VOLUME_3) && volume3_present) {
-						volume_match = 1;
-					}
-				} else {										
-					if ( volume1_present || volume2_present || volume3_present ) {
-						volume_match = 1;
-					}
-				}
-				
-				// here's where we make sure that CD's 2 and 3 are not just ripped - check to make sure its capacity is > 697,000,000 bytes				
-				if ( volume_match ){
-#ifdef RELEASE_REAL					
-					// we don't care about CD1 though. let it be whatever size it wants, since the game will demand CD's 2 and 3 at the proper time
-					if(volume2_present || volume3_present) {
-						// first step - check to make sure its a cdrom
-						if(GetDriveType(path) != DRIVE_CDROM){							
-							break;
-						}
-
-#if !defined(OEM_BUILD)
-						// oem not on 80 min cds, so dont check tha size
-						// check its size
-						uint used_space = game_get_cd_used_space(path);											
-						if(used_space < CD_SIZE_72_MINUTE_MAX){							
-							break;
-						}
-#endif // !defined(OEM_BUILD)
-					}					
-
-					cdrom_drive = i;
-					break;
-#else
-					cdrom_drive = i;
-					break;
-#endif // RELEASE_REAL
-				}
-			}
-		}
-	}	
-
-	SetCurrentDirectory(oldpath);
-	return cdrom_drive;
+	// retail scanned drive letters A-Z for a CD-ROM whose contents matched
+	// the requested volume (setup.exe / intro.mve / endpart1.mve markers);
+	// the game data sits in the filesystem, so every volume is always
+	// "in the drive" (callers treat >= 0 as CD present)
+	(void)volume_name;
+	return 0;
 }
 
 int set_cdrom_path(int drive_num)
@@ -7684,15 +7274,13 @@ int set_cdrom_path(int drive_num)
 	int rval;
 
 	if (drive_num < 0) {			//no CD
-//		#ifndef NDEBUG
-//		strcpy(CDROM_dir,"j:\\FreeSpaceCD\\");				//set directory
-//		rval = 1;
-//		#else
 		strcpy(Game_CDROM_dir,"");				//set directory
 		rval = 0;
-//		#endif
 	} else {
-		sprintf(Game_CDROM_dir,NOX("%c:\\"), 'a' + drive_num );			//set directory
+		// retail set "%c:\" from the drive number; the "CD" contents live
+		// in the filesystem with the rest of the game data, so there is no
+		// separate CD root (cfile skips an empty cdrom dir)
+		strcpy(Game_CDROM_dir,"");
 		rval = 1;
 	}
 
@@ -7729,232 +7317,44 @@ char Last_cd_label[256];
 
 int game_cd_changed()
 {
-	char label[256];
-	int found;
-	int changed = 0;
-	
-	if ( strlen(Game_CDROM_dir) == 0 ) {
-		init_cdrom();
-	}
-
-	found = GetVolumeInformation(Game_CDROM_dir, label, 256, NULL, NULL, NULL, NULL, 0);
-
-	if ( found != Last_cd_label_found )	{
-		Last_cd_label_found = found;
-		if ( found )	{
-			mprintf(( "CD '%s' was inserted\n", label ));
-			changed = 1;
-		} else {
-			mprintf(( "CD '%s' was removed\n", Last_cd_label ));
-			changed = 1;
-		}
-	} else {
-		if ( Last_cd_label_found )	{
-			if ( !stricmp( Last_cd_label, label ))	{
-				//mprintf(( "CD didn't change\n" ));
-			} else {
-				mprintf(( "CD was changed from '%s' to '%s'\n", Last_cd_label, label ));
-				changed = 1;
-			}
-		} else {
-			// none found before, none found now.
-			//mprintf(( "still no CD...\n" ));
-		}
-	}
-	
-	Last_cd_label_found = found;
-	if ( found )	{
-		strcpy( Last_cd_label, label );
-	} else {
-		strcpy( Last_cd_label, "" );
-	}
-
-	return changed;
+	// retail compared the CD volume label (GetVolumeInformation) against the
+	// last one seen; no CD drive here, so the "CD" never changes
+	return 0;
 }
 
 // check if _any_ FreeSpace2 CDs are in the drive
 // return: 1	=> CD now in drive
 //			  0	=>	Could not find CD, they refuse to put it in the drive
 int game_do_cd_check(char *volume_name)
-{	
-#if !defined(GAME_CD_CHECK)
+{
+	// retail (GAME_CD_CHECK builds) looped find_freespace_cd() with an
+	// "Insert a FreeSpace 2 CD" popup; the game data sits in the
+	// filesystem, so the check always succeeds
+	(void)volume_name;
 	return 1;
-#else
-	int cd_present = 0;
-	int cd_drive_num;
-
-	int num_attempts = 0;
-	int refresh_files = 0;
-	while(1) {
-		int path_set_ok, popup_rval;
-
-		cd_drive_num = find_freespace_cd(volume_name);
-		path_set_ok = set_cdrom_path(cd_drive_num);
-		if ( path_set_ok ) {
-			cd_present = 1;
-			if ( refresh_files ) {
-				cfile_refresh();
-				refresh_files = 0;
-			}
-			break;
-		}
-
-		// standalone mode
-		if(Is_standalone){
-			cd_present = 0;
-			break;
-		} else {
-			// no CD found, so prompt user
-			popup_rval = popup(PF_BODY_BIG, 1, POPUP_OK, XSTR( "FreeSpace 2 CD not found\n\nInsert a FreeSpace 2 CD to continue", 202));
-			refresh_files = 1;
-			if ( popup_rval != 1 ) {
-				cd_present = 0;
-				break;
-			}
-
-			if ( num_attempts++ > 5 ) {
-				cd_present = 0;
-				break;
-			}
-		}
-	}
-
-	return cd_present;
-#endif
 }
 
 // check if _any_ FreeSpace2 CDs are in the drive
 // return: 1	=> CD now in drive
 //			  0	=>	Could not find CD, they refuse to put it in the drive
 int game_do_cd_check_specific(char *volume_name, int cdnum)
-{	
-	int cd_present = 0;
-	int cd_drive_num;
-
-	int num_attempts = 0;
-	int refresh_files = 0;
-	while(1) {
-		int path_set_ok, popup_rval;
-
-		cd_drive_num = find_freespace_cd(volume_name);
-		path_set_ok = set_cdrom_path(cd_drive_num);
-		if ( path_set_ok ) {
-			cd_present = 1;
-			if ( refresh_files ) {
-				cfile_refresh();
-				refresh_files = 0;
-			}
-			break;
-		}
-
-		if(Is_standalone){
-			cd_present = 0;
-			break;
-		} else {
-			// no CD found, so prompt user
-#if defined(DVD_MESSAGE_HACK)
-			popup_rval = popup(PF_BODY_BIG, 1, POPUP_OK, XSTR("Please insert DVD", 1468));
-#else
-			popup_rval = popup(PF_BODY_BIG, 1, POPUP_OK, XSTR("Please insert CD %d", 1468), cdnum);
-#endif
-			refresh_files = 1;
-			if ( popup_rval != 1 ) {
-				cd_present = 0;
-				break;
-			}
-
-			if ( num_attempts++ > 5 ) {
-				cd_present = 0;
-				break;
-			}
-		}
-	}
-
-	return cd_present;
+{
+	// retail looped find_freespace_cd() with a "Please insert CD %d" popup;
+	// the game data sits in the filesystem, so the check always succeeds
+	(void)volume_name;
+	(void)cdnum;
+	return 1;
 }
 
 // only need to do this in RELEASE_REAL
 int game_do_cd_mission_check(char *filename)
-{	
+{
 #ifdef RELEASE_REAL
-	int cd_num;
-	int cd_present = 0;
-	int cd_drive_num;
-	fs_builtin_mission *m = game_find_builtin_mission(filename);
-
-	// check for changed CD
-	if(game_cd_changed()){
-		cfile_refresh();
-	}
-
-	// multiplayer
-	if((Game_mode & GM_MULTIPLAYER) || Is_standalone){
-		return 1;
-	}
-
-	// not builtin, so do a general check (any FS2 CD will do)
-	if(m == NULL){
-		return game_do_cd_check();
-	}
-
-	// does not have any CD requirement, do a general check
-	if(strlen(m->cd_volume) <= 0){
-		return game_do_cd_check();
-	}
-
-	// get the volume
-	if(!stricmp(m->cd_volume, FS_CDROM_VOLUME_1)){
-		cd_num = 1;
-	} else if(!stricmp(m->cd_volume, FS_CDROM_VOLUME_2)){
-		cd_num = 2;
-	} else if(!stricmp(m->cd_volume, FS_CDROM_VOLUME_3)){
-		cd_num = 3; 
-	} else {
-		return game_do_cd_check();
-	}
-
-	// did we find the cd?
-	if(find_freespace_cd(m->cd_volume) >= 0){
-		return 1;
-	}
-
-	// make sure the volume exists
-	int num_attempts = 0;
-	int refresh_files = 0;
-	while(1){
-		int path_set_ok, popup_rval;
-
-		cd_drive_num = find_freespace_cd(m->cd_volume);
-		path_set_ok = set_cdrom_path(cd_drive_num);
-		if ( path_set_ok ) {
-			cd_present = 1;
-			if ( refresh_files ) {
-				cfile_refresh();
-				refresh_files = 0;
-			}
-			break;
-		}
-
-		// no CD found, so prompt user
-#if defined(DVD_MESSAGE_HACK)
-		popup_rval = popup(PF_BODY_BIG, 1, POPUP_OK, XSTR("Please insert DVD", 1468));
-#else
-		popup_rval = popup(PF_BODY_BIG, 1, POPUP_OK, XSTR("Please insert CD %d", 1468), cd_num);
-#endif
-
-		refresh_files = 1;
-		if ( popup_rval != 1 ) {
-			cd_present = 0;
-			break;
-		}
-
-		if ( num_attempts++ > 5 ) {
-			cd_present = 0;
-			break;
-		}
-	}	
-
-	return cd_present;
+	// retail matched built-in missions against their required CD volume and
+	// nagged for the right disc; the game data sits in the filesystem, so
+	// every mission's "CD" is always present
+	(void)filename;
+	return 1;
 #else
 	return 1;
 #endif

@@ -36,7 +36,7 @@
 typedef struct debris_vclip {
 	int	bm;
 	int	nframes;
-	char  *name;
+	char	name[MAX_FILENAME_LEN];	// was char* into a literal; stars_init strcpys over it
 } debris_vclip;
 
 typedef struct {

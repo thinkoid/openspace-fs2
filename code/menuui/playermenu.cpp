@@ -83,7 +83,7 @@ char *Player_select_background_mask_bitmap[GR_NUM_RESOLUTIONS] = {
 	"ChoosePilot-m",
 	"2_ChoosePilot-m"
 };
-// #define PLAYER_SELECT_PALETTE							NOX("ChoosePilotPalette")	// palette for the screen	
+#define PLAYER_SELECT_PALETTE							NOX("ChoosePilotPalette")	// palette for the screen	
 
 #define PLAYER_SELECT_MAIN_HALL_OVERLAY         NOX("MainHall1")				// main hall help overlay
 
@@ -147,9 +147,9 @@ UI_INPUTBOX Player_select_input_box;						// input box for adding new pilot name
 
 // #define PLAYER_SELECT_PALETTE_FNAME					NOX("InterfacePalette")
 int Player_select_background_bitmap;						// bitmap for this screen
-// int Player_select_palette;										// palette bitmap for this screen
+int Player_select_palette;										// palette bitmap for this screen (software mode needs it)
 int Player_select_autoaccept = 0;
-// int Player_select_palette_set = 0;
+int Player_select_palette_set = 0;
 
 // flag indicating if this is the absolute first pilot created and selected. Used to determine
 // if the main hall should display the help overlay screen
@@ -326,8 +326,10 @@ void player_select_init()
 	Assert(Player_select_background_bitmap >= 0);	
 
 	// load in the palette for the screen
-	// Player_select_palette = bm_load(PLAYER_SELECT_PALETTE);
-	// Player_select_palette_set = 0;
+	// ChoosePilotPalette isn't in the retail VPs; the background PCX
+	// carries the palette this screen needs
+	Player_select_palette = Player_select_background_bitmap;
+	Player_select_palette_set = 0;
 
 	// unset the very first pilot data
 	Player_select_very_first_pilot = 0;
@@ -412,13 +414,13 @@ void player_select_do()
 	}
 #endif
 
-	//if ( !Player_select_palette_set ) {
-	//	Assert(Player_select_palette >= 0);
-//#ifndef HARDWARE_ONLY
-//		palette_use_bm_palette(Player_select_palette);
-//#endif
-//		Player_select_palette_set = 1;
-//	}
+	// re-enabled for the software renderer: retail commented this out when
+	// the shipped builds went hardware-only, leaving the 8bpp path black
+	if ( !Player_select_palette_set ) {
+		Assert(Player_select_palette >= 0);
+		palette_use_bm_palette(Player_select_palette);
+		Player_select_palette_set = 1;
+	}
 		
 	// set the input box at the "virtual" line 0 to be active so the player can enter a callsign
 	if (Player_select_input_mode){

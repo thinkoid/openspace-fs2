@@ -45,7 +45,7 @@ void brief_init();
 void brief_close();
 void brief_do_frame(float frametime);
 void brief_unhide_buttons();
-uint brief_get_closeup_icon();
+uintptr_t brief_get_closeup_icon();	// carries a brief_icon* (was uint on 32-bit)
 void brief_turn_off_closeup_icon();
 
 void briefing_stop_music();

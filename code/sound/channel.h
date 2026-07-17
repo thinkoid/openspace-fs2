@@ -8,8 +8,8 @@
 */
 
 
-#include <windows.h>
-#include "vdsound.h"
+// (windows.h removed)
+// (vdsound.h removed)
 
 #ifndef __CHANNEL_H__
 #define __CHANNEL_H__

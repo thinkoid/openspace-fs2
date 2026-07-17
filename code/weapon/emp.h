@@ -10,6 +10,8 @@
 #ifndef __FREESPACE_EMP_MISSILE_HEADER_FILE_
 #define __FREESPACE_EMP_MISSILE_HEADER_FILE_
 
+#include "pstypes.h"
+
 // ----------------------------------------------------------------------------------------------------
 // EMP EFFECT DEFINES/VARS
 //

@@ -304,6 +304,26 @@ static void grx_sdl_present()
 		SDL_UnlockSurface(ws);
 
 	SDL_UpdateWindowSurface( win );
+
+	// TEMPORARY bring-up aid: FS2_FRAME_DUMP=<dir> writes every 60th frame
+	// as P6 PPM through the palette; delete when the mainhall is stable
+	static int frame_no = 0;
+	const char *dumpdir = getenv("FS2_FRAME_DUMP");
+	if ( dumpdir && (frame_no++ % 60) == 0 )	{
+		char path[512];
+		snprintf(path, sizeof(path), "%s/frame%05d.ppm", dumpdir, frame_no);
+		FILE *out = fopen(path, "wb");
+		if (out)	{
+			fprintf(out, "P6\n%d %d\n255\n", Soft_buffer_w, Soft_buffer_h);
+			for (int i = 0; i < Soft_buffer_w * Soft_buffer_h; i++)	{
+				ubyte px = Soft_buffer[i];
+				fputc(Soft_palette[px*3+0], out);
+				fputc(Soft_palette[px*3+1], out);
+				fputc(Soft_palette[px*3+2], out);
+			}
+			fclose(out);
+		}
+	}
 }
 
 void grx_flip()
@@ -752,6 +772,16 @@ void gr_soft_init()
 
 	Palette_flashed = 0;
 	Palette_flashed_last_frame = 0;
+
+	// 1555 ARGB color guns for the 16bpp aux paths (bm_set_components etc.);
+	// retail software mode never set these — 16bpp locks were hardware-only
+	Gr_red.bits = 5;	Gr_red.shift = 10;	Gr_red.scale = 256/32;	Gr_red.mask = 0x7C00;
+	Gr_green.bits = 5;	Gr_green.shift = 5;	Gr_green.scale = 256/32;	Gr_green.mask = 0x03e0;
+	Gr_blue.bits = 5;	Gr_blue.shift = 0;	Gr_blue.scale = 256/32;	Gr_blue.mask = 0x1F;
+	Gr_alpha.bits = 1;	Gr_alpha.shift = 15;	Gr_alpha.scale = 255;	Gr_alpha.mask = 0x8000;
+	Gr_t_red = Gr_red;	Gr_t_green = Gr_green;	Gr_t_blue = Gr_blue;	Gr_t_alpha = Gr_alpha;
+	Gr_current_red = &Gr_red;	Gr_current_green = &Gr_green;
+	Gr_current_blue = &Gr_blue;	Gr_current_alpha = &Gr_alpha;
 
 	gr_screen.bits_per_pixel = 8;
 	gr_screen.bytes_per_pixel = 1;

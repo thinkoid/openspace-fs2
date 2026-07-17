@@ -716,9 +716,9 @@ void brief_buttons_init()
 //	brief_get_closeup_icon()
 //
 //
-uint brief_get_closeup_icon()
+uintptr_t brief_get_closeup_icon()
 {
-	return (uint)Closeup_icon;
+	return (uintptr_t)Closeup_icon;
 }
 
 // stop showing the closeup view of an icon

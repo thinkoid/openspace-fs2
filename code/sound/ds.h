@@ -10,9 +10,9 @@
 #ifndef __DS_H__
 #define __DS_H__
 
-#include <windows.h>
-#include <mmreg.h>
-#include "vdsound.h"
+// (windows.h removed)
+// (mmreg.h removed)
+// (vdsound.h removed)
 #include "pstypes.h"
 
 #define DS_HARDWARE	(1<<0)
@@ -46,10 +46,20 @@ typedef struct sound_info {
 } sound_info;
 
 extern int							ds_initialized;
-extern LPDIRECTSOUNDBUFFER		pPrimaryBuffer;
-extern LPDIRECTSOUND				pDirectSound;
+// (DirectSound handles removed; the sound backend arrives with OpenAL)
 
-extern HRESULT (__stdcall *pfn_DirectSoundCaptureCreate)(LPGUID lpGUID, LPDIRECTSOUNDCAPTURE *lplpDSC, LPUNKNOWN pUnkOuter);
+// minimal replacement for the mmreg.h WAVEFORMATEX the sound API speaks
+typedef unsigned int DWORD;
+typedef unsigned short WORD;
+typedef struct WAVEFORMATEX {
+	WORD  wFormatTag;
+	WORD  nChannels;
+	DWORD nSamplesPerSec;
+	DWORD nAvgBytesPerSec;
+	WORD  nBlockAlign;
+	WORD  wBitsPerSample;
+	WORD  cbSize;
+} WAVEFORMATEX;
 
 int	ds_init(int use_a3d, int use_eax);
 void	ds_close();
@@ -105,11 +115,11 @@ void ds_do_frame();
 // --------------------
 
 // EAX (listener) reverb property set {4a4e6fc1-c341-11d1-b73a-444553540000}
-DEFINE_GUID(DSPROPSETID_EAX_ReverbProperties, 
-    0x4a4e6fc1,
-    0xc341,
-    0x11d1,
-    0xb7, 0x3a, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
+// (EAX GUID removed) DEFINE_GUID(DSPROPSETID_EAX_ReverbProperties, 
+//     0x4a4e6fc1,
+//     0xc341,
+//     0x11d1,
+//     0xb7, 0x3a, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
 
 typedef enum 
 {
@@ -167,11 +177,11 @@ enum
 #define EAX_MAX_ENVIRONMENT (EAX_ENVIRONMENT_COUNT - 1)
 
 // EAX buffer reverb property set {4a4e6fc0-c341-11d1-b73a-444553540000}
-DEFINE_GUID(DSPROPSETID_EAXBUFFER_ReverbProperties, 
-    0x4a4e6fc0,
-    0xc341,
-    0x11d1,
-    0xb7, 0x3a, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
+// (EAX GUID removed) DEFINE_GUID(DSPROPSETID_EAXBUFFER_ReverbProperties, 
+//     0x4a4e6fc0,
+//     0xc341,
+//     0x11d1,
+//     0xb7, 0x3a, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
 
 typedef enum 
 {

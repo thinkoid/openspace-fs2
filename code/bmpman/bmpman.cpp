@@ -1878,6 +1878,10 @@ void BM_SELECT_SCREEN_FORMAT()
 				bm_set_components = bm_set_components_argb_d3d_16_screen;
 			}
 		}
+	} else {
+		// software mode: retail never set the pointer here (16bpp locks were
+		// hardware-only); generic 1555 ARGB keeps those paths alive
+		bm_set_components = bm_set_components_argb;
 	}
 }
 

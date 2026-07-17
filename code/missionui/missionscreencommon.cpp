@@ -674,7 +674,7 @@ void common_check_keys(int k)
 		case KEY_ESC: {
 
 			if ( Current_screen == ON_BRIEFING_SELECT ) {
-				if ( brief_get_closeup_icon() != NULL ) {
+				if ( brief_get_closeup_icon() != 0 ) {
 					brief_turn_off_closeup_icon();
 					break;
 				}

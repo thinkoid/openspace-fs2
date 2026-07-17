@@ -7,8 +7,8 @@
  *
 */
 
-#include <io.h>
-#include <winsock.h>
+// (io.h removed)
+// (winsock.h removed)
 #include "freespace.h"
 #include "gamesequence.h"
 #include "key.h"

@@ -129,7 +129,7 @@ int load_nebula_sub(char *filename)
 		// throw in some randomness to the nebula vertices depth
 	}
 
-	for (i=0; i<num_tris; i++ )	{
+	for (int i=0; i<num_tris; i++ )	{
 		cfread( &tri[i][0], sizeof(int), 1, fp );
 		cfread( &tri[i][1], sizeof(int), 1, fp );
 		cfread( &tri[i][2], sizeof(int), 1, fp );

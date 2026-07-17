@@ -9,6 +9,7 @@
 
 #include "managepilot.h"
 #include "2d.h"
+#include <errno.h>
 #include "freespace.h"
 #include "hudsquadmsg.h"
 #include "sound.h"

@@ -10,6 +10,8 @@
 #ifndef _SYSTEMVARS_H
 #define _SYSTEMVARS_H
 
+#include "pstypes.h"
+
 #include "math.h"
 
 #define	GM_MULTIPLAYER					(1 << 0)

@@ -7,15 +7,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "pstypes.h"
+
+struct UI_WINDOW;
 struct ai_info;
-struct angles;
-struct beam_fire_info;
-struct matrix;
+struct beam_info;
+struct button_info;
+struct game_snd;
+struct multi_local_options;
+struct multi_server_options;
+struct net_player;
 struct object;
 struct ship;
 struct ship_subsys;
-struct vector;
-struct vertex;
+struct sound_env;
+struct wing;
 
 static void oracle_trap(const char *sym)
 {
@@ -23,64 +29,104 @@ static void oracle_trap(const char *sym)
 	abort();
 }
 
-void ai_add_ship_goal_sexp(int, int, ai_info*)
+long audiostream_close()
 {
-	oracle_trap("ai_add_ship_goal_sexp");
+	return -1;
 }
 
-void ai_add_wing_goal_sexp(int, int, int)
+long audiostream_close_all(int)
 {
-	oracle_trap("ai_add_wing_goal_sexp");
+	return -1;
 }
 
-void ai_clear_ship_goals(ai_info*)
+long audiostream_close_file(int, int)
 {
-	oracle_trap("ai_clear_ship_goals");
+	return -1;
 }
 
-void ai_clear_wing_goals(int)
+long audiostream_done_reading(int)
 {
-	oracle_trap("ai_clear_wing_goals");
+	return -1;
 }
 
-void ai_find_docked_object(object*)
+long audiostream_get_bytes_committed(int)
 {
-	oracle_trap("ai_find_docked_object");
+	return -1;
 }
 
-void ai_get_subsystem_type(char*)
+long audiostream_is_inited()
 {
-	oracle_trap("ai_get_subsystem_type");
+	return -1;
 }
 
-void ai_good_secondary_time(int, int, int, char*)
+long audiostream_is_paused(int)
 {
-	oracle_trap("ai_good_secondary_time");
+	return -1;
 }
 
-void ai_query_goal_valid(int, int)
+long audiostream_is_playing(int)
 {
-	oracle_trap("ai_query_goal_valid");
+	return -1;
 }
 
-void ai_set_rearm_status(int, int)
+long audiostream_open(char*, int)
 {
-	oracle_trap("ai_set_rearm_status");
+	return -1;
 }
 
-void apply_damage_to_shield(object*, int, float)
+long audiostream_pause_all()
 {
-	oracle_trap("apply_damage_to_shield");
+	return -1;
 }
 
-void awacs_get_level(object*, ship*, int)
+long audiostream_pause(int)
 {
-	oracle_trap("awacs_get_level");
+	return -1;
 }
 
-void beam_fire(beam_fire_info*)
+long audiostream_play(int, float, int)
 {
-	oracle_trap("beam_fire");
+	return -1;
+}
+
+long audiostream_set_byte_cutoff(int, unsigned int)
+{
+	return -1;
+}
+
+long audiostream_set_volume_all(float, int)
+{
+	return -1;
+}
+
+long audiostream_stop(int, int, int)
+{
+	return -1;
+}
+
+long audiostream_unpause_all()
+{
+	return -1;
+}
+
+long audiostream_unpause(int)
+{
+	return -1;
+}
+
+void button_info_do(button_info*)
+{
+	oracle_trap("button_info_do");
+}
+
+void button_info_query(button_info*, int)
+{
+	oracle_trap("button_info_query");
+}
+
+void d3d_flush()
+{
+	oracle_trap("d3d_flush");
 }
 
 void d3d_zbias(int)
@@ -88,99 +134,118 @@ void d3d_zbias(int)
 	oracle_trap("d3d_zbias");
 }
 
-void do_subobj_destroyed_stuff(ship*, ship_subsys*, vector*)
+void debug_console(void (*)())
 {
-	oracle_trap("do_subobj_destroyed_stuff");
 }
 
-void g3_check_normal_facing(vector*, vector*)
+void demo_close()
 {
-	oracle_trap("g3_check_normal_facing");
+	oracle_trap("demo_close");
 }
 
-void g3_code_vertex(vertex*)
+void demo_do_frame_end()
 {
-	oracle_trap("g3_code_vertex");
+	oracle_trap("demo_do_frame_end");
 }
 
-void g3_done_instance()
+void demo_do_frame_start()
 {
-	oracle_trap("g3_done_instance");
+	oracle_trap("demo_do_frame_start");
 }
 
-void g3_draw_2d_poly_bitmap(int, int, int, int, unsigned int)
+void demo_POST_builtin_message(int, ship*, int, int)
 {
-	oracle_trap("g3_draw_2d_poly_bitmap");
+	oracle_trap("demo_POST_builtin_message");
 }
 
-void g3_draw_bitmap(vertex*, int, float, unsigned int)
+void demo_POST_departed(int, int)
 {
-	oracle_trap("g3_draw_bitmap");
+	oracle_trap("demo_POST_departed");
 }
 
-void g3_draw_line(vertex*, vertex*)
+void demo_POST_obj_create(char*, int)
 {
-	oracle_trap("g3_draw_line");
+	oracle_trap("demo_POST_obj_create");
 }
 
-void g3_draw_poly_constant_sw(int, vertex**, unsigned int, float)
+void demo_POST_primary_fired(object*, int, int)
 {
-	oracle_trap("g3_draw_poly_constant_sw");
+	oracle_trap("demo_POST_primary_fired");
 }
 
-void g3_draw_poly(int, vertex**, unsigned int)
+void demo_POST_ship_kill(object*)
 {
-	oracle_trap("g3_draw_poly");
+	oracle_trap("demo_POST_ship_kill");
 }
 
-void g3_draw_sphere_ez(vector*, float)
+void demo_POST_unique_message(char*, char*, int, int)
 {
-	oracle_trap("g3_draw_sphere_ez");
+	oracle_trap("demo_POST_unique_message");
 }
 
-void g3_draw_sphere(vertex*, float)
+void demo_POST_warpin(int, int)
 {
-	oracle_trap("g3_draw_sphere");
+	oracle_trap("demo_POST_warpin");
 }
 
-void g3_end_frame()
+void demo_POST_warpout(int, int)
 {
-	oracle_trap("g3_end_frame");
+	oracle_trap("demo_POST_warpout");
 }
 
-void g3_project_vertex(vertex*)
+void demo_should_sim(object*)
 {
-	oracle_trap("g3_project_vertex");
+	oracle_trap("demo_should_sim");
 }
 
-void g3_rotate_vertex(vertex*, vector*)
+void demo_start_playback(char*)
 {
-	oracle_trap("g3_rotate_vertex");
+	oracle_trap("demo_start_playback");
 }
 
-void g3_start_frame_func(int, char*, int)
+void demo_start_record(char*)
 {
-	oracle_trap("g3_start_frame_func");
+	oracle_trap("demo_start_record");
 }
 
-void g3_start_instance_angles(vector*, angles*)
+long ds3d_update_buffer(int, float, float, vector*, vector*)
 {
-	oracle_trap("g3_start_instance_angles");
+	return -1;
 }
 
-void g3_start_instance_matrix(vector*, matrix*)
+long ds_get_channel(int)
 {
-	oracle_trap("g3_start_instance_matrix");
+	return -1;
 }
 
-void gameseq_post_event(int)
+long ds_get_play_position(int)
 {
-	oracle_trap("gameseq_post_event");
+	return -1;
 }
 
-void get_shield_strength(object*)
+long ds_using_ds3d()
 {
-	oracle_trap("get_shield_strength");
+	return -1;
+}
+
+void find_player_id(short)
+{
+	oracle_trap("find_player_id");
+}
+
+void game_process_cheats(int)
+{
+	oracle_trap("game_process_cheats");
+}
+
+void game_process_keys()
+{
+	oracle_trap("game_process_keys");
+}
+
+void game_process_pause_key()
+{
+	oracle_trap("game_process_pause_key");
 }
 
 void gr_d3d_activate(int)
@@ -268,6 +333,11 @@ void gr_glide_init()
 	oracle_trap("gr_glide_init");
 }
 
+void gr_glide_string_hack(int, int, char*)
+{
+	oracle_trap("gr_glide_string_hack");
+}
+
 void gr_opengl_bitmap_ex(int, int, int, int, int, int)
 {
 	oracle_trap("gr_opengl_bitmap_ex");
@@ -288,129 +358,714 @@ void gr_opengl_init()
 	oracle_trap("gr_opengl_init");
 }
 
-void hud_add_ship_to_escort(int, int)
+void joy_ff_adjust_handling(int)
 {
-	oracle_trap("hud_add_ship_to_escort");
+	oracle_trap("joy_ff_adjust_handling");
 }
 
-void hud_find_target_distance(object*, object*)
+void joy_ff_afterburn_off()
 {
-	oracle_trap("hud_find_target_distance");
+	oracle_trap("joy_ff_afterburn_off");
 }
 
-void hud_gauge_start_flash(int)
+void joy_ff_afterburn_on()
 {
-	oracle_trap("hud_gauge_start_flash");
+	oracle_trap("joy_ff_afterburn_on");
 }
 
-void hud_remove_ship_from_escort(int)
+void joy_ff_deathroll()
 {
-	oracle_trap("hud_remove_ship_from_escort");
+	oracle_trap("joy_ff_deathroll");
 }
 
-void hud_shield_quadrant_hit(object*, int)
+void joy_ff_docked()
 {
-	oracle_trap("hud_shield_quadrant_hit");
+	oracle_trap("joy_ff_docked");
 }
 
-void light_apply_rgb(unsigned char*, unsigned char*, unsigned char*, vector*, vector*, float)
+void joy_ff_explode()
 {
-	oracle_trap("light_apply_rgb");
+	oracle_trap("joy_ff_explode");
 }
 
-void light_apply(vector*, vector*, float)
+void joy_ff_fly_by(int)
 {
-	oracle_trap("light_apply");
+	oracle_trap("joy_ff_fly_by");
 }
 
-void light_filter_pop()
+void joy_ff_mission_init(vector)
 {
-	oracle_trap("light_filter_pop");
+	oracle_trap("joy_ff_mission_init");
 }
 
-void light_filter_push_box(vector*, vector*)
+void joy_ff_play_dir_effect(float, float)
 {
-	oracle_trap("light_filter_push_box");
+	oracle_trap("joy_ff_play_dir_effect");
 }
 
-void light_filter_push(int, vector*, float)
+void joy_ff_play_primary_shoot(int)
 {
-	oracle_trap("light_filter_push");
+	oracle_trap("joy_ff_play_primary_shoot");
 }
 
-void light_rotate_all()
+void joy_ff_play_reload_effect()
 {
-	oracle_trap("light_rotate_all");
+	oracle_trap("joy_ff_play_reload_effect");
 }
 
-void message_send_unique_to_player(char*, void*, int, int, int, int)
+void joy_ff_play_secondary_shoot(int)
 {
-	oracle_trap("message_send_unique_to_player");
+	oracle_trap("joy_ff_play_secondary_shoot");
 }
 
-void message_training_que(char*, int, int)
+void joy_ff_play_vector_effect(vector*, float)
 {
-	oracle_trap("message_training_que");
+	oracle_trap("joy_ff_play_vector_effect");
 }
 
-void mission_campaign_find_mission(char*)
+void joy_ff_stop_effects()
 {
-	oracle_trap("mission_campaign_find_mission");
+	oracle_trap("joy_ff_stop_effects");
 }
 
-void mission_campaign_save_persistent(int, int)
+long multi_assign_network_signature(int)
 {
-	oracle_trap("mission_campaign_save_persistent");
+	return -1;
 }
 
-void mission_goal_mark_invalid(char*)
+long multi_campaign_eval_debrief()
 {
-	oracle_trap("mission_goal_mark_invalid");
+	return -1;
 }
 
-void mission_goal_mark_valid(char*)
+long multi_can_message(net_player*)
 {
-	oracle_trap("mission_goal_mark_valid");
+	return -1;
 }
 
-void mission_log_get_time_indexed(int, char*, char*, int, long*)
+long multi_common_voice_display_status()
 {
-	oracle_trap("mission_log_get_time_indexed");
+	return -1;
 }
 
-void mission_log_get_time(int, char*, char*, long*)
+long multi_create_game_close()
 {
-	oracle_trap("mission_log_get_time");
+	return -1;
 }
 
-void mission_parse_get_arrival_ship(char*)
+long multi_create_game_do()
 {
-	oracle_trap("mission_parse_get_arrival_ship");
+	return -1;
 }
 
-void mission_parse_ship_arrived(char*)
+long multi_create_game_init()
 {
-	oracle_trap("mission_parse_ship_arrived");
+	return -1;
 }
 
-void multi_find_player_by_object(object*)
+long multi_debrief_accept_hit()
 {
-	oracle_trap("multi_find_player_by_object");
+	return -1;
 }
 
-void neb2_get_lod_scale(int)
+long multi_debrief_close()
 {
-	oracle_trap("neb2_get_lod_scale");
+	return -1;
 }
 
-void read_mission_goal_list(int)
+long multi_debrief_do_frame()
 {
-	oracle_trap("read_mission_goal_list");
+	return -1;
 }
 
-void red_alert_start_mission()
+long multi_debrief_esc_hit()
 {
-	oracle_trap("red_alert_start_mission");
+	return -1;
+}
+
+long multi_debrief_init()
+{
+	return -1;
+}
+
+long multi_debrief_replay_hit()
+{
+	return -1;
+}
+
+long multi_debrief_stats_accept_code()
+{
+	return -1;
+}
+
+long multi_df_debrief_close()
+{
+	return -1;
+}
+
+long multi_df_debrief_do()
+{
+	return -1;
+}
+
+long multi_df_debrief_init()
+{
+	return -1;
+}
+
+long multi_df_eval_kill(net_player*, object*)
+{
+	return -1;
+}
+
+long multi_display_netinfo()
+{
+	return -1;
+}
+
+long multi_do_client_warp(float)
+{
+	return -1;
+}
+
+long multi_do_frame()
+{
+	return -1;
+}
+
+long multi_endgame_ending()
+{
+	return -1;
+}
+
+long multi_find_player_by_callsign(char*)
+{
+	return -1;
+}
+
+long multi_find_player_by_object(object*)
+{
+	return -1;
+}
+
+long multi_find_player_by_signature(int)
+{
+	return -1;
+}
+
+long multi_game_client_setup_close()
+{
+	return -1;
+}
+
+long multi_game_client_setup_do_frame()
+{
+	return -1;
+}
+
+long multi_game_client_setup_init()
+{
+	return -1;
+}
+
+long multi_get_next_network_signature(int)
+{
+	return -1;
+}
+
+long multi_get_player_ship(int)
+{
+	return -1;
+}
+
+long multi_host_options_close()
+{
+	return -1;
+}
+
+long multi_host_options_do()
+{
+	return -1;
+}
+
+long multi_host_options_init()
+{
+	return -1;
+}
+
+long multi_ignore_controls(int)
+{
+	return -1;
+}
+
+long multi_ingame_select_close()
+{
+	return -1;
+}
+
+long multi_ingame_select_do()
+{
+	return -1;
+}
+
+long multi_ingame_select_init()
+{
+	return -1;
+}
+
+long multi_init()
+{
+	return -1;
+}
+
+long multi_join_clear_game_list()
+{
+	return -1;
+}
+
+long multi_join_game_close()
+{
+	return -1;
+}
+
+long multi_join_game_do_frame()
+{
+	return -1;
+}
+
+long multi_join_game_init()
+{
+	return -1;
+}
+
+long multi_kick_player(int, int, int)
+{
+	return -1;
+}
+
+long multi_log_close()
+{
+	return -1;
+}
+
+long multi_log_process()
+{
+	return -1;
+}
+
+long multi_maybe_send_repair_info(object*, object*, int)
+{
+	return -1;
+}
+
+long multi_maybe_send_ship_status()
+{
+	return -1;
+}
+
+long multi_message_should_broadcast(int)
+{
+	return -1;
+}
+
+long multi_msg_eval_ship_squadmsg(int, int, ai_info*, int)
+{
+	return -1;
+}
+
+long multi_msg_eval_wing_squadmsg(int, int, ai_info*, int)
+{
+	return -1;
+}
+
+long multi_msg_message_text(char*)
+{
+	return -1;
+}
+
+long multi_num_players()
+{
+	return -1;
+}
+
+long multi_oo_gameplay_init()
+{
+	return -1;
+}
+
+long multi_oo_interp(object*)
+{
+	return -1;
+}
+
+long multi_oo_is_interp_object(object*)
+{
+	return -1;
+}
+
+long multi_oo_rate_init_all()
+{
+	return -1;
+}
+
+long multi_options_local_load(multi_local_options*, net_player*)
+{
+	return -1;
+}
+
+long multi_options_set_local_defaults(multi_local_options*)
+{
+	return -1;
+}
+
+long multi_options_set_netgame_defaults(multi_server_options*)
+{
+	return -1;
+}
+
+long multi_options_update_local()
+{
+	return -1;
+}
+
+long multi_pause_close()
+{
+	return -1;
+}
+
+long multi_pause_do()
+{
+	return -1;
+}
+
+long multi_pause_do_frame()
+{
+	return -1;
+}
+
+long multi_pause_init(UI_WINDOW*)
+{
+	return -1;
+}
+
+long multi_pinfo_popup(net_player*)
+{
+	return -1;
+}
+
+long multi_ping_reset_players()
+{
+	return -1;
+}
+
+long multi_query_lag_status()
+{
+	return -1;
+}
+
+long multi_quit_game(int, int, int, int)
+{
+	return -1;
+}
+
+long multi_rate_display(int, int, int)
+{
+	return -1;
+}
+
+long multi_reset_timestamps()
+{
+	return -1;
+}
+
+long multi_respawn_build_points()
+{
+	return -1;
+}
+
+long multi_respawn_check(object*)
+{
+	return -1;
+}
+
+long multi_respawn_normal()
+{
+	return -1;
+}
+
+long multi_respawn_observer()
+{
+	return -1;
+}
+
+long multi_set_network_signature(unsigned short, int)
+{
+	return -1;
+}
+
+long multi_show_ingame_ping()
+{
+	return -1;
+}
+
+long multi_standalone_postgame_close()
+{
+	return -1;
+}
+
+long multi_standalone_postgame_do()
+{
+	return -1;
+}
+
+long multi_standalone_postgame_init()
+{
+	return -1;
+}
+
+long multi_standalone_wait_close()
+{
+	return -1;
+}
+
+long multi_standalone_wait_do()
+{
+	return -1;
+}
+
+long multi_standalone_wait_init()
+{
+	return -1;
+}
+
+long multi_start_game_close()
+{
+	return -1;
+}
+
+long multi_start_game_do()
+{
+	return -1;
+}
+
+long multi_start_game_init()
+{
+	return -1;
+}
+
+long multi_sync_close()
+{
+	return -1;
+}
+
+long multi_sync_do()
+{
+	return -1;
+}
+
+long multi_sync_init()
+{
+	return -1;
+}
+
+long multi_team_maybe_add_score(int, int)
+{
+	return -1;
+}
+
+long multi_ts_close()
+{
+	return -1;
+}
+
+long multi_ts_commit_pressed()
+{
+	return -1;
+}
+
+long multi_ts_common_init()
+{
+	return -1;
+}
+
+long multi_ts_disabled_high_slot(int, int)
+{
+	return -1;
+}
+
+long multi_ts_disabled_slot(int, int)
+{
+	return -1;
+}
+
+long multi_ts_do()
+{
+	return -1;
+}
+
+long multi_ts_get_team_and_slot(char*, int*, int*)
+{
+	return -1;
+}
+
+long multi_ts_init()
+{
+	return -1;
+}
+
+long multi_ts_is_locked()
+{
+	return -1;
+}
+
+long multi_ts_lock_pressed()
+{
+	return -1;
+}
+
+long multi_unload_common_icons()
+{
+	return -1;
+}
+
+long multi_voice_close()
+{
+	return -1;
+}
+
+long multi_voice_init()
+{
+	return -1;
+}
+
+long multi_voice_set_prefs(int)
+{
+	return -1;
+}
+
+long multi_voice_status()
+{
+	return -1;
+}
+
+long multi_voice_test_get_playback_buffer()
+{
+	return -1;
+}
+
+long multi_voice_test_packet_tossed()
+{
+	return -1;
+}
+
+long multi_voice_test_process()
+{
+	return -1;
+}
+
+long multi_voice_test_recording()
+{
+	return -1;
+}
+
+long multi_voice_test_record_start()
+{
+	return -1;
+}
+
+long multi_voice_test_record_stop()
+{
+	return -1;
+}
+
+void netmisc_calc_checksum(void*, int)
+{
+	oracle_trap("netmisc_calc_checksum");
+}
+
+void oo_display()
+{
+	oracle_trap("oo_display");
+}
+
+void process_set_of_keys(int, int, int*)
+{
+	oracle_trap("process_set_of_keys");
+}
+
+long psnet_close()
+{
+	return -1;
+}
+
+long psnet_get_network_status()
+{
+	return -1;
+}
+
+long psnet_init(int, int)
+{
+	return -1;
+}
+
+long psnet_is_valid_ip_string(char*, int)
+{
+	return -1;
+}
+
+long psnet_use_protocol(int)
+{
+	return -1;
+}
+
+long rtvoice_play_uncompressed(int, unsigned char*, int)
+{
+	return -1;
+}
+
+long rtvoice_set_qos(int)
+{
+	return -1;
+}
+
+long rtvoice_stop_playback_all()
+{
+	return -1;
+}
+
+long rtvoice_uncompress(unsigned char*, int, double, unsigned char*, int)
+{
+	return -1;
+}
+
+void send_ai_info_update_packet(object*, char)
+{
+	oracle_trap("send_ai_info_update_packet");
+}
+
+void send_asteroid_create(object*, object*, int, vector*)
+{
+	oracle_trap("send_asteroid_create");
+}
+
+void send_asteroid_hit(object*, object*, vector*, float)
+{
+	oracle_trap("send_asteroid_hit");
+}
+
+void send_asteroid_throw(object*)
+{
+	oracle_trap("send_asteroid_throw");
+}
+
+void send_beam_fired_packet(object*, ship_subsys*, object*, int, beam_info*)
+{
+	oracle_trap("send_beam_fired_packet");
+}
+
+void send_cargo_revealed_packet(ship*)
+{
+	oracle_trap("send_cargo_revealed_packet");
 }
 
 void send_change_iff_packet(unsigned short, int)
@@ -418,185 +1073,391 @@ void send_change_iff_packet(unsigned short, int)
 	oracle_trap("send_change_iff_packet");
 }
 
-void ship_docking_valid(int, int)
+void send_countermeasure_success_packet(int)
 {
-	oracle_trap("ship_docking_valid");
+	oracle_trap("send_countermeasure_success_packet");
 }
 
-void ship_find_exited_ship_by_name(char*)
+void send_debrief_info(int*, int**)
 {
-	oracle_trap("ship_find_exited_ship_by_name");
+	oracle_trap("send_debrief_info");
 }
 
-void ship_get_indexed_subsys(ship*, int, vector*)
+void send_debris_update_packet(object*, int)
 {
-	oracle_trap("ship_get_indexed_subsys");
+	oracle_trap("send_debris_update_packet");
 }
 
-void ship_get_length(ship*)
+void send_emp_effect(unsigned short, float, float)
 {
-	oracle_trap("ship_get_length");
+	oracle_trap("send_emp_effect");
 }
 
-void ship_get_random_ship_in_wing(int, int, float, int)
+void send_event_update_packet(int)
 {
-	oracle_trap("ship_get_random_ship_in_wing");
+	oracle_trap("send_event_update_packet");
 }
 
-void ship_get_subsys_index(ship*, char*, int)
+void send_flak_fired_packet(int, int, int, float)
 {
-	oracle_trap("ship_get_subsys_index");
+	oracle_trap("send_flak_fired_packet");
 }
 
-void ship_get_subsys(ship*, char*)
+void send_game_chat_packet(net_player*, char*, int, net_player*, char*, int)
 {
-	oracle_trap("ship_get_subsys");
+	oracle_trap("send_game_chat_packet");
 }
 
-void ship_get_subsystem_strength(ship*, int)
+void send_homing_weapon_info(int)
 {
-	oracle_trap("ship_get_subsystem_strength");
+	oracle_trap("send_homing_weapon_info");
 }
 
-void ship_get_texture(int)
+void send_lightning_packet(int, vector*, vector*)
 {
-	oracle_trap("ship_get_texture");
+	oracle_trap("send_lightning_packet");
 }
 
-void ship_info_lookup(char*)
+void send_mission_goal_info_packet(int, int, int)
 {
-	oracle_trap("ship_info_lookup");
+	oracle_trap("send_mission_goal_info_packet");
 }
 
-void ship_is_visible_by_team(int, int)
+void send_mission_log_packet(int)
 {
-	oracle_trap("ship_is_visible_by_team");
+	oracle_trap("send_mission_log_packet");
 }
 
-void ship_jettison_cargo(ship*)
+void send_mission_message_packet(int, char*, int, int, int, int, int, int)
 {
-	oracle_trap("ship_jettison_cargo");
+	oracle_trap("send_mission_message_packet");
 }
 
-void ship_name_lookup(char*, int)
+void send_mission_sync_packet(int, int)
 {
-	oracle_trap("ship_name_lookup");
+	oracle_trap("send_mission_sync_packet");
 }
 
-void ship_query_state(char*)
+void send_netplayer_update_packet(net_player*)
 {
-	oracle_trap("ship_query_state");
+	oracle_trap("send_netplayer_update_packet");
 }
 
-void ship_recalc_subsys_strength(ship*)
+void send_NEW_countermeasure_fired_packet(object*, int, int)
 {
-	oracle_trap("ship_recalc_subsys_strength");
+	oracle_trap("send_NEW_countermeasure_fired_packet");
 }
 
-void ship_self_destruct(object*)
+void send_NEW_primary_fired_packet(ship*, int)
 {
-	oracle_trap("ship_self_destruct");
+	oracle_trap("send_NEW_primary_fired_packet");
 }
 
-void ship_type_name_lookup(char*)
+void send_player_order_packet(int, int, int)
 {
-	oracle_trap("ship_type_name_lookup");
+	oracle_trap("send_player_order_packet");
 }
 
-void ship_vanished(int)
+void send_player_pain_packet(net_player*, int, float, vector*, vector*)
 {
-	oracle_trap("ship_vanished");
+	oracle_trap("send_player_pain_packet");
 }
 
-void Skill_level_names(int, int)
+void send_player_stats_block_packet(net_player*, int, net_player*)
 {
-	oracle_trap("Skill_level_names");
+	oracle_trap("send_player_stats_block_packet");
 }
 
-void supernova_start(int)
+void send_reinforcement_avail(int)
 {
-	oracle_trap("supernova_start");
+	oracle_trap("send_reinforcement_avail");
 }
 
-void translate_key_to_index(char*)
+void send_secondary_fired_packet(ship*, unsigned short, int, int, int)
 {
-	oracle_trap("translate_key_to_index");
+	oracle_trap("send_secondary_fired_packet");
 }
 
-void weapon_info_lookup(char*)
+void send_ship_create_packet(object*, int)
 {
-	oracle_trap("weapon_info_lookup");
+	oracle_trap("send_ship_create_packet");
 }
 
-void wing_name_lookup(char*, int)
+void send_ship_depart_packet(object*)
 {
-	oracle_trap("wing_name_lookup");
+	oracle_trap("send_ship_depart_packet");
+}
+
+void send_ship_kill_packet(object*, object*, float, int)
+{
+	oracle_trap("send_ship_kill_packet");
+}
+
+void send_subsystem_cargo_revealed_packet(ship*, int)
+{
+	oracle_trap("send_subsystem_cargo_revealed_packet");
+}
+
+void send_subsystem_destroyed_packet(ship*, int, vector)
+{
+	oracle_trap("send_subsystem_destroyed_packet");
+}
+
+void send_turret_fired_packet(int, int, int)
+{
+	oracle_trap("send_turret_fired_packet");
+}
+
+void send_weapon_detonate_packet(object*)
+{
+	oracle_trap("send_weapon_detonate_packet");
+}
+
+void send_wing_create_packet(wing*, int, int)
+{
+	oracle_trap("send_wing_create_packet");
+}
+
+void send_wss_request_packet(short, int, int, int, int, int, int, int, net_player*)
+{
+	oracle_trap("send_wss_request_packet");
+}
+
+void send_wss_update_packet(int, unsigned char*, int)
+{
+	oracle_trap("send_wss_update_packet");
+}
+
+long snd_chg_loop_status(int, int)
+{
+	return -1;
+}
+
+long snd_close()
+{
+	return -1;
+}
+
+long snd_do_frame()
+{
+	return -1;
+}
+
+long snd_get_3d_vol_and_pan(game_snd*, vector*, float*, float*, float)
+{
+	return -1;
+}
+
+long snd_get_duration(int)
+{
+	return -1;
+}
+
+long snd_get_format(int, int*, int*)
+{
+	return -1;
+}
+
+long snd_get_pitch(int)
+{
+	return -1;
+}
+
+long snd_init(int, int)
+{
+	return -1;
+}
+
+long snd_is_inited()
+{
+	return -1;
+}
+
+long snd_is_playing(int)
+{
+	return -1;
+}
+
+long snd_load(game_snd*, int)
+{
+	return -1;
+}
+
+long snd_num_playing()
+{
+	return -1;
+}
+
+long snd_play_3d(game_snd*, vector*, vector*, float, vector*, int, float, int, vector*, float, int)
+{
+	return -1;
+}
+
+long snd_play(game_snd*, float, float, int, bool)
+{
+	return -1;
+}
+
+long snd_play_looping(game_snd*, float, int, int, float, int, int)
+{
+	return -1;
+}
+
+long snd_play_raw(int, float, float, int)
+{
+	return -1;
+}
+
+long snd_set_pan(int, float)
+{
+	return -1;
+}
+
+long snd_set_pitch(int, int)
+{
+	return -1;
+}
+
+long snd_set_pos(int, game_snd*, float, int)
+{
+	return -1;
+}
+
+long snd_set_volume(int, float)
+{
+	return -1;
+}
+
+long snd_spew_debug_info()
+{
+	return -1;
+}
+
+long snd_stop_all()
+{
+	return -1;
+}
+
+long snd_stop(int)
+{
+	return -1;
+}
+
+long snd_time_remaining(int, int, int)
+{
+	return -1;
+}
+
+long snd_unload(int)
+{
+	return -1;
+}
+
+long snd_update_3d_pos(int, game_snd*, vector*)
+{
+	return -1;
+}
+
+long snd_update_listener(vector*, vector*, matrix*)
+{
+	return -1;
+}
+
+long sound_env_disable()
+{
+	return -1;
+}
+
+long sound_env_set(sound_env*)
+{
+	return -1;
+}
+
+long standalone_main_close()
+{
+	return -1;
+}
+
+long standalone_main_do()
+{
+	return -1;
+}
+
+long standalone_main_init()
+{
+	return -1;
+}
+
+long std_init_standalone()
+{
+	return -1;
+}
+
+long std_multi_set_standalone_missiontime(float)
+{
+	return -1;
+}
+
+long std_multi_update_goals()
+{
+	return -1;
+}
+
+long std_set_standalone_fps(float)
+{
+	return -1;
+}
+
+void windebug_memwatch_init()
+{
 }
 
 // data symbols, zero-backed
-unsigned char Ai_info[1 << 20];
-unsigned char Briefings[1 << 20];
-unsigned char Campaign[1 << 20];
-unsigned char Campaign_ended_in_mission[1 << 20];
-unsigned char Canv_h2[1 << 20];
-unsigned char Canv_w2[1 << 20];
-unsigned char Cargo_names[1 << 20];
-unsigned char Cargo_names_buf[1 << 20];
-unsigned char Cmdline_force_32bit[1 << 20];
-unsigned char Control_config[1 << 20];
+unsigned char All_movies_enabled[1 << 20];
 unsigned char D3D_32bit[1 << 20];
+unsigned char D3D_fog_mode[1 << 20];
 unsigned char D3D_inited[1 << 20];
-unsigned char Debriefings[1 << 20];
-unsigned char Energy_levels[1 << 20];
-unsigned char Event_index[1 << 20];
-unsigned char Eye_position[1 << 20];
-unsigned char flFrametime[1 << 20];
-unsigned char G3_count[1 << 20];
-unsigned char Game_skill_level[1 << 20];
-unsigned char Jump_nodes[1 << 20];
-unsigned char Matrix_scale[1 << 20];
-unsigned char Medals[1 << 20];
-unsigned char Messages[1 << 20];
-unsigned char Mission_events[1 << 20];
-unsigned char Mission_filename[1 << 20];
-unsigned char Mission_goals[1 << 20];
+unsigned char D3d_rendition_uvs[1 << 20];
+unsigned char D3D_textures_in[1 << 20];
+unsigned char D3D_textures_in_frame[1 << 20];
+unsigned char D3D_zbias[1 << 20];
+unsigned char Dead_key_set[1 << 20];
+unsigned char Dead_key_set_size[1 << 20];
+unsigned char Demo_error[1 << 20];
+unsigned char Demo_make[1 << 20];
+unsigned char Glide_explosion_vram[1 << 20];
+unsigned char Glide_textures_in[1 << 20];
+unsigned char Glide_textures_in_frame[1 << 20];
+unsigned char Glide_voodoo3[1 << 20];
+unsigned char Ipx_active[1 << 20];
+unsigned char Master_sound_volume[1 << 20];
+unsigned char Master_voice_volume[1 << 20];
+unsigned char Multi_chat_stream[1 << 20];
+unsigned char Multi_common_icons[1 << 20];
+unsigned char Multi_connection_speed[1 << 20];
+unsigned char Multi_display_netinfo[1 << 20];
+unsigned char Multi_options_g[1 << 20];
+unsigned char Multi_pause_status[1 << 20];
+unsigned char Multi_ship_status_bi[1 << 20];
+unsigned char Multi_sync_mode[1 << 20];
 unsigned char Multi_team0_score[1 << 20];
 unsigned char Multi_team1_score[1 << 20];
-unsigned char Neb2_render_mode[1 << 20];
+unsigned char Multi_tracker_id[1 << 20];
+unsigned char Multi_tracker_login[1 << 20];
+unsigned char Multi_tracker_passwd[1 << 20];
+unsigned char Multi_tracker_squad_name[1 << 20];
+unsigned char Multi_update_fireup_launcher_on_exit[1 << 20];
+unsigned char Multi_voice_can_record[1 << 20];
+unsigned char Multi_voice_local_prefs[1 << 20];
 unsigned char Netgame[1 << 20];
 unsigned char Net_player[1 << 20];
 unsigned char Net_players[1 << 20];
-unsigned char Num_cargo[1 << 20];
-unsigned char Num_goals[1 << 20];
-unsigned char Num_jump_nodes[1 << 20];
-unsigned char Num_messages[1 << 20];
-unsigned char Num_mission_events[1 << 20];
-unsigned char Num_ship_types[1 << 20];
-unsigned char Num_team_names[1 << 20];
-unsigned char Num_teams[1 << 20];
-unsigned char Num_waypoint_lists[1 << 20];
-unsigned char Num_weapon_types[1 << 20];
-unsigned char Objects[1 << 20];
-unsigned char obj_used_list[1 << 20];
-unsigned char physics_paused[1 << 20];
-unsigned char Player[1 << 20];
-unsigned char Player_ai[1 << 20];
-unsigned char Player_obj[1 << 20];
-unsigned char Player_ship[1 << 20];
-unsigned char Ship_counts[1 << 20];
-unsigned char Ship_info[1 << 20];
-unsigned char Ship_obj_list[1 << 20];
-unsigned char Ships[1 << 20];
-unsigned char Ships_exited[1 << 20];
-unsigned char Ship_type_flags[1 << 20];
-unsigned char Ship_type_names[1 << 20];
-unsigned char Team_names[1 << 20];
-unsigned char The_mission[1 << 20];
-unsigned char Total_goal_ship_names[1 << 20];
+unsigned char oo_arrive_time_count[1 << 20];
+unsigned char oo_interp_count[1 << 20];
+unsigned char OO_update_index[1 << 20];
+unsigned char Snd_hram[1 << 20];
+unsigned char Snd_sram[1 << 20];
+unsigned char Sound_enabled[1 << 20];
+unsigned char Tcp_active[1 << 20];
+unsigned char Tool_enabled[1 << 20];
 unsigned char TotalRam[1 << 20];
-unsigned char Training_failure[1 << 20];
-unsigned char View_position[1 << 20];
-unsigned char Waypoint_lists[1 << 20];
-unsigned char Weapon_info[1 << 20];
-unsigned char Weapons[1 << 20];
-unsigned char Wings[1 << 20];

@@ -135,7 +135,7 @@ static int Background_bitmap;
 static UI_BUTTON List_region;
 static UI_WINDOW Ui_window;
 
-ui_button_info Buttons[GR_NUM_RESOLUTIONS][NUM_BUTTONS] = {
+static ui_button_info Buttons[GR_NUM_RESOLUTIONS][NUM_BUTTONS] = {
 	{ // GR_640
 		ui_button_info("TDB_00",	7,		5,		37,	7,		0),			// tech database 1
 		ui_button_info("TDB_01",	7,		19,	37,	23,	1),			// tech database 2

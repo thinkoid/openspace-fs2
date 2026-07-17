@@ -213,3 +213,8 @@ void joy_get_delta(int *dx, int *dy)
 	if (dx) *dx = 0;
 	if (dy) *dy = 0;
 }
+
+void joy_close()
+{
+	// no joysticks to release yet
+}

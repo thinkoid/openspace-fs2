@@ -3492,7 +3492,8 @@ int ai_formation_object_get_slotnum(int objnum, object *objp)
 {
 	int	slotnum = 1;			//	Note: Slot #0 means leader, which isn't someone who was told to form-on-wing.
 
-	for ( object *o = GET_FIRST(&obj_used_list); o != END_OF_LIST(&obj_used_list); o = GET_NEXT(o) ) {
+	object *o;	// checked after the loop (MSVC for-scope leak in retail)
+	for ( o = GET_FIRST(&obj_used_list); o != END_OF_LIST(&obj_used_list); o = GET_NEXT(o) ) {
 		if (objp == o)
 			break;
 		else if (o->type == OBJ_SHIP)

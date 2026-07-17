@@ -8,8 +8,11 @@
 */ 
 
 #include <stdio.h>
-#include <direct.h>
-#include <io.h>
+// (direct.h removed)
+#include <filesystem>
+#include <string>
+#include <errno.h>
+// (io.h removed)
 #include <string.h>
 #include <setjmp.h>
 
@@ -221,31 +224,25 @@ void mission_campaign_maybe_add( char *filename, int multiplayer )
 // global variables
 void mission_campaign_build_list( int multiplayer )
 {
-	int find_handle;
-	_finddata_t find;
-	char wild_card[256];
-
 	Num_campaigns = 0;
 	mission_campaign_maybe_add( BUILTIN_CAMPAIGN, multiplayer);
 
-	memset(wild_card, 0, 256);
-	strcpy(wild_card, NOX("data\\missions\\*"));
-	strcat(wild_card, FS_CAMPAIGN_FILE_EXT);
-	find_handle = _findfirst( wild_card, &find );
-	if( find_handle != -1 )	{
-		if ( !(find.attrib & _A_SUBDIR) && stricmp(find.name, BUILTIN_CAMPAIGN) ){
-			mission_campaign_maybe_add( find.name, multiplayer);
-		}
-
-		while( !_findnext( find_handle, &find ) )	{
-			if ( !(find.attrib & _A_SUBDIR) && stricmp(find.name, BUILTIN_CAMPAIGN) )	{
-				if ( Num_campaigns >= MAX_CAMPAIGNS ){
-					//MessageBox( -2,-2, 1, "Only the first 300 files will be displayed.", "Ok" );
-					break;
-				} else {
-					mission_campaign_maybe_add( find.name, multiplayer);
-				}
-			}
+	// retail scanned loose data\missions\*.fc2 with _findfirst; same semantics
+	// via std::filesystem (the builtin campaign above comes from the VPs)
+	{
+		std::error_code ec;
+		for ( const auto &entry : std::filesystem::directory_iterator( "data/missions", ec ) )	{
+			if ( entry.is_directory() )
+				continue;
+			const std::string name = entry.path().filename().string();
+			size_t extlen = strlen(FS_CAMPAIGN_FILE_EXT);
+			if ( name.size() <= extlen || stricmp( name.c_str() + name.size() - extlen, FS_CAMPAIGN_FILE_EXT ) )
+				continue;
+			if ( !stricmp( name.c_str(), BUILTIN_CAMPAIGN ) )
+				continue;
+			if ( Num_campaigns >= MAX_CAMPAIGNS )
+				break;
+			mission_campaign_maybe_add( (char *)name.c_str(), multiplayer );
 		}
 	}
 }

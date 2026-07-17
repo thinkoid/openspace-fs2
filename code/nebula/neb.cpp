@@ -13,7 +13,7 @@
 #include "bmpman.h"
 #include "2d.h"
 #include "object.h"
-#include "glide.h"
+// (glide.h removed)
 #include "timer.h"
 #include "multi.h"
 #include "freespace.h"

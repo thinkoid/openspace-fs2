@@ -1003,7 +1003,7 @@ int asteroid_check_collision(object *pasteroid, object *other_obj, vector *hitpo
 
 
 				// check each submodel in turn
-				for (i=0; i<num_rotating_submodels; i++) {
+				for (int i=0; i<num_rotating_submodels; i++) {
 					// turn on submodel for collision test
 					pm->submodel[submodel_list[i]].blown_off = 0;
 

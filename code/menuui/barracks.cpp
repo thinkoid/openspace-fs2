@@ -846,8 +846,9 @@ void barracks_init_player_stuff(int mode)
 
 	int ranks[MAX_PILOTS];
 
-	for (int i=0; i<Num_pilots; i++) {
-		for (int j=0; j<Num_pilots; j++) {
+	int i, j;
+	for (i=0; i<Num_pilots; i++) {
+		for (j=0; j<Num_pilots; j++) {
 			if (!strcmp(Pilots[i], Pilots_arr[j])) {
 				ranks[i] = Pilot_ranks[j];
 				break;
@@ -1287,7 +1288,7 @@ void barracks_init()
 	w->add_XSTR("Single", 1041, Buttons[gr_screen.res][14].text_x,  Buttons[gr_screen.res][14].text_y,  &Buttons[gr_screen.res][14].button, UI_XSTR_COLOR_GREEN);
 	w->add_XSTR("Multi",  1042, Buttons[gr_screen.res][15].text_x,  Buttons[gr_screen.res][15].text_y,  &Buttons[gr_screen.res][15].button, UI_XSTR_COLOR_GREEN);
 	w->add_XSTR("Convert",1043, Buttons[gr_screen.res][16].text_x,  Buttons[gr_screen.res][16].text_y, &Buttons[gr_screen.res][16].button, UI_XSTR_COLOR_GREEN);	
-	for(i=0; i<BARRACKS_NUM_TEXT; i++) {
+	for(int i=0; i<BARRACKS_NUM_TEXT; i++) {
 		w->add_XSTR(&Barracks_text[gr_screen.res][i]);
 	}
 
@@ -1336,7 +1337,7 @@ void barracks_init()
 	pilot_load_squad_pic_list();
 	
 	// don't load pilot images yet
-	for (i=0; i<MAX_PILOT_IMAGES; i++) {
+	for (int i=0; i<MAX_PILOT_IMAGES; i++) {
 		Pilot_images[i] = BARRACKS_IMAGE_NOT_LOADED;  // while -1 is can't load
 		Pilot_squad_images[i] = BARRACKS_IMAGE_NOT_LOADED;
 	}
@@ -1580,7 +1581,7 @@ void barracks_close()
 	}	
 
 	// release pilot pic bitmaps
-	for (i=0; i<Num_pilot_images; i++) {
+	for (int i=0; i<Num_pilot_images; i++) {
 		if (Pilot_images[i] >= 0) {
 			bm_unload(Pilot_images[i]);
 		}

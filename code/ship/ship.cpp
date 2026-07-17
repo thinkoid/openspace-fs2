@@ -77,6 +77,9 @@
 #include "localize.h"
 #include "neb.h"
 #include "shipcontrails.h"
+
+struct ssm_firing_info;
+extern void ssm_create(vector *target, vector *start, int ssm_index, ssm_firing_info *override);
 #include "alphacolors.h"
 #include "demo.h"
 #include "beam.h"
@@ -8714,8 +8717,8 @@ void ship_update_artillery_lock()
 
 		// TEST CODE
 		if(aip->artillery_lock_time >= 2.0f){
-			struct ssm_firing_info;
-			extern void ssm_create(vector *target, vector *start, int ssm_index, ssm_firing_info *override);
+			// (fwd decl hoisted to file scope; local struct decls make the
+			// extern use a function-local type in ISO C++)
 
 			HUD_printf("Firing artillery");
 

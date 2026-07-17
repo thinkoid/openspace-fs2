@@ -10,6 +10,8 @@
 #ifndef _FS2_NEB2_EFFECT_HEADER_FILE
 #define _FS2_NEB2_EFFECT_HEADER_FILE
 
+#include "pstypes.h"
+
 // --------------------------------------------------------------------------------------------------------
 // NEBULA DEFINES/VARS
 //

@@ -10,6 +10,8 @@
 #ifndef _MISSIONLOAD_H
 #define _MISSIONLOAD_H
 
+#include "pstypes.h"
+
 // -----------------------------------------------
 // For recording most recent missions played
 // -----------------------------------------------

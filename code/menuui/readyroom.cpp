@@ -205,7 +205,7 @@ typedef struct hash_node {
 } hash_node;
 
 static hash_node *Campaign_mission_hash_table[CAMPAIGN_MISSION_HASH_SIZE];
-static Hash_table_inited;
+static int Hash_table_inited = 0;
 
 // special icons (1.04 + stuff)
 #define NUM_MISSION_ICONS			1
@@ -236,11 +236,11 @@ void sim_room_blit_icons(int line_index, int y_start, fs_builtin_mission *fb = N
 //
 // returns hash value
 int hash_filename(char *filename) {
-	unsigned __int64 hash_val = 0;
+	unsigned long long hash_val = 0;
 	char *ptr = filename;
 	
 	// Dont hash .fsm extension, convert all to upper case
-	for (int i=0; i < (signed int(strlen(filename)) - 4); i++) {
+	for (int i=0; i < ((int)strlen(filename) - 4); i++) {
 		hash_val = (hash_val << 4) + toupper(*ptr++);
 	}
 

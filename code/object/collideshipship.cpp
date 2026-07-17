@@ -274,7 +274,7 @@ int ship_ship_check_collision(collision_info_struct *ship_ship_hit_info, vector 
 			mc.flags = copy_flags | MC_SUBMODEL_INSTANCE;
 
 			// check each submodel in turn
-			for (i=0; i<num_rotating_submodels; i++) {
+			for (int i=0; i<num_rotating_submodels; i++) {
 				// turn on submodel for collision test
 				pm->submodel[submodel_list[i]].blown_off = 0;
 

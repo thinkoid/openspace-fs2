@@ -116,7 +116,7 @@ int Hot_ss_slot;			// index for slot that mouse is over (0..11)
 ////////////////////////////////////////////////////////////
 UI_WINDOW	Ship_select_ui_window;	
 
-static Ship_anim_coords[GR_NUM_RESOLUTIONS][2] = {
+static int Ship_anim_coords[GR_NUM_RESOLUTIONS][2] = {
 	{
 		257, 84		// GR_640
 	},
@@ -125,7 +125,7 @@ static Ship_anim_coords[GR_NUM_RESOLUTIONS][2] = {
 	}
 };
 
-static Ship_info_coords[GR_NUM_RESOLUTIONS][2] = {
+static int Ship_info_coords[GR_NUM_RESOLUTIONS][2] = {
 	{
 		28, 78				// GR_640
 	},

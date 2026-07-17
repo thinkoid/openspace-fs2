@@ -4774,7 +4774,7 @@ int mission_parse_lookup_alt(char *name)
 	return -1;
 }
 
-static mission_parse_lookup_alt_index_warn = 1;
+static int mission_parse_lookup_alt_index_warn = 1;
 void mission_parse_lookup_alt_index(int index, char *out)
 {
 	// sanity

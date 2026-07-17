@@ -26,7 +26,7 @@ static int Training_mask_w, Training_mask_h;
 static MENU_REGION region[TRAINING_MENU_MAX_CHOICES];
 static int num_training;
 
-static training_menu_inited=0;
+static int training_menu_inited=0;
 
 void training_menu_init()
 {

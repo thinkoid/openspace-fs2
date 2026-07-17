@@ -593,10 +593,10 @@ void lcl_ext_localize(char *in, char *out, int max_len, int *id)
 }
 
 // translate the specified string based upon the current language
-char *XSTR(char *str, int index)
+char *XSTR(const char *str, int index)
 {
 	if(!Xstr_inited){
-		return str;
+		return (char *)str;	// passthrough; callers never write through it
 	}
 
 	// perform a lookup
@@ -607,7 +607,7 @@ char *XSTR(char *str, int index)
 	}
 
 	// can't translate, return original english string
-	return str;
+	return (char *)str;	// passthrough; callers never write through it
 }
 
 // retrieve the offset for a localized string

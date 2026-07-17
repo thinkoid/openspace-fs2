@@ -10,6 +10,8 @@
 #ifndef _PALMAN_H
 #define _PALMAN_H 
 
+#include "pstypes.h"
+
 // Calculate tables for this palette.
 // Assumes gr_palette is filled in.
 extern void palette_update(char *name, int restrict_colors_to_upper_128 );

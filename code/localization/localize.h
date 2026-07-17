@@ -89,7 +89,7 @@ void lcl_ext_close();
 void lcl_ext_localize(char *in, char *out, int max_len, int *id = NULL);
 
 // translate the specified string based upon the current language
-char *XSTR(char *str, int index);
+char *XSTR(const char *str, int index);
 int lcl_get_xstr_offset(int index, int res);
 
 // translate umlauted chars from ascii to ansi codes

@@ -10,6 +10,8 @@
 #ifndef _FLAK_WEAPONS_HEADER_FILE
 #define _FLAK_WEAPONS_HEADER_FILE
 
+#include "pstypes.h"
+
 // --------------------------------------------------------------------------------------------------------------------------------------
 // FLAK DEFINES/VARS
 //
