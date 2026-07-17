@@ -20,11 +20,11 @@
 #include "hud.h"
 #include "osapi.h"
 #include "object.h"
-#include "multi.h"
 #include "bmpman.h"
 #include "missionbrief.h"
 #include "missiongrid.h"
 #include "missionbriefcommon.h"
+#include "player.h"
 #include "animplay.h"
 #include "fvi.h"
 #include "float.h"
@@ -108,15 +108,6 @@ int Brief_stage_text_coords[GR_NUM_RESOLUTIONS][2] = {
 	},
 	{ // GR_1024
 		227, 194
-	}
-};
-
-int Brief_stage_text_coords_multi[GR_NUM_RESOLUTIONS][2] = {
-	{ // GR_640
-		479, 385
-	},
-	{ // GR_1024
-		821, 616
 	}
 };
 
@@ -465,20 +456,14 @@ void debrief_reset()
 			}
 		}
 	}
-
-	// MWA 4/27/98 -- must initialize this variable here since we cannot do it as debrief
-	// init time because race conditions between all players in the game make that type of
-	// initialization unsafe.
-	Debrief_multi_stages_loaded = 0;
 }
 
 // --------------------------------------------------------------------------------------
 //	brief_init_screen()
 //
-//	Set up the screen regions.  A mulitplayer briefing will look different than a single player
-// briefing.
+//	Set up the screen regions.
 //
-void brief_init_screen(int multiplayer_flag)
+void brief_init_screen()
 {
 	bscreen.map_x1			= Brief_grid_coords[gr_screen.res][0];
 	bscreen.map_x2			= Brief_grid_coords[gr_screen.res][0] + Brief_grid_coords[gr_screen.res][2];
@@ -1218,24 +1203,7 @@ void brief_blit_stage_num(int stage_num, int stage_max)
 	Assert( Briefing != NULL );
 	gr_set_color_fast(&Color_text_heading);
 	sprintf(buf, XSTR( "Stage %d of %d", 394), stage_num + 1, stage_max);
-	if (Game_mode & GM_MULTIPLAYER) {
-		gr_printf(Brief_stage_text_coords_multi[gr_screen.res][0], Brief_stage_text_coords_multi[gr_screen.res][1], buf);
-	} else {
-		gr_printf(Brief_stage_text_coords[gr_screen.res][0], Brief_stage_text_coords[gr_screen.res][1], buf);
-	}
-
-	// draw the title of the mission	
-	// if this goes above briefing text, it will need to be raised 10 pixels in multiplayer to make
-	// room for stage num, which makes toom for chat box
-	/*
-	if (Game_mode & GM_MULTIPLAYER) {
-		gr_get_string_size(&w,NULL,The_mission.name);
-		gr_string(bscreen.map_x2 - w, bscreen.map_y2 + 5, The_mission.name);		
-	} else {
-		gr_get_string_size(&w,NULL,The_mission.name);
-		gr_string(bscreen.map_x2 - w, bscreen.map_y2 + 5, The_mission.name);		
-	}
-	*/
+	gr_printf(Brief_stage_text_coords[gr_screen.res][0], Brief_stage_text_coords[gr_screen.res][1], buf);
 }
 
 // Render a line of text for the briefings.  Lines are drawn in as a wipe, with leading bright
@@ -2276,11 +2244,6 @@ void brief_load_voice_file(int voice_num, char *name)
 
 		Brief_voices[voice_num] = audiostream_open( name, ASF_VOICE );
 		if ( Brief_voices[voice_num] >= 0 ) {
-			break;
-		}
-
-		// Don't bother to ask for the CD in multiplayer
-		if ( Game_mode & GM_MULTIPLAYER ) {
 			break;
 		}
 

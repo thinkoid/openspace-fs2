@@ -24,16 +24,10 @@
 #include "mouse.h"
 #include "contexthelp.h"
 #include "cmdline.h"
-#include "psnet.h"
-#include "multiui.h"
-#include "multiutil.h"
 #include "popup.h"
-#include "rtvoice.h"
 #include "osapi.h"
 #include "playermenu.h"
 #include "freespace.h"
-#include "multi_voice.h"
-#include "multi.h"
 #include "alphacolors.h"
 #include "demo.h"
 #include "fishtank.h"
@@ -179,9 +173,6 @@ int Main_hall_bitmap;
 
 // background bitmap mask handle
 int Main_hall_mask;
-
-// variable used for automatic netgame starting/joining
-int Main_hall_netgame_started = 0;
 
 // bitmap struct for th background mask bitmap
 bitmap *Main_hall_mask_bitmap;
@@ -384,84 +375,6 @@ int Main_hall_help_stamp = -1;
 void main_hall_process_help_stuff();
 
 
-// ----------------------------------------------------------------------------
-// VOICE RECORDING STUFF
-//
-
-// are we currently recording voice?
-int Recording = 0;
-
-
-// called when multiplayer clicks on the ready room door.  May pop up dialog depending on network
-// connection status and errors
-void main_hall_do_multi_ready()
-{
-	int error;
-
-	error = psnet_get_network_status();
-	switch( error ) {
-	case NETWORK_ERROR_NO_TYPE:
-		popup( PF_NO_NETWORKING, 1, POPUP_OK, XSTR( "You have not defined your type of Internet connection.  Please run the Launcher, hit the setup button, and go to the Network tab and choose your connection type.", 360));
-		break;
-	case NETWORK_ERROR_NO_WINSOCK:
-		popup( PF_NO_NETWORKING, 1, POPUP_OK, XSTR( "Winsock is not installed.  You must have TCP/IP and Winsock installed to play multiplayer FreeSpace.", 361));
-		break;
-	case NETWORK_ERROR_NO_PROTOCOL:
-		if(Multi_options_g.protocol == NET_TCP){
-			popup( PF_NO_NETWORKING, 1, POPUP_OK, XSTR( "TCP/IP protocol not found.  This protocol is required for multiplayer FreeSpace.", 362));
-		} else {
-			Assert(Multi_options_g.protocol == NET_IPX);
-			popup( PF_NO_NETWORKING, 1, POPUP_OK, XSTR( "IPX protocol not found.  This protocol is required for multiplayer FreeSpace.", 362));
-		}
-		break;
-	case NETWORK_ERROR_CONNECT_TO_ISP:
-		popup( PF_NO_NETWORKING, 1, POPUP_OK, XSTR( "You have selected Dial Up Networking as your type of connection to the Internet.  You are not currently connected.  You must connect to your ISP before continuing on past this point.", 363));
-		break;
-	case NETWORK_ERROR_LAN_AND_RAS:
-		popup( PF_NO_NETWORKING, 1, POPUP_OK, XSTR( "You have indicated that you use a LAN for networking.  You also appear to be dialed into your ISP.  Please disconnect from your service provider, or choose Dial Up Networking.", 364));
-		break;
-
-	case NETWORK_ERROR_NONE:
-	default:
-		break;
-	}
-
-	// if our selected protocol is not active
-	if((Multi_options_g.protocol == NET_TCP) && !Tcp_active){
-		popup( PF_NO_NETWORKING, 1, POPUP_OK, XSTR( "You have selected TCP/IP for multiplayer Freespace, but the TCP/IP protocol was not detected on your machine.", 362));
-		return;
-	} 
-	if((Multi_options_g.protocol == NET_IPX) && !Ipx_active){		
-		popup( PF_NO_NETWORKING, 1, POPUP_OK, XSTR( "You have selected IPX for multiplayer Freespace, but the IPX protocol was not detected on your machine.", 1402));
-		return;
-	} 
-
-	if ( error != NETWORK_ERROR_NONE ){
-		return;
-	}
-
-	// 7/9/98 -- MWA.  Deal with the connection speed issue.  make a call to the multiplayer code to
-	// determine is a valid connection setting exists
-	if ( Multi_connection_speed == CONNECTION_SPEED_NONE ) {
-		popup( PF_NO_NETWORKING, 1, POPUP_OK, XSTR( "You must define your connection speed.  Please run the Launcher, hit the setup button, and go to the Network tab and choose your connection speed.", 986) );
-		return;
-	}
-
-	// go to parallax online
-#ifdef MULTIPLAYER_BETA_BUILD // do we want this for FS2_DEMO
-	Multi_options_g.pxo = 1;
-	Multi_options_g.protocol = NET_TCP;	
-	gameseq_post_event( GS_EVENT_PXO );
-#else
-	
-	// go to the regular join game screen 	
-	gameseq_post_event( GS_EVENT_MULTI_JOIN_GAME );	
-#endif	
-
-	// select protocol
-	psnet_use_protocol(Multi_options_g.protocol);
-}
-
 // blit some small color indicators to show whether ships.tbl and weapons.tbl are valid
 // green == valid, red == invalid.
 // ships.tbl will be on the left, weapons.tbl on the right
@@ -541,10 +454,7 @@ void main_hall_init(int main_hall_num)
 		nprintf(("General","WARNING! Couldn't load main hall background bitmap %s\n", Main_hall->bitmap));
 	}	
 
-	// remove any multiplayer flags from the game mode
-	Game_mode &= ~(GM_MULTIPLAYER);
-
-	// set the interface palette 
+	// set the interface palette
 #ifndef HARDWARE_ONLY
 	palette_use_bm_palette(Main_hall_bitmap);	
 #endif
@@ -660,18 +570,8 @@ void main_hall_init(int main_hall_num)
 	// determine if we have a right click
 	Main_hall_right_click = mouse_down(MOUSE_RIGHT_BUTTON);
 
-	// set the game_mode based on the type of player
 	Assert( Player != NULL );
-	if ( Player->flags & PLAYER_FLAGS_IS_MULTI ){
-		Game_mode = GM_MULTIPLAYER;
-	} else {
-		Game_mode = GM_NORMAL;
-	}
-
-	if ( (Cmdline_start_netgame || (Cmdline_connect_addr != NULL)) && !Main_hall_netgame_started ) {
-		Main_hall_netgame_started = 1;
-		main_hall_do_multi_ready();
-	}
+	Game_mode = GM_NORMAL;
 }
 
 void main_hall_exit_game()
@@ -682,7 +582,7 @@ void main_hall_exit_game()
 	// stop music first
 	main_hall_stop_music();
 	main_hall_stop_ambient();
-	choice = popup( PF_NO_NETWORKING | PF_BODY_BIG, 2, POPUP_NO, POPUP_YES, XSTR( "Exit Game?", 365));
+	choice = popup( PF_BODY_BIG, 2, POPUP_NO, POPUP_YES, XSTR( "Exit Game?", 365));
 	if ( choice == 1 ) {
 		gameseq_post_event(GS_EVENT_QUIT_GAME);
 	} else {
@@ -765,24 +665,15 @@ void main_hall_do(float frametime)
 
 		// clicked on the readyroom region
 		case READY_ROOM_REGION:
-#ifdef MULTIPLAYER_BETA_BUILD
-			gamesnd_play_iface(SND_IFACE_MOUSE_CLICK);
-			Player->flags |= PLAYER_FLAGS_IS_MULTI;
-			main_hall_do_multi_ready();
-#elif defined(E3_BUILD) || defined(PRESS_TOUR_BUILD)									
-			gameseq_post_event(GS_EVENT_NEW_CAMPAIGN);			
+#if defined(E3_BUILD) || defined(PRESS_TOUR_BUILD)
+			gameseq_post_event(GS_EVENT_NEW_CAMPAIGN);
 #else
-			if (Player->flags & PLAYER_FLAGS_IS_MULTI){
-				gamesnd_play_iface(SND_IFACE_MOUSE_CLICK);
-				main_hall_do_multi_ready();
-			} else {				
-				if(strlen(Main_hall_campaign_cheat)){
-					gameseq_post_event(GS_EVENT_CAMPAIGN_CHEAT);
-				} else {
-					gameseq_post_event(GS_EVENT_NEW_CAMPAIGN);				
-				}
-				gamesnd_play_iface(SND_IFACE_MOUSE_CLICK);				
+			if(strlen(Main_hall_campaign_cheat)){
+				gameseq_post_event(GS_EVENT_CAMPAIGN_CHEAT);
+			} else {
+				gameseq_post_event(GS_EVENT_NEW_CAMPAIGN);
 			}
+			gamesnd_play_iface(SND_IFACE_MOUSE_CLICK);
 #endif
 			break;
 
@@ -805,7 +696,7 @@ void main_hall_do(float frametime)
 
 		// clicked on the campaign toom region
 		case CAMPAIGN_ROOM_REGION:
-#if !defined(MULTIPLAYER_BETA_BUILD) && !defined(E3_BUILD) && !defined(PRESS_TOUR_BUILD)
+#if !defined(E3_BUILD) && !defined(PRESS_TOUR_BUILD)
 
 #ifdef FS2_DEMO
 			gamesnd_play_iface(SND_IFACE_MOUSE_CLICK);
@@ -820,50 +711,30 @@ void main_hall_do(float frametime)
 			}
 
 #else
-			if(Player->flags & PLAYER_FLAGS_IS_MULTI){
-				gamesnd_play_iface(SND_IFACE_MOUSE_CLICK);
-				main_hall_set_notify_string(XSTR( "Campaign Room not valid for multiplayer pilots", 366));
-			} else {
-				gamesnd_play_iface(SND_IFACE_MOUSE_CLICK);
-				gameseq_post_event(GS_EVENT_CAMPAIGN_ROOM);			
-			}
+			gamesnd_play_iface(SND_IFACE_MOUSE_CLICK);
+			gameseq_post_event(GS_EVENT_CAMPAIGN_ROOM);
 #endif
 
 #endif
 			break;
 
-		// clicked on the multiplayer region
+		// multiplayer door: excised
 		case MULTIPLAYER_REGION:
-#if defined(DEMO) || defined(OEM_BUILD) // not for FS2_DEMO
-			game_feature_not_in_demo_popup();
-#else
-			if (Player->flags & PLAYER_FLAGS_IS_MULTI){
-				// NOTE : this isn't a great thing to be calling this anymore. But we'll leave it for now
-				gameseq_post_event( GS_EVENT_MULTI_JOIN_GAME );
-			} else {
-				main_hall_set_notify_string(XSTR( "Not a valid multiplayer pilot!!", 367));
-			}
-#endif
 			break;
 
 		// load mission key was pressed
 		case LOAD_MISSION_REGION:
 #ifdef RELEASE_REAL
 #else
-	#if !(defined(MULTIPLAYER_BETA_BUILD) || defined(FS2_DEMO))
+	#if !defined(FS2_DEMO)
 	//#if !defined(NDEBUG) || defined(INTERPLAYQA)
-				if (Player->flags & PLAYER_FLAGS_IS_MULTI){
-					gamesnd_play_iface(SND_IFACE_MOUSE_CLICK);
-					main_hall_set_notify_string(XSTR( "Load Mission not valid for multiplayer pilots", 368));
-				} else {
 	#ifdef GAME_CD_CHECK
-					// if ( !game_do_cd_check() ) {
-						// break;
-					// }
+				// if ( !game_do_cd_check() ) {
+					// break;
+				// }
 	#endif
-					gamesnd_play_iface(SND_IFACE_MOUSE_CLICK);
-					gameseq_post_event( GS_EVENT_LOAD_MISSION_MENU );
-				}
+				gamesnd_play_iface(SND_IFACE_MOUSE_CLICK);
+				gameseq_post_event( GS_EVENT_LOAD_MISSION_MENU );
 	//#endif
 	#endif
 #endif
@@ -872,20 +743,15 @@ void main_hall_do(float frametime)
 		// quick start a game region
 		case QUICK_START_REGION:
 #if !defined(NDEBUG) && !defined(FS2_DEMO)
-			if (Player->flags & PLAYER_FLAGS_IS_MULTI){
-				main_hall_set_notify_string(XSTR( "Quick Start not valid for multiplayer pilots", 369));
+			if (Num_recent_missions > 0)	{
+				strncpy( Game_current_mission_filename, Recent_missions[0], MAX_FILENAME_LEN );
 			} else {
-
-				if (Num_recent_missions > 0)	{
-					strncpy( Game_current_mission_filename, Recent_missions[0], MAX_FILENAME_LEN );
-				} else {
-					mission_load_up_campaign();
-					strncpy( Game_current_mission_filename, Campaign.missions[0].name, MAX_FILENAME_LEN );
-				}
-
-				Campaign.current_mission = -1;
-				gameseq_post_event(GS_EVENT_START_GAME_QUICK);
+				mission_load_up_campaign();
+				strncpy( Game_current_mission_filename, Campaign.missions[0].name, MAX_FILENAME_LEN );
 			}
+
+			Campaign.current_mission = -1;
+			gameseq_post_event(GS_EVENT_START_GAME_QUICK);
 #endif
 			break;
 
@@ -1598,16 +1464,7 @@ void main_hall_maybe_blit_tooltips()
 	}
 
 	// get the index of the proper text to be using
-	if(Main_hall_mouse_region == READY_ROOM_REGION) {
-		// if this is a multiplayer pilot, the ready room region becomes the multiplayer region
-		if(Player->flags & PLAYER_FLAGS_IS_MULTI){
-			text_index = NUM_REGIONS - 1;
-		} else {
-			text_index = READY_ROOM_REGION;
-		}
-	} else {
-		text_index = Main_hall_mouse_region;
-	}
+	text_index = Main_hall_mouse_region;
 
 	// set the color and blit the string
 	if(!help_overlay_active(Main_hall_overlay_id)) {

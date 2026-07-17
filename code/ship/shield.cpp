@@ -34,8 +34,6 @@
 #include "animplay.h"
 #include "shiphit.h"
 #include "missionparse.h"
-#include "multimsgs.h"
-#include "multi.h"
 
 int	New_shield_system = 1;
 int	Show_shield_mesh = 0;
@@ -88,7 +86,6 @@ typedef struct shield_point {
 #define	MAX_SHIELD_POINTS	100
 shield_point	Shield_points[MAX_SHIELD_POINTS];
 int		Num_shield_points;
-int		Num_multi_shield_points;					// used by multiplayer clients
 
 gshield_tri	Global_tris[MAX_SHIELD_TRI_BUFFER];	//	The persistent triangles, part of shield hits.
 int	Num_tris;								//	Number of triangles in current shield.  Would be a local, but needed in numerous routines.
@@ -161,8 +158,6 @@ void shield_hit_init()
 		Global_tris[i].used = 0;
 		Global_tris[i].creation_time = Missiontime;
 	}
-
-	Num_multi_shield_points = 0;
 
 	load_shield_hit_bitmap();
 }
@@ -677,13 +672,7 @@ float apply_damage_to_shield(object *objp, int shield_quadrant, float damage)
 {
 	ai_info	*aip;
 
-	// multiplayer clients bail here if nodamage
-	// if(MULTIPLAYER_CLIENT && (Netgame.debug_flags & NETD_FLAG_CLIENT_NODAMAGE)){
-	if(MULTIPLAYER_CLIENT){
-		return damage;
-	}
-
-	if ( (shield_quadrant < 0)  || (shield_quadrant > 3) ) return damage;	
+	if ( (shield_quadrant < 0)  || (shield_quadrant > 3) ) return damage;
 	
 	Assert(objp->type == OBJ_SHIP);
 	aip = &Ai_info[Ships[objp->instance].ai_index];
@@ -830,49 +819,7 @@ void add_shield_point(int objnum, int tri_num, vector *hit_pos)
 
 	Num_shield_points++;
 
-	// in multiplayer -- send the shield hit data to the clients
-	// if ( MULTIPLAYER_MASTER && !(Netgame.debug_flags & NETD_FLAG_CLIENT_NODAMAGE)){
-		// send_shield_explosion_packet( objnum, tri_num, *hit_pos );
-	// }
-
 	Ships[Objects[objnum].instance].shield_hits++;
-}
-
-// ugh!  I wrote a special routine to store shield points for clients in multiplayer
-// games.  Problem is initilization and flow control of normal gameplay make this problem
-// more than trivial to solve.  Turns out that I think I can just keep track of the
-// shield_points for multiplayer in a separate count -- then assign the multi count to
-// the normal count at the correct time.
-void add_shield_point_multi(int objnum, int tri_num, vector *hit_pos)
-{
-	//Assert(Num_multi_shield_points < MAX_SHIELD_POINTS);
-
-	if (Num_multi_shield_points >= MAX_SHIELD_POINTS)
-		return;
-
-	Shield_points[Num_shield_points].objnum = objnum;
-	Shield_points[Num_shield_points].shield_tri = tri_num;
-	Shield_points[Num_shield_points].hit_point = *hit_pos;
-
-	Num_multi_shield_points++;
-}
-
-// sets up the shield point hit information for multiplayer clients
-void shield_point_multi_setup()
-{
-	int i;
-
-	Assert( MULTIPLAYER_CLIENT );
-
-	if ( Num_multi_shield_points == 0 )
-		return;
-
-	Num_shield_points = Num_multi_shield_points;
-	for (i = 0; i < Num_shield_points; i++ ){
-		Ships[Objects[Shield_points[i].objnum].instance].shield_hits++;
-	}
-
-	Num_multi_shield_points = 0;
 }
 
 
@@ -907,11 +854,7 @@ void create_shield_explosion_all(object *objp)
 
 	//mprintf(("Creating %i explosions took %7.3f seconds\n", shipp->shield_hits, (float) (timer_get_milliseconds() - start_time)/1000.0f));
 
-	// some some reason, clients seem to have a bogus count valud on occation.  I"ll chalk it up
-	// to missed packets :-)  MWA 2/6/98
-	if ( !MULTIPLAYER_CLIENT ){
-		Assert(count == 0);	//	Couldn't find all the alleged shield hits.  Bogus!
-	}
+	Assert(count == 0);	//	Couldn't find all the alleged shield hits.  Bogus!
 }
 
 int	Break_value = -1;
@@ -1081,8 +1024,6 @@ void shield_hit_init() {}
 void create_shield_explosion_all(object *objp) {}
 void shield_frame_init() {}
 void add_shield_point(int objnum, int tri_num, vector *hit_pos) {}
-void add_shield_point_multi(int objnum, int tri_num, vector *hit_pos) {}
-void shield_point_multi_setup() {}
 void shield_hit_close() {}
 void ship_draw_shield( object *objp) {}
 void shield_hit_page_in() {}

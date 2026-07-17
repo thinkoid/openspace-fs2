@@ -30,11 +30,9 @@
 #include "timer.h"
 #include "gamesequence.h"
 #include "missionmessage.h"
-#include "multiutil.h"
 #include "linklist.h"
 #include "missiongoals.h"
 #include "hudsquadmsg.h"
-#include "multi_obj.h"
 #include "observer.h"
 
 ////////////////////////////////////////////////////////////
@@ -255,7 +253,7 @@ void do_thrust_keys(control_info *ci)
 	ci->forward = check_control_timef(FORWARD_THRUST) - check_control_timef(REVERSE_THRUST);
 }
 
-// called by single and multiplayer modes to reset information inside of control info structure
+// reset information inside of control info structure
 void player_control_reset_ci( control_info *ci )
 {
 	float t1, t2, oldspeed;
@@ -610,12 +608,6 @@ void read_keyboard_controls( control_info * ci, float frame_time, physics_info *
 		//keyboard: fire the current primary weapon
 		if (check_control(FIRE_PRIMARY)) {
 			ci->fire_primary_count++;
-
-			// if we're a multiplayer client, set our accum bits now
-			// if((Game_mode & GM_MULTIPLAYER) && (Net_player != NULL) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER) && !(Netgame.debug_flags & NETD_FLAG_CLIENT_FIRING)){
-			// if((Game_mode & GM_MULTIPLAYER) && (Net_player != NULL) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER) && !(Netgame.debug_flags & NETD_FLAG_CLIENT_FIRING)){
-				// Net_player->s_info.accum_buttons |= OOC_FIRE_PRIMARY;
-			// }
 		}
 
 		// mouse: fire the current primary weapon
@@ -632,11 +624,6 @@ void read_keyboard_controls( control_info * ci, float frame_time, physics_info *
 		// keyboard: fire the current secondary weapon
 		if (check_control(FIRE_SECONDARY)) {
 			ci->fire_secondary_count++;
-
-			// if we're a multiplayer client, set our accum bits now
-			if((Game_mode & GM_MULTIPLAYER) && (Net_player != NULL) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER)){
-				Net_player->s_info.accum_buttons |= OOC_FIRE_SECONDARY;
-			}
 		}
 
 		// keyboard: launch countermeasures
@@ -644,11 +631,6 @@ void read_keyboard_controls( control_info * ci, float frame_time, physics_info *
 			control_used(LAUNCH_COUNTERMEASURE);
 			ci->fire_countermeasure_count++;
 			hud_gauge_popup_start(HUD_CMEASURE_GAUGE);
-
-			// if we're a multiplayer client, set our accum bits now
-			// if((Game_mode & GM_MULTIPLAYER) && (Net_player != NULL) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER) && !(Netgame.debug_flags & NETD_FLAG_CLIENT_FIRING)){
-				// Net_player->s_info.accum_buttons |= OOC_FIRE_COUNTERMEASURE;
-			// }
 		}
 
 		// see if the afterburner has been started (keyboard + joystick)
@@ -829,11 +811,6 @@ void player_match_target_speed(char *no_target_text, char *match_off_text, char 
 		return;
 	}
 
-	// multiplayer observers can't match target speed
-	if((Game_mode & GM_MULTIPLAYER) && (Net_player != NULL) && ((Net_player->flags & NETINFO_FLAG_OBSERVER) || (Player_obj->type == OBJ_OBSERVER)) ){
-		return;
-	}
-
 	if ( Player_ai->target_objnum == -1) {
 		if ( no_target_text ) {
 			if ( no_target_text[0] ) {
@@ -954,24 +931,18 @@ void player_save_target_and_weapon_link_prefs()
 
 
 	if ( Player->flags & PLAYER_FLAGS_AUTO_MATCH_SPEED ) {
-		// multiplayer observers can't match target speed
-		if(!((Game_mode & GM_MULTIPLAYER) && (Net_player != NULL) && ((Net_player->flags & NETINFO_FLAG_OBSERVER) || (Player_obj->type == OBJ_OBSERVER))) ){				
-			Player->save_flags |= PLAYER_FLAGS_AUTO_MATCH_SPEED;
-		}		
+		Player->save_flags |= PLAYER_FLAGS_AUTO_MATCH_SPEED;
 	}
 
-	// if we're in multiplayer mode don't do this because we will desync ourselves with the server
-	if(!(Game_mode & GM_MULTIPLAYER)){
-		if ( Player_ship->flags & SF_PRIMARY_LINKED ) {
-			Player->save_flags |= PLAYER_FLAGS_LINK_PRIMARY;
-		} else {
-			Player->flags &= ~PLAYER_FLAGS_LINK_PRIMARY;
-		}
-		if ( Player_ship->flags & SF_SECONDARY_DUAL_FIRE ) {
-			Player->save_flags |= PLAYER_FLAGS_LINK_SECONDARY;
-		} else {
-			Player->flags &= ~PLAYER_FLAGS_LINK_SECONDARY;
-		}
+	if ( Player_ship->flags & SF_PRIMARY_LINKED ) {
+		Player->save_flags |= PLAYER_FLAGS_LINK_PRIMARY;
+	} else {
+		Player->flags &= ~PLAYER_FLAGS_LINK_PRIMARY;
+	}
+	if ( Player_ship->flags & SF_SECONDARY_DUAL_FIRE ) {
+		Player->save_flags |= PLAYER_FLAGS_LINK_SECONDARY;
+	} else {
+		Player->flags &= ~PLAYER_FLAGS_LINK_SECONDARY;
 	}
 }
 
@@ -1140,11 +1111,6 @@ void player_stop_cargo_scan_sound()
 
 int player_process_pending_praise()
 {
-	// in multiplayer, never praise
-	if(Game_mode & GM_MULTIPLAYER){
-		return 0;
-	}
-
 	if ( timestamp_elapsed(Player->praise_delay_timestamp) ) {
 		int ship_index;
 
@@ -1153,7 +1119,7 @@ int player_process_pending_praise()
 		if ( ship_index >= 0 ) {
 			// Only praise if above 50% integrity
 			if ( Objects[Ships[ship_index].objnum].hull_strength/Ship_info[Ships[ship_index].ship_info_index].initial_hull_strength > 0.5f ) {
-				message_send_builtin_to_player(MESSAGE_PRAISE, &Ships[ship_index], MESSAGE_PRIORITY_HIGH, MESSAGE_TIME_SOON, 0, 0, -1, -1);
+				message_send_builtin_to_player(MESSAGE_PRAISE, &Ships[ship_index], MESSAGE_PRIORITY_HIGH, MESSAGE_TIME_SOON, 0, 0);
 				Player->allow_praise_timestamp = timestamp(PLAYER_ALLOW_PRAISE_INTERVAL*(Game_skill_level+1) );
 				Player->allow_scream_timestamp = timestamp(20000);		// prevent death scream following praise
 				Player->praise_count++;
@@ -1200,8 +1166,6 @@ int player_inspect_cargo(float frametime, char *outstr)
 	}
 
 	// check if target is ship class that can be inspected
-	// MWA -- 1/27/98 -- added fighters/bombers to this list.  For multiplayer, we
-	// want to show callsign of player
 
 	// scannable cargo behaves differently.  Scannable cargo is either "scanned" or "not scanned".  This flag
 	// can be set on any ship.  Any ship with this set won't have "normal" cargo behavior
@@ -1210,15 +1174,7 @@ int player_inspect_cargo(float frametime, char *outstr)
 			if ( !(cargo_sip->flags & (SIF_CARGO|SIF_TRANSPORT)) ) {
 				return 0;
 			}
-		} else {
-			if ( !(cargo_sip->flags & (SIF_CARGO|SIF_TRANSPORT|SIF_FIGHTER|SIF_BOMBER)) ) {
-				return 0;
-			}
 		}
-
-		// won't show callsign information for single player games
-		if ( (Game_mode & GM_MULTIPLAYER) && !((cargo_sip->flags & (SIF_FIGHTER|SIF_BOMBER)) && (cargo_objp->flags & OF_PLAYER_SHIP)) )
-			return 0;
 	}
 
 	// if cargo is already revealed
@@ -1228,25 +1184,10 @@ int player_inspect_cargo(float frametime, char *outstr)
 			cargo_name = Cargo_names[cargo_sp->cargo1 & CARGO_INDEX_MASK];
 			Assert ( cargo_name );
 
-			if ( cargo_sip->flags & (SIF_CARGO|SIF_TRANSPORT) ) {
-				if ( cargo_name[0] == '#' )
-					sprintf(outstr, XSTR( "passengers:\n   %s", 83), cargo_name+1 );
-				else
-					sprintf(outstr,XSTR( "cargo: %s", 84), cargo_name );
-			} else {
-				int pn;
-
-				Assert( Game_mode & GM_MULTIPLAYER );
-
-				// get a player num from the object, then get a callsign from the player structure.
-				pn = multi_find_player_by_object( cargo_objp );
-				// Assert( pn != -1 );
-				if(pn == -1){
-					strcpy(outstr, "");
-				} else {
-					sprintf(outstr, "%s", Net_players[pn].player->short_callsign );
-				}
-			}
+			if ( cargo_name[0] == '#' )
+				sprintf(outstr, XSTR( "passengers:\n   %s", 83), cargo_name+1 );
+			else
+				sprintf(outstr,XSTR( "cargo: %s", 84), cargo_name );
 		} else {
 			sprintf(outstr, XSTR( "Scanned", 85) );
 		}
@@ -1383,8 +1324,8 @@ int player_inspect_cap_subsys_cargo(float frametime, char *outstr)
 		sprintf(outstr,XSTR( "cargo: inspecting", 88));
 
 		if ( Player->cargo_inspect_time > cargo_sip->scan_time ) {
-			void ship_do_cap_subsys_cargo_revealed( ship *shipp, ship_subsys *subsys, int from_network );
-			ship_do_cap_subsys_cargo_revealed( cargo_sp, subsys, 0);
+			void ship_do_cap_subsys_cargo_revealed( ship *shipp, ship_subsys *subsys );
+			ship_do_cap_subsys_cargo_revealed( cargo_sp, subsys );
 			snd_play( &Snds[SND_CARGO_REVEAL], 0.0f );
 			Player->cargo_inspect_time = 0;
 		}
@@ -1533,7 +1474,7 @@ void player_show_death_message()
 
 extern void ai_fire_from_turret(ship *shipp, ship_subsys *ss, int parent_objnum);
 
-// maybe fire a turret that is on a player ship (single or multi)
+// maybe fire a turret that is on a player ship
 void player_maybe_fire_turret(object *objp)
 {
 	model_subsystem	*psub;
@@ -1579,10 +1520,6 @@ void player_set_next_all_alone_msg_timestamp()
 // maybe play message from Terran Command 'You're all alone now Alpha 1'
 void player_maybe_play_all_alone_msg()
 {
-	if ( Game_mode & GM_MULTIPLAYER ){
-		return;
-	}
-
 	if ( !Player_all_alone_msg_inited ) {
 		player_init_all_alone_msg();
 		Player_all_alone_msg_inited=1;
@@ -1631,7 +1568,7 @@ void player_maybe_play_all_alone_msg()
 
 	// met all the requirements, now only play 50% of the time :)
 	if ( rand()&1 ) {
-		message_send_builtin_to_player(MESSAGE_ALL_ALONE, NULL, MESSAGE_PRIORITY_HIGH, MESSAGE_TIME_ANYTIME, 0, 0, -1, -1);
+		message_send_builtin_to_player(MESSAGE_ALL_ALONE, NULL, MESSAGE_PRIORITY_HIGH, MESSAGE_TIME_ANYTIME, 0, 0);
 	}
 	Player->flags |= PLAYER_FLAGS_NO_CHECK_ALL_ALONE_MSG;
 } 
@@ -1735,11 +1672,6 @@ void player_get_eye(vector *eye_pos, matrix *eye_orient)
 
 	// if the player object is NULL, return
 	if(Player_obj == NULL){
-		return;
-	}
-
-	// standalone servers can bail here
-	if(Game_mode & GM_STANDALONE_SERVER){
 		return;
 	}
 

@@ -18,11 +18,8 @@
 #include "objectsnd.h"
 #include "linklist.h"
 #include "systemvars.h"
-#include "multi.h"
-#include "multimsgs.h"
 #include "particle.h"
 #include "freespace.h"
-#include "multiutil.h"
 #include "objcollide.h"
 #include "timer.h"
 
@@ -68,10 +65,6 @@ int Debris_textures[MAX_SPECIES_NAMES];
 static void debris_start_death_roll(object *debris_obj, debris *debris_p)
 {
 	if (debris_p->is_hull)	{
-		// tell everyone else to blow up the piece of debris
-		if( MULTIPLAYER_MASTER )
-			send_debris_update_packet(debris_obj,DEBRIS_UPDATE_NUKE);
-
 		int fireball_type = FIREBALL_EXPLOSION_LARGE1 + rand()%FIREBALL_NUM_LARGE_EXPLOSIONS;
 		fireball_create( &debris_obj->pos, fireball_type, OBJ_INDEX(debris_obj), debris_obj->radius*1.75f);
 
@@ -235,30 +228,15 @@ void debris_delete( object * obj )
 	Num_debris_pieces--;
 }
 
-//	If debris piece *db is far away from all players, make it go away very soon.
-//	In single player game, delete if MAX_DEBRIS_DIST from player.
-//	In multiplayer game, delete if MAX_DEBRIS_DIST from all players.
+//	If debris piece *db is far away from the player, make it go away very soon.
+//	Delete if MAX_DEBRIS_DIST from player.
 void maybe_delete_debris(debris *db)
 {
-	object	*objp;
-
 	if (timestamp_elapsed(db->next_distance_check)) {
-		if (!(Game_mode & GM_MULTIPLAYER)) {		//	In single player game, just check against player.
-			if (vm_vec_dist_quick(&Player_obj->pos, &Objects[db->objnum].pos) > MAX_DEBRIS_DIST)
-				db->lifeleft = 0.1f;
-			else
-				db->next_distance_check = timestamp(DEBRIS_DISTANCE_CHECK_TIME);
-		} else {
-			for ( objp = GET_FIRST(&obj_used_list); objp !=END_OF_LIST(&obj_used_list); objp = GET_NEXT(objp) ) {
-				if (objp->flags & OF_PLAYER_SHIP) {
-					if (vm_vec_dist_quick(&objp->pos, &Objects[db->objnum].pos) < MAX_DEBRIS_DIST) {
-						db->next_distance_check = timestamp(DEBRIS_DISTANCE_CHECK_TIME);
-						return;
-					}
-				}
-			}
+		if (vm_vec_dist_quick(&Player_obj->pos, &Objects[db->objnum].pos) > MAX_DEBRIS_DIST)
 			db->lifeleft = 0.1f;
-		}
+		else
+			db->next_distance_check = timestamp(DEBRIS_DISTANCE_CHECK_TIME);
 	}
 }
 
@@ -571,12 +549,7 @@ object *debris_create(object *source_obj, int model_num, int submodel_num, vecto
 	
 	obj = &Objects[objnum];
 
-	// assign the network signature.  The signature will be 0 for non-hull pieces, but since that
-	// is our invalid signature, it should be okay.
 	obj->net_signature = 0;
-	if ( (Game_mode & GM_MULTIPLAYER) && hull_flag ) {
-		obj->net_signature = multi_get_next_network_signature( MULTI_SIG_DEBRIS );
-	}
 
 	// -- No long need shield: bset_shield_strength(obj, 100.0f);		//	Hey!  Set to some meaningful value!
 
@@ -751,11 +724,6 @@ void debris_hit(object *debris_obj, object *other_obj, vector *hitpos, float dam
 		particle_emit( &pe, PARTICLE_FIRE, 0 );
 	}
 
-	// multiplayer clients bail here
-	if(MULTIPLAYER_CLIENT){
-		return;
-	}
-
 	if ( damage < 0.0f ) {
 		damage = 0.0f;
 	}
@@ -764,11 +732,6 @@ void debris_hit(object *debris_obj, object *other_obj, vector *hitpos, float dam
 
 	if (debris_obj->hull_strength < 0.0f) {
 		debris_start_death_roll(debris_obj, debris_p );
-	} else {
-		// otherwise, give all the other players an update on the debris
-		if(MULTIPLAYER_MASTER){
-			send_debris_update_packet(debris_obj,DEBRIS_UPDATE_UPDATE);
-		}
 	}
 }
 

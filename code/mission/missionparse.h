@@ -250,12 +250,10 @@ typedef struct p_object {
 	int	persona_index;
 	float	kamikaze_damage;					// base damage for a kamikaze attack
 	int	special_exp_index;
-	ushort net_signature;					// network signature this object can have
 
 	char	wing_status_wing_index;			// wing index (0-4) in wingman status gauge
 	char	wing_status_wing_pos;			// wing position (0-5) in wingman status gauge
 
-	uint	respawn_count;						// number of respawns for this object.  Applies only to player wing ships in multiplayer
 	int	respawn_priority;					// priority this ship has for controlling respawn points
 
 	char	alt_type_index;					// optional alt type index
@@ -355,18 +353,14 @@ extern char Neb2_texture_name[MAX_FILENAME_LEN];
 int parse_main(char *mission_name, int flags = 0);
 int mission_parse_ship_arrived(char *shipname);
 p_object *mission_parse_get_arrival_ship( char *name );
-p_object *mission_parse_get_arrival_ship( ushort net_signature );
-p_object *mission_parse_get_original_ship( ushort net_signature );
 int parse_create_object(p_object *objp);
 
 // used in squadmate messaging stuff to create wings from reinforcements.
-int parse_wing_create_ships(wing *wingp, int num_to_create, int force = 0, int specific_instance = -1 );
+int parse_wing_create_ships(wing *wingp, int num_to_create);
 
 // function for getting basic mission data without loading whole mission
 int mission_parse_is_multi(char *filename, char *mission_name );
-int mission_parse_get_multi_mission_info(char *filename);
 
-// called externally from multiplayer code
 void mission_do_departure(object *objp);
 
 // called externally from Freespace.cpp

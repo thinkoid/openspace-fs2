@@ -77,11 +77,6 @@ void supernova_start(int seconds)
 		return;
 	}
 
-	// no supernova in multiplayer
-	if(Game_mode & GM_MULTIPLAYER){
-		return;
-	}
-
 	// only good if we have one sun
 	if(Num_suns != 1){
 		return;

@@ -10,6 +10,22 @@
 #ifndef _AI_H
 #define _AI_H
 
+// codes for the "what happened" argument of ai_do_objects_repairing_stuff().
+// retail defined these in network/multi.h (they doubled as packet codes);
+// hoisted here in the multiplayer excision -- the repair/rearm state machine
+// dispatches on them in single player too.
+#define REPAIR_INFO_BEGIN			0x1
+#define REPAIR_INFO_END				0x2
+#define REPAIR_INFO_UPDATE			0x3
+#define REPAIR_INFO_QUEUE			0x4
+#define REPAIR_INFO_ABORT			0x5
+#define REPAIR_INFO_BROKEN			0x6
+#define REPAIR_INFO_WARP_ADD		0x7
+#define REPAIR_INFO_WARP_REMOVE	0x8
+#define REPAIR_INFO_ONWAY			0x9
+#define REPAIR_INFO_KILLED			0xa
+#define REPAIR_INFO_COMPLETE		0xb
+
 #include "pstypes.h"
 #include "object.h"
 #include "parselo.h"

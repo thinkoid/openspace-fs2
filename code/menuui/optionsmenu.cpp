@@ -20,13 +20,10 @@
 #include "eventmusic.h"
 #include "mainhallmenu.h"
 #include "audiostr.h"
-#include "multi.h"
-#include "psnet.h"
 #include "popup.h"
 #include "popupdead.h"
 #include "missionbriefcommon.h"
 #include "optionsmenu.h"
-#include "optionsmenumulti.h"
 #include "joy.h"
 #include "mouse.h"
 #include "osregistry.h"
@@ -40,41 +37,40 @@
 #define OPTIONS_NOTIFY_TIME			3500
 #define OPTIONS_NOTIFY_Y            450
 
-#define NUM_BUTTONS	24
+#define NUM_BUTTONS	23
 #define NUM_ANIS		4
-#define NUM_TABS		3
+#define NUM_TABS		2
 #define NUM_COMMONS	10
 
 #define TABLESS							999
 
 #define OPTIONS_TAB						0
-#define MULTIPLAYER_TAB					1
-#define DETAIL_LEVELS_TAB 				2
-#define ABORT_GAME_BUTTON				3
-#define CONTROL_CONFIG_BUTTON			4
-#define HUD_CONFIG_BUTTON				5
-#define ACCEPT_BUTTON					6
+#define DETAIL_LEVELS_TAB 				1
+#define ABORT_GAME_BUTTON				2
+#define CONTROL_CONFIG_BUTTON			3
+#define HUD_CONFIG_BUTTON				4
+#define ACCEPT_BUTTON					5
 
-#define BRIEF_VOICE_OFF					7
-#define BRIEF_VOICE_ON					8
-#define MOUSE_OFF							9
-#define MOUSE_ON							10
-#define GAMMA_DOWN						11
-#define GAMMA_UP							12
+#define BRIEF_VOICE_OFF					6
+#define BRIEF_VOICE_ON					7
+#define MOUSE_OFF							8
+#define MOUSE_ON							9
+#define GAMMA_DOWN						10
+#define GAMMA_UP							11
 
 // detail level screen buttons
-#define PLANETS_ON						13
-#define PLANETS_OFF						14
-#define HUD_TARGETVIEW_RENDER_ON		15
-#define HUD_TARGETVIEW_RENDER_OFF	16
-#define WEAPON_EXTRAS_ON				17
-#define WEAPON_EXTRAS_OFF				18
+#define PLANETS_ON						12
+#define PLANETS_OFF						13
+#define HUD_TARGETVIEW_RENDER_ON		14
+#define HUD_TARGETVIEW_RENDER_OFF	15
+#define WEAPON_EXTRAS_ON				16
+#define WEAPON_EXTRAS_OFF				17
 
-#define LOW_DETAIL_N						19
-#define MEDIUM_DETAIL_N					20
-#define HIGH_DETAIL_N					21
-#define VERY_HIGH_DETAIL_N				22
-#define CUSTOM_DETAIL_N					23
+#define LOW_DETAIL_N						18
+#define MEDIUM_DETAIL_N					19
+#define HIGH_DETAIL_N					20
+#define VERY_HIGH_DETAIL_N				21
+#define CUSTOM_DETAIL_N					22
 
 #define REPEAT						(1<<0)
 #define NO_MOUSE_OVER_SOUND	(1<<1)
@@ -99,7 +95,6 @@ struct options_buttons {
 options_buttons Buttons[GR_NUM_RESOLUTIONS][NUM_BUTTONS] = {
 	{	// GR_640
 		options_buttons("OPT_00",	17,	2,		0,		-1),							// options tab
-		options_buttons("OPT_01",	102,	2,		1,		-1),							// multiplayer tab
 		options_buttons("OPT_02",	170,	2,		2,		-1),							// detail levels tab
 		options_buttons("OPT_03",	10,	444,	3,		-1),							// abort game button
 		options_buttons("OPT_04",	411,	444,	4,		-1),							// control config button
@@ -128,7 +123,6 @@ options_buttons Buttons[GR_NUM_RESOLUTIONS][NUM_BUTTONS] = {
 	},
 	{	// GR_1024
 		options_buttons("2_OPT_00",	27,	4,		0,		-1),						// options tab
-		options_buttons("2_OPT_01",	164,	4,		1,		-1),						// multiplayer tab
 		options_buttons("2_OPT_02",	272,	4,		2,		-1),						// detail levels tab
 		options_buttons("2_OPT_03",	16,	711,	3,		-1),						// abort game
 		options_buttons("2_OPT_04",	657,	711,	4,		-1),						// control config button
@@ -209,12 +203,10 @@ static struct {
 //XSTR:OFF
 	{	// GR_640
 		{ "OptionsMain", "OptionsMain-M"},
-		{ "OptionsMulti", "OptionsMulti-M"},
 		{ "OptionsDetail", "OptionsDetail-M"},
 	},
 	{	// GR_1024
 		{ "2_OptionsMain", "2_OptionsMain-M"},
-		{ "2_OptionsMulti", "2_OptionsMulti-M"},
 		{ "2_OptionsDetail", "2_OptionsDetail-M"},
 	}
 //XSTR:ON
@@ -222,7 +214,6 @@ static struct {
 
 static int Tab = 0;
 static int Options_menu_inited = 0;
-static int Options_multi_inited = 0;
 static int Options_detail_inited = 0;
 static int Button_bms[NUM_COMMONS][MAX_BMAPS_PER_GADGET];
 
@@ -341,12 +332,11 @@ void options_detail_do_frame();
 void options_detail_set_level(int level);
 
 // text
-#define OPTIONS_NUM_TEXT				49
+#define OPTIONS_NUM_TEXT				48
 UI_XSTR Options_text[GR_NUM_RESOLUTIONS][OPTIONS_NUM_TEXT] = {
 	{ // GR_640
 		// common text
 		{ "Options",	1036,		10,	35,	UI_XSTR_COLOR_GREEN,	-1, &Buttons[0][OPTIONS_TAB].button },
-		{ "Multi",		1042,		97,	35,	UI_XSTR_COLOR_GREEN,	-1, &Buttons[0][MULTIPLAYER_TAB].button },
 		{ "Detail",		1351,		166,	35,	UI_XSTR_COLOR_GREEN,	-1, &Buttons[0][DETAIL_LEVELS_TAB].button },
 		{ "Exit",		1059,		8,		417,	UI_XSTR_COLOR_PINK,	-1, &Buttons[0][ABORT_GAME_BUTTON].button },
 		{ "Game",		1412,		8,		430,	UI_XSTR_COLOR_PINK,	-1, &Buttons[0][ABORT_GAME_BUTTON].button },
@@ -402,7 +392,6 @@ UI_XSTR Options_text[GR_NUM_RESOLUTIONS][OPTIONS_NUM_TEXT] = {
 	{ // GR_1024
 			// common text
 		{ "Options",	1036,		16,	57,	UI_XSTR_COLOR_GREEN,	-1, &Buttons[1][OPTIONS_TAB].button },
-		{ "Multi",		1042,		172,	57,	UI_XSTR_COLOR_GREEN,	-1, &Buttons[1][MULTIPLAYER_TAB].button },
 		{ "Detail",		1351,		283,	57,	UI_XSTR_COLOR_GREEN,	-1, &Buttons[1][DETAIL_LEVELS_TAB].button },
 		{ "Exit",		1059,		13,	685,	UI_XSTR_COLOR_PINK,	-1, &Buttons[1][ABORT_GAME_BUTTON].button },
 		{ "Game",		1412,		13,	696,	UI_XSTR_COLOR_PINK,	-1, &Buttons[1][ABORT_GAME_BUTTON].button },
@@ -513,10 +502,8 @@ void options_tab_setup(int set_palette)
 	int i;
 	int flags[256];
 
-	if (Tab != MULTIPLAYER_TAB) {
-		Assert(Backgrounds[gr_screen.res][Tab].mask >= 0);
-		Ui_window.set_mask_bmap(Backgrounds[gr_screen.res][Tab].mask, Backgrounds[gr_screen.res][Tab].mask_filename);
-	}
+	Assert(Backgrounds[gr_screen.res][Tab].mask >= 0);
+	Ui_window.set_mask_bmap(Backgrounds[gr_screen.res][Tab].mask, Backgrounds[gr_screen.res][Tab].mask_filename);
 
 	for (i=0; i<256; i++){
 		flags[i] = 0;
@@ -549,23 +536,13 @@ void options_tab_setup(int set_palette)
 		}		
 	}	
 
-	if( ((Game_mode & GM_IN_MISSION) && (!popupdead_is_active())) || (Game_mode & GM_MULTIPLAYER) ){
+	if( (Game_mode & GM_IN_MISSION) && (!popupdead_is_active()) ){
 		Options_sliders[gr_screen.res][OPT_SKILL_SLIDER].slider.disable();
 		Ui_window.use_hack_to_get_around_stupid_problem_flag = 0;
 	}
 
 	// do other special processing
 	switch (Tab) {
-		case MULTIPLAYER_TAB:
-#if !defined(DEMO) && !defined(OEM_BUILD) // not for FS2_DEMO
-			options_multi_select();
-			
-			// need to hide the hud config and control config buttons
-			// Buttons[gr_screen.res][CONTROL_CONFIG_BUTTON].button.hide();
-			// Buttons[gr_screen.res][HUD_CONFIG_BUTTON].button.hide();
-#endif // DEMO
-			break;
-
 		case DETAIL_LEVELS_TAB:
 			options_detail_unhide_stuff();	
 			break;
@@ -576,12 +553,6 @@ void options_tab_setup(int set_palette)
 void options_tab_close()
 {
 	switch (Tab) {
-		case MULTIPLAYER_TAB:
-#if !defined(DEMO) && !defined(OEM_BUILD) // not for FS2_DEMO
-			options_multi_unselect();		
-#endif
-			break;
-
 		case DETAIL_LEVELS_TAB:
 			options_detail_hide_stuff();
 			break;
@@ -592,26 +563,7 @@ void options_change_tab(int n)
 {
 	int idx;
 
-#if defined(DEMO) || defined(OEM_BUILD) // not for FS2_DEMO
-	if (n == MULTIPLAYER_TAB) {
-		game_feature_not_in_demo_popup();
-		return;
-	}
-#endif
-
 	switch (n) {
-		case MULTIPLAYER_TAB:
-			if ( !Options_multi_inited ) {
-				// init multiplayer
-#if !defined(DEMO) && !defined(OEM_BUILD) // not for FS2_DEMO
-				options_multi_init(&Ui_window);
-				options_multi_unselect();
-#endif
-				Options_multi_inited = 1;
-			}
-
-			break;
-
 		case DETAIL_LEVELS_TAB:
 			if (!Options_detail_inited) {
 				// init detail levels
@@ -640,11 +592,9 @@ void options_change_tab(int n)
 		}
 	}
 
-	if (n != MULTIPLAYER_TAB) {
-		if (Backgrounds[gr_screen.res][n].mask < 0) {
-			gamesnd_play_iface(SND_GENERAL_FAIL);
-			return;
-		}
+	if (Backgrounds[gr_screen.res][n].mask < 0) {
+		gamesnd_play_iface(SND_GENERAL_FAIL);
+		return;
 	}
 
 	options_tab_close();
@@ -678,9 +628,7 @@ void options_cancel_exit()
 	Master_voice_volume = Backup_voice_volume;
 	set_voice_volume();
 
-	if(!(Game_mode & GM_MULTIPLAYER)){
-		Game_skill_level = Backup_skill_level;
-	}
+	Game_skill_level = Backup_skill_level;
 
 	Briefing_voice_enabled = Backup_briefing_voice_enabled;
 	Use_mouse_to_fly = Backup_use_mouse_to_fly;
@@ -718,10 +666,9 @@ void options_button_pressed(int n)
 {
 	int choice;	
 
-	switch (n) {		
+	switch (n) {
 		case OPTIONS_TAB:
-		case MULTIPLAYER_TAB:
-		case DETAIL_LEVELS_TAB:	
+		case DETAIL_LEVELS_TAB:
 			if (Tab != n)
 				options_change_tab(n);
 
@@ -729,7 +676,7 @@ void options_button_pressed(int n)
 
 		case ABORT_GAME_BUTTON:
 			gamesnd_play_iface(SND_USER_SELECT);
-			choice = popup( PF_NO_NETWORKING | PF_BODY_BIG, 2, POPUP_NO, POPUP_YES, XSTR( "Exit Game?", 374));
+			choice = popup( PF_BODY_BIG, 2, POPUP_NO, POPUP_YES, XSTR( "Exit Game?", 374));
 			if ( choice == 1 )
 				gameseq_post_event(GS_EVENT_QUIT_GAME);
 			break;
@@ -743,13 +690,6 @@ void options_button_pressed(int n)
 #ifdef FS2_DEMO
 			game_feature_not_in_demo_popup();
 #else
-			// can't go to the hud config screen when a multiplayer observer
-			if((Game_mode & GM_MULTIPLAYER) && (Net_player->flags & NETINFO_FLAG_OBSERVER)){
-				gamesnd_play_iface(SND_GENERAL_FAIL);
-				options_add_notify(XSTR( "Cannot use HUD config when an observer!", 375));
-				break;
-			}
-
 			gamesnd_play_iface(SND_SWITCH_SCREENS);
 			gameseq_post_event(GS_EVENT_HUD_CONFIG);
 #endif
@@ -900,13 +840,6 @@ void options_sliders_update()
 
 void options_accept()
 {
-	// apply the selected multiplayer options
-	if ( Options_multi_inited ) {
-		#if !defined(DEMO) && !defined(OEM_BUILD) // not for FS2_DEMO
-		options_multi_accept();
-		#endif
-	}
-
 	// If music is zero volume, disable
 	if ( Master_event_music_volume <= 0.0f ) {
 //		event_music_disable();
@@ -1015,7 +948,7 @@ void options_menu_init()
 	}	
 
 	// maybe disable the skill slider
-	if( ((Game_mode & GM_IN_MISSION) && (!popupdead_is_active())) || (Game_mode & GM_MULTIPLAYER) ) {
+	if( (Game_mode & GM_IN_MISSION) && (!popupdead_is_active()) ) {
 		Options_sliders[gr_screen.res][OPT_SKILL_SLIDER].slider.disable();
 		Ui_window.use_hack_to_get_around_stupid_problem_flag = 0;
 	}
@@ -1060,10 +993,6 @@ void options_menu_close()
 		Voice_vol_handle = -1;
 	}
 
-#if !defined(DEMO) && !defined(OEM_BUILD) // not for FS2_DEMO
-	options_multi_close();
-#endif
-
 	Ui_window.destroy();
 	common_free_interface_palette();		// restore game palette
 	write_pilot_file();
@@ -1074,7 +1003,6 @@ void options_menu_close()
 	//audiostream_unpause_all();
 	
 	Options_menu_inited = 0;
-	Options_multi_inited = 0;
 	Options_detail_inited = 0;
 
 
@@ -1173,13 +1101,6 @@ void options_menu_do_frame(float frametime)
 
 		case KEY_TAB:
 		case KEY_RIGHT:  // activate next tab
-			// check to see if the multiplayer options screen wants to eat the tab kay
-			if ((k == KEY_TAB) && (Tab == MULTIPLAYER_TAB)) {
-				if (options_multi_eat_tab()) {
-					break;
-				}
-			}
-
 			i = Tab + 1;
 			if (i >= NUM_TABS)
 				i = 0;
@@ -1204,9 +1125,7 @@ void options_menu_do_frame(float frametime)
 			break;
 
 		case KEY_ESC:
-			// if(Tab != MULTIPLAYER_TAB){
-				options_cancel_exit();
-			// }
+			options_cancel_exit();
 			break;
 
 		case KEY_CTRLED | KEY_ENTER:
@@ -1227,12 +1146,7 @@ void options_menu_do_frame(float frametime)
 
 	options_sliders_update();
 
-	// if we're in the multiplayer options tab, get the background bitmap from the options multi module
-	if(Tab == MULTIPLAYER_TAB){
-		i = options_multi_background_bitmap();
-	} else {
-		i = Backgrounds[gr_screen.res][Tab].bitmap;
-	}
+	i = Backgrounds[gr_screen.res][Tab].bitmap;
 
 	GR_MAYBE_CLEAR_RES(i);
 	if (i >= 0) {
@@ -1243,14 +1157,7 @@ void options_menu_do_frame(float frametime)
 	Ui_window.draw();
 
 	// NOTE : this must be done here so that any special drawing crap we do is not overwritten by the UI_WINDOW::draw() call
-	// do specific processing for the multiplayer tab
 	switch (Tab) {
-		case MULTIPLAYER_TAB:
-#if !defined(DEMO) && !defined(OEM_BUILD) // not for FS2_DEMO
-			options_multi_do(k);
-#endif
-			break;
-
 		case DETAIL_LEVELS_TAB:
 			options_detail_do_frame();
 			break;
@@ -1269,7 +1176,7 @@ void options_menu_do_frame(float frametime)
 		}
 	}
 
-	if ((i == NUM_TABS) /*&& (Tab != MULTIPLAYER_TAB)*/ ){
+	if (i == NUM_TABS){
 		Buttons[gr_screen.res][Tab].button.draw_forced(2);
 	}
 
@@ -1317,11 +1224,6 @@ void options_menu_do_frame(float frametime)
 	}
 	//==============================================================================
 
-	// maybe blit a waveform
-	if(Tab == MULTIPLAYER_TAB){
-		options_multi_vox_process_waveform();
-	}
-	
 /*  Debug code: Graphs the joystick range scaling
 {
 int joy_get_scaled_reading(int raw, int axn);

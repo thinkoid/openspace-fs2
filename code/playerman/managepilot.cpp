@@ -13,7 +13,6 @@
 #include "freespace.h"
 #include "hudsquadmsg.h"
 #include "sound.h"
-#include "multi.h"
 #include "eventmusic.h"
 #include "audiostr.h"
 #include "osregistry.h"
@@ -342,14 +341,6 @@ int read_pilot_file(char *callsign, int single, player *p)
 	strcpy( filename, callsign );
 	strcat( filename, NOX(".plr") );
 
-	// if we're a standalone server in multiplayer, just fill in some bogus values since we don't have a pilot file
-	if ((Game_mode & GM_MULTIPLAYER) && (Game_mode & GM_STANDALONE_SERVER)) {
-		memset(Player, 0, sizeof(player));
-		strcpy(Player->callsign, NOX("Standalone"));
-		strcpy(Player->short_callsign, NOX("Standalone"));
-		return 0;
-	}
-	
 	// see comments at the beginning of function
 	if (single) {
 		file = cfopen(filename, "rb", CFILE_NORMAL, CF_TYPE_SINGLE_PLAYERS);
@@ -527,19 +518,8 @@ int read_pilot_file(char *callsign, int single, player *p)
 	p->readyroom_listing_mode = cfread_int(file);
 	Briefing_voice_enabled = cfread_int(file);
 
-	// restore the default netgame protocol mode
-	int protocol_temp = cfread_int(file);
-	switch(protocol_temp){
-	// plain TCP
-	case NET_VMT:	
-	case NET_TCP:
-		Multi_options_g.protocol = NET_TCP;
-		break;
-	// IPX
-	case NET_IPX:		
-		Multi_options_g.protocol = NET_IPX;
-		break;			
-	}	
+	// the default netgame protocol mode - inert slot in the pilot file
+	cfread_int(file);
 
 	// restore wingman status used by red alert missions
 	red_alert_read_wingman_status(file, Player_file_version);
@@ -644,11 +624,6 @@ int write_pilot_file_core(player *p)
    int i, si_index, idx;
 	ubyte is_multi;
 	CFILE *file;
-
-	// never save a pilot file for the standalone server in multiplayer
-	if ((Game_mode & GM_MULTIPLAYER) && (Game_mode & GM_STANDALONE_SERVER)) {
-		return 0;
-	}
 
 	if (!p) {
 		Assert((Player_num >= 0) && (Player_num < MAX_PLAYERS));
@@ -790,12 +765,8 @@ int write_pilot_file_core(player *p)
 	cfwrite_int(p->readyroom_listing_mode, file);
    cfwrite_int(Briefing_voice_enabled, file);
 
-	// store the default netgame protocol mode for this pilot
-	if (Multi_options_g.protocol == NET_TCP) {		
-		cfwrite_int(NET_TCP, file);		
-	} else {
-		cfwrite_int(NET_IPX, file);
-	}	
+	// the default netgame protocol mode - inert slot in the pilot file (1 == NET_TCP, the retail default)
+	cfwrite_int(1, file);
 
 	red_alert_write_wingman_status(file);
 	pilot_write_techroom_data(file);
@@ -1022,12 +993,6 @@ void init_new_pilot(player *p, int reset)
 	p->stats.rank = RANK_ENSIGN;	
 
 	p->tips = 1;
-
-	Multi_options_g.protocol = NET_TCP;	
-
-	// initialize default multiplayer options
-	multi_options_set_netgame_defaults(&p->m_server_options);
-	multi_options_set_local_defaults(&p->m_local_options);
 
 	Player_loadout.filename[0] = 0;
 

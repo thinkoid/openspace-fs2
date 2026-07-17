@@ -8,11 +8,11 @@
 */ 
 
 #include "objcollide.h"
+#include "player.h"
 #include "object.h"
 #include "model.h"
 #include "ai.h"
 #include "ship.h"
-#include "multi.h"
 #include "freespace.h"
 #include "shiphit.h"
 #include "gamesnd.h"
@@ -62,15 +62,6 @@ int ships_are_docking(object *objp1, object *objp2)
 
 	aip1 = &Ai_info[shipp1->ai_index];
 	aip2 = &Ai_info[shipp2->ai_index];
-
-	// for multiplayer clients -- disable the collision stuff for support ships.
-	/*
-	if ( MULTIPLAYER_CLIENT ) {
-		if ( (Ship_info[shipp1->ship_info_index].flags & SIF_SUPPORT) || (Ship_info[shipp2->ship_info_index].flags & SIF_SUPPORT) ) {
-			return 1;
-		}
-	}
-	*/
 
 	if (aip1->ai_flags & AIF_DOCKED) {
 		if (aip1->dock_objnum == objp2-Objects){
@@ -170,10 +161,6 @@ int ship_ship_check_collision(collision_info_struct *ship_ship_hit_info, vector 
 	//	Apparently we're doing same team collisions.
 	//	But, if both are offscreen, ignore the collision
 	if (Ships[heavy_obj->instance].team == Ships[light_obj->instance].team) {
-//		if ((Game_mode & GM_MULTIPLAYER) || (!(heavy_obj->flags & OF_WAS_RENDERED) && !(light_obj->flags & OF_WAS_RENDERED)))
-		// mwa 4/28/98 -- don't understand why GM_MULTIPLAYER was included in this line.  All clients
-		// need to do all collisions for their own ship. removing the multiplayer part of next if statement.
-
 		if ( (!(heavy_obj->flags & OF_WAS_RENDERED) && !(light_obj->flags & OF_WAS_RENDERED)) ) {
 			return 0;
 		}

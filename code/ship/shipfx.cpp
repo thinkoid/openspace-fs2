@@ -14,20 +14,16 @@
 #include "debris.h"
 #include "hudtarget.h"
 #include "shipfx.h"
-#include "multi.h"
+#include "player.h"
 #include "gamesnd.h"
 #include "timer.h"
 #include "3d.h"			// needed for View_position, which is used when playing a 3D sound
-#include "multi.h"
-#include "multiutil.h"
 #include "hud.h"
 #include "fvi.h"
 #include "gamesequence.h"
 #include "lighting.h"
 #include "linklist.h"
 #include "particle.h"
-#include "multimsgs.h"
-#include "multiutil.h"
 #include "bmpman.h"
 #include "freespace.h"
 #include "muzzleflash.h"
@@ -298,19 +294,10 @@ void shipfx_blow_up_hull(object *obj, int model, vector *exp_center)
 {
 	int i;
 	polymodel * pm;
-	ushort sig_save;
 
 
 	pm = model_get(model);
 	if (!pm) return;
-
-	// in multiplayer, send a debris_hull_create packet.  Save/restore the debris signature
-	// when in misison only (since we can create debris pieces before mission starts)
-	sig_save = 0;
-	if ( (Game_mode & GM_MULTIPLAYER) && (Game_mode & GM_IN_MISSION) ) {
-		sig_save = multi_get_next_network_signature( MULTI_SIG_DEBRIS );
-		multi_set_network_signature( (ushort)(Ships[obj->instance].arrival_distance), MULTI_SIG_DEBRIS );
-	}
 
 	bool try_live_debris = true;
 	for (i=0; i<pm->num_debris_objects; i++ )	{
@@ -327,11 +314,6 @@ void shipfx_blow_up_hull(object *obj, int model, vector *exp_center)
 			}
 		}
 	}
-
-	// restore the ship signature to it's original value.
-	if ( (Game_mode & GM_MULTIPLAYER) && (Game_mode & GM_IN_MISSION) ) {
-		multi_set_network_signature( sig_save, MULTI_SIG_DEBRIS );
-	}
 }
 
 
@@ -341,14 +323,6 @@ void shipfx_blow_up_model(object *obj,int model, int submodel, int ndebris, vect
 {
 	int i;
 
-	// if in a multiplayer game -- seed the random number generator with a value that will be the same
-	// on all clients in the game -- the net_signature of the object works nicely -- since doing so should
-	// ensure that all pieces of debris will get scattered in same direction on all machines
-	if ( Game_mode & GM_MULTIPLAYER )
-		srand( obj->net_signature );
-
-	// made a change to allow anyone but multiplayer client to blow up hull.  Clients will do it when
-	// they get the create packet
 	if ( submodel == 0 ) {
 		shipfx_blow_up_hull(obj,model, exp_center );
 	}
@@ -525,7 +499,6 @@ void shipfx_warpin_start( object *objp )
 
 	// only move warp effect pos if not special warp in.
 	if (shipp->special_warp_objnum >= 0) {
-		Assert(!(Game_mode & GM_MULTIPLAYER));
 		polymodel *pm;
 		pm = model_get(shipp->modelnum);
 		vm_vec_scale_add(&shipp->warp_effect_pos, &objp->pos, &objp->orient.fvec, -pm->mins.z);
@@ -679,12 +652,6 @@ int compute_special_warpout_stuff(object *objp, float *speed, float *warp_time, 
 	vector	facing_normal, vec_to_knossos;
 	float		dist_to_plane;
 
-	// knossos warpout only valid in single player
-	if (Game_mode & GM_MULTIPLAYER) {
-		mprintf(("special warpout only for single player\n"));
-		return -1;
-	}
-
 	// find special warp ship reference
 	valid_refenence_ship = FALSE;
 	ref_objnum = Ships[objp->instance].special_warp_objnum;
@@ -836,11 +803,6 @@ void shipfx_warpout_start( object *objp )
 	// post a warpin event
 	if(Game_mode & GM_DEMO_RECORD){
 		demo_POST_warpout(objp->signature, shipp->flags);
-	}
-
-	// don't send ship depart packets for player ships
-	if ( (MULTIPLAYER_MASTER) && !(objp->flags & OF_PLAYER_SHIP) ){
-		send_ship_depart_packet( objp );
 	}
 
 	// don't do departure wormhole if ship flag is set which indicates no effect

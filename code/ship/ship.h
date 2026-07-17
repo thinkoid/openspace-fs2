@@ -13,7 +13,6 @@
 #include "parselo.h"		// for defintions of token lengths -- maybe move this elsewhere later
 #include "model.h"
 #include "2d.h"			// for color def
-#include "multi_obj.h"
 #include "trails.h"
 #include "palman.h"
 
@@ -395,7 +394,6 @@ typedef struct ship {
 
 	uint	create_time;						// time ship was created, set by gettime()
 
-	// keep multiplayer specific stuff below this point	
 	int	ts_index;							// index into the team select and Wss_slots array (or -1 if not in one of those arrays)
 
 	int	large_ship_blowup_index;			// -1 if not a large ship exploding, else this is an index used by the shipfx large ship exploding code.
@@ -421,9 +419,6 @@ typedef struct ship {
 	fix	time_first_tagged;
 	float level2_tag_total;							// total tag time
 	float level2_tag_left;							// total tag remaining	
-
-	// old-style object update stuff
-	np_update		np_updates[MAX_PLAYERS];	// for both server and client
 
 	// lightning timestamp
 	int lightning_stamp;
@@ -736,7 +731,6 @@ typedef struct wing {
 
 	ai_goal	ai_goals[MAX_AI_GOALS];			// goals for the wing -- converted to ai_goal struct
 
-	ushort	net_signature;						// starting net signature for ships in this wing. assiged at mission load time
 
 } wing;
 
@@ -846,8 +840,6 @@ extern void shield_hit_init();
 extern void create_shield_explosion_all(object *objp);
 extern void shield_frame_init();
 extern void add_shield_point(int objnum, int tri_num, vector *hit_pos);
-extern void add_shield_point_multi(int objnum, int tri_num, vector *hit_pos);
-extern void shield_point_multi_setup();
 extern void shield_hit_close();
 
 void ship_draw_shield( object *objp);
@@ -923,7 +915,7 @@ ship_subsys *ship_return_next_subsys(ship *shipp, int type, vector *attacker_pos
 #define SHIP_GET_ONLY_PLAYERS			2
 
 extern int ship_get_random_team_ship( int team, int flags = SHIP_GET_ANY_SHIP, float max_dist=0.0f );
-extern int ship_get_random_player_wing_ship( int flags = SHIP_GET_ANY_SHIP, float max_dist=0.0f, int persona_index = -1, int get_first=0, int multi_team = -1 );
+extern int ship_get_random_player_wing_ship( int flags = SHIP_GET_ANY_SHIP, float max_dist=0.0f, int persona_index = -1, int get_first=0 );
 extern int ship_get_random_ship_in_wing(int wingnum, int flags = SHIP_GET_ANY_SHIP, float max_dist=0.0f, int get_first=0 );
 
 // return ship index
@@ -957,13 +949,10 @@ void	ship_maybe_scream(ship *sp);
 void	ship_maybe_tell_about_rearm(ship *sp);
 void	ship_maybe_lament();
 
-void ship_primary_changed(ship *sp);
-void ship_secondary_changed(ship *sp);
-
 // get the Ship_info flags for a given ship
 int ship_get_SIF(ship *shipp);
 int ship_get_SIF(int sh);
-extern void ship_do_cargo_revealed( ship *shipp, int from_network = 0 );
+extern void ship_do_cargo_revealed( ship *shipp );
 
 float ship_get_secondary_weapon_range(ship *shipp);
 int get_max_ammo_count_for_bank(int ship_class, int bank, int ammo_type);

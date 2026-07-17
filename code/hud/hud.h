@@ -156,12 +156,8 @@ int	hud_wing_slot_from_name(char *name);
 int	hud_support_get_dock_time( int objnum );
 void	hud_show_radar();
 void	hud_show_target_model();
-void	hud_show_voice_status();
 
 void	hud_subspace_notify_abort();
-
-// render multiplayer text message currently being entered if any
-void hud_maybe_render_multi_text();
 
 int	hud_disabled();
 int hud_support_find_closest( int objnum );
@@ -171,7 +167,6 @@ void hud_toggle_contrast();
 void hud_set_contrast(int high);
 
 //	Return mask of enemies.
-//	Works in team vs. team multiplayer.
 int opposing_team_mask(int team_mask);
 
 #endif	/* __HUD_H__ */

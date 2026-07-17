@@ -32,8 +32,6 @@
 #include "radar.h"
 #include "ai.h"
 #include "sound.h"
-#include "multi.h"
-#include "multimsgs.h"
 #include "linklist.h"
 #include "timer.h"
 #include "gamesnd.h"
@@ -42,7 +40,6 @@
 #include "model.h"
 #include "staticrand.h"
 #include "swarm.h"
-#include "multiutil.h"
 #include "shiphit.h"
 #include "trails.h"
 #include "hud.h"
@@ -51,7 +48,6 @@
 #include "particle.h"
 #include "asteroid.h"
 #include "joy_ff.h"
-#include "multi_obj.h"
 #include "corkscrew.h"
 #include "emp.h"
 #include "localize.h"
@@ -277,8 +273,6 @@ void weapon_maybe_alert_cmeasure_success(object *objp)
 		if ( cmp->source_objnum == OBJ_INDEX(Player_obj) ) {
 			hud_start_text_flash(XSTR("Evaded", 1430), 800);
 			snd_play(&Snds[SND_MISSILE_EVADED_POPUP]);
-		} else if ( Objects[cmp->source_objnum].flags & OF_PLAYER_SHIP ) {
-			send_countermeasure_success_packet( cmp->source_objnum );
 		}
 	}
 }
@@ -1341,7 +1335,7 @@ void detonate_nearby_missiles(cmeasure *cmp)
 //	Find an object for weapon #num (object *weapon_objp) to home on due to heat.
 void find_homing_object(object *weapon_objp, int num)
 {
-	object		*objp, *old_homing_objp;
+	object		*objp;
 	weapon_info	*wip;
 	weapon		*wp;
 	float			best_dist;
@@ -1351,10 +1345,6 @@ void find_homing_object(object *weapon_objp, int num)
 	wip = &Weapon_info[Weapons[num].weapon_info_index];
 
 	best_dist = 99999.9f;
-
-	// save the old homing object so that multiplayer servers can give the right information
-	// to clients if the object changes
-	old_homing_objp = wp->homing_object;
 
 	wp->homing_object = &obj_used_list;
 
@@ -1379,13 +1369,9 @@ void find_homing_object(object *weapon_objp, int num)
 
 					//	MK, 9/4/99.
 					//	If this is a player object, make sure there aren't already too many homers.
-					//	Only in single player.  In multiplayer, we don't want to restrict it in dogfight on team vs. team.
-					//	For co-op, it's probably also OK.
-					if (!( Game_mode & GM_MULTIPLAYER )) {
-						int	num_homers = compute_num_homing_objects(objp);
-						if (Max_allowed_player_homers[Game_skill_level] < num_homers)
-							continue;
-					}
+					int	num_homers = compute_num_homing_objects(objp);
+					if (Max_allowed_player_homers[Game_skill_level] < num_homers)
+						continue;
 				}
 
 				dist = vm_vec_normalized_dir(&vec_to_object, &objp->pos, &weapon_objp->pos);
@@ -1413,11 +1399,6 @@ void find_homing_object(object *weapon_objp, int num)
 
 	if (wp->homing_object == Player_obj)
 		weapon_maybe_play_warning(wp);
-
-	// if the old homing object is different that the new one, send a packet to clients
-	if ( MULTIPLAYER_MASTER && (old_homing_objp != wp->homing_object) ) {
-		send_homing_weapon_info( num );
-	}
 }
 
 //	Scan all countermeasures.  Maybe make weapon_objp home on it.
@@ -1504,12 +1485,8 @@ void find_homing_object_by_sig(object *weapon_objp, int sig)
 {
 	ship_obj		*sop;
 	weapon		*wp;
-	object		*old_homing_objp;
 
 	wp = &Weapons[weapon_objp->instance];
-
-	// save the old object so that multiplayer masters know whether to send a homing update packet
-	old_homing_objp = wp->homing_object;
 
 	sop = GET_FIRST(&Ship_obj_list);
 	while(sop != END_OF_LIST(&Ship_obj_list)) {
@@ -1524,12 +1501,6 @@ void find_homing_object_by_sig(object *weapon_objp, int sig)
 
 		sop = sop->next;
 	}
-
-	// if the old homing object is different that the new one, send a packet to clients
-	if ( MULTIPLAYER_MASTER && (old_homing_objp != wp->homing_object) ) {
-		send_homing_weapon_info( weapon_objp->instance );
-	}
-
 }
 
 //	Make weapon num home.  It's also object *obj.
@@ -1714,14 +1685,6 @@ void weapon_home(object *obj, int num, float frame_time)
 
 							// determine the player
 							pp = Player;
-							if ( Game_mode & GM_MULTIPLAYER ) {
-								int pnum;
-
-								pnum = multi_find_player_by_object( &Objects[obj->parent] );
-								if ( pnum != -1 ){
-									pp = Net_players[pnum].player;
-								}
-							}
 
 							// If player has apect lock, we don't want to find a homing point on the closest
 							// octant... setting the timestamp to 0 ensures this.
@@ -1928,12 +1891,7 @@ void weapon_maybe_play_flyby_sound(object *weapon_objp, weapon *wp)
 	}
 }
 
-// process a weapon after physics movement.  MWA reorders some of the code on 8/13 for multiplayer.  When
-// adding something to this function, decide whether or not a client in a multiplayer game needs to do
-// what is normally done in a single player game.  Things like plotting an object on a radar, effect
-// for exhaust are things that are done on all machines.  Things which calculate weapon targets, new
-// velocities, etc, are server only functions and should go after the if ( !MULTIPLAYER_MASTER ) statement
-// See Allender if you cannot decide what to do.
+// process a weapon after physics movement
 void weapon_process_post(object * obj, float frame_time)
 {
 	int			num;	
@@ -1956,19 +1914,12 @@ void weapon_process_post(object * obj, float frame_time)
 	wp->lifeleft -= frame_time;
 	wip = &Weapon_info[wp->weapon_info_index];
 
-	// check life left.  Multiplayer client code will go through here as well.  We must be careful in weapon_hit
+	// check life left.  We must be careful in weapon_hit
 	// when killing a missile that spawn child weapons!!!!
 	if ( wp->lifeleft < 0.0f ) {
 		if ( wip->subtype & WP_MISSILE ) {
-			if(Game_mode & GM_MULTIPLAYER){				
-				if ( !MULTIPLAYER_CLIENT || (MULTIPLAYER_CLIENT && (wp->lifeleft < -2.0f)) || (MULTIPLAYER_CLIENT && (wip->wi_flags & WIF_CHILD))) {					// don't call this function multiplayer client -- host will send this packet to us
-					// nprintf(("AI", "Frame %i: Weapon %i detonated, dist = %7.3f!\n", Framecount, obj-Objects));
-					weapon_detonate(obj);					
-				}
-			} else {
-				// nprintf(("AI", "Frame %i: Weapon %i detonated, dist = %7.3f!\n", Framecount, obj-Objects));
-				weapon_detonate(obj);									
-			}
+			// nprintf(("AI", "Frame %i: Weapon %i detonated, dist = %7.3f!\n", Framecount, obj-Objects));
+			weapon_detonate(obj);
 			if (wip->wi_flags & WIF_HOMING) {
 				Homing_misses++;
 				// nprintf(("AI", "Miss!  Hits = %i/%i\n", Homing_hits, (Homing_hits + Homing_misses)));
@@ -2130,7 +2081,7 @@ void weapon_set_tracking_info(int weapon_objnum, int parent_objnum, int target_o
 			targeting_same = 0;
 		}
 
-		if ((target_objnum != -1) && (!targeting_same || ((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_DOGFIGHT) && (target_team == TEAM_TRAITOR))) ) {
+		if ((target_objnum != -1) && !targeting_same) {
 			wp->target_num = target_objnum;
 			wp->target_sig = Objects[target_objnum].signature;
 			wp->nearest_dist = 99999.0f;
@@ -2281,27 +2232,6 @@ int weapon_create( vector * pos, matrix * orient, int weapon_id, int parent_objn
 		wp->particle_spew_time = -1;		
 	}
 
-	// assign the network signature.  The starting sig is sent to all clients, so this call should
-	// result in the same net signature numbers getting assigned to every player in the game
-	if ( Game_mode & GM_MULTIPLAYER ) {
-		if(wip->subtype == WP_MISSILE){
-			Objects[objnum].net_signature = multi_assign_network_signature( MULTI_SIG_NON_PERMANENT );
-
-			// for weapons that respawn, add the number of respawnable weapons to the net signature pool
-			// to reserve N signatures for the spawned weapons
-			if ( wip->wi_flags & WIF_SPAWN ){
-				multi_set_network_signature( (ushort)(Objects[objnum].net_signature + wip->spawn_count), MULTI_SIG_NON_PERMANENT );
-			}
-		} else {
-			Objects[objnum].net_signature = multi_assign_network_signature( MULTI_SIG_NON_PERMANENT );
-		}
-		// for multiplayer clients, when creating lasers, add some more life to the lasers.  This helps
-		// to overcome some problems associated with lasers dying on client machine before they get message
-		// from server saying it hit something.
-		// removed 1/13/98 -- MWA if ( MULTIPLAYER_CLIENT && (wip->subtype == WP_LASER) )
-		//	removed 1/13/98 -- MWA	wp->lifeleft += 1.5f;
-	}
-
 	//	Make remote detonate missiles look like they're getting detonated by firer simply by giving them variable lifetimes.
 	if (!(Objects[parent_objnum].flags & OF_PLAYER_SHIP) && (wip->wi_flags & WIF_REMOTE)) {
 		float rand_val;
@@ -2421,7 +2351,6 @@ void spawn_child_weapons(object *objp)
 	int	i;
 	int	child_id;
 	int	parent_num;
-	ushort starting_sig;
 	weapon	*wp;
 	weapon_info	*wip;
 
@@ -2441,27 +2370,12 @@ void spawn_child_weapons(object *objp)
 		return;
 	}
 
-	starting_sig = 0;
-	if ( Game_mode & GM_MULTIPLAYER ) {		
-		// get the next network signature and save it.  Set the next usable network signature to be
-		// the passed in objects signature + 1.  We "reserved" N of these slots when we created objp
-		// for it's spawned children.
-		starting_sig = multi_get_next_network_signature( MULTI_SIG_NON_PERMANENT );
-		multi_set_network_signature( objp->net_signature, MULTI_SIG_NON_PERMANENT );
-	}
-
 	for (i=0; i<wip->spawn_count; i++) {
 		int		weapon_objnum;
 		vector	tvec, pos;
 		matrix	orient;
 
-		// for multiplayer, use the static randvec functions based on the network signatures to provide
-		// the randomness so that it is the same on all machines.
-		if ( Game_mode & GM_MULTIPLAYER ){
-			static_randvec(objp->net_signature + i, &tvec);
-		} else {
-			vm_vec_rand_vec_quick(&tvec);
-		}
+		vm_vec_rand_vec_quick(&tvec);
 		vm_vec_scale_add(&pos, &objp->pos, &tvec, objp->radius);
 
 		vm_vector_2_matrix(&orient, &tvec, NULL, NULL);
@@ -2480,11 +2394,6 @@ void spawn_child_weapons(object *objp)
 			Weapons[Objects[weapon_objnum].instance].lifeleft *= rand_val*0.4f + 0.8f;
 		}
 
-	}
-
-	// in multiplayer, reset the next network signature to the one that was saved.
-	if ( Game_mode & GM_MULTIPLAYER ){
-		multi_set_network_signature( starting_sig, MULTI_SIG_NON_PERMANENT );
 	}
 }
 
@@ -2806,7 +2715,6 @@ void weapon_hit( object * weapon_obj, object * other_obj, vector * hitpos )
 	int			weapon_type = Weapons[num].weapon_info_index;
 	object		*weapon_parent_objp;
 	weapon_info	*wip;
-	// int np_index;
 
 	Assert((weapon_type >= 0) && (weapon_type < MAX_WEAPONS));
 	if((weapon_type < 0) || (weapon_type >= MAX_WEAPONS)){
@@ -2815,11 +2723,7 @@ void weapon_hit( object * weapon_obj, object * other_obj, vector * hitpos )
 	wip = &Weapon_info[weapon_type];
 	weapon_parent_objp = &Objects[weapon_obj->parent];
 
-	// if this is the player ship, and is a laser hit, skip it. wait for player "pain" to take care of it
-	// if( ((wip->subtype != WP_LASER) || !MULTIPLAYER_CLIENT) && (Player_obj != NULL) && (other_obj == Player_obj) ){
-	if((other_obj != Player_obj) || (wip->subtype != WP_LASER) || !MULTIPLAYER_CLIENT){
-		weapon_hit_do_sound(other_obj, wip, hitpos);
-	}
+	weapon_hit_do_sound(other_obj, wip, hitpos);
 
 	if ( wip->impact_weapon_expl_index > -1 )	{
 		int expl_ani_handle = weapon_get_expl_handle(wip->impact_weapon_expl_index, hitpos, wip->impact_explosion_radius);
@@ -2861,7 +2765,7 @@ void weapon_hit( object * weapon_obj, object * other_obj, vector * hitpos )
 		emp_apply(&weapon_obj->pos, wip->inner_radius, wip->outer_radius, wip->emp_intensity, wip->emp_time);
 	}	
 
-	// spawn weapons - note the change from FS 1 multiplayer.
+	// spawn weapons
 	if (wip->wi_flags & WIF_SPAWN){
 		spawn_child_weapons(weapon_obj);
 	}	
@@ -2876,11 +2780,6 @@ void weapon_detonate(object *objp)
 	Assert((objp->type == OBJ_WEAPON) && (objp->instance >= 0));
 	if((objp->type != OBJ_WEAPON) || (objp->instance < 0)){
 		return;
-	}	
-
-	// send a detonate packet in multiplayer
-	if(MULTIPLAYER_MASTER){
-		send_weapon_detonate_packet(objp);
 	}
 
 	// call weapon hit

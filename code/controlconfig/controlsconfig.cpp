@@ -26,11 +26,9 @@
 #include "font.h"
 #include "hud.h"
 #include "managepilot.h"
-#include "multi_pmsg.h"
 #include "contexthelp.h"
 #include "popup.h"
 #include "uidefs.h"
-#include "multiutil.h"
 #include "alphacolors.h"
 
 #define NUM_SYSTEM_KEYS			14
@@ -2093,11 +2091,6 @@ int check_control(int id, int key)
 		key = last_key;
 
 	last_key = key;
-
-	// if we're in multiplayer text enter (for chat) mode, check to see if we should ignore controls
-	if ((Game_mode & GM_MULTIPLAYER) && multi_ignore_controls()){
-		return 0;
-	}
 
 	if (Control_config[id].type == CC_TYPE_CONTINUOUS) {
 		if (joy_down(Control_config[id].joy_id) || joy_down_count(Control_config[id].joy_id)) {

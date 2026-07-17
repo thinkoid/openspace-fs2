@@ -19,6 +19,7 @@
 #include "key.h"
 #include "ui.h"
 #include "missioncampaign.h"
+#include "missionparse.h"
 #include "gamesequence.h"
 #include "2d.h"
 #include "parselo.h"
@@ -29,7 +30,6 @@
 #include "player.h"
 #include "missiongoals.h"
 // #include "movie.h"
-#include "multi.h"
 #include "techmenu.h"
 #include "eventmusic.h"
 #include "alphacolors.h"
@@ -673,11 +673,6 @@ int mission_campaign_savefile_save()
 // The following function always only ever ever ever called by CSFE!!!!!
 int campaign_savefile_save(char *pname)
 {
-	if (Campaign.type == CAMPAIGN_TYPE_SINGLE)
-		Game_mode &= ~GM_MULTIPLAYER;
-	else
-		Game_mode |= GM_MULTIPLAYER;
-
 	strcpy(Player->callsign, pname);
 	//memcpy(&Campaign, camp, sizeof(campaign));
 	return mission_campaign_savefile_save();
@@ -764,10 +759,7 @@ void mission_campaign_savefile_load( char *cfilename )
 	_splitpath( cfilename, NULL, NULL, base, NULL );
 	Assert ( (strlen(base) + strlen(Player->callsign) + 1) < _MAX_FNAME );
 
-	if(Game_mode & GM_MULTIPLAYER)
-		sprintf( filename, NOX("%s.%s.msg"), Player->callsign, base );
-	else
-		sprintf( filename, NOX("%s.%s.csg"), Player->callsign, base );
+	sprintf( filename, NOX("%s.%s.csg"), Player->callsign, base );
 
 	fp = cfopen(filename, "rb", CFILE_NORMAL, CF_TYPE_SINGLE_PLAYERS );
 	if ( !fp )
@@ -794,7 +786,7 @@ void mission_campaign_savefile_load( char *cfilename )
 	else
 		type_sig = CAMPAIGN_SINGLE_PLAYER_SIG;
 	// the actual check
-	Assert( ((Game_mode & GM_MULTIPLAYER) && (type_sig==CAMPAIGN_MULTI_PLAYER_SIG)) || (!(Game_mode & GM_MULTIPLAYER) && (type_sig==CAMPAIGN_SINGLE_PLAYER_SIG)) );
+	Assert( type_sig == CAMPAIGN_SINGLE_PLAYER_SIG );
 
 	Campaign.type = type_sig == CAMPAIGN_SINGLE_PLAYER_SIG ? CAMPAIGN_TYPE_SINGLE : CAMPAIGN_TYPE_MULTI_COOP;
 
@@ -920,11 +912,8 @@ void mission_campaign_savefile_load( char *cfilename )
 void campaign_savefile_load(char *fname, char *pname)
 {
 	if (Campaign.type==CAMPAIGN_TYPE_SINGLE) {
-		Game_mode &= ~GM_MULTIPLAYER;
 		Game_mode &= GM_NORMAL;
 	}
-	else
-		Game_mode |= GM_MULTIPLAYER;
 	strcpy(Player->callsign, pname);
 	mission_campaign_savefile_load(fname);
 }
@@ -1250,9 +1239,7 @@ void mission_campaign_mission_over()
 
 	// update campaign.mission stats (used to allow backout inRedAlert)
 	memcpy( &mission->stats, &Player->stats, sizeof(Player->stats) );
-	if(!(Game_mode & GM_MULTIPLAYER)){
-		scoring_backout_accept( &mission->stats );
-	}
+	scoring_backout_accept( &mission->stats );
 
 	// if we are moving to a new mission, then change our data.  If we are staying on the same mission,
 	// then we don't want to do anything.  Remove information about goals/events
@@ -1528,33 +1515,6 @@ void mission_campaign_maybe_play_movie(int type)
 
 	// no soup for you!
 	// movie_play( filename );
-}
-
-// return nonzero if the passed filename is a multiplayer campaign, 0 otherwise
-int mission_campaign_parse_is_multi(char *filename, char *name)
-{	
-	int i;
-	char temp[50];
-	
-	read_file_text( filename );
-	reset_parse();
-	
-	required_string("$Name:");
-	stuff_string( temp, F_NAME, NULL );	
-	if ( name )
-		strcpy( name, temp );
-
-	required_string( "$Type:" );
-	stuff_string( temp, F_NAME, NULL );
-
-	for (i = 0; i < MAX_CAMPAIGN_TYPES; i++ ) {
-		if ( !stricmp(temp, campaign_types[i]) ) {
-			return i;
-		}
-	}
-
-	Error(LOCATION, "Unknown campaign type %s", temp );
-	return -1;
 }
 
 // functions to save persistent information during a mission -- which then might or might not get

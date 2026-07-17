@@ -38,16 +38,11 @@
 #include "ai.h"
 #include "hud.h"
 #include "hudmessage.h"
-#include "psnet.h"
 #include "missiongoals.h"
 #include "missionparse.h"
 #include "bmpman.h"
 #include "joy.h"
 #include "joy_ff.h"
-#include "multi.h"
-#include "multiutil.h"
-#include "multimsgs.h"
-#include "multiui.h"
 #include "cfile.h"
 #include "player.h"
 #include "freespace.h"
@@ -89,43 +84,29 @@
 #include "stats.h"
 #include "cmdline.h"
 #include "timer.h"
-#include "stand_gui.h"
 #include "pcxutils.h"
 #include "hudtargetbox.h"
-#include "multi_xfer.h"
 #include "hudescort.h"
-#include "multiutil.h"
 #include "sexp.h"
 #include "medals.h"
-#include "multiteamselect.h"
 #include "ds3d.h"
 #include "shipfx.h"
 #include "readyroom.h"
 #include "mainhallmenu.h"
-// multilag.h forward-declares Winsock's struct fd_set (a typedef on Linux);
-// nothing from it is used here (MULTI_USE_LAG is off)
 #include "trails.h"
 #include "particle.h"
 #include "popup.h"
-#include "multi_ingame.h"
 #include "snazzyui.h"
 #include "asteroid.h"
 #include "popupdead.h"
-#include "multi_voice.h"
 #include "missioncmdbrief.h"
 #include "redalert.h"
 #include "gameplayhelp.h"
 #include "staticrand.h"
-#include "multi_pmsg.h"
 #include "levelpaging.h"
 #include "observer.h"
-#include "multi_pause.h"
-#include "multi_endgame.h"
 #include "cutscenes.h"
-#include "multi_respawn.h"
 // #include "movie.h"
-#include "multi_obj.h"
-#include "multi_log.h"
 #include "emp.h"
 #include "localize.h"
 #include "osregistry.h"
@@ -140,8 +121,6 @@
 #include "shipcontrails.h"
 #include "awacs.h"
 #include "beam.h"
-#include "multi_dogfight.h"
-#include "multi_rate.h"
 #include "muzzleflash.h"
 #include "encrypt.h"
 #include "demo.h"
@@ -226,8 +205,6 @@ int Use_fullscreen_at_startup = 0;
 int Show_area_effect = 0;
 object	*Last_view_target = NULL;
 
-int dogfight_blown = 0;
-
 int	frame_int = -1;
 float frametimes[FRAME_FILTER];
 float frametotal = 0.0f;
@@ -260,7 +237,6 @@ int Game_weapons_tbl_valid = 0;
 #ifndef NDEBUG
 int Test_begin = 0;
 extern int	Player_attacking_enabled;
-int Show_net_stats;
 #endif
 
 int Pre_player_entry;
@@ -304,7 +280,6 @@ int Debug_dump_frame_num = 0;
 // amount of time to wait after the player has died before we display the death died popup
 #define PLAYER_DIED_POPUP_WAIT		2500
 int Player_died_popup_wait = -1;
-int Player_multi_died_check = -1;
 
 // builtin mission list stuff
 #ifdef FS2_DEMO
@@ -943,25 +918,14 @@ void game_level_init(int seed)
 {
 	// seed the random number generator
 	if ( seed == -1 ) {
-		// if no seed was passed, seed the generator either from the time value, or from the
-		// netgame security flags -- ensures that all players in multiplayer game will have the
-		// same randon number sequence (with static rand functions)
+		// if no seed was passed, seed the generator from the time value
 		if ( Game_mode & GM_NORMAL ) {
 			Game_level_seed = time(NULL);
-		} else {
-			Game_level_seed = Netgame.security;
 		}
 	} else {
-		// mwa 9/17/98 -- maybe this assert isn't needed????
-		Assert( !(Game_mode & GM_MULTIPLAYER) );
 		Game_level_seed = seed;
 	}
 	srand( Game_level_seed );
-
-	// semirand function needs to get re-initted every time in multiplayer
-	if ( Game_mode & GM_MULTIPLAYER ){
-		init_semirand();
-	}
 
 	Framecount = 0;
 
@@ -972,9 +936,7 @@ void game_level_init(int seed)
 
 	// Initialize the game subsystems
 //	timestamp_reset();			// Must be inited before everything else
-	if(!Is_standalone){
-		game_reset_time();			// resets time, and resets saved time too
-	}
+	game_reset_time();			// resets time, and resets saved time too
 	obj_init();						// Must be inited before the other systems
 	model_free_all();				// Free all existing models
 	mission_brief_common_init();		// Free all existing briefing/debriefing text
@@ -1015,9 +977,6 @@ void game_level_init(int seed)
 	ssm_level_init();	
 	supernova_level_init();
 
-	// multiplayer dogfight hack
-	dogfight_blown = 0;
-
 	shipfx_engine_wash_level_init();
 
 	nebl_level_init();
@@ -1031,34 +990,12 @@ void game_level_init(int seed)
 	Campaign_ended_in_mission = 0;
 }
 
-// called when a mission is over -- does server specific stuff.
+// called when a mission is over
 void freespace_stop_mission()
 {	
 	game_level_close();
 	Game_mode &= ~GM_IN_MISSION;
 }
-
-// called at frame interval to process networking stuff
-void game_do_networking()
-{
-	if (!(Game_mode & GM_MULTIPLAYER)){
-		return;
-	}
-	Assert( Net_player != NULL );	// multi init owns this; single-player returns above
-
-	// see if this player should be reading/writing data.  Bit is set when at join
-	// screen onward until quits back to main menu.
-	if ( !(Net_player->flags & NETINFO_FLAG_DO_NETWORKING) ){
-		return;
-	}
-
-	if(gameseq_get_state()!=GS_STATE_MULTI_PAUSED){
-		multi_do_frame();
-	} else {
-		multi_pause_do_frame();
-	}	
-}
-
 
 // Loads the best palette for this level, based
 // on nebula color and hud color.  You could just call palette_load_table with
@@ -1140,9 +1077,7 @@ static int Game_loading_ani_coords[GR_NUM_RESOLUTIONS][2] = {
 // game_busy() has been called since the current callback function
 // was set.
 void game_loading_callback(int count)
-{	
-	game_do_networking();
-
+{
 	Assert( Game_loading_callback_inited==1 );
 	Assert( Game_loading_ani != NULL );
 
@@ -1263,51 +1198,36 @@ void game_assign_sound_environment()
 	Game_sound_env_update_timestamp = timestamp(1);
 }
 
-// function which gets called before actually entering the mission.  It is broken down into a funciton
-// since it will get called in one place from a single player game and from another place for
-// a multiplayer game
+// function which gets called before actually entering the mission.
 void freespace_mission_load_stuff()
 {
-	// called if we're not on a freespace dedicated (non rendering, no pilot) server
-	// IE : we _don't_ want to load any sounds or bitmap/texture info on this machine.
-	if(!(Game_mode & GM_STANDALONE_SERVER)){	
-	
-		mprintf(( "=================== STARTING LEVEL DATA LOAD ==================\n" ));
+	mprintf(( "=================== STARTING LEVEL DATA LOAD ==================\n" ));
 
-		game_loading_callback_init();
-		
-		event_music_level_init();	// preloads the first 2 seconds for each event music track
-		game_busy();
+	game_loading_callback_init();
 
-		gamesnd_unload_interface_sounds();		// unload interface sounds from memory
-		game_busy();
+	event_music_level_init();	// preloads the first 2 seconds for each event music track
+	game_busy();
 
-		gamesnd_preload_common_sounds();			// load in sounds that are expected to play
-		game_busy();
+	gamesnd_unload_interface_sounds();		// unload interface sounds from memory
+	game_busy();
 
-		ship_assign_sound_all();	// assign engine sounds to ships
-		game_assign_sound_environment();	 // assign the sound environment for this mission
-		game_busy();
+	gamesnd_preload_common_sounds();			// load in sounds that are expected to play
+	game_busy();
 
-		// call function in missionparse.cpp to fixup player/ai stuff.
-		mission_parse_fixup_players();
-		game_busy();
+	ship_assign_sound_all();	// assign engine sounds to ships
+	game_assign_sound_environment();	 // assign the sound environment for this mission
+	game_busy();
 
-		// Load in all the bitmaps for this level
-		level_page_in();
+	// call function in missionparse.cpp to fixup player/ai stuff.
+	mission_parse_fixup_players();
+	game_busy();
 
-		game_busy();
+	// Load in all the bitmaps for this level
+	level_page_in();
 
-		game_loading_callback_close();	
-	} 
-	// the only thing we need to call on the standalone for now.
-	else {
-		// call function in missionparse.cpp to fixup player/ai stuff.
-		mission_parse_fixup_players();
+	game_busy();
 
-		// Load in all the bitmaps for this level
-		level_page_in();
-	}
+	game_loading_callback_close();
 }
 
 uint load_gl_init;
@@ -1315,7 +1235,7 @@ uint load_mission_load;
 uint load_post_level_init;
 uint load_mission_stuff;
 
-// tells the server to load the mission and initialize structures
+// load the mission and initialize structures
 int game_start_mission()
 {	
 	mprintf(( "=================== STARTING LEVEL LOAD ==================\n" ));
@@ -1323,22 +1243,11 @@ int game_start_mission()
 	load_gl_init = time(NULL);
 	game_level_init();
 	load_gl_init = time(NULL) - load_gl_init;
-	
-	if (Game_mode & GM_MULTIPLAYER) {
-		Player->flags |= PLAYER_FLAGS_IS_MULTI;
-
-		// clear multiplayer stats
-		init_multiplayer_stats();
-	}
 
 	load_mission_load = time(NULL);
 	if (mission_load()) {
-		if ( !(Game_mode & GM_MULTIPLAYER) ) {
-			popup(PF_BODY_BIG, 1, POPUP_OK, XSTR( "Attempt to load the mission failed", 169));
-			gameseq_post_event(GS_EVENT_MAIN_MENU);
-		} else {
-			multi_quit_game(PROMPT_NONE, MULTI_END_NOTIFY_NONE, MULTI_END_ERROR_LOAD_FAIL);
-		}
+		popup(PF_BODY_BIG, 1, POPUP_OK, XSTR( "Attempt to load the mission failed", 169));
+		gameseq_post_event(GS_EVENT_MAIN_MENU);
 
 		return 0;
 	}
@@ -1349,11 +1258,8 @@ int game_start_mission()
 		red_alert_bash_wingman_status();
 	}
 
-	// the standalone server in multiplayer doesn't do any rendering, so we will not even bother loading the palette
-	if ( !(Game_mode & GM_STANDALONE_SERVER) ) {
-		mprintf(( "=================== LOADING GAME PALETTE ================\n" ));
-		// game_load_palette();
-	}
+	mprintf(( "=================== LOADING GAME PALETTE ================\n" ));
+	// game_load_palette();
 
 	load_post_level_init = time(NULL);
 	game_post_level_init();
@@ -1388,7 +1294,6 @@ DCF_BOOL( show_shield_mesh, Show_shield_mesh)
 DCF_BOOL( player_attacking, Player_attacking_enabled )
 DCF_BOOL( show_waypoints, Show_waypoints )
 DCF_BOOL( show_area_effect, Show_area_effect )
-DCF_BOOL( show_net_stats, Show_net_stats )
 DCF_BOOL( log, Log_debug_output_to_file )
 DCF_BOOL( training_msg_method, Training_msg_method )
 DCF_BOOL( show_player_pos, Show_player_pos )
@@ -1596,12 +1501,8 @@ void game_init()
 	e2 = timer_get_milliseconds();	
 	*/
 
-	if (Is_standalone) {
-		std_init_standalone();
-	} else {		
-		os_init( Osreg_class_name, Osreg_app_name );
-		os_set_title(Osreg_title);
-	}
+	os_init( Osreg_class_name, Osreg_app_name );
+	os_set_title(Osreg_title);
 
 	// initialize localization module. Make sure this is down AFTER initialzing OS.
 //	int t1 = timer_get_milliseconds();
@@ -1652,9 +1553,7 @@ void game_init()
 		}
 	}
 
-	if (!Is_standalone) {
-		snd_init(use_a3d, use_eax);
-	}
+	snd_init(use_a3d, use_eax);
 /////////////////////////////
 // SOUND INIT END
 /////////////////////////////
@@ -1698,38 +1597,8 @@ void game_init()
 
 #if defined(FS2_DEMO) || defined(OEM_BUILD)
 	// add title screen
-	if(!Is_standalone){
-		display_title_screen();
-	}
+	display_title_screen();
 #endif
-	
-	// attempt to load up master tracker registry info (login and password)
-	Multi_tracker_id = -1;		
-
-	// pxo login and password
-	ptr = os_config_read_string(NOX("PXO"),NOX("Login"),NULL);
-	if(ptr == NULL){
-		nprintf(("Network","Error reading in PXO login data\n"));
-		strcpy(Multi_tracker_login,"");
-	} else {		
-		strcpy(Multi_tracker_login,ptr);
-	}
-	ptr = os_config_read_string(NOX("PXO"),NOX("Password"),NULL);
-	if(ptr == NULL){		
-		nprintf(("Network","Error reading PXO password\n"));
-		strcpy(Multi_tracker_passwd,"");
-	} else {		
-		strcpy(Multi_tracker_passwd,ptr);
-	}	
-
-	// pxo squad name and password
-	ptr = os_config_read_string(NOX("PXO"),NOX("SquadName"),NULL);
-	if(ptr == NULL){
-		nprintf(("Network","Error reading in PXO squad name\n"));
-		strcpy(Multi_tracker_squad_name, "");
-	} else {		
-		strcpy(Multi_tracker_squad_name, ptr);
-	}
 
 	// If less than 48MB of RAM, use low memory model.
 	if ( (Freespace_total_ram < 48*1024*1024) || Use_low_mem )	{
@@ -1755,21 +1624,14 @@ void game_init()
 	gamesnd_parse_soundstbl();
 	radar_init();
 	gameseq_init();
-	multi_init();	
-
-	// standalone's don't use hte joystick and it seems to sometimes cause them to not get shutdown properly
-	if(!Is_standalone){
-		joy_init();
-	}
+	joy_init();
 
 	player_controls_init();
-	model_init();	
+	model_init();
 
-	//if(!Is_standalone){
-		event_music_init();
-	//}	
+	event_music_init();
 
-	obj_init();	
+	obj_init();
 	mflash_game_init();	
 	weapon_init();	
 	ai_init();		
@@ -1779,10 +1641,8 @@ void game_init()
 	anim_init();
 //	navmap_init();						// init the navigation map system
 	context_help_init();			
-	techroom_intel_init();			// parse species.tbl, load intel info	
-	// initialize psnet
-	psnet_init( Multi_options_g.protocol, Multi_options_g.port );						// initialize the networking code		
-	init_animating_pointer();	
+	techroom_intel_init();			// parse species.tbl, load intel info
+	init_animating_pointer();
 	asteroid_init();
 	mission_brief_common_init();	// Mark all the briefing structures as empty.		
 	gr_font_init();					// loads up all fonts		
@@ -2015,33 +1875,6 @@ void game_show_framerate()
 	modelstats_num_verts = 0;
 	modelstats_num_sortnorms = 0;
 #endif
-}
-
-void game_show_standalone_framerate()
-{
-	float frame_rate=30.0f;
-	if ( frame_int == -1 )	{
-		int i;
-		for (i=0; i<FRAME_FILTER; i++ )	{
-			frametimes[i] = 0.0f;
-		}
-		frametotal = 0.0f;
-		frame_int = 0;
-	}
-	frametotal -= frametimes[frame_int];
-	frametotal += flFrametime;
-	frametimes[frame_int] = flFrametime;
-	frame_int = (frame_int + 1 ) % FRAME_FILTER;
-
-	if ( frametotal != 0.0 )	{
-		if ( Framecount >= FRAME_FILTER ){
-			frame_rate = FRAME_FILTER / frametotal;
-		} else {
-			frame_rate = Framecount / frametotal;
-		}
-	}
-	std_set_standalone_fps(frame_rate);
-	Framecount++;
 }
 
 // function to show the time remaining in a mission.  Used only when the end-mission sexpression is used
@@ -2401,23 +2234,7 @@ extern void render_shields();
 
 void player_repair_frame(float frametime)
 {
-	if((Game_mode & GM_MULTIPLAYER) && (Net_player->flags & NETINFO_FLAG_AM_MASTER)){
-		int idx;
-		for(idx=0;idx<MAX_PLAYERS;idx++){
-			net_player *np;
-
-			np = &Net_players[idx];
-
-			if(MULTI_CONNECTED(Net_players[idx]) && (Net_player != NULL) && (Net_player->player_id != Net_players[idx].player_id) && (Net_players[idx].player != NULL) && (Net_players[idx].player->objnum >= 0) && (Net_players[idx].player->objnum < MAX_OBJECTS)){
-
-				// don't rearm/repair if the player is dead or dying/departing
-				if ( !NETPLAYER_IS_DEAD(np) && !(Ships[Objects[np->player->objnum].instance].flags & (SF_DYING|SF_DEPARTING)) ) {
-					ai_do_repair_frame(&Objects[Net_players[idx].player->objnum],&Ai_info[Ships[Objects[Net_players[idx].player->objnum].instance].ai_index],frametime);
-				}
-			}
-		}
-	}	
-	if ( (Player_obj != NULL) && (Player_obj->type == OBJ_SHIP) && !(Game_mode & GM_STANDALONE_SERVER) && (Player_ship != NULL) && !(Player_ship->flags & SF_DYING) ) {
+	if ( (Player_obj != NULL) && (Player_obj->type == OBJ_SHIP) && (Player_ship != NULL) && !(Player_ship->flags & SF_DYING) ) {
 		ai_do_repair_frame(Player_obj, &Ai_info[Ships[Player_obj->instance].ai_index], frametime);
 	}
 }
@@ -2566,13 +2383,8 @@ void say_view_target()
 				Show_viewing_from_self = 1;
 			}
 		} else {
-			if((Game_mode & GM_MULTIPLAYER) && (Net_player->flags & NETINFO_FLAG_OBSERVER) && (Player_obj->type == OBJ_OBSERVER)){
-				HUD_fixed_printf(2.0f,XSTR( "Viewing from observer\n", 187));
-				Show_viewing_from_self = 1;
-			} else {
-				if (Show_viewing_from_self)
-					HUD_fixed_printf(2.0f, XSTR( "Viewing from self\n", 188));
-			}
+			if (Show_viewing_from_self)
+				HUD_fixed_printf(2.0f, XSTR( "Viewing from self\n", 188));
 		}
 	}
 
@@ -2920,21 +2732,11 @@ DCF_BOOL( subspace, Game_subspace_effect );
 // Does everything needed to render a frame
 void game_render_frame( vector * eye_pos, matrix * eye_orient )
 {
-	int dont_offset;
-
 	g3_start_frame(game_zbuffer);
 	g3_set_view_matrix( eye_pos, eye_orient, Viewer_zoom );
 
 	// maybe offset the HUD (jitter stuff)
-	dont_offset = ((Game_mode & GM_MULTIPLAYER) && (Net_player->flags & NETINFO_FLAG_OBSERVER));
-	HUD_set_offsets(Viewer_obj, !dont_offset);
-	
-	// for multiplayer clients, call code in Shield.cpp to set up the Shield_hit array.  Have to
-	// do this becaues of the disjointed nature of this system (in terms of setup and execution).
-	// must be done before ships are rendered
-	if ( MULTIPLAYER_CLIENT ) {
-		shield_point_multi_setup();
-	}
+	HUD_set_offsets(Viewer_obj, 1);
 
 	if ( Game_subspace_effect )	{
 		stars_draw(0,0,0,1);
@@ -2976,16 +2778,10 @@ void game_render_frame( vector * eye_pos, matrix * eye_orient )
 
 	hud_show_radar();
 
-	if( (Game_detail_flags & DETAIL_FLAG_HUD) && !(Game_mode & GM_MULTIPLAYER) || ( (Game_mode & GM_MULTIPLAYER) && !(Net_player->flags & NETINFO_FLAG_OBSERVER) ) ) {
+	if( (Game_detail_flags & DETAIL_FLAG_HUD) ) {
 		hud_maybe_clear_head_area();
 		anim_render_all(0, flFrametime);
 	}
-
-	extern int Multi_display_netinfo;
-	if(Multi_display_netinfo){
-		extern void multi_display_netinfo();
-		multi_display_netinfo();
-	}	
 
 	game_tst_frame_pre();
 
@@ -2993,17 +2789,6 @@ void game_render_frame( vector * eye_pos, matrix * eye_orient )
 	do_timing_test(flFrametime);
 #endif
 
-#ifndef NDEBUG
-	extern int OO_update_index;	
-	multi_rate_display(OO_update_index, 375, 0);
-#endif
-
-#ifndef NDEBUG
-	// test
-	extern void oo_display();
-	oo_display();			
-#endif
-	
 	g3_end_frame();
 }
 
@@ -3164,38 +2949,11 @@ void game_flip_page_and_time_it()
 
 void game_simulation_frame()
 {
-	// blow ships up in multiplayer dogfight
-	if((Game_mode & GM_MULTIPLAYER) && (Net_player != NULL) && (Net_player->flags & NETINFO_FLAG_AM_MASTER) && (Netgame.type_flags & NG_TYPE_DOGFIGHT) && (f2fl(Missiontime) >= 2.0f) && !dogfight_blown){
-		// blow up all non-player ships
-		ship_obj *moveup = GET_FIRST(&Ship_obj_list);
-		ship *shipp;
-		ship_info *sip;
-		while((moveup != END_OF_LIST(&Ship_obj_list)) && (moveup != NULL)){
-			// bogus
-			if((moveup->objnum < 0) || (moveup->objnum >= MAX_OBJECTS) || (Objects[moveup->objnum].type != OBJ_SHIP) || (Objects[moveup->objnum].instance < 0) || (Objects[moveup->objnum].instance >= MAX_SHIPS) || (Ships[Objects[moveup->objnum].instance].ship_info_index < 0) || (Ships[Objects[moveup->objnum].instance].ship_info_index >= Num_ship_types)){
-				moveup = GET_NEXT(moveup);
-				continue;
-			}
-			shipp = &Ships[Objects[moveup->objnum].instance];
-			sip = &Ship_info[shipp->ship_info_index];
-
-			// only blow up small ships			
-			if((sip->flags & SIF_SMALL_SHIP) && (multi_find_player_by_object(&Objects[moveup->objnum]) < 0) ){							
-				// function to simply explode a ship where it is currently at
-				ship_self_destruct( &Objects[moveup->objnum] );					
-			}
-
-			moveup = GET_NEXT(moveup);
-		}
-
-		dogfight_blown = 1;
-	}
-
 	// process AWACS stuff - do this first thing
 	awacs_process();
 
-	// single player, set Player hits_this_frame to 0
-	if ( !(Game_mode & GM_MULTIPLAYER) && Player ) {
+	// set Player hits_this_frame to 0
+	if ( Player ) {
 		Player->damage_this_burst -= (flFrametime * MAX_BURST_DAMAGE  / (0.001f * BURST_DURATION));
 		Player->damage_this_burst = max(Player->damage_this_burst, 0.0f);
 	}
@@ -3213,9 +2971,8 @@ void game_simulation_frame()
 	// 4 - ignored and deleted next frame
 	// the basic idea being that because it con be confusing to deal with them on a multi-frame basis, they are only valid for
 	// frame
-	ship_process_targeting_lasers();	
+	ship_process_targeting_lasers();
 
-	// do this here so that it works for multiplayer
 	if ( Viewer_obj ) {
 		// get viewer direction
 		int viewer_direction = PHYSICS_VIEWER_REAR;
@@ -3247,47 +3004,23 @@ void game_simulation_frame()
 #define	VM_PADLOCK_RIGHT				(1 << 10)
 		
 	// evaluate mission departures and arrivals before we process all objects.
-	if ( !(Game_mode & GM_MULTIPLAYER) || ((Game_mode & GM_MULTIPLAYER) && (Net_player->flags & NETINFO_FLAG_AM_MASTER) && !multi_endgame_ending()) ) {
-
-		// we don't want to evaluate mission stuff when any ingame joiner in multiplayer is receiving
-		// ships/wing packets.
-		if ( !((Game_mode & GM_MULTIPLAYER) && (Netgame.flags & NG_FLAG_INGAME_JOINING_CRITICAL)) && !(Game_mode & GM_DEMO_PLAYBACK)){
-			mission_parse_eval_stuff();
-		}
-
-		// if we're an observer, move ourselves seperately from the standard physics
-		if((Game_mode & GM_MULTIPLAYER) && (Net_player->flags & NETINFO_FLAG_OBSERVER)){
-			obj_observer_move(flFrametime);
-		}
-		
-		// move all the objects now
-		obj_move_all(flFrametime);
-
-		// check for cargo reveal (this has an internal timestamp, so only runs every N ms)
-		// AL: 3-15-98: It was decided to not let AI ships inspect cargo
-		//	ship_check_cargo_all();
-		if(!(Game_mode & GM_DEMO_PLAYBACK)){
-			mission_eval_goals();
-		}
+	if ( !(Game_mode & GM_DEMO_PLAYBACK) ){
+		mission_parse_eval_stuff();
 	}
 
-	// always check training objectives, even in multiplayer missions. we need to do this so that the directives gauge works properly on clients
+	// move all the objects now
+	obj_move_all(flFrametime);
+
+	// check for cargo reveal (this has an internal timestamp, so only runs every N ms)
+	// AL: 3-15-98: It was decided to not let AI ships inspect cargo
+	//	ship_check_cargo_all();
+	if(!(Game_mode & GM_DEMO_PLAYBACK)){
+		mission_eval_goals();
+	}
+
+	// always check training objectives
 	if(!(Game_mode & GM_DEMO_PLAYBACK)){
 		training_check_objectives();
-	}
-	
-	// do all interpolation now
-	if ( (Game_mode & GM_MULTIPLAYER) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER) && !multi_endgame_ending() && !(Netgame.flags & NG_FLAG_SERVER_LOST)) {
-		// client side processing of warping in effect stages
-		multi_do_client_warp(flFrametime);     
-	
-		// client side movement of an observer
-		if((Net_player->flags & NETINFO_FLAG_OBSERVER) || (Player_obj->type == OBJ_OBSERVER)){
-			obj_observer_move(flFrametime);   
-		}
-
-		// move all objects - does interpolation now as well
-		obj_move_all(flFrametime);
 	}
 
 	// only process the message queue when the player is "in" the game
@@ -3302,42 +3035,40 @@ void game_simulation_frame()
 		player_maybe_play_all_alone_msg();	// mabye tell the player he is all alone	
 	}
 
-	if(!(Game_mode & GM_STANDALONE_SERVER)){		
-		// process some stuff every frame (before frame is rendered)
-		emp_process_local();
+	// process some stuff every frame (before frame is rendered)
+	emp_process_local();
 
-		hud_update_frame();						// update hud systems
+	hud_update_frame();						// update hud systems
 
-		if (!physics_paused)	{
-			// Move particle system
-			particle_move_all(flFrametime);	
+	if (!physics_paused)	{
+		// Move particle system
+		particle_move_all(flFrametime);
 
-			// Move missile trails
-			trail_move_all(flFrametime);		
+		// Move missile trails
+		trail_move_all(flFrametime);
 
-			// process muzzle flashes
-			mflash_process_all();
+		// process muzzle flashes
+		mflash_process_all();
 
-			// Flash the gun flashes
-			shipfx_flash_do_frame(flFrametime);			
+		// Flash the gun flashes
+		shipfx_flash_do_frame(flFrametime);
 
-			shockwave_move_all(flFrametime);	// update all the shockwaves
-		}
+		shockwave_move_all(flFrametime);	// update all the shockwaves
+	}
 
-		// subspace missile strikes
-		ssm_process();
+	// subspace missile strikes
+	ssm_process();
 
-		obj_snd_do_frame();						// update the object-linked persistant sounds
-		game_maybe_update_sound_environment();
-		snd_update_listener(&View_position, &Player_obj->phys_info.vel, &Player_obj->orient);
+	obj_snd_do_frame();						// update the object-linked persistant sounds
+	game_maybe_update_sound_environment();
+	snd_update_listener(&View_position, &Player_obj->phys_info.vel, &Player_obj->orient);
 
 // AL: debug code used for testing ambient subspace sound (ie when enabling subspace through debug console)
 #ifndef NDEBUG
-		if ( Game_subspace_effect ) {
-			game_start_subspace_ambient_sound();
-		}
+	if ( Game_subspace_effect ) {
+		game_start_subspace_ambient_sound();
+	}
 #endif
-	}		
 }
 
 // Maybe render and process the dead-popup
@@ -3399,27 +3130,6 @@ void game_maybe_do_dead_popup(float frametime)
 				leave_popup=0;
 				break;
 			}
-		} else {
-			switch( choice ) {
-
-			case POPUPDEAD_DO_MAIN_HALL:
-				multi_quit_game(PROMPT_NONE,-1);
-				break;
-
-			case POPUPDEAD_DO_RESPAWN:				
-				multi_respawn_normal();
-				event_music_player_respawn();
-				break;
-
-			case POPUPDEAD_DO_OBSERVER:
-				multi_respawn_observer();
-				event_music_player_respawn_as_observer();
-				break;
-
-			default:
-				leave_popup = 0;
-				break;
-			}
 		}
 
 		if ( leave_popup ) {
@@ -3457,7 +3167,7 @@ void game_render_hud_3d(vector *eye_pos, matrix *eye_orient)
 	g3_start_frame(0);		// 0 = turn zbuffering off
 	g3_set_view_matrix( eye_pos, eye_orient, Viewer_zoom );
 
-	if ( (Game_detail_flags & DETAIL_FLAG_HUD) && (supernova_active() < 3)/* && !(Game_mode & GM_MULTIPLAYER) || ( (Game_mode & GM_MULTIPLAYER) && !(Net_player->flags & NETINFO_FLAG_OBSERVER) )*/ ) {
+	if ( (Game_detail_flags & DETAIL_FLAG_HUD) && (supernova_active() < 3) ) {
 		HUD_render_3d(flFrametime);
 	}
 
@@ -3506,12 +3216,8 @@ void game_frame()
 
 	// var to hold which state we are in
 	actually_playing = game_actually_playing();
-	
-	if ((!(Game_mode & GM_MULTIPLAYER)) || ((Game_mode & GM_MULTIPLAYER) && !(Net_player->flags & NETINFO_FLAG_OBSERVER))) {
-		if (!(Game_mode & GM_STANDALONE_SERVER)){
-			Assert( OBJ_INDEX(Player_obj) >= 0 );
-		}
-	}
+
+	Assert( OBJ_INDEX(Player_obj) >= 0 );
 
 	if (Missiontime > Entry_delay_time){
 		Pre_player_entry = 0;
@@ -3520,30 +3226,20 @@ void game_frame()
 	}
 
 	//	Note: These are done even before the player enters, else buffers can overflow.
-	if (! (Game_mode & GM_STANDALONE_SERVER)){
-		radar_frame_init();
-	}
+	radar_frame_init();
 
 	shield_frame_init();
 
 	if ( Player->control_mode != PCM_NORMAL )
 		camera_move();
 
-	if ( !Pre_player_entry && actually_playing ) {		   		
-		if (! (Game_mode & GM_STANDALONE_SERVER) ) {
+	if ( !Pre_player_entry && actually_playing ) {
+		if( (!popup_running_state()) && (!popupdead_is_active()) ){
+			game_process_keys();
 
-			if( (!popup_running_state()) && (!popupdead_is_active()) ){
-				game_process_keys();
-
-				// don't read flying controls if we're playing a demo back
-				if(!(Game_mode & GM_DEMO_PLAYBACK)){
-					read_player_controls( Player_obj, flFrametime);
-				}
-			}
-			
-			// if we're not the master, we may have to send the server-critical ship status button_info bits
-			if ((Game_mode & GM_MULTIPLAYER) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER) && !(Net_player->flags & NETINFO_FLAG_OBSERVER)){
-				multi_maybe_send_ship_status();
+			// don't read flying controls if we're playing a demo back
+			if(!(Game_mode & GM_DEMO_PLAYBACK)){
+				read_player_controls( Player_obj, flFrametime);
 			}
 		}
 	}
@@ -3555,113 +3251,76 @@ void game_frame()
 	// otherwise too many lights are added.
 	light_reset();
 
-	if ((Game_mode & GM_MULTIPLAYER) && (Netgame.game_state == NETGAME_STATE_SERVER_TRANSFER)){
-		return;
-	}
-	
-	game_simulation_frame();	
+	game_simulation_frame();
 
-	// if not actually in a game play state, then return.  This condition could only be true in 
-	// a multiplayer game.
+	// if not actually in a game play state, then return.
 	if ( !actually_playing ) {
-		Assert( Game_mode & GM_MULTIPLAYER );
 		return;
 	}
 
 	if (!Pre_player_entry) {
-		if (! (Game_mode & GM_STANDALONE_SERVER)) {
-			clear_time1 = timer_get_fixed_seconds();
-			// clear the screen to black
-			gr_reset_clip();
-			if ( (Game_detail_flags & DETAIL_FLAG_CLEAR) ) {
-				gr_clear();
+		clear_time1 = timer_get_fixed_seconds();
+		// clear the screen to black
+		gr_reset_clip();
+		if ( (Game_detail_flags & DETAIL_FLAG_CLEAR) ) {
+			gr_clear();
+		}
+
+		clear_time2 = timer_get_fixed_seconds();
+		render3_time1 = timer_get_fixed_seconds();
+		game_render_frame_setup(&eye_pos, &eye_orient);
+		game_render_frame( &eye_pos, &eye_orient );
+
+		hud_show_target_model();
+
+		// check to see if we should display the death died popup
+		if(Game_mode & GM_DEAD_BLEW_UP){
+			if((Player_died_popup_wait != -1) && (timestamp_elapsed(Player_died_popup_wait))){
+				Player_died_popup_wait = -1;
+				popupdead_start();
 			}
+		}
 
-			clear_time2 = timer_get_fixed_seconds();
-			render3_time1 = timer_get_fixed_seconds();
-			game_render_frame_setup(&eye_pos, &eye_orient);
-			game_render_frame( &eye_pos, &eye_orient );
+		render3_time2 = timer_get_fixed_seconds();
+		render2_time1 = timer_get_fixed_seconds();
 
-			// save the eye position and orientation
-			if ( Game_mode & GM_MULTIPLAYER ) {
-				Net_player->s_info.eye_pos = eye_pos;
-				Net_player->s_info.eye_orient = eye_orient;
-			}
+		gr_reset_clip();
+		game_get_framerate();
+		game_show_framerate();
 
-			hud_show_target_model();
+		game_show_time_left();
 
-			// check to see if we should display the death died popup
-			if(Game_mode & GM_DEAD_BLEW_UP){				
-				if(Game_mode & GM_MULTIPLAYER){
-					// catch the situation where we're supposed to be warping out on this transition
-					if(Net_player->flags & NETINFO_FLAG_WARPING_OUT){
-						gameseq_post_event(GS_EVENT_DEBRIEF);
-					} else if((Player_died_popup_wait != -1) && (timestamp_elapsed(Player_died_popup_wait))){
-						Player_died_popup_wait = -1;
-						popupdead_start();
-					}
-				} else {
-					if((Player_died_popup_wait != -1) && (timestamp_elapsed(Player_died_popup_wait))){
-						Player_died_popup_wait = -1;
-						popupdead_start();
-					}
-				}
-			}
+		// Draw the 2D HUD gauges
+		if(supernova_active() <	3){
+			game_render_hud_2d();
+		}
 
-			// hack - sometimes this seems to slip by in multiplayer. this should guarantee that we catch it
-			if((Game_mode & GM_MULTIPLAYER) && (Player_multi_died_check != -1) && (Game_mode & GM_DEAD_BLEW_UP) ){
-				if(fl_abs(time(NULL) - Player_multi_died_check) > 4){
-					if(!popupdead_is_active()){
-						popupdead_start();
-					}
+		game_set_view_clip();
 
-					Player_multi_died_check = -1;
-				}
-			}
-	
-			render3_time2 = timer_get_fixed_seconds();
-			render2_time1 = timer_get_fixed_seconds();
+		// Draw 3D HUD gauges
+		game_render_hud_3d(&eye_pos, &eye_orient);
 
-			gr_reset_clip();
-			game_get_framerate();
-			game_show_framerate();		
+		game_tst_frame();
 
-			game_show_time_left();
+		render2_time2 = timer_get_fixed_seconds();
 
-			// Draw the 2D HUD gauges
-			if(supernova_active() <	3){
-				game_render_hud_2d();
-			}
+		// maybe render and process the dead popup
+		game_maybe_do_dead_popup(flFrametime);
 
-			game_set_view_clip();
+		// start timing frame
+		timing_frame_stop();
+		// timing_display(30, 10);
 
-			// Draw 3D HUD gauges			
-			game_render_hud_3d(&eye_pos, &eye_orient);									
-
-			game_tst_frame();
-
-			render2_time2 = timer_get_fixed_seconds();
-
-			// maybe render and process the dead popup
-			game_maybe_do_dead_popup(flFrametime);
-
-			// start timing frame
-			timing_frame_stop();
-			// timing_display(30, 10);			
-
-			// If a regular popup is active, don't flip (popup code flips)
-			if( !popup_running_state() ){
-				flip_time1 = timer_get_fixed_seconds();
-				game_flip_page_and_time_it();
-				flip_time2 = timer_get_fixed_seconds();
-			}
+		// If a regular popup is active, don't flip (popup code flips)
+		if( !popup_running_state() ){
+			flip_time1 = timer_get_fixed_seconds();
+			game_flip_page_and_time_it();
+			flip_time2 = timer_get_fixed_seconds();
+		}
 
 #ifndef NDEBUG
-			game_maybe_dump_frame();			// used to dump pcx files for building trailers
-#endif		
-		} else {
-			game_show_standalone_framerate();
-		}
+		game_maybe_dump_frame();			// used to dump pcx files for building trailers
+#endif
 	}
 
 	game_do_training_checks();
@@ -3701,10 +3360,6 @@ int saved_timestamp_ticker = -1;
 
 void game_reset_time()
 {
-	if((Game_mode & GM_MULTIPLAYER) && (Netgame.game_state == NETGAME_STATE_SERVER_TRANSFER)){
-		return ;
-	}
-	
 	//	Last_time = timer_get_fixed_seconds();
 	game_start_time();
 	timestamp_reset();
@@ -3779,7 +3434,6 @@ void game_start_time()
 void game_set_frametime(int state)
 {
 	fix thistime;
-	float frame_cap_diff;
 
 	thistime = timer_get_fixed_seconds();
 
@@ -3828,17 +3482,6 @@ void game_set_frametime(int state)
 		}
 	}
 
-	if((Game_mode & GM_STANDALONE_SERVER) && 
-		(f2fl(Frametime) < ((float)1.0/(float)Multi_options_g.std_framecap))){
-
-		frame_cap_diff = ((float)1.0/(float)Multi_options_g.std_framecap) - f2fl(Frametime);		
-		os_sleep((int)(frame_cap_diff*1000));
-		
-		thistime += fl2f((frame_cap_diff));		
-
-		Frametime = thistime - Last_time;
-   }
-
 	// If framerate is too low, cap it.
 	if (Frametime > MAX_FRAMETIME)	{
 #ifndef NDEBUG
@@ -3879,10 +3522,6 @@ void game_do_frame()
 	game_set_frametime(GS_STATE_GAME_PLAY);
 	game_update_missiontime();
 
-	if (Game_mode & GM_STANDALONE_SERVER) {
-		std_multi_set_standalone_missiontime(f2fl(Missiontime));
-	}
-
 	if ( game_single_step && (last_single_step == game_single_step) ) {
 		os_set_title( NOX("SINGLE STEP MODE (Pause exits, any other key steps)") );
 		while( key_checkch() == 0 )
@@ -3902,13 +3541,6 @@ void game_do_frame()
 	monitor_update();			// Update monitor variables
 }
 
-void multi_maybe_do_frame()
-{
-	if ( (Game_mode & GM_MULTIPLAYER) && (Game_mode & GM_IN_MISSION) && !Multi_pause_status){
-		game_do_frame(); 
-	}
-}
-
 int Joymouse_button_status = 0;
 
 // Flush all input devices
@@ -3922,15 +3554,6 @@ void game_flush()
 	Joymouse_button_status = 0;
 
 	//mprintf(("Game flush!\n" ));
-}
-
-// function for multiplayer only which calls game_do_state_common() when running the
-// debug console
-void game_do_dc_networking()
-{
-	Assert( Game_mode & GM_MULTIPLAYER );
-
-	game_do_state_common( gameseq_get_state() );
 }
 
 // Call this whenever in a loop, or when you need to check for a keystroke.
@@ -4017,10 +3640,8 @@ int game_poll()
 		game_start_time();
 
 		// If we're in a single player game, pause it.
-		if (!(Game_mode & GM_MULTIPLAYER)){
-			if ( (gameseq_get_state() == GS_STATE_GAME_PLAY) && (!popup_active()) && (!popupdead_is_active()) )	{
-				game_process_pause_key();
-			}
+		if ( (gameseq_get_state() == GS_STATE_GAME_PLAY) && (!popup_active()) && (!popupdead_is_active()) )	{
+			game_process_pause_key();
 		}
 	}
 
@@ -4061,11 +3682,6 @@ int game_poll()
 		}
 	}
 
-	// if we should be ignoring keys because of some multiplayer situations
-	if((Game_mode & GM_MULTIPLAYER) && multi_ignore_controls(k)){
-		return 0;
-	}
-
 	// If a popup is running, don't process all the Fn keys
 	if( popup_active() ) {
 		return k;
@@ -4088,11 +3704,6 @@ int game_poll()
 		case KEY_F2:
 //			if (state != GS_STATE_INITIAL_PLAYER_SELECT) {
 
-			// don't allow f2 while warping out in multiplayer	
-			if((Game_mode & GM_MULTIPLAYER) && (Net_player != NULL) && (Net_player->flags & NETINFO_FLAG_WARPING_OUT)){
-				break;
-			}
-
 			switch (state) {
 				case GS_STATE_INITIAL_PLAYER_SELECT:
 				case GS_STATE_OPTIONS_MENU:
@@ -4114,7 +3725,7 @@ int game_poll()
 			// hotkey selection screen -- only valid from briefing and beyond.
 		case KEY_F3:	
 			#ifndef FS2_DEMO
-				if ( (state == GS_STATE_TEAM_SELECT) || (state == GS_STATE_BRIEFING) || (state == GS_STATE_SHIP_SELECT) || (state == GS_STATE_WEAPON_SELECT) || (state == GS_STATE_GAME_PLAY) || (state == GS_STATE_GAME_PAUSED) ) {
+				if ( (state == GS_STATE_BRIEFING) || (state == GS_STATE_SHIP_SELECT) || (state == GS_STATE_WEAPON_SELECT) || (state == GS_STATE_GAME_PLAY) || (state == GS_STATE_GAME_PAUSED) ) {
 					gameseq_post_event( GS_EVENT_HOTKEY_SCREEN );
 					k = 0;
 				}
@@ -4130,25 +3741,13 @@ int game_poll()
 			break;
 		
 		case KEY_F4:
-			if(Game_mode & GM_MULTIPLAYER){
-				if((state == GS_STATE_GAME_PLAY) || (state == GS_STATE_MULTI_PAUSED)){
-					gameseq_post_event( GS_EVENT_MISSION_LOG_SCROLLBACK );
-					k = 0;
-				} 
-			} else {
-				if ((state == GS_STATE_GAME_PLAY) || (state == GS_STATE_DEATH_DIED) || (state == GS_STATE_DEATH_BLEW_UP) || (state == GS_STATE_GAME_PAUSED) ) {
-					gameseq_post_event( GS_EVENT_MISSION_LOG_SCROLLBACK );
-					k = 0;
-				}
+			if ((state == GS_STATE_GAME_PLAY) || (state == GS_STATE_DEATH_DIED) || (state == GS_STATE_DEATH_BLEW_UP) || (state == GS_STATE_GAME_PAUSED) ) {
+				gameseq_post_event( GS_EVENT_MISSION_LOG_SCROLLBACK );
+				k = 0;
 			}
 			break;
 
 		case KEY_ESC | KEY_SHIFTED:
-			// make sure to quit properly out of multiplayer
-			if(Game_mode & GM_MULTIPLAYER){
-				multi_quit_game(PROMPT_NONE);
-			}
-
 			gameseq_post_event( GS_EVENT_QUIT_GAME );
 			k = 0;
 
@@ -4183,12 +3782,7 @@ int game_poll()
 				game_stop_time();
 			}
 
-			// if we're in multiplayer mode, do some special networking
-			if(Game_mode & GM_MULTIPLAYER){
-				debug_console(game_do_dc_networking);
-			} else {				
-				debug_console();
-			}
+			debug_console();
 
 			game_flush();
 
@@ -4329,8 +3923,7 @@ void game_process_event( int current_state, int event )
 			break;
 
 		case GS_EVENT_START_GAME:
-			Select_default_ship = 0;			
-			Player_multi_died_check = -1;
+			Select_default_ship = 0;
 			gameseq_set_state(GS_STATE_CMD_BRIEF);
 			break;
 
@@ -4343,10 +3936,8 @@ void game_process_event( int current_state, int event )
 			if(Campaign_ended_in_mission && (Game_mode & GM_CAMPAIGN_MODE) && !stricmp(Campaign.filename, "freespace2")) {
 				gameseq_post_event(GS_EVENT_END_CAMPAIGN);
 			} else {
-				gameseq_set_state(GS_STATE_DEBRIEF);		
+				gameseq_set_state(GS_STATE_DEBRIEF);
 			}
-
-			Player_multi_died_check = -1;
 			break;
 
 		case GS_EVENT_SHIP_SELECTION:
@@ -4365,22 +3956,7 @@ void game_process_event( int current_state, int event )
 			}
 #endif
 
-			if (Game_mode & GM_MULTIPLAYER) {
-				// if we're respawning, make sure we change the view mode so that the hud shows up
-				if (current_state == GS_STATE_DEATH_BLEW_UP) {
-					Viewer_mode = 0;
-				}
-
-				gameseq_set_state(GS_STATE_GAME_PLAY);
-			} else {
-				gameseq_set_state(GS_STATE_GAME_PLAY, 1);
-			}
-
-			Player_multi_died_check = -1;
-
-			// clear multiplayer button info			
-			extern button_info Multi_ship_status_bi;
-			memset(&Multi_ship_status_bi, 0, sizeof(button_info));
+			gameseq_set_state(GS_STATE_GAME_PLAY, 1);
 
 			Start_time = f2fl(timer_get_approx_seconds());
 			//Framecount = 0;
@@ -4396,21 +3972,17 @@ void game_process_event( int current_state, int event )
 
 		case GS_EVENT_END_GAME:
 			if ( (current_state == GS_STATE_GAME_PLAY) || (current_state == GS_STATE_DEATH_DIED) ||
-				(current_state == GS_STATE_DEATH_BLEW_UP) ||	(current_state == GS_STATE_DEBRIEF) || (current_state == GS_STATE_MULTI_DOGFIGHT_DEBRIEF)) {
+				(current_state == GS_STATE_DEATH_BLEW_UP) ||	(current_state == GS_STATE_DEBRIEF)) {
 					gameseq_set_state(GS_STATE_MAIN_MENU);
 
 			} else
 				Int3();
-
-			Player_multi_died_check = -1;
 			break;
 
 		case GS_EVENT_QUIT_GAME:
 			main_hall_stop_music();
 			main_hall_stop_ambient();
 			gameseq_set_state(GS_STATE_QUIT_GAME);
-
-			Player_multi_died_check = -1;
 			break;
 
 		case GS_EVENT_GAMEPLAY_HELP:
@@ -4473,12 +4045,6 @@ void game_process_event( int current_state, int event )
 			if (  current_state == GS_STATE_DEATH_DIED )	{
 				gameseq_set_state( GS_STATE_DEATH_BLEW_UP );
 				event_music_player_death();
-
-				// multiplayer clients set their extra check here
-				if(Game_mode & GM_MULTIPLAYER){
-					// set the multi died absolute last chance check					
-					Player_multi_died_check = time(NULL);
-				}					
 			} else {
 				mprintf(( "Ignoring GS_EVENT_DEATH_BLEW_UP because we're in state %d\n", current_state ));
 			}
@@ -4488,8 +4054,6 @@ void game_process_event( int current_state, int event )
 			if (!mission_load_up_campaign()){
 				readyroom_continue_campaign();
 			}
-
-			Player_multi_died_check = -1;
 			break;
 
 		case GS_EVENT_CAMPAIGN_CHEAT:
@@ -4512,8 +4076,6 @@ void game_process_event( int current_state, int event )
 				// continue
 				readyroom_continue_campaign();
 			}
-
-			Player_multi_died_check = -1;
 			break;
 
 		case GS_EVENT_CAMPAIGN_ROOM:
@@ -4543,41 +4105,11 @@ void game_process_event( int current_state, int event )
 		case GS_EVENT_HOTKEY_SCREEN:
 			gameseq_push_state( GS_STATE_HOTKEY_SCREEN );	// use push_state() since we might get to this screen through a variety of states
 			break;
-		
-	// multiplayer stuff follow these comments
-
-		case GS_EVENT_MULTI_JOIN_GAME:
-			gameseq_set_state( GS_STATE_MULTI_JOIN_GAME );
-			break;
-
-		case GS_EVENT_MULTI_HOST_SETUP:
-			gameseq_set_state( GS_STATE_MULTI_HOST_SETUP );
-			break;
-
-		case GS_EVENT_MULTI_CLIENT_SETUP:
-			gameseq_set_state( GS_STATE_MULTI_CLIENT_SETUP );
-			break;
 
   		case GS_EVENT_GOTO_VIEW_CUTSCENES_SCREEN:
 			gameseq_set_state(GS_STATE_VIEW_CUTSCENES);
 			break;
 
-		case GS_EVENT_MULTI_STD_WAIT:
-			gameseq_set_state( GS_STATE_MULTI_STD_WAIT );
-			break;
-
-		case GS_EVENT_STANDALONE_MAIN:
-			gameseq_set_state( GS_STATE_STANDALONE_MAIN );
-			break;   
-
-		case GS_EVENT_MULTI_PAUSE:
-			gameseq_push_state( GS_STATE_MULTI_PAUSED );
-			break;			
-
-		case GS_EVENT_INGAME_PRE_JOIN:
-			gameseq_set_state( GS_STATE_INGAME_PRE_JOIN );
-			break;
-		
 		case GS_EVENT_EVENT_DEBUG:
 			gameseq_push_state(GS_STATE_EVENT_DEBUG);
 			break;
@@ -4663,19 +4195,7 @@ void game_process_event( int current_state, int event )
 			Player->control_mode = PCM_NORMAL;
 			Viewer_mode = Player->saved_viewer_mode;
 			Warpout_sound = -1;
-
-			// we have a special debriefing screen for multiplayer furballs
-			if((Game_mode & GM_MULTIPLAYER) && (The_mission.game_type & MISSION_TYPE_MULTI_DOGFIGHT)){
-				gameseq_post_event(GS_EVENT_MULTI_DOGFIGHT_DEBRIEF);
-			}
-			// do the normal debriefing for all other situations
-			else {
-				gameseq_post_event(GS_EVENT_DEBRIEF);
-			}
-			break;
-
-		case GS_EVENT_STANDALONE_POSTGAME:
-			gameseq_set_state(GS_STATE_STANDALONE_POSTGAME);
+			gameseq_post_event(GS_EVENT_DEBRIEF);
 			break;
 
 		case GS_EVENT_INITIAL_PLAYER_SELECT:
@@ -4687,34 +4207,12 @@ void game_process_event( int current_state, int event )
 			gameseq_set_state(GS_STATE_INITIAL_PLAYER_SELECT);
 	#else			
 			// see if the command line option has been set to use the last pilot, and act acoordingly
-			if( player_select_get_last_pilot() ) {								
-				// always enter the main menu -- do the automatic network startup stuff elsewhere
-				// so that we still have valid checks for networking modes, etc.
+			if( player_select_get_last_pilot() ) {
 				gameseq_set_state(GS_STATE_MAIN_MENU);
 			} else {
 				gameseq_set_state(GS_STATE_INITIAL_PLAYER_SELECT);
 			}
 	#endif
-			break;
-
-		case GS_EVENT_MULTI_MISSION_SYNC:
-			gameseq_set_state(GS_STATE_MULTI_MISSION_SYNC);
-			break;		
-
-		case GS_EVENT_MULTI_START_GAME:
-			gameseq_set_state(GS_STATE_MULTI_START_GAME);
-			break;
-
-		case GS_EVENT_MULTI_HOST_OPTIONS:
-			gameseq_set_state(GS_STATE_MULTI_HOST_OPTIONS);
-			break;
-
-		case GS_EVENT_MULTI_DOGFIGHT_DEBRIEF:
-			gameseq_set_state(GS_STATE_MULTI_DOGFIGHT_DEBRIEF);
-			break;
-
-		case GS_EVENT_TEAM_SELECT:
-			gameseq_set_state(GS_STATE_TEAM_SELECT);
 			break;
 
 		case GS_EVENT_END_CAMPAIGN:			
@@ -4753,8 +4251,7 @@ void game_leave_state( int old_state, int new_state )
 		case GS_STATE_MISSION_LOG_SCROLLBACK:
 		case GS_STATE_DEATH_DIED:
 		case GS_STATE_SHOW_GOALS:
-		case GS_STATE_HOTKEY_SCREEN:		
-		case GS_STATE_MULTI_PAUSED:
+		case GS_STATE_HOTKEY_SCREEN:
 		case GS_STATE_TRAINING_PAUSED:
 		case GS_STATE_EVENT_DEBUG:				
 		case GS_STATE_GAMEPLAY_HELP:
@@ -4766,29 +4263,18 @@ void game_leave_state( int old_state, int new_state )
 		case GS_STATE_BRIEFING:
 			brief_stop_voices();
 			if ( (new_state != GS_STATE_OPTIONS_MENU) && (new_state != GS_STATE_WEAPON_SELECT)
-				  && (new_state != GS_STATE_SHIP_SELECT) && (new_state != GS_STATE_HOTKEY_SCREEN)
-				  && (new_state != GS_STATE_TEAM_SELECT) ){
+				  && (new_state != GS_STATE_SHIP_SELECT) && (new_state != GS_STATE_HOTKEY_SCREEN) ){
 				common_select_close();
 				if ( new_state == GS_STATE_MAIN_MENU ) {
-					freespace_stop_mission();	
+					freespace_stop_mission();
 				}
-			}
-			
-			// COMMAND LINE OPTION
-			if (Cmdline_multi_stream_chat_to_file){
-				cfwrite_string(NOX("-------------------------------------------\n"),Multi_chat_stream);
-				cfclose(Multi_chat_stream);
 			}
 			break;
 
 		case GS_STATE_DEBRIEF:
 			if ( (new_state != GS_STATE_VIEW_MEDALS) && (new_state != GS_STATE_OPTIONS_MENU) ) {
-				debrief_close();				
+				debrief_close();
 			}
-			break;
-
-		case GS_STATE_MULTI_DOGFIGHT_DEBRIEF:
-			multi_df_debrief_close();
 			break;
 
 		case GS_STATE_LOAD_MISSION_MENU:
@@ -4822,7 +4308,7 @@ void game_leave_state( int old_state, int new_state )
 		case GS_STATE_SHIP_SELECT:
 			if ( new_state != GS_STATE_OPTIONS_MENU && new_state != GS_STATE_WEAPON_SELECT &&
 				  new_state != GS_STATE_HOTKEY_SCREEN &&
-				  new_state != GS_STATE_BRIEFING && new_state != GS_STATE_TEAM_SELECT) {
+				  new_state != GS_STATE_BRIEFING) {
 				common_select_close();
 				if ( new_state == GS_STATE_MAIN_MENU ) {
 					freespace_stop_mission();	
@@ -4833,23 +4319,12 @@ void game_leave_state( int old_state, int new_state )
 		case GS_STATE_WEAPON_SELECT:
 			if ( new_state != GS_STATE_OPTIONS_MENU && new_state != GS_STATE_SHIP_SELECT &&
 				  new_state != GS_STATE_HOTKEY_SCREEN &&
-				  new_state != GS_STATE_BRIEFING && new_state != GS_STATE_TEAM_SELECT) {
+				  new_state != GS_STATE_BRIEFING) {
 				common_select_close();
 				if ( new_state == GS_STATE_MAIN_MENU ) {
 					freespace_stop_mission();	
 				}
 			}
-			break;
-
-		case GS_STATE_TEAM_SELECT:
-			if ( new_state != GS_STATE_OPTIONS_MENU && new_state != GS_STATE_SHIP_SELECT &&
-				  new_state != GS_STATE_HOTKEY_SCREEN &&
-				  new_state != GS_STATE_BRIEFING && new_state != GS_STATE_WEAPON_SELECT) {
-				common_select_close();
-				if ( new_state == GS_STATE_MAIN_MENU ) {
-					freespace_stop_mission();	
-				}
-			}					
 			break;
 
 		case GS_STATE_MAIN_MENU:
@@ -4862,9 +4337,6 @@ void game_leave_state( int old_state, int new_state )
 
 		case GS_STATE_OPTIONS_MENU:
 			//game_start_time();
-			if(new_state == GS_STATE_MULTI_JOIN_GAME){
-				multi_join_clear_game_list();
-			}
 			options_menu_close();
 			break;
 
@@ -4883,16 +4355,14 @@ void game_leave_state( int old_state, int new_state )
 			break;
 
 		case GS_STATE_GAME_PLAY:
-			if ( !(Game_mode & GM_STANDALONE_SERVER) ) {
-				player_save_target_and_weapon_link_prefs();
-				game_stop_looped_sounds();
-			}
+			player_save_target_and_weapon_link_prefs();
+			game_stop_looped_sounds();
 
 			sound_env_disable();
 			joy_ff_stop_effects();
 
 			// stop game time under certain conditions
-			if ( end_mission || (Game_mode & GM_NORMAL) || ((Game_mode & GM_MULTIPLAYER) && (new_state == GS_STATE_MULTI_PAUSED)) ){
+			if ( end_mission || (Game_mode & GM_NORMAL) ){
 				game_stop_time();
 			}
 
@@ -4902,14 +4372,7 @@ void game_leave_state( int old_state, int new_state )
 				demo_close();
 #endif
 
-				// when in multiplayer and going back to the main menu, send a leave game packet
-				// right away (before calling stop mission).  stop_mission was taking to long to
-				// close mission down and I want people to get notified ASAP.
-				if ( (Game_mode & GM_MULTIPLAYER) && (new_state == GS_STATE_MAIN_MENU) ){
-					multi_quit_game(PROMPT_NONE);
-				}
-
-				freespace_stop_mission();			
+				freespace_stop_mission();
 				Game_time_compression = F1_0;
 			}
 			break;
@@ -4925,7 +4388,7 @@ void game_leave_state( int old_state, int new_state )
 		case GS_STATE_GAME_PAUSED:
 			game_start_time();
 			if ( end_mission ) {
-				pause_close(0);
+				pause_close();
 			}
 			break;
 
@@ -4940,66 +4403,20 @@ void game_leave_state( int old_state, int new_state )
 			hud_config_close();
 			break;
 
-		// join/start a game
-		case GS_STATE_MULTI_JOIN_GAME:
-			if(new_state != GS_STATE_OPTIONS_MENU){
-				multi_join_game_close();
-			}
-			break;
-
-		case GS_STATE_MULTI_HOST_SETUP:
-		case GS_STATE_MULTI_CLIENT_SETUP:
-			// if this is just the host going into the options screen, don't do anything
-			if((new_state == GS_STATE_MULTI_HOST_OPTIONS) || (new_state == GS_STATE_OPTIONS_MENU)){
-				break;
-			}
-
-			// close down the proper state
-			if(old_state == GS_STATE_MULTI_HOST_SETUP){
-				multi_create_game_close();
-			} else {
-				multi_game_client_setup_close();
-			}
-
-			// COMMAND LINE OPTION
-			if (Cmdline_multi_stream_chat_to_file){
-				if( (new_state != GS_STATE_TEAM_SELECT) && (Multi_chat_stream!=NULL) ) {
-					cfwrite_string(NOX("-------------------------------------------\n"),Multi_chat_stream);
-					cfclose(Multi_chat_stream);
-				}
-			}			
-			break;
-
 		case GS_STATE_CONTROL_CONFIG:
 			control_config_close();
 			break;
 
 		case GS_STATE_DEATH_DIED:
 			Game_mode &= ~GM_DEAD_DIED;
-			
-			// early end while respawning or blowing up in a multiplayer game
-			if((Game_mode & GM_MULTIPLAYER) && ((new_state == GS_STATE_DEBRIEF) || (new_state == GS_STATE_MULTI_DOGFIGHT_DEBRIEF)) ){
-				game_stop_time();
-				freespace_stop_mission();
-			}
 			break;
 
 		case GS_STATE_DEATH_BLEW_UP:
 			Game_mode &= ~GM_DEAD_BLEW_UP;
 
-			// for single player, we might reload mission, etc.  For multiplayer, look at my new state
-			// to determine if I should do anything.
-			if ( !(Game_mode & GM_MULTIPLAYER) ) {
-				if ( end_mission ){
-					freespace_stop_mission();
-				}
-			} else {
-				// if we are not respawing as an observer or as a player, our new state will not
-				// be gameplay state.
-				if ( (new_state != GS_STATE_GAME_PLAY) && (new_state != GS_STATE_MULTI_PAUSED) ) {
-					game_stop_time();									// hasn't been called yet!!
-					freespace_stop_mission();
-				}
+			// we might reload mission, etc.
+			if ( end_mission ){
+				freespace_stop_mission();
 			}
 			break;
 
@@ -5022,66 +4439,13 @@ void game_leave_state( int old_state, int new_state )
 			}
 			break;
 
-		case GS_STATE_MULTI_MISSION_SYNC:
-			// if we're moving into the options menu, don't do anything
-			if(new_state == GS_STATE_OPTIONS_MENU){
-				break;
-			}
-
-			Assert( Game_mode & GM_MULTIPLAYER );
-			multi_sync_close();
-			if ( new_state == GS_STATE_GAME_PLAY ){
-				// palette_restore_palette();
-
-				// change a couple of flags to indicate our state!!!
-				Net_player->state = NETPLAYER_STATE_IN_MISSION;
-				send_netplayer_update_packet();
-
-				// set the game mode
-				Game_mode |= GM_IN_MISSION;
-			}			
-			break;		
-   
 		case GS_STATE_VIEW_CUTSCENES:
 			cutscenes_screen_close();
 			break;
 
-		case GS_STATE_MULTI_STD_WAIT:
-			multi_standalone_wait_close();
-	  		break;
-
-		case GS_STATE_STANDALONE_MAIN:			
-			standalone_main_close();
-			if(new_state == GS_STATE_MULTI_STD_WAIT){		
-				init_multiplayer_stats();										
-			}			
+		case GS_STATE_INITIAL_PLAYER_SELECT:
+			player_select_close();
 			break;
-
-		case GS_STATE_MULTI_PAUSED:
-			// if ( end_mission ){
-				pause_close(1);
-			// }
-			break;			
-
-		case GS_STATE_INGAME_PRE_JOIN:
-			multi_ingame_select_close();
-			break;
-
-		case GS_STATE_STANDALONE_POSTGAME:
-			multi_standalone_postgame_close();
-			break;
-
-		case GS_STATE_INITIAL_PLAYER_SELECT:			
-			player_select_close();			
-			break;		
-
-		case GS_STATE_MULTI_START_GAME:
-			multi_start_game_close();
-			break;
-
-		case GS_STATE_MULTI_HOST_OPTIONS:
-			multi_host_options_close();
-			break;				
 
 		case GS_STATE_END_OF_CAMPAIGN:
 			mission_campaign_end_close();
@@ -5103,13 +4467,7 @@ void game_leave_state( int old_state, int new_state )
 void game_enter_state( int old_state, int new_state )
 {
 	switch (new_state) {
-		case GS_STATE_MAIN_MENU:				
-			// in multiplayer mode, be sure that we are not doing networking anymore.
-			if ( Game_mode & GM_MULTIPLAYER ) {
-				Assert( Net_player != NULL );
-				Net_player->flags &= ~NETINFO_FLAG_DO_NETWORKING;
-			}
-
+		case GS_STATE_MAIN_MENU:
 			Game_time_compression = F1_0;
 	
 			// determine which ship this guy is currently based on
@@ -5159,10 +4517,6 @@ void game_enter_state( int old_state, int new_state )
 			if ( (old_state != GS_STATE_VIEW_MEDALS) && (old_state != GS_STATE_OPTIONS_MENU) ){
 				debrief_init();
 			}
-			break;
-
-		case GS_STATE_MULTI_DOGFIGHT_DEBRIEF:
-			multi_df_debrief_init();
 			break;
 
 		case GS_STATE_LOAD_MISSION_MENU:
@@ -5221,13 +4575,9 @@ void game_enter_state( int old_state, int new_state )
 			weapon_select_init();
 			break;
 
-		case GS_STATE_TEAM_SELECT:		
-			multi_ts_init();
-			break;
-
 		case GS_STATE_GAME_PAUSED:
 			game_stop_time();
-			pause_init(0);
+			pause_init();
 			break;
 
 		case GS_STATE_DEBUG_PAUSED:
@@ -5256,10 +4606,9 @@ void game_enter_state( int old_state, int new_state )
 			}
 
 			// if we are coming from the briefing, ship select, weapons loadout, or main menu (in the
-			// case of quick start), then do bitmap loads, etc  Don't do any of the loading stuff
-			// if we are in multiplayer -- this stuff is all handled in the multi-wait section
-			if ( !(Game_mode & GM_MULTIPLAYER) && (old_state == GS_STATE_BRIEFING) || (old_state == GS_STATE_SHIP_SELECT) ||
-				(old_state == GS_STATE_WEAPON_SELECT) || (old_state == GS_STATE_MAIN_MENU) || (old_state == GS_STATE_MULTI_STD_WAIT)	|| (old_state == GS_STATE_SIMULATOR_ROOM) ) {
+			// case of quick start), then do bitmap loads, etc
+			if ( (old_state == GS_STATE_BRIEFING) || (old_state == GS_STATE_SHIP_SELECT) ||
+				(old_state == GS_STATE_WEAPON_SELECT) || (old_state == GS_STATE_MAIN_MENU) || (old_state == GS_STATE_SIMULATOR_ROOM) ) {
 					// JAS: Used to do all paging here.
 
 					#ifndef NDEBUG
@@ -5274,20 +4623,20 @@ void game_enter_state( int old_state, int new_state )
 			}
 
 			// special code that restores player ship selection and weapons loadout when doing a quick start
-			if ( !(Game_mode & GM_MULTIPLAYER) && (old_state == GS_STATE_MAIN_MENU) || (old_state == GS_STATE_DEATH_BLEW_UP)  || (old_state == GS_STATE_GAME_PLAY) ) {
+			if ( (old_state == GS_STATE_MAIN_MENU) || (old_state == GS_STATE_DEATH_BLEW_UP)  || (old_state == GS_STATE_GAME_PLAY) ) {
 				if ( !stricmp(Player_loadout.filename, Game_current_mission_filename) ) {
 					wss_direct_restore_loadout();
 				}
 			}
 
-			// single-player, quick-start after just died... we need to set weapon linking and kick off the event music
-			if (!(Game_mode & GM_MULTIPLAYER) && (old_state == GS_STATE_DEATH_BLEW_UP) ) {
+			// quick-start after just died... we need to set weapon linking and kick off the event music
+			if ( (old_state == GS_STATE_DEATH_BLEW_UP) ) {
 				event_music_first_pattern();	// start the first pattern
 			}
 
-			if ( !(Game_mode & GM_STANDALONE_SERVER) && (old_state != GS_STATE_GAME_PAUSED) && (old_state != GS_STATE_MULTI_PAUSED) ) {
+			if ( (old_state != GS_STATE_GAME_PAUSED) ) {
 				event_music_first_pattern();	// start the first pattern
-			}			
+			}
 			player_restore_target_and_weapon_link_prefs();
 
 			Game_mode |= GM_IN_MISSION;
@@ -5300,90 +4649,21 @@ void mouse_force_pos(int x, int y);
 
 			game_flush();
 
-			// only start time if in single player, or coming from multi wait state
-			if (
-					(
-						(Game_mode & GM_NORMAL) && 
-						(old_state != GS_STATE_VIEW_CUTSCENES)
-					) || (
-						(Game_mode & GM_MULTIPLAYER) && (
-							(old_state == GS_STATE_MULTI_PAUSED) ||
-							(old_state == GS_STATE_MULTI_MISSION_SYNC)
-						)
-					)
-				)
-					game_start_time();
-
-			// when coming from the multi paused state, reset the timestamps
-			if ( (Game_mode & GM_MULTIPLAYER) && (old_state == GS_STATE_MULTI_PAUSED) ){
-				multi_reset_timestamps();
-			}
-
-			if ((Game_mode & GM_MULTIPLAYER) && (old_state != GS_STATE_DEATH_BLEW_UP) ) {
-				// initialize all object update details
-				multi_oo_gameplay_init();
-			}
-	
-			// under certain circumstances, the server should reset the object update rate limiting stuff
-			if( ((Game_mode & GM_MULTIPLAYER) && (Net_player->flags & NETINFO_FLAG_AM_MASTER)) &&
-				 (old_state == GS_STATE_MULTI_PAUSED) || (old_state == GS_STATE_MULTI_MISSION_SYNC) ){
-				
-				// reinitialize the rate limiting system for all clients
-				multi_oo_rate_init_all();
-			}
-
-			// multiplayer clients should always re-initialize their control info rate limiting system			
-			if((Game_mode & GM_MULTIPLAYER) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER)){
-				multi_oo_rate_init_all();
-			}
-			
-			// reset ping times
-			if(Game_mode & GM_MULTIPLAYER){
-				multi_ping_reset_players();
-			}
+			if ( (Game_mode & GM_NORMAL) && (old_state != GS_STATE_VIEW_CUTSCENES) )
+				game_start_time();
 
 			Game_subspace_effect = 0;
 			if (The_mission.flags & MISSION_FLAG_SUBSPACE) {
 				Game_subspace_effect = 1;
-				if( !(Game_mode & GM_STANDALONE_SERVER) ){	
-					game_start_subspace_ambient_sound();
-				}
+				game_start_subspace_ambient_sound();
 			}
 
 			sound_env_set(&Game_sound_env);
 			joy_ff_mission_init(Ship_info[Player_ship->ship_info_index].rotation_time);
-
-			// clear multiplayer button info			i
-			extern button_info Multi_ship_status_bi;
-			memset(&Multi_ship_status_bi, 0, sizeof(button_info));
 			break;
 
 		case GS_STATE_HUD_CONFIG:
 			hud_config_init();
-			break;
-
-		case GS_STATE_MULTI_JOIN_GAME:
-			multi_join_clear_game_list();
-
-			if (old_state != GS_STATE_OPTIONS_MENU) {
-				multi_join_game_init();
-			}
-
-			break;
-
-		case GS_STATE_MULTI_HOST_SETUP:		
-			// don't reinitialize if we're coming back from the host options screen
-			if ((old_state != GS_STATE_MULTI_HOST_OPTIONS) && (old_state != GS_STATE_OPTIONS_MENU)) {
-				multi_create_game_init();
-			}
-
-			break;
-
-		case GS_STATE_MULTI_CLIENT_SETUP:		
-			if (old_state != GS_STATE_OPTIONS_MENU) {
-				multi_game_client_setup_init();
-			}
-
 			break;
 
 		case GS_STATE_CONTROL_CONFIG:
@@ -5406,10 +4686,7 @@ void mouse_force_pos(int x, int y);
 
 		case GS_STATE_DEATH_DIED:
  			Player_died_time = timestamp(10);
-
-			if(!(Game_mode & GM_MULTIPLAYER)){
-				player_show_death_message();
-			}
+			player_show_death_message();
 			Game_mode |= GM_DEAD_DIED;
 			break;
 
@@ -5453,81 +4730,17 @@ void mouse_force_pos(int x, int y);
 			mission_hotkey_init();
 			break;
 
-		case GS_STATE_MULTI_MISSION_SYNC:
-			// if we're coming from the options screen, don't do any
-			if(old_state == GS_STATE_OPTIONS_MENU){
-				break;
-			}
-
-			switch(Multi_sync_mode){
-			case MULTI_SYNC_PRE_BRIEFING:
-				// if moving from game forming to the team select state						
-				multi_sync_init();			
-				break;
-			case MULTI_SYNC_POST_BRIEFING:
-				// if moving from briefing into the mission itself			
-				multi_sync_init();
-			
-				// tell everyone that we're now loading data
-				Net_player->state = NETPLAYER_STATE_DATA_LOAD;
-				send_netplayer_update_packet();
-
-				// JAS: Used to do all paging here!!!!
-								
-				Net_player->state = NETPLAYER_STATE_WAITING;			
-				send_netplayer_update_packet();				
-				Missiontime = 0;
-				Game_time_compression = F1_0;
-				break;
-			case MULTI_SYNC_INGAME:
-				multi_sync_init();
-				break;
-			}
-			break;		
-   
 		case GS_STATE_VIEW_CUTSCENES:
 			cutscenes_screen_init();
-			break;
-
-		case GS_STATE_MULTI_STD_WAIT:
-			multi_standalone_wait_init();
-			break;
-
-		case GS_STATE_STANDALONE_MAIN:
-			// don't initialize if we're coming from one of these 2 states unless there are no 
-			// players left (reset situation)
-			if((old_state != GS_STATE_STANDALONE_POSTGAME) || multi_endgame_ending()){
-				standalone_main_init();
-			}
-			break;	
-
-		case GS_STATE_MULTI_PAUSED:
-			pause_init(1);
-			break;
-		
-		case GS_STATE_INGAME_PRE_JOIN:
-			multi_ingame_select_init();
-			break;
-
-		case GS_STATE_STANDALONE_POSTGAME:
-			multi_standalone_postgame_init();
 			break;
 
 		case GS_STATE_INITIAL_PLAYER_SELECT:
 			player_select_init();
 			break;		
 
-		case GS_STATE_MULTI_START_GAME:
-			multi_start_game_init();
-			break;
-
-		case GS_STATE_MULTI_HOST_OPTIONS:
-			multi_host_options_init();
-			break;		
-
 		case GS_STATE_END_OF_CAMPAIGN:
 			mission_campaign_end_init();
-			break;		
+			break;
 
 		case GS_STATE_LOOP_BRIEF:
 			loop_brief_init();
@@ -5537,36 +4750,11 @@ void mouse_force_pos(int x, int y);
 }
 
 // do stuff that may need to be done regardless of state
-void game_do_state_common(int state,int no_networking)
+void game_do_state_common(int state)
 {
 	game_maybe_draw_mouse(flFrametime);		// determine if to draw the mouse this frame
 	snd_do_frame();								// update sound system
 	event_music_do_frame();						// music needs to play across many states
-
-	multi_log_process();	
-
-	if (no_networking) {
-		return;
-	}
-
-	// maybe do a multiplayer frame based on game mode and state type	
-	if (Game_mode & GM_MULTIPLAYER) {
-		switch (state) {
-			case GS_STATE_OPTIONS_MENU:
-			case GS_STATE_GAMEPLAY_HELP:
-			case GS_STATE_HOTKEY_SCREEN:
-			case GS_STATE_HUD_CONFIG:
-			case GS_STATE_CONTROL_CONFIG:
-			case GS_STATE_MISSION_LOG_SCROLLBACK:
-			case GS_STATE_SHOW_GOALS:
-			case GS_STATE_VIEW_CUTSCENES:
-			case GS_STATE_EVENT_DEBUG:
-				multi_maybe_do_frame();
-				break;
-		}
-		
-		game_do_networking();
-	}
 }
 
 // Called once a frame.
@@ -5626,7 +4814,7 @@ void game_do_state(int state)
 			break;
 
 		case GS_STATE_GAME_PAUSED:
-			pause_do(0);
+			pause_do();
 			break;
 
 		case GS_STATE_DEBUG_PAUSED:
@@ -5655,11 +4843,6 @@ void game_do_state(int state)
 			debrief_do_frame(flFrametime);
 			break;
 
-		case GS_STATE_MULTI_DOGFIGHT_DEBRIEF:
-			game_set_frametime(GS_STATE_MULTI_DOGFIGHT_DEBRIEF);
-			multi_df_debrief_do();
-			break;
-
 		case GS_STATE_SHIP_SELECT:
 			game_set_frametime(GS_STATE_SHIP_SELECT);
 			ship_select_do(flFrametime);
@@ -5678,21 +4861,6 @@ void game_do_state(int state)
 		case GS_STATE_HUD_CONFIG:
 			game_set_frametime(GS_STATE_HUD_CONFIG);
 			hud_config_do_frame(flFrametime);
-			break;
-
-		case GS_STATE_MULTI_JOIN_GAME:
-			game_set_frametime(GS_STATE_MULTI_JOIN_GAME);
-			multi_join_game_do_frame();
-			break;
-
-		case GS_STATE_MULTI_HOST_SETUP:
-			game_set_frametime(GS_STATE_MULTI_HOST_SETUP);
-			multi_create_game_do();
-			break;
-
-		case GS_STATE_MULTI_CLIENT_SETUP:
-			game_set_frametime(GS_STATE_MULTI_CLIENT_SETUP);
-			multi_game_client_setup_do_frame();
 			break;
 
 		case GS_STATE_CONTROL_CONFIG:
@@ -5753,31 +4921,6 @@ void game_do_state(int state)
 			cutscenes_screen_do_frame();
 			break;
 
-		case GS_STATE_MULTI_STD_WAIT:
-			game_set_frametime(GS_STATE_STANDALONE_MAIN);
-			multi_standalone_wait_do();
-			break;
-
-		case GS_STATE_STANDALONE_MAIN:
-			game_set_frametime(GS_STATE_STANDALONE_MAIN);
-			standalone_main_do();
-			break;	
-
-		case GS_STATE_MULTI_PAUSED:
-			game_set_frametime(GS_STATE_MULTI_PAUSED);
-			pause_do(1);
-			break;
-
-		case GS_STATE_TEAM_SELECT:
-			game_set_frametime(GS_STATE_TEAM_SELECT);
-			multi_ts_do();
-			break;
-
-		case GS_STATE_INGAME_PRE_JOIN:
-			game_set_frametime(GS_STATE_INGAME_PRE_JOIN);
-			multi_ingame_select_do();
-			break;
-
 		case GS_STATE_EVENT_DEBUG:
 	#ifndef NDEBUG
 			game_set_frametime(GS_STATE_EVENT_DEBUG);
@@ -5785,30 +4928,10 @@ void game_do_state(int state)
 	#endif
 			break;
 
-		case GS_STATE_STANDALONE_POSTGAME:
-			game_set_frametime(GS_STATE_STANDALONE_POSTGAME);
-			multi_standalone_postgame_do();
-			break;
-
 		case GS_STATE_INITIAL_PLAYER_SELECT:
 			game_set_frametime(GS_STATE_INITIAL_PLAYER_SELECT);
 			player_select_do();
 			break;
-
-		case GS_STATE_MULTI_MISSION_SYNC:
-			game_set_frametime(GS_STATE_MULTI_MISSION_SYNC);
-			multi_sync_do();
-			break;		
-
-		case GS_STATE_MULTI_START_GAME:
-			game_set_frametime(GS_STATE_MULTI_START_GAME);
-			multi_start_game_do();
-			break;
-		
-		case GS_STATE_MULTI_HOST_OPTIONS:
-			game_set_frametime(GS_STATE_MULTI_HOST_OPTIONS);
-			multi_host_options_do();
-			break;		
 
 		case GS_STATE_END_OF_CAMPAIGN:
 			mission_campaign_end_do();
@@ -6061,15 +5184,6 @@ int main(int argc, char *argv[])
 
 	parse_cmdline(cmdline);
 
-#ifdef STANDALONE_ONLY_BUILD
-	Is_standalone = 1;
-	nprintf(("Network", "Standalone running"));
-#else
-	if (Is_standalone){
-		nprintf(("Network", "Standalone running"));
-	}
-#endif
-
 	init_cdrom();
 	game_init();
 	game_stop_time();
@@ -6081,12 +5195,12 @@ int main(int argc, char *argv[])
 		return 0;	// was 1 -- WinMain success; 0 is success for main()
 	}
 
-	// non-demo, non-standalone, play the intro movie
-	if(!Is_standalone){
+	// non-demo, play the intro movie
 #ifndef DEMO
 #ifdef RELEASE_REAL
+	{
 		char *plist[5];
-		if( (cf_get_file_list(2, plist, CF_TYPE_MULTI_PLAYERS, NOX("*.plr"))	<= 0) && (cf_get_file_list(2, plist, CF_TYPE_SINGLE_PLAYERS, NOX("*.plr"))	<= 0) ){
+		if( (cf_get_file_list(2, plist, CF_TYPE_SINGLE_PLAYERS, NOX("*.plr"))	<= 0) ){
 			// prompt for cd 2
 #if defined(OEM_BUILD)
 			game_do_cd_check_specific(FS_CDROM_VOLUME_1, 1);
@@ -6094,11 +5208,10 @@ int main(int argc, char *argv[])
 			game_do_cd_check_specific(FS_CDROM_VOLUME_2, 2);
 #endif // defined(OEM_BUILD)
 		}
-#endif
 	}
+#endif
 
-	if ( !Is_standalone ) {
-
+	{
 		// release -- movies always play
 		#if defined(NDEBUG)
 
@@ -6108,7 +5221,7 @@ int main(int argc, char *argv[])
 
 		// debug version, movie will only play with -showmovies
 		#else if !defined(NDEBUG)
-		
+
 		// no soup for you!
 		// movie_play( NOX("intro.mve"), 0);
 /*
@@ -6120,13 +5233,9 @@ int main(int argc, char *argv[])
 		#endif
 	}
 
-#endif	
+#endif
 
-	if (Is_standalone){
-		gameseq_post_event(GS_EVENT_STANDALONE_MAIN);
-	} else {
-		gameseq_post_event(GS_EVENT_GAME_INIT);		// start the game rolling -- check for default pilot, or go to the pilot select screen
-	}
+	gameseq_post_event(GS_EVENT_GAME_INIT);		// start the game rolling -- check for default pilot, or go to the pilot select screen
 
 	while (1) {
 		// only important for non THREADED mode
@@ -6139,9 +5248,7 @@ int main(int argc, char *argv[])
 	} 
 
 #ifdef FS2_DEMO
-	if(!Is_standalone){
-		demo_upsell_show_screens();
-	}
+	demo_upsell_show_screens();
 #elif defined(OEM_BUILD)
 	// show upsell screens on exit
 	oem_upsell_show_screens();
@@ -6155,13 +5262,6 @@ int main(int argc, char *argv[])
 // __try/__except SEH handler around RecordExceptionInfo(); a core dump
 // serves that purpose here.
 
-// launcher the fslauncher program on exit
-void game_launch_launcher_on_exit()
-{
-	// retail CreateProcess'd the Windows launcher with -straight_to_update
-	// (multi auto-patching); there is no launcher here, so do nothing
-}
-
 
 // game_shutdown()
 //
@@ -6171,34 +5271,23 @@ void game_shutdown(void)
 {
 	// timeEndPeriod(1) -- Win32 timer-resolution tweak, not needed
 
-	// don't ever flip a page on the standalone!
-	if(!(Game_mode & GM_STANDALONE_SERVER)){
-		gr_reset_clip();
-		gr_clear();
-		gr_flip();
-	}
+	gr_reset_clip();
+	gr_clear();
+	gr_flip();
 
    // if the player has left the "player select" screen and quit the game without actually choosing
 	// a player, Player will be NULL, in which case we shouldn't write the player file out!
-	if (!(Game_mode & GM_STANDALONE_SERVER) && (Player!=NULL) && !Is_standalone){
+	if (Player!=NULL){
 		write_pilot_file();
 	}
 
-	// load up common multiplayer icons
-	multi_unload_common_icons();
-	
-	shockwave_close();			// release any memory used by shockwave system	
+	shockwave_close();			// release any memory used by shockwave system
 	fireball_close();				// free fireball system
 	ship_close();					// free any memory that was allocated for the ships
 	hud_free_scrollback_list();// free space allocated to store hud messages in hud scrollback
 	unload_animating_pointer();// frees the frames used for the animating mouse pointer
 	bm_unload_all();				// free bitmaps
 	mission_campaign_close();	// close out the campaign stuff
-	multi_voice_close();			// close down multiplayer voice (including freeing buffers, etc)
-	multi_log_close();
-#ifdef MULTI_USE_LAG
-	multi_lag_close();
-#endif
 
 	// the menu close functions will unload the bitmaps if they were displayed during the game
 #if !defined(PRESS_TOUR_BUILD) && !defined(PD_BUILD)
@@ -6213,15 +5302,7 @@ void game_shutdown(void)
 	audiostream_close();
 	snd_close();
 	event_music_close();
-	psnet_close();
 	os_cleanup();
-
-	// HACKITY HACK HACK
-	// if this flag is set, we should be firing up the launcher when exiting freespace
-	extern int Multi_update_fireup_launcher_on_exit;
-	if(Multi_update_fireup_launcher_on_exit){
-		game_launch_launcher_on_exit();
-	}
 }
 
 // game_stop_looped_sounds()
@@ -6360,7 +5441,6 @@ void game_maybe_draw_mouse(float frametime)
 
 	switch ( game_state ) {
 		case GS_STATE_GAME_PAUSED:
-		// case GS_STATE_MULTI_PAUSED:
 		case GS_STATE_GAME_PLAY:
 		case GS_STATE_DEATH_DIED:
 		case GS_STATE_DEATH_BLEW_UP:
@@ -7013,10 +6093,8 @@ void oem_upsell_show_screens()
 
 				// check for clicks
 				if (button_state & MOUSE_LEFT_BUTTON) {
-					// launch URL
-					multi_pxo_url(OEM_UPSELL_URL);
 					done = 1;
-				} 
+				}
 			} else {
 				// switch cursor back to normal one
 				gr_set_cursor_bitmap(Oem_normal_cursor); //, GR_CURSOR_UNLOCK);

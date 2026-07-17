@@ -228,10 +228,6 @@ void grx_init_alphacolor( color *clr, int r, int g, int b, int alpha, int type )
 	int n;
 	alphacolor *ac;
 	
-	if(Game_mode & GM_STANDALONE_SERVER){
-		return;
-	}
-
 	if (!Alphacolors_intited) return;
 
 	if ( alpha < 0 ) alpha = 0;

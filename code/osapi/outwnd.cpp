@@ -1054,15 +1054,9 @@ BOOL outwnd_create(int display_under_freespace_window)
 		rect.right = x + client_rect.right - client_rect.left - 1;
 		rect.bottom = y + client_rect.bottom - client_rect.top - 1;
 
-		if(!Is_standalone){
-			rect.top = rect.bottom;
-			rect.bottom = GetSystemMetrics(SM_CYSCREEN) - TASKBAR_HEIGHT - rect.top;
-			rect.right -= rect.left;
-		} else {
-			rect.left += 350;
-			rect.right = 550;
-			rect.bottom = 400;
-		}	
+		rect.top = rect.bottom;
+		rect.bottom = GetSystemMetrics(SM_CYSCREEN) - TASKBAR_HEIGHT - rect.top;
+		rect.right -= rect.left;
 	} else {
 		style = WS_OVERLAPPEDWINDOW | WS_MINIMIZE;;
 		rect.top = rect.bottom = rect.left = rect.right = CW_USEDEFAULT;

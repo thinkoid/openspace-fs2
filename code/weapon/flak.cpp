@@ -13,7 +13,6 @@
 #include "particle.h"
 #include "weapon.h"
 #include "systemvars.h"
-#include "multi.h"
 #include "muzzleflash.h"
 
 // --------------------------------------------------------------------------------------------------------------------------------------
@@ -222,12 +221,7 @@ void flak_muzzle_flash(vector *pos, vector *dir, int turret_weapon_class)
 // maybe detonate a flak shell early/late (call from weapon_process_pre(...))
 void flak_maybe_detonate(object *objp)
 {			
-	vector temp;	
-
-	// multiplayer clients should never detonate flak early
-	// if(MULTIPLAYER_CLIENT){
-		// return;
-	// }
+	vector temp;
 
 	// if the shell has gone past its range, blow it up
 	vm_vec_sub(&temp, &objp->pos, &Flak[Weapons[objp->instance].flak_index].start_pos);

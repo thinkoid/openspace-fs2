@@ -47,16 +47,12 @@
 #include "redalert.h"
 #include "jumpnode.h"
 #include "hudshield.h"
-#include "multi.h"
-#include "multimsgs.h"
-#include "multiutil.h"
 #include "hudescort.h"
 #include "beam.h"
 #include "supernova.h"
 #include "hudets.h"
 #include "fvi.h"
 #include "awacs.h"
-#include "multi_team.h"
 
 #define TRUE	1
 #define FALSE	0
@@ -3118,11 +3114,6 @@ int sexp_is_ship_visible(int n)
 	int shipnum;
 	int ship_is_visible = 0;
 
-	// if multiplayer, bail
-	if (Game_mode & GM_MULTIPLAYER) {
-		return SEXP_NAN_FOREVER;
-	}
-
 	shipname = CTEXT(n);
 	
 	// if ship is gone or departed, cannot ever evaluate properly.  Return NAN_FOREVER
@@ -3155,29 +3146,10 @@ int sexp_is_ship_visible(int n)
 	return ship_is_visible;
 }
 
-// get multi team v team score
-// if not multi team v team return 0
-// if invalid team return 0
+// get multi team v team score - always 0 in single player
 int sexp_team_score(int node)
 {
-	// if multi t vs t
-	if (Game_mode & GM_MULTIPLAYER) {
-		if (Netgame.type_flags & NG_TYPE_TEAM) {
-
-			int team = atoi(CTEXT(node));
-
-			if (team == 1) {
-				return Multi_team0_score;
-			} else if (team == 2) {
-				return Multi_team1_score;
-			} else {
-				// invalid team index
-				Int3();
-				return 0;
-			}
-		}
-	}
-
+	// multiplayer excised
 	return 0;
 }
 
@@ -4082,11 +4054,6 @@ void sexp_change_iff( int n )
 		num = ship_name_lookup(ship_name);
 		if ( num >= 0 ) { 					// only change iff if we found the ship
 			Ships[num].team = new_team;
-
-			// send a network packet if we need to
-			if((Game_mode & GM_MULTIPLAYER) && (Net_player != NULL) && (Net_player->flags & NETINFO_FLAG_AM_MASTER) && (Ships[num].objnum >= 0)){
-				send_change_iff_packet(Objects[Ships[num].objnum].net_signature, new_team);
-			}
 		}
 
 		n = CDR(n);
@@ -4832,10 +4799,6 @@ void sexp_good_time_to_rearm( int n )
 // function which grants promotion to the player
 void sexp_grant_promotion()
 {
-	// short circuit multiplayer for now until we figure out what to do.
-	if ( Game_mode & GM_MULTIPLAYER )
-		return;
-
 	// set a bit to tell player should get promoted at the end of the mission.  I suppose the other
 	// thing that we could do would be to set the players score to at least the amount of
 	// points for the next level, but this way is better I think.
@@ -4847,7 +4810,7 @@ void sexp_grant_promotion()
 // function which gives the named medal to the players in the mission
 void sexp_grant_medal( int n )
 {
-	int i, j;
+	int i;
 	char *medal_name;
 
 	// don't give medals in normal gameplay when not in campaign mode
@@ -4863,13 +4826,6 @@ void sexp_grant_medal( int n )
 
 	if ( i < NUM_MEDALS ) {
 		Player->stats.m_medal_earned = i;
-		if ( Game_mode & GM_MULTIPLAYER ) {
-			for ( j = 0; j < MAX_PLAYERS; j++ ) {
-				if ( MULTI_CONNECTED(Net_players[j]) ) {
-					Net_players[j].player->stats.m_medal_earned = i;
-				}
-			}
-		}
 	}
 }
 
@@ -5564,11 +5520,6 @@ void sexp_ship_vanish( int n )
 	char *ship_name;
 	object *objp, *docked_objp;
 	int num;
-
-	// if MULTIPLAYER bail
-	if (Game_mode & GM_MULTIPLAYER) {
-		return;
-	}
 
 	for ( ; n != -1; n = CDR(n) ) {
 		ship_name = CTEXT(n);
@@ -6424,7 +6375,7 @@ int sexp_is_tagged(int node)
 
 int sexp_num_kills(int node)
 {
-	int sindex, np_index;
+	int sindex;
 	player *p = NULL;
 
 	// get the ship we're interested in
@@ -6435,21 +6386,11 @@ int sexp_num_kills(int node)
 	if(Ships[sindex].objnum < 0){
 		return 0;
 	}
-	
-	// in multiplayer, search through all players
-	if(Game_mode & GM_MULTIPLAYER){
-		// try and find the player
-		np_index = multi_find_player_by_object(&Objects[Ships[sindex].objnum]);
-		if((np_index >= 0) && (np_index < MAX_PLAYERS)){
-			p = Net_players[np_index].player;
-		}
-	}
-	// if we're in single player, we're only concerned with ourself
-	else {
-		// me
-		if(Player_obj == &Objects[Ships[sindex].objnum]){
-			p = Player;
-		}
+
+	// in single player, we're only concerned with ourself
+	// me
+	if(Player_obj == &Objects[Ships[sindex].objnum]){
+		p = Player;
 	}
 
 	// now, if we have a valid player, return his kills
@@ -6463,7 +6404,7 @@ int sexp_num_kills(int node)
 
 int sexp_num_type_kills(int node)
 {
-	int sindex, np_index, st_index;
+	int sindex, st_index;
 	int idx, total;
 	player *p = NULL;
 
@@ -6475,21 +6416,11 @@ int sexp_num_type_kills(int node)
 	if(Ships[sindex].objnum < 0){
 		return 0;
 	}
-	
-	// in multiplayer, search through all players
-	if(Game_mode & GM_MULTIPLAYER){
-		// try and find the player
-		np_index = multi_find_player_by_object(&Objects[Ships[sindex].objnum]);
-		if((np_index >= 0) && (np_index < MAX_PLAYERS)){
-			p = Net_players[np_index].player;
-		}
-	}
-	// if we're in single player, we're only concerned with ourself
-	else {
-		// me
-		if(Player_obj == &Objects[Ships[sindex].objnum]){
-			p = Player;
-		}
+
+	// in single player, we're only concerned with ourself
+	// me
+	if(Player_obj == &Objects[Ships[sindex].objnum]){
+		p = Player;
 	}
 
 	// bad
@@ -6517,7 +6448,7 @@ int sexp_num_type_kills(int node)
 
 int sexp_num_class_kills(int node)
 {
-	int sindex, np_index, si_index;
+	int sindex, si_index;
 	player *p = NULL;
 
 	// get the ship we're interested in
@@ -6528,21 +6459,11 @@ int sexp_num_class_kills(int node)
 	if(Ships[sindex].objnum < 0){
 		return 0;
 	}
-	
-	// in multiplayer, search through all players
-	if(Game_mode & GM_MULTIPLAYER){
-		// try and find the player
-		np_index = multi_find_player_by_object(&Objects[Ships[sindex].objnum]);
-		if((np_index >= 0) && (np_index < MAX_PLAYERS)){
-			p = Net_players[np_index].player;
-		}
-	}
-	// if we're in single player, we're only concerned with ourself
-	else {
-		// me
-		if(Player_obj == &Objects[Ships[sindex].objnum]){
-			p = Player;
-		}
+
+	// in single player, we're only concerned with ourself
+	// me
+	if(Player_obj == &Objects[Ships[sindex].objnum]){
+		p = Player;
 	}
 
 	// bad
@@ -9162,12 +9083,9 @@ void sexp_modify_variable(char *text, int index)
 {
 	Assert(index >= 0 && index < MAX_SEXP_VARIABLES);
 	Assert(Sexp_variables[index].type & SEXP_VARIABLE_SET);
-	Assert( !MULTIPLAYER_CLIENT );
 
 	strcpy(Sexp_variables[index].text, text);
 	Sexp_variables[index].type |= SEXP_VARIABLE_MODIFIED;
-
-	// do multi_callback_here
 }
 
 void sexp_modify_variable(int n)
@@ -9176,12 +9094,6 @@ void sexp_modify_variable(int n)
 	int new_number;
 //	char *new_char_var;
 	char number_as_str[TOKEN_LENGTH];
-
-	// Only do single player of multi host
-	if ( MULTIPLAYER_CLIENT ) {
-		return;
-	}
-
 
 	if (n != -1) {
 		// get sexp_variable index

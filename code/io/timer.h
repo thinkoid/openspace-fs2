@@ -100,6 +100,11 @@ int timestamp();
 
 #define timestamp_elapsed( stamp ) ( (stamp!=0) ? (timestamp_ticker >= (stamp) ? 1 : 0) : 0 )
 
+// rollover-safe variant: elapsed if the ticker passed the stamp OR jumped
+// far behind it (wrap).  Lived in network/multi_obj.h in retail although it
+// has nothing multiplayer about it; hoisted here in the multiplayer excision.
+#define timestamp_elapsed_safe(_a, _b)		( (_a != 0) ? (((timestamp_ticker >= (_a)) || (timestamp_ticker < (_a - (_b + 100)))) ? 1 : 0) : 1 )
+
 #define timestamp_valid(stamp) ((stamp==0) ? 0 : 1 )
 
 //	Returns millliseconds until timestamp will elapse.

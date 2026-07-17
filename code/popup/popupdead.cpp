@@ -21,8 +21,6 @@
 #include "gamesnd.h"
 #include "keycontrol.h"
 #include "player.h"
-#include "multi.h"
-#include "multiutil.h"
 #include "popupdead.h"
 #include "alphacolors.h"
 #include "gamesequence.h"
@@ -103,17 +101,10 @@ int Popupdead_skip_message_y[GR_NUM_RESOLUTIONS] = {
 
 static char *Popupdead_button_text[POPUPDEAD_NUM_CHOICES_MAX];
 
-// multiplayer specifics to help with return values since they can vary
-#define POPUPDEAD_OBS_ONLY			1
-#define POPUPDEAD_OBS_QUIT			2
-#define POPUPDEAD_RESPAWN_ONLY	3
-#define POPUPDEAD_RESPAWN_QUIT	4
-
 int Popupdead_default_choice;		// What the default choice is (ie activated when Enter pressed)
 int Popupdead_active	=	0;			// A dead popup is active
 int Popupdead_choice;				// Index for choice picked (-1 if none picked)
 int Popupdead_num_choices;			// number of buttons
-int Popupdead_multi_type;			// what kind of popup is active for muliplayer
 int Popupdead_skip_active = 0;	// The skip-misison popup is active
 int Popupdead_skip_already_shown = 0;
 
@@ -137,7 +128,6 @@ void popupdead_start()
 	Popupdead_window.set_foreground_bmap(Popupdead_background_filename[gr_screen.res]);
 
 	Popupdead_num_choices = 0;
-	Popupdead_multi_type = -1;
 
 	if ( Game_mode & GM_NORMAL ) {
 		// also do a campaign check here?
@@ -160,36 +150,6 @@ void popupdead_start()
 			Popupdead_button_text[1] = XSTR( "Return To Flight Deck", 106);
 			Popupdead_button_text[2] = XSTR( "Return To Briefing", 107);
 			Popupdead_num_choices = POPUPDEAD_NUM_CHOICES;
-		}
-	} else {
-		// in multiplayer, we have different choices depending on respawn mode, etc.
-
-		// if the player has run out of respawns and must either quit and become an observer
-		if(Net_player->flags & NETINFO_FLAG_LIMBO){
-
-			// the master should not be able to quit the game
-			if( ((Net_player->flags & NETINFO_FLAG_AM_MASTER) && (multi_num_players() > 1)) || (Net_player->flags & NETINFO_FLAG_TEAM_CAPTAIN) ) {
-				Popupdead_button_text[0] = XSTR( "Observer Mode", 108);
-				Popupdead_num_choices = 1;
-				Popupdead_multi_type = POPUPDEAD_OBS_ONLY;
-			} else {
-				Popupdead_button_text[0] = XSTR( "Observer Mode", 108);
-				Popupdead_button_text[1] = XSTR( "Return To Flight Deck", 106);
-				Popupdead_num_choices = 2;
-				Popupdead_multi_type = POPUPDEAD_OBS_QUIT;
-			}
-		} else {
-			// the master of the game should not be allowed to quit
-			if ( ((Net_player->flags & NETINFO_FLAG_AM_MASTER) && (multi_num_players() > 1)) || (Net_player->flags & NETINFO_FLAG_TEAM_CAPTAIN) ) {
-				Popupdead_button_text[0] = XSTR( "Respawn", 109);
-				Popupdead_num_choices = 1;
-				Popupdead_multi_type = POPUPDEAD_RESPAWN_ONLY;
-			} else {
-				Popupdead_button_text[0] = XSTR( "Respawn", 109);
-				Popupdead_button_text[1] = XSTR( "Return To Flight Deck", 106);
-				Popupdead_num_choices = 2;
-				Popupdead_multi_type = POPUPDEAD_RESPAWN_QUIT;
-			}
 		}
 	}
 
@@ -494,61 +454,15 @@ int popupdead_do_frame(float frametime)
 
 	choice = popupdead_process_keys(k);
 	if ( choice >= 0 ) {
-		// do something different for single/multiplayer
 		if ( Game_mode & GM_NORMAL ) {
 			Popupdead_choice=choice;
-		} else {
-			Assert( Popupdead_multi_type != -1 );
-			switch ( Popupdead_multi_type ) {
-				
-			case POPUPDEAD_OBS_ONLY:
-			case POPUPDEAD_OBS_QUIT:
-				Popupdead_choice = POPUPDEAD_DO_OBSERVER;
-				if ( (Popupdead_multi_type == POPUPDEAD_OBS_QUIT) && (choice == 1) )
-					Popupdead_choice = POPUPDEAD_DO_MAIN_HALL;
-				break;
-
-			case POPUPDEAD_RESPAWN_ONLY:
-			case POPUPDEAD_RESPAWN_QUIT:
-				Popupdead_choice = POPUPDEAD_DO_RESPAWN;
-				if ( (Popupdead_multi_type == POPUPDEAD_RESPAWN_QUIT) && (choice == 1) )
-					Popupdead_choice = POPUPDEAD_DO_MAIN_HALL;
-				break;
-
-			default:
-				Int3();
-				break;
-			}
 		}
 	}
 
 	choice = popupdead_check_buttons();
 	if ( choice >= 0 ) {
-		// do something different for single/multiplayer
 		if ( Game_mode & GM_NORMAL ) {
 			Popupdead_choice=choice;
-		} else {
-			Assert( Popupdead_multi_type != -1 );
-			switch ( Popupdead_multi_type ) {
-				
-			case POPUPDEAD_OBS_ONLY:
-			case POPUPDEAD_OBS_QUIT:
-				Popupdead_choice = POPUPDEAD_DO_OBSERVER;
-				if ( (Popupdead_multi_type == POPUPDEAD_OBS_QUIT) && (choice == 1) )
-					Popupdead_choice = POPUPDEAD_DO_MAIN_HALL;
-				break;
-
-			case POPUPDEAD_RESPAWN_ONLY:
-			case POPUPDEAD_RESPAWN_QUIT:
-				Popupdead_choice = POPUPDEAD_DO_RESPAWN;
-				if ( (Popupdead_multi_type == POPUPDEAD_RESPAWN_QUIT) && (choice == 1) )
-					Popupdead_choice = POPUPDEAD_DO_MAIN_HALL;
-				break;
-
-			default:
-				Int3();
-				break;
-			}
 		}
 	}
 

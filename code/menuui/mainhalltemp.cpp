@@ -105,19 +105,11 @@ void mht_init()
 		Mht_buttons[gr_screen.res][idx].button.link_hotspot(Mht_buttons[gr_screen.res][idx].hotspot);
 	}			
 
-	// remove any multiplayer flags from the game mode
-	Game_mode &= ~(GM_MULTIPLAYER);
-
 	// initialize the music
 	main_hall_start_music();
 
-	// set the game_mode based on the type of player
 	Assert( Player != NULL );
-	if ( Player->flags & PLAYER_FLAGS_IS_MULTI ){
-		Game_mode = GM_MULTIPLAYER;
-	} else {
-		Game_mode = GM_NORMAL;
-	}
+	Game_mode = GM_NORMAL;
 }
 
 void mht_do()
@@ -138,10 +130,6 @@ void mht_do()
 		break;	
 
 	case KEY_G:
-		if(Player->flags & PLAYER_FLAGS_IS_MULTI){
-			break;
-		}
-
 		if (Num_recent_missions > 0)	{
 			strncpy( Game_current_mission_filename, Recent_missions[0], MAX_FILENAME_LEN );
 		} else {
@@ -160,13 +148,7 @@ void mht_do()
 	case KEY_F2:
 		gameseq_post_event(GS_EVENT_OPTIONS_MENU);
 		break;
-
-	case KEY_M:
-		if (Player->flags & PLAYER_FLAGS_IS_MULTI){
-			main_hall_do_multi_ready();
-		}
-		break;
-	}	
+	}
 
 	// process button presses
 	mht_check_buttons();
@@ -212,13 +194,9 @@ void mht_button_pressed(int n)
 {
 	switch(n){		
 	case MHT_READY_ROOM:
-		if (Player->flags & PLAYER_FLAGS_IS_MULTI){
-			main_hall_do_multi_ready();
-		} else {			
-			gameseq_post_event(GS_EVENT_NEW_CAMPAIGN);			
+		gameseq_post_event(GS_EVENT_NEW_CAMPAIGN);
 
-			gamesnd_play_iface(SND_USER_SELECT);
-		}
+		gamesnd_play_iface(SND_USER_SELECT);
 		break;
 
 	case MHT_CAMPAIGN_ROOM:

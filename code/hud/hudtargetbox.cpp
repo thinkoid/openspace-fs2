@@ -29,7 +29,6 @@
 #include "font.h"
 #include "asteroid.h"
 #include "jumpnode.h"
-#include "multi.h"
 #include "emp.h"
 #include "localize.h"
 
@@ -1658,11 +1657,6 @@ int hud_targetbox_static_maybe_blit(float frametime)
 	// on lowest skill level, don't show static on target monitor
 	if ( Game_skill_level == 0 )
 		return 0;
-
-	// if multiplayer observer, don't show static
-	if((Game_mode & GM_MULTIPLAYER) && (Net_player->flags & NETINFO_FLAG_OBSERVER)){
-		return 0;
-	}
 
 	sensors_str = ship_get_subsystem_strength( Player_ship, SUBSYSTEM_SENSORS );
 

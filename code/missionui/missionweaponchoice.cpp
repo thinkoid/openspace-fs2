@@ -8,6 +8,7 @@
 */ 
 
 #include "missionscreencommon.h"
+#include "player.h"
 #include "missionweaponchoice.h"
 #include "missionshipchoice.h"
 #include "timer.h"
@@ -19,18 +20,13 @@
 #include "animplay.h"
 #include "freespace.h"
 #include "gamesequence.h"
-#include "multi.h"
 #include "missionbrief.h"
 #include "ui.h"
 #include "gamesnd.h"
 #include "animplay.h"
 #include "contexthelp.h"
-#include "chatbox.h"
 #include "linklist.h"
-#include "multimsgs.h"
 #include "popup.h"
-#include "multiteamselect.h"
-#include "multiui.h"
 #include "alphacolors.h"
 #include "localize.h"
 
@@ -85,25 +81,19 @@ typedef struct wl_bitmap_group
 #define WEAPON_ICON_FRAME_DISABLED			3
 
 // Weapn loadout specific buttons
-#define NUM_WEAPON_BUTTONS						7
+#define NUM_WEAPON_BUTTONS						6
 #define WL_BUTTON_SCROLL_PRIMARY_UP			0
 #define WL_BUTTON_SCROLL_PRIMARY_DOWN		1
 #define WL_BUTTON_SCROLL_SECONDARY_UP		2
 #define WL_BUTTON_SCROLL_SECONDARY_DOWN	3
 #define WL_BUTTON_RESET							4
 #define WL_BUTTON_DUMMY							5
-#define WL_BUTTON_MULTI_LOCK					6
 UI_WINDOW	Weapon_ui_window;
 //UI_BUTTON	Weapon_buttons[NUM_WEAPON_BUTTONS];
 
 static char *Wl_mask_single[GR_NUM_RESOLUTIONS] = {
 	"weaponloadout-m",
 	"2_weaponloadout-m"
-};
-
-static char *Wl_mask_multi[GR_NUM_RESOLUTIONS] = {
-	"weaponloadoutmulti-m",
-	"2_weaponloadoutmulti-m"
 };
 
 static char *Wl_loadout_select_mask[GR_NUM_RESOLUTIONS] = {
@@ -115,11 +105,6 @@ static char *Wl_loadout_select_mask[GR_NUM_RESOLUTIONS] = {
 static char *Weapon_select_background_fname[GR_NUM_RESOLUTIONS] = {
 	"WeaponLoadout",
 	"2_WeaponLoadout"
-};
-
-static char *Weapon_select_multi_background_fname[GR_NUM_RESOLUTIONS] = {
-	"WeaponLoadoutMulti",
-	"2_WeaponLoadoutMulti"
 };
 
 int Weapon_select_background_bitmap;	// bitmap for weapon select brackground
@@ -151,8 +136,7 @@ static wl_buttons Buttons[GR_NUM_RESOLUTIONS][NUM_WEAPON_BUTTONS] = {
 		wl_buttons("WLB_08",		24,	303,		-1,		-1,	8),
 		wl_buttons("WLB_09",		24,	454,		-1,		-1,	9),
 		wl_buttons("ssb_39",		571,	347,		-1,		-1,	39),
-		wl_buttons("ssb_39",		0,		0,			-1,		-1,	99),
-		wl_buttons("TSB_34",		603,	374,		-1,		-1,	34)
+		wl_buttons("ssb_39",		0,		0,			-1,		-1,	99)
 	},
 	{
 		wl_buttons("2_WLB_26",	39,	200,		-1,		-1,	26),
@@ -160,14 +144,13 @@ static wl_buttons Buttons[GR_NUM_RESOLUTIONS][NUM_WEAPON_BUTTONS] = {
 		wl_buttons("2_WLB_08",	39,	485,		-1,		-1,	8),
 		wl_buttons("2_WLB_09",	39,	727,		-1,		-1,	9),
 		wl_buttons("2_ssb_39",	913,	556,		-1,		-1,	39),
-		wl_buttons("2_ssb_39",	0,		0,			-1,		-1,	99),
-		wl_buttons("2_TSB_34",	966,	599,		-1,		-1,	34)
+		wl_buttons("2_ssb_39",	0,		0,			-1,		-1,	99)
 	}
 };
 
 //static wl_bitmap_group wl_button_bitmaps[NUM_WEAPON_BUTTONS];
 
-static int Weapon_button_scrollable[NUM_WEAPON_BUTTONS] = {0, 0, 0, 0, 0, 0, 0};
+static int Weapon_button_scrollable[NUM_WEAPON_BUTTONS] = {0, 0, 0, 0, 0, 0};
 
 #define MAX_WEAPON_ICONS_ON_SCREEN 8
 
@@ -245,15 +228,6 @@ static int Wl_weapon_ani_coords[GR_NUM_RESOLUTIONS][2] = {
 	},
 	{
 		648, 128			// GR_1024
-	}
-};
-
-static int Wl_weapon_ani_coords_multi[GR_NUM_RESOLUTIONS][2] = {
-	{
-		408, 143			// GR_640
-	},
-	{
-		648, 226			// GR_1024
 	}
 };
 
@@ -339,15 +313,6 @@ static int Wl_new_weapon_title_coords[GR_NUM_RESOLUTIONS][2] = {
 	}
 };
 
-static int Wl_new_weapon_title_coords_multi[GR_NUM_RESOLUTIONS][2] = {
-	{
-		408, 136		// GR_640
-	},
-	{
-		648, 216		// GR_1024
-	}
-};
-
 static int Wl_new_weapon_desc_coords[GR_NUM_RESOLUTIONS][2] = {
 	{
 		408, 247		// GR_640
@@ -357,25 +322,14 @@ static int Wl_new_weapon_desc_coords[GR_NUM_RESOLUTIONS][2] = {
 	}
 };
 
-static int Wl_new_weapon_desc_coords_multi[GR_NUM_RESOLUTIONS][2] = {
-	{
-		408, 308		// GR_640
-	},
-	{
-		648, 493		// GR_1024
-	}
-};
-
 // ship select text
-#define WEAPON_SELECT_NUM_TEXT			2
+#define WEAPON_SELECT_NUM_TEXT			1
 UI_XSTR Weapon_select_text[GR_NUM_RESOLUTIONS][WEAPON_SELECT_NUM_TEXT] = {
 	{ // GR_640
-		{ "Reset",			1337,		580,	337,	UI_XSTR_COLOR_GREEN, -1, &Buttons[0][WL_BUTTON_RESET].button },
-		{ "Lock",			1270,		602,	364,	UI_XSTR_COLOR_GREEN, -1, &Buttons[0][WL_BUTTON_MULTI_LOCK].button }
-	}, 
+		{ "Reset",			1337,		580,	337,	UI_XSTR_COLOR_GREEN, -1, &Buttons[0][WL_BUTTON_RESET].button }
+	},
 	{ // GR_1024
-		{ "Reset",			1337,		938,	546,	UI_XSTR_COLOR_GREEN, -1, &Buttons[1][WL_BUTTON_RESET].button },
-		{ "Lock",			1270,		964,	584,	UI_XSTR_COLOR_GREEN, -1, &Buttons[1][WL_BUTTON_MULTI_LOCK].button }
+		{ "Reset",			1337,		938,	546,	UI_XSTR_COLOR_GREEN, -1, &Buttons[1][WL_BUTTON_RESET].button }
 	}
 };
 
@@ -593,17 +547,6 @@ void weapon_button_do(int i)
 				wl_reset_to_defaults();
 				break;
 
-			case WL_BUTTON_MULTI_LOCK:
-				Assert(Game_mode & GM_MULTIPLAYER);				
-				// the "lock" button has been pressed
-				multi_ts_lock_pressed();
-
-				// disable the button if it is now locked
-				if(multi_ts_is_locked()){
-					Buttons[gr_screen.res][WL_BUTTON_MULTI_LOCK].button.disable();
-				}
-				break;
-
 			default:
 			break;
 	}
@@ -624,11 +567,7 @@ void weapon_check_buttons()
 		b = &Buttons[gr_screen.res][i];
 		
 		if ( b->button.pressed() ) {
-			if(i == WL_BUTTON_MULTI_LOCK){
-				weapon_button_do(i);
-			} else {
-				weapon_button_do(b->hotspot);
-			}
+			weapon_button_do(b->hotspot);
 		}
 	}
 }
@@ -670,25 +609,6 @@ void weapon_buttons_init()
 		b->button.set_highlight_action( common_play_highlight_sound );
 		b->button.set_bmaps(Buttons[gr_screen.res][i].filename);
 		b->button.link_hotspot(Buttons[gr_screen.res][i].hotspot);
-	}
-
-	if ( Game_mode & GM_MULTIPLAYER ) {
-		Buttons[gr_screen.res][WL_BUTTON_RESET].button.hide();
-		Buttons[gr_screen.res][WL_BUTTON_RESET].button.disable();		
-
-		// if we're not the host of the game (or a team captain in team vs. team mode), disable the lock button
-		if(Netgame.type_flags & NG_TYPE_TEAM){
-			if(!(Net_player->flags & NETINFO_FLAG_TEAM_CAPTAIN)){
-				Buttons[gr_screen.res][WL_BUTTON_MULTI_LOCK].button.disable();		
-			}
-		} else {
-			if(!(Net_player->flags & NETINFO_FLAG_GAME_HOST)){
-				Buttons[gr_screen.res][WL_BUTTON_MULTI_LOCK].button.disable();				
-			}
-		}
-	} else {		
-		Buttons[gr_screen.res][WL_BUTTON_MULTI_LOCK].button.hide();
-		Buttons[gr_screen.res][WL_BUTTON_MULTI_LOCK].button.disable();
 	}
 
 	// add all xstrs
@@ -767,10 +687,7 @@ int weapon_allowed_for_game_type(int weapon_flags)
 {
 	int	rval = 0;
 
-	if ((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_DOGFIGHT)) {
-		if (weapon_flags & (1 << 1))
-			rval = 1;
-	} else if (weapon_flags & (1 << 0))
+	if (weapon_flags & (1 << 0))
 		rval  = 1;
 
 	return rval;
@@ -1124,12 +1041,6 @@ void wl_reset_selected_slot()
 {
 	int i;
 	Selected_wl_slot = -1;
-
-	// in multiplayer, select the slot of the player's ship by default
-	if((Game_mode & GM_MULTIPLAYER) && !MULTI_PERM_OBSERVER(Net_players[MY_NET_PLAYER_NUM]) && (Wss_slots[Net_player->p_info.ship_index].ship_class >= 0)){
-		wl_set_selected_slot(Net_player->p_info.ship_index);
-		return;
-	}
 
 	for ( i=0; i<MAX_WSS_SLOTS; i++ ) {
 		if ( !ss_disabled_slot(i) ) {
@@ -1615,20 +1526,8 @@ void weapon_select_init_team(int team_num)
 // briefing state is entered.
 void weapon_select_common_init()
 {
-	int idx;
-	
-	if((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_TEAM)){
-		// initialize for all teams
-		for(idx=0;idx<MULTI_TS_MAX_TEAMS;idx++){
-			weapon_select_init_team(idx);
-		}
-
-		// re-initialize for me specifically
-		weapon_select_init_team(Common_team);
-	} else {	
-		// initialize for my own team
-		weapon_select_init_team(Common_team);
-	}
+	// initialize for my own team
+	weapon_select_init_team(Common_team);
 
 	wl_reset_selected_slot();
 	wl_reset_carried_icon();
@@ -1646,10 +1545,6 @@ void weapon_select_init()
 {
 	common_set_interface_palette("WeaponPalette");
 	common_flash_button_init();
-
-	// for multiplayer, change the state in my netplayer structure
-	if ( Game_mode & GM_MULTIPLAYER )
-		Net_player->state = NETPLAYER_STATE_WEAPON_SELECT;
 
 	ship_stop_animation();
 	stop_weapon_animation();
@@ -1672,7 +1567,6 @@ void weapon_select_init()
 		common_reset_buttons();
 		nprintf(("Alan","weapon_select_init() returning without doing anything\n"));
 
-		// if we're in multiplayer always select the player's ship
 		wl_reset_selected_slot();
 
 		return;
@@ -1746,25 +1640,16 @@ void weapon_select_init()
 	// init common UI
 	Weapon_ui_window.create( 0, 0, gr_screen.max_w, gr_screen.max_h, 0 );
 
-	if(Game_mode & GM_MULTIPLAYER){
-		Weapon_ui_window.set_mask_bmap(Wl_mask_multi[gr_screen.res]);
-	} else {
-		Weapon_ui_window.set_mask_bmap(Wl_mask_single[gr_screen.res]);
-	}
+	Weapon_ui_window.set_mask_bmap(Wl_mask_single[gr_screen.res]);
 
 	// initialize background bitmap
-	if(Game_mode & GM_MULTIPLAYER) {
-		Weapon_select_background_bitmap = bm_load(Weapon_select_multi_background_fname[gr_screen.res]);
-	} else {
-		Weapon_select_background_bitmap = bm_load(Weapon_select_background_fname[gr_screen.res]);
-	}
+	Weapon_select_background_bitmap = bm_load(Weapon_select_background_fname[gr_screen.res]);
 
 	Weapon_ui_window.tooltip_handler = wl_tooltip_handler;
 	common_buttons_init(&Weapon_ui_window);
 	weapon_buttons_init();
 	Weapon_select_open = 1;
 
-	// if we're in multiplayer always select the player's ship
 	wl_reset_selected_slot();
 }
 
@@ -1804,14 +1689,8 @@ int drop_icon_on_slot(int bank_num)
 		return 0;
 	}
 
-	if(Game_mode & GM_MULTIPLAYER){
-		if(multi_ts_disabled_slot(Selected_wl_slot)){
-			return 0;
-		}
-	} else {
-		if ( ss_disabled_slot( Selected_wl_slot ) ){
-			return 0;
-		}
+	if ( ss_disabled_slot( Selected_wl_slot ) ){
+		return 0;
 	}
 
 	// check if slot exists
@@ -1972,13 +1851,8 @@ void wl_render_weapon_desc(float frametime)
 	int *weapon_title_coords;
 
 	// retrieve the correct set of text coordinates
-	if (Game_mode & GM_MULTIPLAYER) {
-		weapon_desc_coords = Wl_new_weapon_desc_coords_multi[gr_screen.res];
-		weapon_title_coords = Wl_new_weapon_title_coords_multi[gr_screen.res];
-	} else {
-		weapon_desc_coords = Wl_new_weapon_desc_coords[gr_screen.res];
-		weapon_title_coords = Wl_new_weapon_title_coords[gr_screen.res];
-	}
+	weapon_desc_coords = Wl_new_weapon_desc_coords[gr_screen.res];
+	weapon_title_coords = Wl_new_weapon_title_coords[gr_screen.res];
 
 	// render the normal version of the weapom desc
 	char bright_char[WEAPON_DESC_MAX_LINES];			// one bright char per line
@@ -2388,11 +2262,7 @@ void weapon_select_do(float frametime)
 				int *weapon_ani_coords;
 
 				// get the correct weapon animations coords
-				if (Game_mode & GM_MULTIPLAYER) {
-					weapon_ani_coords = Wl_weapon_ani_coords_multi[gr_screen.res];
-				} else {
-					weapon_ani_coords = Wl_weapon_ani_coords[gr_screen.res];
-				}
+				weapon_ani_coords = Wl_weapon_ani_coords[gr_screen.res];
 
 				anim_release_render_instance(icon->anim_instance);
 				anim_play_init(&aps, icon->anim, weapon_ani_coords[0], weapon_ani_coords[1]);
@@ -2419,12 +2289,6 @@ void weapon_select_do(float frametime)
 		}
 		common_render_selected_screen_button();
 	}
-
-	// maybe blit the multiplayer "locked" button
-	if((Game_mode & GM_MULTIPLAYER) && multi_ts_is_locked()){
-		Buttons[gr_screen.res][WL_BUTTON_MULTI_LOCK].button.draw_forced(2);
-	}
-
 
 	if ( wl_icon_being_carried() ) {
 		int mx, my, sx, sy;
@@ -2487,25 +2351,6 @@ void weapon_select_do(float frametime)
 
 	wl_maybe_flash_button();
 
-	// should render the chatbox as close to the end as possible so it overlaps all controls
-	if(!Background_playing){
-
-		// render some extra stuff in multiplayer
-		if(Game_mode & GM_MULTIPLAYER){				
-			// render the chatbox
-			chatbox_render();
-
-			// draw tooltips
-			Weapon_ui_window.draw_tooltip();
-
-			// render the status indicator for the voice system
-			multi_common_voice_display_status();
-
-			// blit the "ships/players" locked button
-			// multi_ts_blit_locked_button();
-		}
-	}
-
 	// blit help overlay if active
 	help_overlay_maybe_blit(WL_OVERLAY);
 	gr_flip();	
@@ -2514,11 +2359,7 @@ void weapon_select_do(float frametime)
 	// loop so there isn't a skip in the animation (since ship_create() can take a long time if
 	// the ship model is not in memory
 	if ( Commit_pressed ) {
-		if(Game_mode & GM_MULTIPLAYER){
-			multi_ts_commit_pressed();			
-		} else {
-			commit_pressed();
-		}		
+		commit_pressed();
 		Commit_pressed = 0;
 	}
 }
@@ -2728,11 +2569,6 @@ void wl_pick_icon_from_list(int index)
 {
 	int weapon_class, mx, my;
 
-	// if this is a multiplayer game and the player is an observer, he can never pick any weapons up
-	if((Game_mode & GM_MULTIPLAYER) && (Net_player->flags & NETINFO_FLAG_OBSERVER)){
-		return;
-	}
-
 	// if a weapon is being carried, do nothing
 	if ( wl_icon_being_carried() ) {
 		return;
@@ -2935,15 +2771,11 @@ void start_weapon_animation(int weapon_class)
 	if ( weapon_class < 0 )
 		return;
 
-	if ( weapon_class == Weapon_anim_class ) 
+	if ( weapon_class == Weapon_anim_class )
 		return;
 
 	// get the correct weapon animations coords
-	if (Game_mode & GM_MULTIPLAYER) {
-		weapon_ani_coords = Wl_weapon_ani_coords_multi[gr_screen.res];
-	} else {
-		weapon_ani_coords = Wl_weapon_ani_coords[gr_screen.res];
-	}
+	weapon_ani_coords = Wl_weapon_ani_coords[gr_screen.res];
 
 	icon = &Wl_icons[weapon_class];
 
@@ -2983,11 +2815,6 @@ void start_weapon_animation(int weapon_class)
 // reset the weapons loadout to the defaults in the mission
 void wl_reset_to_defaults()
 {
-	// don't reset of weapons pool in multiplayer
-	if(Game_mode & GM_MULTIPLAYER){
-		return;
-	}
-
 	wl_init_pool(&Team_data[Common_team]);
 	wl_init_icon_lists();
 	wl_fill_slots();
@@ -3309,18 +3136,6 @@ void wl_apply(int mode,int from_bank,int from_list,int to_bank,int to_list,int s
 {
 	int update=0;
 	int sound=-1;
-	net_player *pl;
-
-	// get the appropriate net player
-	if(Game_mode & GM_MULTIPLAYER){
-		if(player_index == -1){
-			pl = Net_player;
-		} else {
-			pl = &Net_players[player_index];
-		}
-	} else {
-		pl = NULL;
-	}
 
 	switch(mode){
 	case WSS_SWAP_SLOT_SLOT:
@@ -3343,62 +3158,18 @@ void wl_apply(int mode,int from_bank,int from_list,int to_bank,int to_list,int s
 	}	
 
 	if ( update ) {
-		if ( MULTIPLAYER_HOST ) {
-			int size;
-			ubyte wss_data[MAX_PACKET_SIZE-20];
-
-			size = store_wss_data(wss_data, MAX_PACKET_SIZE-20,sound,player_index);			
-			Assert(pl != NULL);
-			send_wss_update_packet(pl->p_info.team,wss_data, size);
-		}
-
-		if(Game_mode & GM_MULTIPLAYER){
-			Assert(pl != NULL);
-
-			// if the pool we're using has changed, synch stuff up
-			if(pl->p_info.team == Net_player->p_info.team){
-				wl_synch_interface();			
-			}
-		} else {
-			wl_synch_interface();
-		}
-	}		
+		wl_synch_interface();
+	}
 }
 
 void wl_drop(int from_bank,int from_list,int to_bank,int to_list, int ship_slot, int player_index)
 {
 	int mode;
-	net_player *pl;
-
-	// get the appropriate net player
-	if(Game_mode & GM_MULTIPLAYER){
-		if(player_index == -1){
-			pl = Net_player;
-		} else {
-			pl = &Net_players[player_index];
-		}
-	} else {
-		pl = NULL;
-	}
 
 	common_flash_button_init();
-	if ( !(Game_mode & GM_MULTIPLAYER) || MULTIPLAYER_HOST ) {
-		if((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_TEAM)){
-			// set the global pointers to the right pools
-			ss_set_team_pointers(pl->p_info.team);
-		}
 
-
-		mode = wss_get_mode(from_bank, from_list, to_bank, to_list, ship_slot);
-		if ( mode >= 0 ) {
-			wl_apply(mode, from_bank, from_list, to_bank, to_list, ship_slot, player_index);
-		}		
-
-		if((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_TEAM)){
-			// set the global pointers to the right pools
-			ss_set_team_pointers(Net_player->p_info.team);
-		}
-	} else {
-		send_wss_request_packet(Net_player->player_id, from_bank, from_list, to_bank, to_list, ship_slot, -1, WSS_WEAPON_SELECT);
+	mode = wss_get_mode(from_bank, from_list, to_bank, to_list, ship_slot);
+	if ( mode >= 0 ) {
+		wl_apply(mode, from_bank, from_list, to_bank, to_list, ship_slot, player_index);
 	}
 }

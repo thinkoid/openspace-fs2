@@ -66,11 +66,8 @@ void hud_config_set_gauge_flags(int gauge_index, int on_flag, int popup_flag);
 
 void hud_config_restore();
 void hud_config_backup();
-void hud_config_as_observer(ship *shipp,ai_info *aif);
 
 
-void hud_config_as_observer();
-void hud_config_as_player();
 void hud_config_display_text(char* gauge_text, int x, int y);
 void hud_set_display_gauge_cbox();
 

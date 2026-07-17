@@ -29,7 +29,6 @@
 #include "gamesequence.h"
 #include "emp.h"
 #include "alphacolors.h"
-#include "multi.h"
 
 #define MAX_TRAINING_MSG_LINES		10
 //#define TRAINING_MSG_WINDOW_X			174
@@ -162,11 +161,6 @@ void training_obj_display()
 		}
 	}
 
-	// don't ever display directives display in multiplayer missions
-	// if ( Game_mode & GM_MULTIPLAYER ){
-	// 	return;
-	// }
-
 	height = gr_get_font_height();
 
 	offset = 0;
@@ -206,13 +200,6 @@ void training_obj_display()
 			strcpy(buf, Mission_events[z].objective_text);
 			if (Mission_events[z].count){
 				sprintf(buf + strlen(buf), NOX(" [%d]"), Mission_events[z].count);
-			}
-
-			// if this is a multiplayer tvt game, and this is event is not for my team, don't display it
-			if((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_TEAM) && (Net_player != NULL)){
-				if((Mission_events[z].team != -1) && (Net_player->p_info.team != Mission_events[z].team)){
-					continue;
-				}
 			}
 
 			switch (mission_get_event_status(z)) {

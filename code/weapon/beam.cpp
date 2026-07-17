@@ -19,8 +19,6 @@
 #include "fireballs.h"
 #include "debris.h"
 #include "asteroid.h"
-#include "multi.h"
-#include "multimsgs.h"
 #include "bmpman.h"
 #include "particle.h"
 #include "shiphit.h"
@@ -28,6 +26,7 @@
 #include "3d.h"
 #include "gamesnd.h"
 #include "beam.h"
+#include "player.h"
 #include "hudmessage.h"
 #include "key.h"
 #include "lighting.h"
@@ -438,7 +437,6 @@ int beam_fire(beam_fire_info *fire_info)
 	// ----------------------------------------------------------------------
 	// THIS IS THE CRITICAL POINT FOR MULTIPLAYER
 	// beam_get_binfo(...) determines exactly how the beam will behave over the course of its life
-	// it fills in binfo, which we can pass to clients in multiplayer	
 	if(fire_info->beam_info_override != NULL){
 		new_item->binfo = *fire_info->beam_info_override;
 	} else {
@@ -463,11 +461,6 @@ int beam_fire(beam_fire_info *fire_info)
 		beam_delete(new_item);
 		mprintf(("Killing beam at initial fire because of illegal targeting!!!\n"));
 		return -1;
-	}
-
-	// if we're a multiplayer master - send a packet
-	if(MULTIPLAYER_MASTER){
-		send_beam_fired_packet(fire_info->shooter, fire_info->turret, fire_info->target, fire_info->beam_info_index, &new_item->binfo);
 	}
 
 	// start the warmup phase
@@ -1616,7 +1609,7 @@ void beam_start_warmup(beam *b)
 	b->warmup_stamp = timestamp(Weapon_info[b->weapon_info_index].b_info.beam_warmup);
 
 	// start playing warmup sound
-	if(!(Game_mode & GM_STANDALONE_SERVER) && (Weapon_info[b->weapon_info_index].b_info.beam_warmup_sound >= 0)){		
+	if(Weapon_info[b->weapon_info_index].b_info.beam_warmup_sound >= 0){
 		snd_play_3d(&Snds[Weapon_info[b->weapon_info_index].b_info.beam_warmup_sound], &b->last_start, &View_position);
 	}
 }
@@ -2513,27 +2506,23 @@ void beam_handle_collisions(beam *b)
 
 			switch(Objects[target].type){
 			case OBJ_DEBRIS:
-				// hit the debris - the debris hit code takes care of checking for MULTIPLAYER_CLIENT, etc
+				// hit the debris
 				debris_hit(&Objects[target], &Objects[b->objnum], &b->f_collisions[idx].cinfo.hit_point_world, Weapon_info[b->weapon_info_index].damage);
 				break;
 
 			case OBJ_WEAPON:
 				// detonate the missile
 				Assert(Weapon_info[Weapons[Objects[target].instance].weapon_info_index].subtype == WP_MISSILE);
-				if(!(Game_mode & GM_MULTIPLAYER) || MULTIPLAYER_MASTER){
-					weapon_hit(&Objects[target], NULL, &Objects[target].pos);
-				}
+				weapon_hit(&Objects[target], NULL, &Objects[target].pos);
 				break;
 
 			case OBJ_ASTEROID:
 				// hit the asteroid
-				if(!(Game_mode & GM_MULTIPLAYER) || MULTIPLAYER_MASTER){
-					asteroid_hit(&Objects[target], &Objects[b->objnum], &b->f_collisions[idx].cinfo.hit_point_world, Weapon_info[b->weapon_info_index].damage);
-				}
+				asteroid_hit(&Objects[target], &Objects[b->objnum], &b->f_collisions[idx].cinfo.hit_point_world, Weapon_info[b->weapon_info_index].damage);
 				break;
 
-			case OBJ_SHIP:				
-				// hit the ship - again, the innards of this code handle multiplayer cases
+			case OBJ_SHIP:
+				// hit the ship
 				// maybe vaporize ship.
 				ship_apply_local_damage(&Objects[target], &Objects[b->objnum], &b->f_collisions[idx].cinfo.hit_point_world, beam_get_ship_damage(b, &Objects[target]), -1);
 

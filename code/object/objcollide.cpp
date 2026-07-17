@@ -8,10 +8,12 @@
 */ 
 
 #include "objcollide.h"
+#include "object.h"
+#include "weapon.h"
+#include "ship.h"
 #include "linklist.h"
 #include "systemvars.h"
 #include "timer.h"
-#include "multi.h"
 #include "beam.h"
 
 #ifdef FS2_DEMO
@@ -239,20 +241,6 @@ void obj_add_pair( object *A, object *B, int check_time, int add_to_end )
 		A = B;
 		B = tmp;
 	}
-
-	// if there are any more obj_pair checks
-	// we should then add function int maybe_not_add_obj_pair()
-	// MWA -- 4/1/98 -- I'd do it, but I don't want to bust anything, so I'm doing my stuff here instead :-)
-	//if ( MULTIPLAYER_CLIENT && !(Netgame.debug_flags & NETD_FLAG_CLIENT_NODAMAGE)){
-		// multiplayer clients will only do ship/ship collisions, and their own ship to boot
-	//	if ( check_collision != collide_ship_ship ){
-	//		return;
-	//	}
-
-	//	if ( (A != Player_obj) && (B != Player_obj) ){
-	//		return;
-	//	}
-	//}	
 
 	// only check debris:weapon collisions for player
 	if (check_collision == collide_debris_weapon) {

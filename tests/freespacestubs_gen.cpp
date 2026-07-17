@@ -33,7 +33,7 @@ void game_do_cd_mission_check(char*)
 	oracle_trap("game_do_cd_mission_check");
 }
 
-void game_do_state_common(int, int)
+void game_do_state_common(int)
 {
 	oracle_trap("game_do_state_common");
 }
@@ -56,11 +56,6 @@ void game_flash(float, float, float)
 void game_flush()
 {
 	oracle_trap("game_flush");
-}
-
-void game_format_time(long, char*)
-{
-	oracle_trap("game_format_time");
 }
 
 void game_get_default_skill_level()
@@ -147,12 +142,10 @@ unsigned char Framerate_delay[1 << 20];
 int Fred_running = 0;
 unsigned char Game_current_mission_filename[1 << 20];
 unsigned char Game_ships_tbl_valid[1 << 20];
-unsigned char game_single_step[1 << 20];
 unsigned char Game_skill_level[1 << 20];
 unsigned char Game_subspace_effect[1 << 20];
 unsigned char Game_time_compression[1 << 20];
 unsigned char Game_weapons_tbl_valid[1 << 20];
-unsigned char last_single_step[1 << 20];
 int Pofview_running = 0;
 unsigned char Show_target_debug_info[1 << 20];
 unsigned char Show_target_weapons[1 << 20];

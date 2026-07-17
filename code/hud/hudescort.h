@@ -23,7 +23,5 @@ void	hud_add_ship_to_escort(int objnum, int supress_feedback);
 void  hud_remove_ship_from_escort(int objnum);
 int	hud_escort_num_ships_on_list();
 int	hud_escort_return_objnum(int index);
-void	hud_escort_add_player(short id);
-void	hud_escort_remove_player(short id);
 
 #endif /* __FREESPACE_HUDESCORT_VIEW_H__ */

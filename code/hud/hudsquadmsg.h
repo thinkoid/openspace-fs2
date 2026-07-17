@@ -10,8 +10,6 @@
 #ifndef _HUD_SQUADMSG
 #define _HUD_SQUADMSG
 
-#include "multi.h"
-
 // defines for messages that can be sent from the player.  Defined at bitfields so that we can enable
 // and disable messages on a message by message basis
 #define ATTACK_TARGET_ITEM		(1<<0)
@@ -73,9 +71,6 @@ typedef struct {
 extern int squadmsg_history_index;
 extern squadmsg_history Squadmsg_history[SQUADMSG_HISTORY_MAX];
 
-extern int Multi_squad_msg_local;
-extern int Multi_squad_msg_targ; 
-
 extern void hud_init_squadmsg();
 extern void hud_squadmsg_toggle();						// toggles the state of messaging mode
 extern void hud_squadmsg_shortcut( int command );	// use of a shortcut key
@@ -85,14 +80,14 @@ extern int hud_squadmsg_do_frame();
 extern int hud_query_order_issued(char *name, char *order, char *target);
 extern int hud_squadmsg_read_key( int k );			// called from high level keyboard code
 
-extern void hud_squadmsg_repair_rearm( int toggle_state, object *obj = NULL );
-extern void hud_squadmsg_repair_rearm_abort( int toggle_state, object *obj = NULL );
+extern void hud_squadmsg_repair_rearm( int toggle_state );
+extern void hud_squadmsg_repair_rearm_abort( int toggle_state );
 extern void hud_squadmsg_rearm_shortcut();
 
-extern int hud_squadmsg_send_ship_command( int shipnum, int command, int send_message, int player_num = -1 );
-extern int hud_squadmsg_send_wing_command( int wingnum, int command, int send_message, int player_num = -1 );
-extern void hud_squadmsg_send_to_all_fighters( int command, int player_num = -1 );
-extern void hud_squadmsg_call_reinforcement(int reinforcement_num, int player_num = -1);
+extern int hud_squadmsg_send_ship_command( int shipnum, int command, int send_message );
+extern int hud_squadmsg_send_wing_command( int wingnum, int command, int send_message );
+extern void hud_squadmsg_send_to_all_fighters( int command );
+extern void hud_squadmsg_call_reinforcement(int reinforcement_num);
 
 extern int hud_squadmsg_reinforcements_available(int team);
 

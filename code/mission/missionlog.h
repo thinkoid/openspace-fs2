@@ -62,9 +62,8 @@ extern int Num_log_lines;
 extern void mission_log_init();
 
 // adds an entry to the mission log.  The name is a string identifier that is the object
-// of the event.  The multiplayer version of this takes the actual entry number to modify.
+// of the event.
 extern void mission_log_add_entry(int type, char *pname, char *sname, int index = -1 );
-extern void mission_log_add_entry_multi( int type, char *pname, char *sname, int index, fix timestamp, int flags );
 
 // function to determine if event happened and what time it happened
 extern int mission_log_get_time( int type, char *name, char *sname, fix *time);

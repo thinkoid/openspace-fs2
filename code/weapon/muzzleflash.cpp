@@ -156,11 +156,6 @@ void mflash_create(vector *gun_pos, vector *gun_dir, int mflash_type)
 	particle_info p;
 	int idx;
 
-	// standalone server should never create trails
-	if(Game_mode & GM_STANDALONE_SERVER){
-		return;
-	}
-
 	// illegal value
 	if((mflash_type >= Num_mflash_types) || (mflash_type < 0)){
 		return;

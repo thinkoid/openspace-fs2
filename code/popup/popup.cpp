@@ -471,8 +471,8 @@ int popup_init(popup_info *pi, int flags)
 		pbg = &Popup_background[gr_screen.res][pi->nchoices-1];
 	}
 
-	// anytime in single player, and multiplayer, not in mission, go ahead and stop time
-	if ( (Game_mode & GM_NORMAL) || ((Game_mode && GM_MULTIPLAYER) && !(Game_mode & GM_IN_MISSION)) ){
+	// anytime in single player, go ahead and stop time
+	if ( Game_mode & GM_NORMAL ){
 		game_stop_time();
 	}
 
@@ -572,8 +572,8 @@ void popup_close(popup_info *pi,int screen)
 	Popup_is_active = 0;
 	Popup_running_state = 0;
 
-	// anytime in single player, and multiplayer, not in mission, go ahead and stop time
-	if ( (Game_mode & GM_NORMAL) || ((Game_mode && GM_MULTIPLAYER) && !(Game_mode & GM_IN_MISSION)) )
+	// anytime in single player, go ahead and start time
+	if ( Game_mode & GM_NORMAL )
 		game_start_time();
 }
 
@@ -836,7 +836,7 @@ int popup_do(popup_info *pi, int flags)
 		// otherwise just run the common functions (for networking,etc)
 		else {
 			game_set_frametime(-1);
-			game_do_state_common(gameseq_get_state(),flags & PF_NO_NETWORKING);	// do stuff common to all states 
+			game_do_state_common(gameseq_get_state());	// do stuff common to all states 
 		}
 
 		k = Popup_window.process();						// poll for input, handle mouse

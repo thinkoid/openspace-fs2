@@ -25,7 +25,6 @@
 #include "linklist.h"
 #include "timer.h"
 #include "parselo.h"
-#include "multi.h"
 #include "fireballs.h"
 #include "freespace.h"
 
@@ -50,7 +49,7 @@ ssm_info Ssm_info[MAX_SSM_TYPES];
 #define MAX_SSM_STRIKES			10
 #define MAX_SSM_COUNT			10
 
-// creation info for the strike (useful for multiplayer)
+// creation info for the strike
 typedef struct ssm_firing_info {
 	int			delay_stamp[MAX_SSM_COUNT];	// timestamps
 	vector		start_pos[MAX_SSM_COUNT];		// start positions
@@ -153,7 +152,7 @@ void ssm_level_init()
 }
 
 // start a subspace missile effect
-void ssm_create(vector *target, vector *start, int ssm_index, ssm_firing_info *override)
+void ssm_create(vector *target, vector *start, int ssm_index)
 {	
 	ssm_strike *ssm;		
 	matrix dir;
@@ -194,30 +193,18 @@ void ssm_create(vector *target, vector *start, int ssm_index, ssm_firing_info *o
 
 	// Init the ssm data
 
-	// override in multiplayer
-	if(override != NULL){
-		ssm->sinfo = *override;
-	}
-	// single player or the server
-	else {
-		// forward orientation
-		vector temp;
-		vm_vec_sub(&temp, target, start);
-		vm_vec_normalize(&temp);
-		vm_vector_2_matrix(&dir, &temp, NULL, NULL);
+	// forward orientation
+	vector temp;
+	vm_vec_sub(&temp, target, start);
+	vm_vec_normalize(&temp);
+	vm_vector_2_matrix(&dir, &temp, NULL, NULL);
 
-		// stuff info
-		ssm->sinfo.ssm_index = ssm_index;
-		ssm->sinfo.target = *target;
-		for(idx=0; idx<Ssm_info[ssm_index].count; idx++){
-			ssm->sinfo.delay_stamp[idx] = timestamp(200 + (int)frand_range(-199.0f, 1000.0f));
-			ssm_get_random_start_pos(&ssm->sinfo.start_pos[idx], start, &dir, ssm_index);
-		}
-
-		// if we're the server, send a packet
-		if(MULTIPLAYER_MASTER){
-			//
-		}
+	// stuff info
+	ssm->sinfo.ssm_index = ssm_index;
+	ssm->sinfo.target = *target;
+	for(idx=0; idx<Ssm_info[ssm_index].count; idx++){
+		ssm->sinfo.delay_stamp[idx] = timestamp(200 + (int)frand_range(-199.0f, 1000.0f));
+		ssm_get_random_start_pos(&ssm->sinfo.start_pos[idx], start, &dir, ssm_index);
 	}
 
 	// clear timestamps, handles, etc

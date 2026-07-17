@@ -13,13 +13,11 @@
 #include "gamesequence.h"
 #include "freespace.h"
 #include "missionlog.h"
+#include "missionparse.h"
 #include "key.h"
 #include "2d.h"
 #include "font.h"
 #include "missiongoals.h"
-#include "multi.h"
-#include "multimsgs.h"
-#include "multiutil.h"
 #include "alphacolors.h"
 #include "localize.h"
 
@@ -200,17 +198,11 @@ void mission_log_flag_team( log_entry *entry, int which_entry, int team )
 
 // following function adds an entry into the mission log.
 // pass a type and a string which indicates the object
-// that this event is for.  Don't add entries with this function for multiplayer
+// that this event is for.
 void mission_log_add_entry(int type, char *pname, char *sname, int info_index)
 {
 	int last_entry_save;
-	log_entry *entry;	
-
-	// multiplayer clients don't use this function to add log entries -- they will get
-	// all their info from the host
-	if ( (Game_mode & GM_MULTIPLAYER) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER) ){
-		return;
-	}
+	log_entry *entry;
 
 	last_entry_save = last_entry;
 
@@ -254,13 +246,7 @@ void mission_log_add_entry(int type, char *pname, char *sname, int info_index)
 	case LOG_SHIP_DISABLED:
 	case LOG_SHIP_DISARMED:
 	case LOG_SELF_DESTRUCT:
-		// multiplayer. callsign is passed in for ship destroyed and self destruct
-		if((Game_mode & GM_MULTIPLAYER) && (multi_find_player_by_callsign(pname) >= 0)){
-			int np_index = multi_find_player_by_callsign(pname);
-			index = multi_get_player_ship( np_index );
-		} else {
-			index = ship_name_lookup( pname );
-		}
+		index = ship_name_lookup( pname );
 
 		Assert ( index != -1 );
 		if(index < 0){
@@ -280,32 +266,17 @@ void mission_log_add_entry(int type, char *pname, char *sname, int info_index)
 			if ( sname ) {
 				int team;
 
-				// multiplayer, player name will possibly be sent in
-				if((Game_mode & GM_MULTIPLAYER) && (multi_find_player_by_callsign(sname) >= 0)){
-					// get the player's ship
-					int np_index = multi_find_player_by_callsign(sname);
-					int np_ship = multi_get_player_ship(np_index);
-
-					if(np_ship != -1){
-						team = Ships[Objects[Net_players[np_index].player->objnum].instance].team;
-					}
-					// argh. badness
-					else {
-						team = TEAM_FRIENDLY;
-					}
-				} else {
-					index = ship_name_lookup( sname );
-					// no ship, then it probably exited -- check the exited 
+				index = ship_name_lookup( sname );
+				// no ship, then it probably exited -- check the exited
+				if ( index == -1 ) {
+					index = ship_find_exited_ship_by_name( sname );
 					if ( index == -1 ) {
-						index = ship_find_exited_ship_by_name( sname );
-						if ( index == -1 ) {
-						//	Int3();		// get allender.  name of object who killed ship appears to be bogus!!!
-							break;
-						}
-						team = Ships_exited[index].team;
-					} else {
-						team = Ships[index].team;
+					//	Int3();		// get allender.  name of object who killed ship appears to be bogus!!!
+						break;
 					}
+					team = Ships_exited[index].team;
+				} else {
+					team = Ships[index].team;
 				}
 
 				mission_log_flag_team( entry, ML_FLAG_SECONDARY, team );
@@ -378,11 +349,6 @@ void mission_log_add_entry(int type, char *pname, char *sname, int info_index)
 
 	entry->timestamp = Missiontime;
 
-	// if in multiplayer and I am the master, send this log entry to everyone
-	if ( (Game_mode & GM_MULTIPLAYER) && (Net_player->flags & NETINFO_FLAG_AM_MASTER) ){
-		send_mission_log_packet( last_entry );
-	}
-
 	last_entry++;
 
 #ifndef NDEBUG
@@ -393,44 +359,6 @@ void mission_log_add_entry(int type, char *pname, char *sname, int info_index)
 	}
 #endif
 
-}
-
-// function, used in multiplayer only, which adds an entry sent by the host of the game, into
-// the mission log.  The index of the log entry is passed as one of the parameters in addition to
-// the normal parameters used for adding an entry to the log
-void mission_log_add_entry_multi( int type, char *pname, char *sname, int index, fix timestamp, int flags )
-{
-	log_entry *entry;
-
-	// we'd better be in multiplayer and not the master of the game
-	Assert ( Game_mode & GM_MULTIPLAYER );
-	Assert ( !(Net_player->flags & NETINFO_FLAG_AM_MASTER) );
-
-	// mark any entries as obsolete.  Part of the pruning is done based on the type (and name) passed
-	// for a new entry
-	mission_log_obsolete_entries(type, pname);
-
-	entry = &log_entries[last_entry];
-
-	if ( last_entry == MAX_LOG_ENTRIES ){
-		return;
-	}
-
-	last_entry++;
-
-	entry->type = type;
-	if ( pname ) {
-		Assert (strlen(pname) < NAME_LENGTH);
-		strcpy(entry->pname, pname);
-	}
-	if ( sname ) {
-		Assert (strlen(sname) < NAME_LENGTH);
-		strcpy(entry->sname, sname);
-	}
-	entry->index = index;
-
-	entry->flags = flags;
-	entry->timestamp = timestamp;
 }
 
 // function to determine is the given event has taken place count number of times.

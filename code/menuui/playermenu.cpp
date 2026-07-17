@@ -27,7 +27,6 @@
 #include "osregistry.h"
 #include "palman.h"
 #include "mainhallmenu.h"
-#include "multi.h"
 #include "popup.h"
 #include "mouse.h"
 #include "alphacolors.h"
@@ -159,7 +158,7 @@ char Player_select_very_first_pilot_callsign[CALLSIGN_LEN + 2];
 
 extern int Main_hall_bitmap;									// bitmap handle to the main hall bitmap
 
-int Player_select_mode;											// single or multiplayer - never set directly. use player_select_init_player_stuff()
+int Player_select_mode;											// always PLAYER_SELECT_MODE_SINGLE - never set directly. use player_select_init_player_stuff()
 int Player_select_num_pilots;									// # of pilots on the list
 int Player_select_list_start;									// index of first list item to start displaying in the box
 int Player_select_pilot;									    // index into the Pilot array of which is selected as the active pilot
@@ -168,7 +167,6 @@ char Pilots_arr[MAX_PILOTS][MAX_FILENAME_LEN];
 char *Pilots[MAX_PILOTS];
 int Player_select_clone_flag;									// clone the currently selected pilot
 char Player_select_last_pilot[CALLSIGN_LEN + 10];		// callsign of the last used pilot, or none if there wasn't one
-int Player_select_last_is_multi;
 
 int Player_select_force_bastion = 0;
 
@@ -191,7 +189,7 @@ void player_select_set_middle_text(char *txt);
 
 
 // FORWARD DECLARATIONS
-void player_select_init_player_stuff(int mode);			// switch between single and multiplayer modes
+void player_select_init_player_stuff(int mode);			// initialize the pilot list
 void player_select_set_input_mode(int n);					
 void player_select_button_pressed(int n);
 void player_select_scroll_list_up();
@@ -226,7 +224,7 @@ void player_select_set_controls(int gray)
 	}
 }
 
-// functions for selecting single/multiplayer pilots at the very beginning of Freespace
+// functions for selecting pilots at the very beginning of Freespace
 void player_select_init()
 {			
 	int i;
@@ -311,11 +309,8 @@ void player_select_init()
 	Player_select_buttons[gr_screen.res][ACCEPT_BUTTON].button.set_hotkey(KEY_ENTER);
 	Player_select_buttons[gr_screen.res][CREATE_PILOT_BUTTON].button.set_hotkey(KEY_C);
 
-	// disable the single player button in the multiplayer beta
-#ifdef MULTIPLAYER_BETA_BUILD
-	Player_select_buttons[gr_screen.res][SINGLE_BUTTON].button.hide();
-	Player_select_buttons[gr_screen.res][SINGLE_BUTTON].button.disable();
-#elif defined(E3_BUILD) || defined(PRESS_TOUR_BUILD)
+	// disable the multi player button in the E3 and press tour builds
+#if defined(E3_BUILD) || defined(PRESS_TOUR_BUILD)
 	Player_select_buttons[gr_screen.res][MULTI_BUTTON].button.hide();
 	Player_select_buttons[gr_screen.res][MULTI_BUTTON].button.disable();
 #endif
@@ -340,24 +335,7 @@ void player_select_init()
 //		Player_select_autoaccept = 1;
 //	}
 		
-	// if we found a pilot
-#if defined(DEMO) || defined(OEM_BUILD) || defined(E3_BUILD) || defined(PRESS_TOUR_BUILD) // not for FS2_DEMO
-	player_select_init_player_stuff(PLAYER_SELECT_MODE_SINGLE);	
-#elif defined(MULTIPLAYER_BETA_BUILD)
-	player_select_init_player_stuff(PLAYER_SELECT_MODE_MULTI);	
-#else
-	if (player_select_get_last_pilot_info()) {
-		if (Player_select_last_is_multi) {
-			player_select_init_player_stuff(PLAYER_SELECT_MODE_MULTI);
-		} else {
-			player_select_init_player_stuff(PLAYER_SELECT_MODE_SINGLE);
-		}
-	} 
-	// otherwise go to the single player mode by default
-	else {
-		player_select_init_player_stuff(PLAYER_SELECT_MODE_SINGLE);
-	}
-#endif	
+	player_select_init_player_stuff(PLAYER_SELECT_MODE_SINGLE);
 
 	if((Player_select_num_pilots == 1) && Player_select_input_mode){
 		Player_select_autoaccept = 1;
@@ -433,34 +411,6 @@ void player_select_do()
 		extern void game_process_cheats(int k);
 		game_process_cheats(k);
 	}
-	switch(k){
-	// switch between single and multiplayer modes
-	case KEY_TAB : 
-#if defined(DEMO) || defined(OEM_BUILD) // not for FS2_DEMO
-		break;
-#else
-
-		if(Player_select_input_mode){
-			gamesnd_play_iface(SND_GENERAL_FAIL);
-			break;
-		}
-		// play a little sound
-		gamesnd_play_iface(SND_USER_SELECT);
-		if(Player_select_mode == PLAYER_SELECT_MODE_MULTI){					
-			player_select_set_bottom_text(XSTR( "Single-Player Mode", 376));
-				
-			// reinitialize as single player mode
-			player_select_init_player_stuff(PLAYER_SELECT_MODE_SINGLE);
-		} else if(Player_select_mode == PLAYER_SELECT_MODE_SINGLE){										
-			player_select_set_bottom_text(XSTR( "Multiplayer Mode", 377));
-				
-			// reinitialize as multiplayer mode
-			player_select_init_player_stuff(PLAYER_SELECT_MODE_MULTI);
-		}
-		break;	
-#endif
-	}	
-
 	// draw the player select pseudo-dialog over it
 	gr_set_bitmap(Player_select_background_bitmap);
 	gr_bitmap(0,0);
@@ -473,12 +423,8 @@ void player_select_do()
 	// draw any ui window stuf
 	Player_select_window.draw();
 
-	// light up the correct mode button (single or multi)
-	if (Player_select_mode == PLAYER_SELECT_MODE_SINGLE){
-		Player_select_buttons[gr_screen.res][SINGLE_BUTTON].button.draw_forced(2);
-	} else {
-		Player_select_buttons[gr_screen.res][MULTI_BUTTON].button.draw_forced(2);
-	}
+	// light up the single player mode button
+	Player_select_buttons[gr_screen.res][SINGLE_BUTTON].button.draw_forced(2);
 
 	// draw the pilot list text
 	player_select_draw_list();	
@@ -700,40 +646,16 @@ void player_select_button_pressed(int n)
 		player_select_set_bottom_text("");
 
 		Player_select_autoaccept = 0;
-		// switch to single player mode
-		if (Player_select_mode != PLAYER_SELECT_MODE_SINGLE) {
-			// play a little sound
-			gamesnd_play_iface(SND_USER_SELECT);
-				
-			player_select_set_bottom_text(XSTR( "Single Player Mode", 376));
-				
-			// reinitialize as single player mode
-			player_select_init_player_stuff(PLAYER_SELECT_MODE_SINGLE);
-		} else {
-			gamesnd_play_iface(SND_GENERAL_FAIL);
-		}
+		// already in single player mode
+		gamesnd_play_iface(SND_GENERAL_FAIL);
 		break;
 
 	case MULTI_BUTTON:
 		player_select_set_bottom_text("");
 
 		Player_select_autoaccept = 0;
-#if defined(DEMO) || defined(OEM_BUILD) // not for FS2_DEMO
-		game_feature_not_in_demo_popup();
-#else
-		// switch to multiplayer mode
-		if (Player_select_mode != PLAYER_SELECT_MODE_MULTI) {
-			// play a little sound
-			gamesnd_play_iface(SND_USER_SELECT);
-			
-			player_select_set_bottom_text(XSTR( "Multiplayer Mode", 377));
-				
-			// reinitialize as multiplayer mode
-			player_select_init_player_stuff(PLAYER_SELECT_MODE_MULTI);
-		} else {
-			gamesnd_play_iface(SND_GENERAL_FAIL);
-		}
-#endif
+		// multiplayer is gone from this build
+		gamesnd_play_iface(SND_GENERAL_FAIL);
 		break;
 	}
 }
@@ -767,9 +689,6 @@ int player_select_create_new_pilot()
 		strcpy(Pilots[idx + 1], Pilots[idx]);		
 	}	
 
-	// by default, set the default netgame protocol to be VMT
-	Multi_options_g.protocol = NET_TCP;	
-
 	// select the beginning of the list
 	Player_select_pilot = 0;
 	Player_select_num_pilots++;
@@ -796,19 +715,14 @@ void player_select_delete_pilot()
 
 	// tack on the full path and the pilot file extension
 	// build up the path name length
-	// make sure we do this based upon whether we're in single or multiplayer mode
 	strcpy( filename, Pilots[Player_select_pilot] );
 	strcat( filename, NOX(".plr") );
 
 	// attempt to delete the pilot
-	if (Player_select_mode == PLAYER_SELECT_MODE_SINGLE) {
-		cf_delete( filename, CF_TYPE_SINGLE_PLAYERS );
-	} else {
-		cf_delete( filename, CF_TYPE_MULTI_PLAYERS );
-	}
+	cf_delete( filename, CF_TYPE_SINGLE_PLAYERS );
 
 	// delete all the campaign save files for this pilot.
-	mission_campaign_delete_all_savefiles( Pilots[Player_select_pilot], (Player_select_mode != PLAYER_SELECT_MODE_SINGLE) );
+	mission_campaign_delete_all_savefiles( Pilots[Player_select_pilot], 0 );
 
 	// move all the players down
 	for (i=Player_select_pilot; i<Player_select_num_pilots-1; i++){
@@ -858,7 +772,7 @@ void player_select_scroll_list_down()
 	}
 }
 
-// fill in the data on the last played pilot (callsign and is_multi or not)
+// fill in the data on the last played pilot
 int player_select_get_last_pilot_info()
 {
 	char *last_player;
@@ -871,8 +785,7 @@ int player_select_get_last_pilot_info()
 		strcpy(Player_select_last_pilot,last_player);
 	}
 
-	// determine if he was a single or multi-player based upon the last character in his callsign
-	Player_select_last_is_multi = Player_select_last_pilot[strlen(Player_select_last_pilot)-1] == 'M' ? 1 : 0;
+	// strip the single/multiplayer marker off the end of his callsign
 	Player_select_last_pilot[strlen(Player_select_last_pilot)-1]='\0';
 
 	return 1;	
@@ -888,11 +801,7 @@ int player_select_get_last_pilot()
 			return 0;
 		}
 
-		if(Player_select_last_is_multi){
-			Player_select_num_pilots = cf_get_file_list_preallocated(MAX_PILOTS, Pilots_arr, Pilots, CF_TYPE_MULTI_PLAYERS, NOX("*.plr"), CF_SORT_TIME);				
-		} else {
-			Player_select_num_pilots = cf_get_file_list_preallocated(MAX_PILOTS, Pilots_arr, Pilots, CF_TYPE_SINGLE_PLAYERS, NOX("*.plr"), CF_SORT_TIME);						
-		}
+		Player_select_num_pilots = cf_get_file_list_preallocated(MAX_PILOTS, Pilots_arr, Pilots, CF_TYPE_SINGLE_PLAYERS, NOX("*.plr"), CF_SORT_TIME);
 
 		Player_select_pilot = -1;
 		idx = 0;
@@ -911,7 +820,7 @@ int player_select_get_last_pilot()
 		// if we've actually found a valid pilot, load him up		
 		if(Player_select_pilot != -1){
 			Player = &Players[0];			
-			read_pilot_file(Pilots_arr[idx],!Player_select_last_is_multi,Player);
+			read_pilot_file(Pilots_arr[idx],1,Player);
 			Player->flags |= PLAYER_FLAGS_STRUCTURE_IN_USE;
 			return 1;		
 		}			
@@ -927,13 +836,9 @@ void player_select_init_player_stuff(int mode)
 	// set the select mode to single player for default
 	Player_select_mode = mode;
 
-	// load up the list of players based upon the Player_select_mode (single or multiplayer)
+	// load up the list of players
 	Get_file_list_filter = player_select_pilot_file_filter;
-	if (mode == PLAYER_SELECT_MODE_SINGLE){
-		Player_select_num_pilots = cf_get_file_list_preallocated(MAX_PILOTS, Pilots_arr, Pilots, CF_TYPE_SINGLE_PLAYERS, NOX("*.plr"), CF_SORT_TIME);
-	} else {
-		Player_select_num_pilots = cf_get_file_list_preallocated(MAX_PILOTS, Pilots_arr, Pilots, CF_TYPE_MULTI_PLAYERS, NOX("*.plr"), CF_SORT_TIME);
-	}
+	Player_select_num_pilots = cf_get_file_list_preallocated(MAX_PILOTS, Pilots_arr, Pilots, CF_TYPE_SINGLE_PLAYERS, NOX("*.plr"), CF_SORT_TIME);
 
 	Player = NULL;	
 
@@ -1108,12 +1013,6 @@ void player_select_process_input(int k)
 
 		strcpy(Player->callsign, buf);
 		init_new_pilot(Player, !Player_select_clone_flag);
-
-		// set him as being a multiplayer pilot if we're in the correct mode
-		if (Player_select_mode == PLAYER_SELECT_MODE_MULTI) {
-			Player->flags |= PLAYER_FLAGS_IS_MULTI;
-			Player->stats.flags |= STATS_FLAG_MULTIPLAYER;
-		}
 
 		// create his pilot file
 		write_pilot_file(Player);

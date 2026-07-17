@@ -17,13 +17,11 @@
 #include "timer.h"
 #include "player.h"
 #include "stats.h"
-#include "multi.h"
 #include "hud.h"
 #include "font.h"
 
 #define MISSION_STATS_START_Y 80
 #define ALLTIME_STATS_START_Y 270
-#define MULTIPLAYER_LIST_START 20
 
 static int Mission_stats_start_y[GR_NUM_RESOLUTIONS] = {
 	80,	// GR_640
@@ -35,11 +33,6 @@ static int Alltime_stats_start_y[GR_NUM_RESOLUTIONS] = {
 	270	// GR_1024
 };
 
-static int Multiplayer_list_start[GR_NUM_RESOLUTIONS] = {
-	20,	// GR_640
-	20		// GR_1024
-};
-
 // static UI_WINDOW Player_stats_window;
 
 player *Active_player;
@@ -48,11 +41,7 @@ void show_stats_init()
 {
 	// Player_stats_window.create( 0, 0, gr_screen.max_w, gr_screen.max_h, 0 );
 
-	if (Game_mode & GM_MULTIPLAYER) {				
-		set_player_stats(MY_NET_PLAYER_NUM);
-	} else {
-		Active_player = Player;		
-	}	
+	Active_player = Player;
 }
 
 // write out the label for each stat
@@ -89,14 +78,6 @@ void show_stats_label(int stage, int sx, int sy, int dy)
 			gr_printf(sx,sy,XSTR( "Assists", 126));
 			sy += 2*dy;
 
-			if(Game_mode & GM_MULTIPLAYER){
-				gr_printf(sx,sy,XSTR( "Player Deaths", 127));
-				sy += 2*dy;
-
-				gr_printf(sx,sy,XSTR( "Mission score", 1526));
-			}
-
-
 			break;
 
 		case ALL_TIME_STATS:
@@ -129,9 +110,6 @@ void show_stats_label(int stage, int sx, int sy, int dy)
 			gr_printf(sx,sy,XSTR( "Assists", 126));
 			sy += 2*dy;
 
-			if(Game_mode & GM_MULTIPLAYER){
-				gr_printf(sx,sy,XSTR( "Score", 1527));
-			}
 			break;
 		} // end switch
 }
@@ -209,16 +187,6 @@ void show_stats_numbers(int stage, int sx, int sy, int dy,int add_mission)
 			gr_printf(sx,sy,text);
 			sy += 2*dy;
 
-			if(Game_mode & GM_MULTIPLAYER){
-				sprintf(text,"%d",(int)Active_player->stats.m_player_deaths);
-				gr_printf(sx,sy,text);
-				sy += 2*dy;
-
-				// mission score
-				gr_printf(sx, sy, "%d", (int)Active_player->stats.m_score);
-			}
-
-
 			break;
 
 		case ALL_TIME_STATS:
@@ -295,49 +263,11 @@ void show_stats_numbers(int stage, int sx, int sy, int dy,int add_mission)
 			gr_printf(sx,sy,text);
 			sy += 2*dy;
 
-			if (Game_mode & GM_MULTIPLAYER) {
-				gr_printf(sx, sy, "%d", (int)Active_player->stats.score);
-			}
 			break;
 	} // end switch
 }
 
-int find_netplayer_n(int n)
-{
-	int idx;
-	int target;
-   target = n;
-	n=0;
-   for(idx=0;idx<MAX_PLAYERS;idx++){
-		if(MULTI_CONNECTED(Net_players[idx])){
-			n++;
-			if(n == target)
-				return idx;
-		}
-	}
-	return -1;
-}
-
-
-
 void show_stats_close()
-{	
-}
- 
-// initialize the statistics portion of the player structure for multiplayer.  Only the host of
-// a netgame needs to be doing this (and if fact, only he *should* be doing this)
-void init_multiplayer_stats( )
 {
-	scoring_struct *ptr;
-
-	for (int idx=0; idx < MAX_PLAYERS; idx++) {
-		ptr = &Players[idx].stats;
-		scoring_level_init( ptr );
-	}
-}
-
-void set_player_stats(int pid)
-{
-   Active_player = Net_players[pid].player;
 }
 

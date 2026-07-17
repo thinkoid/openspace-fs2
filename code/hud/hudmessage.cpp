@@ -29,7 +29,6 @@
 #include "bmpman.h"
 #include "font.h"
 #include "gamesnd.h"
-#include "multi.h"
 #include "missiongoals.h"
 #include "alphacolors.h"
 #include "beam.h"
@@ -415,12 +414,6 @@ void HUD_fixed_printf(float duration, char * format, ...)
 	char		tmp[HUD_MSG_LENGTH_MAX];
 	int		msg_length;
 
-	// make sure we only print these messages if we're in the correct state
-	if((Game_mode & GM_MULTIPLAYER) && (Netgame.game_state != NETGAME_STATE_IN_MISSION)){
-		nprintf(("Network","HUD_fixed_printf bailing because not in multiplayer game play state\n"));
-		return;
-	}
-
 	va_start(args, format);
 	vsprintf(tmp, format, args);
 	va_end(args);
@@ -517,12 +510,6 @@ void HUD_printf(char *format, ...)
 	char tmp[HUD_MSG_LENGTH_MAX];
 	int len;
 
-	// make sure we only print these messages if we're in the correct state
-	if((Game_mode & GM_MULTIPLAYER) && (Net_player->state != NETPLAYER_STATE_IN_MISSION)){
-		nprintf(("Network","HUD_printf bailing because not in multiplayer game play state\n"));
-		return;
-	}
-
 	va_start(args, format);
 	vsprintf(tmp, format, args);
 	va_end(args);
@@ -563,12 +550,6 @@ void HUD_sourced_printf(int source, char *format, ...)
 	va_list args;
 	char tmp[HUD_MSG_LENGTH_MAX];
 
-	// make sure we only print these messages if we're in the correct state
-	if((Game_mode & GM_MULTIPLAYER) && (Net_player->state != NETPLAYER_STATE_IN_MISSION)){
-		nprintf(("Network","HUD_sourced_printf bailing because not in multiplayer game play state\n"));
-		return;
-	}
-	
 	va_start(args, format);
 	vsprintf(tmp, format, args);
 	va_end(args);

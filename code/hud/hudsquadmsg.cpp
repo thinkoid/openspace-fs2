@@ -29,11 +29,8 @@
 #include "gamesnd.h"
 #include "sound.h"
 #include "missionparse.h"
-#include "multimsgs.h"
-#include "multiutil.h"
 #include "bmpman.h"
 #include "hudtargetbox.h"
-#include "multi_pmsg.h"
 #include "subsysdamage.h"
 #include "emp.h"
 
@@ -426,8 +423,6 @@ int hud_squadmsg_count_ships( int add_to_menu )
 		if ( shipp->flags & (SF_DEPARTING|SF_DYING) )
 			continue;
 
-		// MULTI - changed to allow messaging of netplayers
-
 		// cannot be my ship or an instructor
 		if ( (&Objects[so->objnum] == Player_obj) || is_instructor(&Objects[so->objnum]) )
 			continue;
@@ -436,8 +431,8 @@ int hud_squadmsg_count_ships( int add_to_menu )
 		if ( shipp->orders_accepted == 0)
 			continue;
 
-		// if it is a player ship, we must be in multiplayer
-		if ( (Objects[so->objnum].flags & OF_PLAYER_SHIP) && !(Game_mode & GM_MULTIPLAYER) )
+		// cannot message player ships
+		if ( Objects[so->objnum].flags & OF_PLAYER_SHIP )
 			continue;
 
 		// if a messaging shortcut, be sure this ship can process the order
@@ -468,8 +463,6 @@ int hud_squadmsg_count_ships( int add_to_menu )
 // routine to return true if a wing should be put onto the messaging menu
 int hud_squadmsg_wing_valid( wing *wingp, int team )
 {
-	// int player_count, j;
-
 	// a couple of special cases to account for before adding to count (or to menu).  The wing gone
 	// flags is firm indication to skip this particular wing.  Also, skip if enemy wing
 	if ( (wingp->flags  & WF_WING_GONE) || (wingp->current_count == 0) )
@@ -498,17 +491,6 @@ int hud_squadmsg_wing_valid( wing *wingp, int team )
 		if ( !(Ships[wingp->ship_index[0]].orders_accepted & Msg_shortcut_command) )
 			return 0;
 	}
-	// MULTI - changed to allow messaging of netplayers
-	// don't count wings where all ships are player ships		
-	/*
-	player_count = 0;
-	for ( j = 0; j < wingp->current_count; j++ ) {
-		if ( Objects[Ships[wingp->ship_index[j]].objnum].flags & OF_PLAYER_SHIP )
-			player_count++;
-	}
-	if ( player_count == wingp->current_count )
-		return 0;
-	*/
 
 	return 1;
 }
@@ -711,7 +693,7 @@ int hud_squadmsg_get_key()
 // in global vars since they don't get recomputed every frame.
 void hud_squadmsg_display_menu( char *title )
 {
-	int bx, by, sx, sy, i, nitems, none_valid, messaging_allowed;
+	int bx, by, sx, sy, i, nitems, none_valid;
 
 	// hud_set_bright_color();
 	hud_set_gauge_color(HUD_MESSAGE_BOX, HUD_C_BRIGHT);
@@ -737,12 +719,6 @@ void hud_squadmsg_display_menu( char *title )
 	by = Mbox_bmap_coords[gr_screen.res][1];		// global y-offset where bitmap gets drawn
 
 	none_valid = 1;		// variable to tell us whether all items in the menu are valid or not
-
-	// use another variable to tell us whether we can message or not.
-	messaging_allowed = 1;
-	if ( (Game_mode & GM_MULTIPLAYER) && !multi_can_message(Net_player) ){
-		messaging_allowed = 0;
-	}
 
 	for ( i = 0; i < nitems; i++ ) {
 		int item_num;
@@ -789,7 +765,7 @@ void hud_squadmsg_display_menu( char *title )
 
 	// maybe draw an extra line in to make room for [pgdn], or for the 'no active items'
 	// display
-	if ( !messaging_allowed || none_valid || ((First_menu_item + nitems) < Num_menu_items) || (Msg_shortcut_command != -1) ) {
+	if ( none_valid || ((First_menu_item + nitems) < Num_menu_items) || (Msg_shortcut_command != -1) ) {
 		// blit the background
 		// hud_set_default_color();
 		hud_set_gauge_color(HUD_MESSAGE_BOX);
@@ -819,15 +795,10 @@ void hud_squadmsg_display_menu( char *title )
 		gr_printf( Menu_pgdn_coords[gr_screen.res][0], Menu_pgdn_coords[gr_screen.res][1], XSTR( "[pgdn]", 313));
 	}
 
-	if ( messaging_allowed ) {
-		if ( none_valid ){
-			gr_printf( sx, by - Mbox_item_h[gr_screen.res] + 2, XSTR( "No valid items", 314));
-		} else if ( !none_valid && (Msg_shortcut_command != -1) ){
-			gr_printf( sx, by - Mbox_item_h[gr_screen.res] + 2, "%s", comm_order_hotkey_text(Msg_shortcut_command));
-		}
-	} else {
-		// if this player is not allowed to message, then display message saying so
-		gr_printf( sx, by - Mbox_item_h[gr_screen.res] + 2, XSTR( "Not allowed to message", 315));
+	if ( none_valid ){
+		gr_printf( sx, by - Mbox_item_h[gr_screen.res] + 2, XSTR( "No valid items", 314));
+	} else if ( !none_valid && (Msg_shortcut_command != -1) ){
+		gr_printf( sx, by - Mbox_item_h[gr_screen.res] + 2, "%s", comm_order_hotkey_text(Msg_shortcut_command));
 	}
 
 }
@@ -845,53 +816,40 @@ int hud_squadmsg_can_rearm( ship *shipp )
 
 // calls for repair/rearm of the player ship.  Checks for the presense of the support
 // ship and does the appropriate action if found
-void hud_squadmsg_repair_rearm( int toggle_state, object *objp)
+void hud_squadmsg_repair_rearm( int toggle_state )
 {
 	int robjnum;
 	object *robjp;
 	object *tobj;
-	int multi_player_num;
 
-	// this is essentially a check for multiplayer server/client mode
-	// in multiplayer mode, the server may have to issue this command when received from a client
-	if(objp == NULL) {
-		tobj = Player_obj;
-		multi_player_num = -1;
-	} else {
-		tobj = objp;
-		multi_player_num = multi_find_player_by_object(objp);
-		Assert(multi_player_num != -1);
-	}
+	tobj = Player_obj;
 
 	// see if player is already scheduled on arriving support ship.  If so, issues appripriate
 	// message and bail
 	if ( is_support_allowed(tobj) ) {
 		if ( mission_is_repair_scheduled( tobj ) ) {
-			message_send_builtin_to_player( MESSAGE_REARM_ON_WAY, NULL, MESSAGE_PRIORITY_NORMAL, MESSAGE_TIME_SOON, 0, 0, multi_player_num, -1 );
+			message_send_builtin_to_player( MESSAGE_REARM_ON_WAY, NULL, MESSAGE_PRIORITY_NORMAL, MESSAGE_TIME_SOON, 0, 0);
 		} else {
 			robjnum = hud_support_find_closest(OBJ_INDEX(tobj));
 			if ( robjnum != -1 ) {
-				message_send_builtin_to_player( MESSAGE_REARM_ON_WAY, &Ships[Objects[robjnum].instance], MESSAGE_PRIORITY_NORMAL, MESSAGE_TIME_SOON, 0, 0, multi_player_num, -1 );
+				message_send_builtin_to_player( MESSAGE_REARM_ON_WAY, &Ships[Objects[robjnum].instance], MESSAGE_PRIORITY_NORMAL, MESSAGE_TIME_SOON, 0, 0);
 			} else {
 				// request a rearm.  Next function returns -1 if ship is warping in, objnum of repair ship otherwise
 				robjnum = ai_issue_rearm_request( tobj );
 				if ( robjnum != -1) {
 					robjp = &Objects[robjnum];
-					message_send_builtin_to_player( MESSAGE_ON_WAY, &Ships[robjp->instance], MESSAGE_PRIORITY_NORMAL, MESSAGE_TIME_SOON, 0, 0, multi_player_num, -1 );
+					message_send_builtin_to_player( MESSAGE_ON_WAY, &Ships[robjp->instance], MESSAGE_PRIORITY_NORMAL, MESSAGE_TIME_SOON, 0, 0);
 
 				} else {
 					// if we are in this part of the if statment, a support ship has been warped in to
 					// service us.  Issue appropriate message
-					message_send_builtin_to_player( MESSAGE_REARM_WARP, NULL, MESSAGE_PRIORITY_NORMAL, MESSAGE_TIME_SOON, 0, 0, multi_player_num, -1 );
+					message_send_builtin_to_player( MESSAGE_REARM_WARP, NULL, MESSAGE_PRIORITY_NORMAL, MESSAGE_TIME_SOON, 0, 0);
 				}
 
 				mission_log_add_entry(LOG_PLAYER_REARM, Ships[tobj->instance].ship_name, NULL);
 			}
 		}
 	}
-
-	//if ( multi_player_num == -1 )		// only do the hud display if it is for me!
-	//	hud_support_view_start();
 
 	if ( toggle_state )
 		hud_squadmsg_toggle();						// take us out of message mode
@@ -903,28 +861,17 @@ void hud_squadmsg_rearm_shortcut()
 	if ( !hud_squadmsg_can_rearm(Player_ship) )
 		return;
 
-	// multiplayer clients need to send this message to the server
-	if ( MULTIPLAYER_CLIENT ) {
-		send_player_order_packet(SQUAD_MSG_SHIP, 0, REARM_REPAIR_ME_ITEM);
-		return;
-	}
-
 	hud_squadmsg_repair_rearm(0);
 }
 
 // code which is called when a player aborts his rearm request
-void hud_squadmsg_repair_rearm_abort( int toggle_state, object *obj)
+void hud_squadmsg_repair_rearm_abort( int toggle_state )
 {
 //	ai_info *aip;
 //	object *robjp;
 	object *tobj;
 
-	// this is essentially a check for multiplayer server/client mode
-	// in multiplayer mode, the server may have to issue this command when received from a client
-	if(obj == NULL)
-		tobj = Player_obj;
-	else
-		tobj = obj;
+	tobj = Player_obj;
 
 	// try to abort the request.  We shoudln't be in this function unless we are actually
 	// queued for repair.  Send a message from support ship if the support ship is in the mission
@@ -1040,26 +987,12 @@ int hud_squadmsg_is_target_order_valid(int order, int find_order, ai_info *aip )
 }
 
 // function to send an order to all fighters/bombers.
-void hud_squadmsg_send_to_all_fighters( int command, int player_num )
+void hud_squadmsg_send_to_all_fighters( int command )
 {
 	ai_info *aip;
 	ship *shipp, *ordering_shipp;
 	int i, send_message, to_everyone, do_ship;
 	object *objp;
-
-	// quick short circuit here because of actually showing comm menu even though you cannot message.
-	// just a safety net.
-	if ( (Game_mode & GM_MULTIPLAYER) && (player_num != -1) ) {
-		if ( !multi_can_message(&Net_players[player_num]) ) {
-			return;
-		}
-	}
-
-	// check for multiplayer mode
-	if((Game_mode & GM_MULTIPLAYER) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER)) {
-		send_player_order_packet(SQUAD_MSG_ALL, 0, command);
-		return;
-	}
 
 	// to_everyone tells us whether the command should apply to all ships, or just to fighets/bombers.
 	// when true, command goes to *all* friendlies.
@@ -1067,9 +1000,6 @@ void hud_squadmsg_send_to_all_fighters( int command, int player_num )
 	to_everyone = 0;
 	do_ship = 0;
 	aip = Player_ai;
-
-	if ( player_num != -1 )
-		aip = &Ai_info[Ships[Objects[Net_players[player_num].player->objnum].instance].ai_index];
 
 	Assert( aip->shipnum != -1 );
 	ordering_shipp = &Ships[aip->shipnum];
@@ -1113,7 +1043,7 @@ void hud_squadmsg_send_to_all_fighters( int command, int player_num )
 
 		// send the command to the wing
 		if ( Wings[i].current_count > 1 ) {
-			if ( hud_squadmsg_send_wing_command(i, command, send_message, player_num) ) {
+			if ( hud_squadmsg_send_wing_command(i, command, send_message) ) {
 				send_message = 0;
 			}
 		}
@@ -1141,7 +1071,7 @@ void hud_squadmsg_send_to_all_fighters( int command, int player_num )
 		if ( !(command & shipp->orders_accepted) )
 			continue;
 
-		if ( hud_squadmsg_send_ship_command(objp->instance, command, send_message, player_num) ) {
+		if ( hud_squadmsg_send_ship_command(objp->instance, command, send_message) ) {
 			send_message = 0;
 		}
 	}
@@ -1174,10 +1104,7 @@ int hud_squadmsg_enemies_present()
 // function which sends a message to a specific ship.  This routine can be called from one of two
 // places.  Either after selecting a ship when using a hotkey, or after selecting a command when
 // using the entire messaging menu system
-//
-// if local and addr are non-null, it means the function is being called by the (multiplayer) server in response to 
-// a PLAYER_COMMAND_PACKET
-int hud_squadmsg_send_ship_command( int shipnum, int command, int send_message, int player_num )
+int hud_squadmsg_send_ship_command( int shipnum, int command, int send_message )
 {
 	ai_info *ainfo;
 	int ai_mode, ai_submode;					// ai mode and submode needed for ship commands
@@ -1185,28 +1112,10 @@ int hud_squadmsg_send_ship_command( int shipnum, int command, int send_message, 
 	int message;
 	int target_team, ship_team;				// team id's for the ship getting message and any target the player has
 	ship *ordering_shipp;
-	
-	// quick short circuit here because of actually showing comm menu even though you cannot message.
-	// just a safety net.
-	if ( (Game_mode & GM_MULTIPLAYER) && (player_num != -1) ) {
-		if ( !multi_can_message(&Net_players[player_num]) ) {
-			return 0;
-		}
-	}
-
-	// check for multiplayer mode
-	if((Game_mode & GM_MULTIPLAYER) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER)){
-		send_player_order_packet(SQUAD_MSG_SHIP, shipnum, command);
-		return 0;
-	}
 
 	ai_mode = AI_GOAL_NONE;							// needs to be initialized
 	ai_submode = -1234567;
 	ainfo = Player_ai;
-
-	if ( player_num != -1 ){
-		ainfo = &Ai_info[Ships[Objects[Net_players[player_num].player->objnum].instance].ai_index];
-	}
 
 	Assert( ainfo->shipnum != -1 );
 	ordering_shipp = &Ships[ainfo->shipnum];
@@ -1368,20 +1277,12 @@ int hud_squadmsg_send_ship_command( int shipnum, int command, int send_message, 
 			break;
 		
 		// the following are support ship options!!!
-		case REARM_REPAIR_ME_ITEM:		
-			if((Game_mode & GM_MULTIPLAYER) && (Net_player->flags & NETINFO_FLAG_AM_MASTER) && (player_num != -1) ){
-				hud_squadmsg_repair_rearm(0,&Objects[Net_players[player_num].player->objnum]);
-			} else {
-				hud_squadmsg_repair_rearm(0);				// note we return right away.  repair/rearm code handles messaging, etc
-			}
+		case REARM_REPAIR_ME_ITEM:
+			hud_squadmsg_repair_rearm(0);				// note we return right away.  repair/rearm code handles messaging, etc
 			return 0;
-		
+
 		case ABORT_REARM_REPAIR_ITEM:
-			if((Game_mode & GM_MULTIPLAYER) && (Net_player->flags & NETINFO_FLAG_AM_MASTER) && (player_num != -1) ){
-				hud_squadmsg_repair_rearm_abort(0,&Objects[Net_players[player_num].player->objnum]);
-			} else {
-				hud_squadmsg_repair_rearm_abort(0);		// note we return right away.  repair/rearm code handles messaging, etc
-			}
+			hud_squadmsg_repair_rearm_abort(0);		// note we return right away.  repair/rearm code handles messaging, etc
 			return 0;
 		
 		case STAY_NEAR_ME_ITEM:
@@ -1414,35 +1315,22 @@ int hud_squadmsg_send_ship_command( int shipnum, int command, int send_message, 
 		if ( ai_mode != AI_GOAL_NONE ) {
 			Assert(ai_submode != -1234567);
 			ai_add_ship_goal_player( AIG_TYPE_PLAYER_SHIP, ai_mode, ai_submode, target_shipname, &Ai_info[Ships[shipnum].ai_index] );
-			if( player_num == -1 )
-				hud_add_issued_order(Ships[shipnum].ship_name, command, target_shipname);
+			hud_add_issued_order(Ships[shipnum].ship_name, command, target_shipname);
 		}
 	}
 
-	// if we're in multiplayer mode, and we're the server, determine if this virtual squadmate order should be
-	// sent to other players in the game as an actual "order"
-	if((Game_mode & GM_MULTIPLAYER) && (message != MESSAGE_NOSIR)){
-		// if the multi_msg system processed and sent this order to a player, we should not play a response
-		if(multi_msg_eval_ship_squadmsg(shipnum,command,ainfo,player_num)){
-			send_message = 0;
-		}
-	}
-	
 	// this is the _response_
 	if ( send_message ){
-		message_send_builtin_to_player( message, &Ships[shipnum], MESSAGE_PRIORITY_NORMAL, MESSAGE_TIME_ANYTIME, 0, 0, player_num, -1 );	
+		message_send_builtin_to_player( message, &Ships[shipnum], MESSAGE_PRIORITY_NORMAL, MESSAGE_TIME_ANYTIME, 0, 0);
 	}
-	
+
 	return send_message;
 }
 
 // function to send a command to a wing.  Like above function, called from one of two places
 //
-// if local and addr are non-null, it means the function is being called by the (multiplayer) server in response to 
-// a PLAYER_COMMAND_PACKET
-//
 // returns whether or not a message was sent
-int hud_squadmsg_send_wing_command( int wingnum, int command, int send_message, int player_num )
+int hud_squadmsg_send_wing_command( int wingnum, int command, int send_message )
 {
 	ai_info *ainfo;
 	int ai_mode, ai_submode;					// ai mode and submode needed for ship commands
@@ -1451,26 +1339,9 @@ int hud_squadmsg_send_wing_command( int wingnum, int command, int send_message, 
 	int target_team, wing_team;				// team for the wing and the player's target
 	ship *ordering_shipp;
 
-	// quick short circuit here because of actually showing comm menu even though you cannot message.
-	// just a safety net.
-	if ( (Game_mode & GM_MULTIPLAYER) && (player_num != -1) ) {
-		if ( !multi_can_message(&Net_players[player_num]) ) {
-			return 0;
-		}
-	}
-
-	// check for multiplayer mode
-	if((Game_mode & GM_MULTIPLAYER) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER)){
-		send_player_order_packet(SQUAD_MSG_WING, wingnum,command);
-		return 0;
-	}
-
 	ai_mode = AI_GOAL_NONE;							// needs to be initialized
 	ai_submode = -1234567;
 	ainfo = Player_ai;
-
-	if ( player_num != -1 )
-		ainfo = &Ai_info[Ships[Objects[Net_players[player_num].player->objnum].instance].ai_index];
 
 	Assert( ainfo->shipnum != -1 );
 	ordering_shipp = &Ships[ainfo->shipnum];
@@ -1621,33 +1492,24 @@ int hud_squadmsg_send_wing_command( int wingnum, int command, int send_message, 
 		}
 	}
 
-	// if we're in multiplayer mode, and we're the server, determine if this virtual squadmate order should be
-	// sent to other players in the game as an actual "order"
-	if((Game_mode & GM_MULTIPLAYER) && (message != MESSAGE_NOSIR)){
-		// if there's at least one ai ship which got the command, let the response come through
-		if(multi_msg_eval_wing_squadmsg(wingnum,command,ainfo,player_num)){
-			send_message = 0;
-		}
-	}
-
 	// this is the _response_
 	message_sent = 0;
 	if ( send_message ) {
 		int ship_num;
 
-		// get a random ship in the wing to send the message to the player		
+		// get a random ship in the wing to send the message to the player
 		ship_num = ship_get_random_ship_in_wing( wingnum, SHIP_GET_NO_PLAYERS );
-		
-		// in multiplayer, its possible that all ships in a wing are players. so we'll just send from a random ship		
+
+		// its possible that all ships in a wing are players. so we'll just send from a random ship
 		if(ship_num == -1){
 			ship_num = ship_get_random_ship_in_wing(wingnum);
 		}
-		
+
 		// only send message if ship is found.  There appear to be cases where all ships
 		// in a wing die in the same frame causing the wing to appear valid in the message
 		// menu, but the get_random_ship* functions won't return dying ships.
 		if ( ship_num != -1 ) {
-			message_send_builtin_to_player( message, &Ships[ship_num], MESSAGE_PRIORITY_NORMAL, MESSAGE_TIME_ANYTIME, 0, 0, player_num, -1 );
+			message_send_builtin_to_player( message, &Ships[ship_num], MESSAGE_PRIORITY_NORMAL, MESSAGE_TIME_ANYTIME, 0, 0);
 			message_sent = 1;
 		}
 	}
@@ -1747,9 +1609,7 @@ void hud_squadmsg_type_select( )
 	// AL: 10/13/97
 	// If the player ship communications are severely damaged, then the player
 	// will only be able to call for repair/rearm ships
-	//
-	// also, only allow support ship if this player is not allowed to messaage. 
-	if ( (hud_communications_state(Player_ship) != COMM_OK) || ((Game_mode & GM_MULTIPLAYER) && !multi_can_message(Net_player)) ) {
+	if ( hud_communications_state(Player_ship) != COMM_OK ) {
 		for ( i = 0; i < MAX_MENU_ITEMS; i++ ){
 			MsgItems[i].active = 0;
 		}
@@ -1881,21 +1741,14 @@ void hud_squadmsg_msg_all_fighters()
 	}
 }
 
-// called to actually bring in a reinforcement.  For single player games, always gets called.
-// for multiplayer games, always called on the server side.  Clients should never get here
-void hud_squadmsg_call_reinforcement(int reinforcement_num, int player_num)
+// called to actually bring in a reinforcement.
+void hud_squadmsg_call_reinforcement(int reinforcement_num)
 {
 	int i, delay;
 	reinforcements *rp;
 	p_object *p_objp;
 
 	rp = &Reinforcements[reinforcement_num];
-
-	// safety net mainly for multiplayer servers in case some odd data desync occurs between 
-	// server and clients
-	if ( MULTIPLAYER_MASTER && (rp->num_uses == rp->uses) ) {
-		return;
-	}
 
 	// check to see if the reinforcement called was a wing.
 	for (i = 0; i < num_wings; i++ ) {
@@ -1934,8 +1787,7 @@ void hud_squadmsg_call_reinforcement(int reinforcement_num, int player_num)
 		}
 	}
 
-	// increment the number of times this is used.  Incremented here on single player and multiplayer
-	// server side only.  Clients keep track of own count when they actually call something in.
+	// increment the number of times this is used.
 	rp->num_uses++;
 
 	// commented out on 9/9/98 because these messages simply are not used
@@ -2004,14 +1856,8 @@ void hud_squadmsg_reinforcement_select()
 			return;
 		}
 
-		// in single player, or a multiplayer master, call in the reinforcement.  Clients send a packet to the
-		// server
-		if ( MULTIPLAYER_CLIENT ) {
-			Reinforcements[rnum].num_uses++;			// increment this variable here since clients need to maintain a valid count
-			send_player_order_packet(SQUAD_MSG_REINFORCEMENT, rnum, 0);
-		} else {
-			hud_squadmsg_call_reinforcement(rnum);
-		}
+		// call in the reinforcement
+		hud_squadmsg_call_reinforcement(rnum);
 	}
 }
 
@@ -2248,9 +2094,6 @@ void hud_squadmsg_toggle()
 		if ( Game_mode & GM_DEAD ){
 			return;
 		}
-		if ( (Game_mode & GM_MULTIPLAYER) && NETPLAYER_IS_OBSERVER(Net_player) ){
-			return;
-		}
 		hud_squadmsg_start();
 	} else {
 		hud_squadmsg_end();
@@ -2279,14 +2122,6 @@ void hud_squadmsg_shortcut( int command )
 	if ( (hud_communications_state(Player_ship, 1) != COMM_OK) && (command != REARM_REPAIR_ME_ITEM) ) {
 		return;
 	}
-
-	// observers in multiplayer games cannot have this active either
-	if ( (Game_mode & GM_MULTIPLAYER) && NETPLAYER_IS_OBSERVER(Net_player) )
-		return;
-
-	// in multiplayer and I cannot message, don't allow anything except calling in for rearm
-	if ( (Game_mode & GM_MULTIPLAYER) && !multi_can_message(Net_player) && (command != REARM_REPAIR_ME_ITEM) )
-		gamesnd_play_error_beep();
 
 	// player ships which turns traitor cannot rearm
 	if ( Player_ship->team == TEAM_TRAITOR )
@@ -2381,38 +2216,9 @@ int hud_squadmsg_do_frame( )
 		target_changed = 1;
 	}
 
-	// setup color/font info 
+	// setup color/font info
 	// hud_set_default_color();
 	hud_set_gauge_color(HUD_MESSAGE_BOX);
-
-	// check for multiplayer mode - this is really a special case checker for support ship requesting and aborting
-	if((Game_mode & GM_MULTIPLAYER) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER) && (Squad_msg_mode == SM_MODE_REPAIR_REARM || Squad_msg_mode == SM_MODE_REPAIR_REARM_ABORT)){
-		char *subsys_name;
-//		int who_to_sig;
-		ushort net_sig;
-		
-		// who_to_sig = Objects[Ships[shipnum].objnum].net_signature;
-		if(Player_ai->target_objnum != -1)
-			net_sig = Objects[Player_ai->target_objnum].net_signature;
-		else 
-			net_sig = 0;
-
-      if ((Player_ai->targeted_subsys != NULL) && (Player_ai->targeted_subsys->current_hits > 0.0f))
-			subsys_name = Player_ai->targeted_subsys->system_info->subobj_name;
-		else
-			subsys_name = NULL;
-		
-		// send the correct packet
-		if(Squad_msg_mode == SM_MODE_REPAIR_REARM)		
-			send_player_order_packet(SQUAD_MSG_SHIP, 0, REARM_REPAIR_ME_ITEM);
-		else
-			send_player_order_packet(SQUAD_MSG_SHIP, 0, ABORT_REARM_REPAIR_ITEM);
-
-		// make sure to toggle the mode off
-		hud_squadmsg_toggle();
-		
-		return 1;
-	}
 
 	// draw top of frame
 	if ( Mbox_gauge[0].first_frame >= 0 ) {
@@ -2446,19 +2252,11 @@ int hud_squadmsg_do_frame( )
 		break;		
 		
 	case SM_MODE_REPAIR_REARM:
-		//if((Game_mode & GM_MULTIPLAYER) && (Net_player->flags & NETINFO_FLAG_AM_MASTER) && (addr != NULL)){
-		//	hud_squadmsg_repair_rearm(1,&Objects[Net_players[player_num].player->objnum]);
-		//} else {
-			hud_squadmsg_repair_rearm(1);				// note we return right away.  repair/rearm code handles messaging, etc
-		//}	
+		hud_squadmsg_repair_rearm(1);				// note we return right away.  repair/rearm code handles messaging, etc
 		break;
 
 	case SM_MODE_REPAIR_REARM_ABORT:
-		//if((Game_mode & GM_MULTIPLAYER) && (Net_player->flags & NETINFO_FLAG_AM_MASTER) && (addr != NULL)){
-		//	hud_squadmsg_repair_rearm_abort(1,&Objects[Net_players[player_num].player->objnum]);
-		//} else {
-			hud_squadmsg_repair_rearm_abort(1);		// note we return right away.  repair/rearm code handles messaging, etc
-		//}
+		hud_squadmsg_repair_rearm_abort(1);		// note we return right away.  repair/rearm code handles messaging, etc
 		break;
 
 	case SM_MODE_ALL_FIGHTERS:

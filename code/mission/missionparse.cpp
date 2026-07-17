@@ -32,9 +32,6 @@
 #include "lighting.h"
 #include "eventmusic.h"
 #include "missionbriefcommon.h"
-#include "multi.h"
-#include "multiutil.h"
-#include "multimsgs.h"
 #include "shipfx.h"
 #include "debris.h"
 #include "cfile.h"
@@ -52,10 +49,8 @@
 #include "staticrand.h"
 #include "missioncmdbrief.h"
 #include "redalert.h"
-#include "multi_respawn.h"
 #include "hudwingmanstatus.h"
 #include "jumpnode.h"
-#include "multi_endgame.h"
 #include "localize.h"
 #include "neb.h"
 #include "demo.h"
@@ -103,10 +98,6 @@ int Mission_alt_type_count = 0;
 
 p_object	ship_arrivals[MAX_SHIP_ARRIVALS], ship_arrival_list;		// for linked list of ships to arrive later
 int		num_ship_arrivals;
-
-#define MAX_SHIP_ORIGINAL			100
-p_object ship_original[MAX_SHIP_ORIGINAL];
-int		num_ship_original;
 
 // list for arriving support ship
 p_object	Support_ship_pobj;
@@ -320,11 +311,6 @@ static int Allow_arrival_music_timestamp;
 static int Allow_arrival_message_timestamp;
 static int Arrival_message_delay_timestamp;
 
-// multi TvT
-static int Allow_arrival_music_timestamp_m[2];
-static int Allow_arrival_message_timestamp_m[2];
-static int Arrival_message_delay_timestamp_m[2];
-
 // local prototypes
 void parse_player_info2(mission *pm);
 void post_process_mission();
@@ -488,20 +474,12 @@ void parse_mission_info(mission *pm)
 		if(optional_string("+SquadReassignLogo:")){
 			stuff_string(The_mission.squad_filename, F_NAME, NULL);
 		}
-	}	
-	// always clear out squad reassignments if not single player
-	if(Game_mode & GM_MULTIPLAYER){
-		strcpy(The_mission.squad_name, "");
-		strcpy(The_mission.squad_filename, "");
-		mprintf(("Ignoring squadron reassignment"));
 	}
 	// reassign the player
-	else {		
-		if(!Fred_running && (Player != NULL) && (strlen(The_mission.squad_name) > 0) && (Game_mode & GM_CAMPAIGN_MODE)){
-			mprintf(("Reassigning player to squadron %s\n", The_mission.squad_name));
-			player_set_squad(Player, The_mission.squad_name);
-			player_set_squad_bitmap(Player, The_mission.squad_filename);
-		}
+	if(!Fred_running && (Player != NULL) && (strlen(The_mission.squad_name) > 0) && (Game_mode & GM_CAMPAIGN_MODE)){
+		mprintf(("Reassigning player to squadron %s\n", The_mission.squad_name));
+		player_set_squad(Player, The_mission.squad_name);
+		player_set_squad_bitmap(Player, The_mission.squad_filename);
 	}
 
 	// set up the Num_teams variable accoriding to the game_type variable'
@@ -567,7 +545,7 @@ void parse_player_info2(mission *pm)
 		for (i=0; i<total; i++) {
 			// in a campaign, see if the player is allowed the ships or not.  Remove them from the
 			// pool if they are not allowed
-			if (Game_mode & GM_CAMPAIGN_MODE || ((Game_mode & GM_MULTIPLAYER) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER))) {
+			if (Game_mode & GM_CAMPAIGN_MODE) {
 				if ( !Campaign.ships_allowed[list[i*2]] )
 					continue;
 			}
@@ -588,7 +566,7 @@ void parse_player_info2(mission *pm)
 			ptr->default_ship = ship_info_lookup(str);
 			// see if the player's default ship is an allowable ship (campaign only). If not, then what
 			// do we do?  choose the first allowable one?
-			if (Game_mode & GM_CAMPAIGN_MODE || ((Game_mode & GM_MULTIPLAYER) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER))) {
+			if (Game_mode & GM_CAMPAIGN_MODE) {
 				if ( !(Campaign.ships_allowed[ptr->default_ship]) ) {
 					for (i = 0; i < MAX_SHIP_TYPES; i++ ) {
 						if ( Campaign.ships_allowed[ptr->default_ship] ) {
@@ -615,7 +593,7 @@ void parse_player_info2(mission *pm)
 			for (i=0; i<total; i++) {
 				// in a campaign, see if the player is allowed the weapons or not.  Remove them from the
 				// pool if they are not allowed
-				if (Game_mode & GM_CAMPAIGN_MODE || ((Game_mode & GM_MULTIPLAYER) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER))) {
+				if (Game_mode & GM_CAMPAIGN_MODE) {
 					if ( !Campaign.weapons_allowed[list2[i*2]] )
 						continue;
 				}
@@ -1080,8 +1058,7 @@ int parse_create_object(p_object *objp)
 	shipnum = Objects[objnum].instance;
 
 	// if arriving through knossos, adjust objpj->pos to plane of knossos and set flag
-	// special warp is single player only
-	if ((objp->flags & P_KNOSSOS_WARP_IN) && !(Game_mode & GM_MULTIPLAYER)) {
+	if (objp->flags & P_KNOSSOS_WARP_IN) {
 		if (!Fred_running) {
 			position_ship_for_knossos_warpin(objp, shipnum, objnum);
 		}
@@ -1093,14 +1070,6 @@ int parse_create_object(p_object *objp)
 	Ships[shipnum].escort_priority = objp->escort_priority;
 	Ships[shipnum].special_exp_index = objp->special_exp_index;
 	Ships[shipnum].respawn_priority = objp->respawn_priority;
-	// if this is a multiplayer dogfight game, and its from a player wing, make it team traitor
-	if((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_DOGFIGHT) && (objp->wingnum >= 0)){
-		for (i = 0; i < MAX_STARTING_WINGS; i++ ) {
-			if ( !stricmp(Starting_wing_names[i], Wings[objp->wingnum].name) ) {
-				Ships[shipnum].team = TEAM_TRAITOR;
-			} 
-		}
-	}
 
 	sip = &Ship_info[Ships[shipnum].ship_info_index];
 
@@ -1190,12 +1159,9 @@ int parse_create_object(p_object *objp)
 		Objects[objnum].flags |= OF_SPECIAL_WARP;
 	}
 
-	// don't set the flag if the mission is ongoing in a multiplayer situation. This will be set by the players in the
-	// game only before the game or during respawning.
-	// MWA -- changed the next line to remove the !(Game_mode & GM_MULTIPLAYER).  We shouldn't be setting
-	// this flag in single player mode -- it gets set in post process mission.
-	//if ((objp->flags & P_OF_PLAYER_START) && (((Game_mode & GM_MULTIPLAYER) && !(Game_mode & GM_IN_MISSION)) || !(Game_mode & GM_MULTIPLAYER)))
-	if ( (objp->flags & P_OF_PLAYER_START) && (Fred_running || ((Game_mode & GM_MULTIPLAYER) && !(Game_mode & GM_IN_MISSION))) ) 
+	// MWA -- We shouldn't be setting this flag in single player mode -- it gets
+	// set in post process mission.
+	if ( (objp->flags & P_OF_PLAYER_START) && Fred_running )
 		Objects[objnum].flags |= OF_PLAYER_SHIP;
 
 	if (objp->flags & P_SF_NO_ARRIVAL_MUSIC)
@@ -1245,7 +1211,6 @@ int parse_create_object(p_object *objp)
 		Ships[shipnum].flags |= SF_SCANNABLE;
 
 	if ( objp->flags & P_SF_RED_ALERT_STORE_STATUS ){
-		Assert(!(Game_mode & GM_MULTIPLAYER));
 		Ships[shipnum].flags |= SF_RED_ALERT_STORE_STATUS;
 	}
 
@@ -1259,8 +1224,7 @@ int parse_create_object(p_object *objp)
 	if ( objp->flags & P_AIF_NO_DYNAMIC )
 		Ai_info[Ships[shipnum].ai_index].ai_flags |= AIF_NO_DYNAMIC;
 
-	// if the wing index and wing pos are set for this parse object, set them for the ship.  This
-	// is useful in multiplayer when ships respawn
+	// if the wing index and wing pos are set for this parse object, set them for the ship
 	Ships[shipnum].wing_status_wing_index = objp->wing_status_wing_index;
 	Ships[shipnum].wing_status_wing_pos = objp->wing_status_wing_pos;
 
@@ -1428,12 +1392,8 @@ int parse_create_object(p_object *objp)
 		if ( !Game_restoring )	{
 			if ( Ships[shipnum].wingnum == -1 ) {
 				int location;
-				// multiplayer clients set the arrival location of ships to be at location since their
-				// position has already been determined.  Don't actually set the variable since we
-				// don't want the warp effect to show if coming from a dock bay.
+
 				location = objp->arrival_location;
-				if ( MULTIPLAYER_CLIENT )
-					location = ARRIVE_AT_LOCATION;
 				mission_set_arrival_location(objp->arrival_anchor, location, objp->arrival_distance, objnum, NULL, NULL);
 				if ( objp->arrival_location != ARRIVE_FROM_DOCK_BAY )
 					shipfx_warpin_start( &Objects[objnum] );
@@ -1449,18 +1409,6 @@ int parse_create_object(p_object *objp)
 		// possibly add this ship to the hud escort list
 		if ( Ships[shipnum].flags & SF_ESCORT ){
 			hud_add_remove_ship_escort( objnum, 1 );
-		}
-	}
-
-	// for multiplayer games, make a call to the network code to assign the object signature
-	// of the newly created object.  The network host of the netgame will always assign a signature
-	// to a newly created object.  The network signature will get to the clients of the game in
-	// different manners depending on whether or not an individual ship or a wing was created.
-	if ( Game_mode & GM_MULTIPLAYER ) {
-		Objects[objnum].net_signature = objp->net_signature;
-
-		if ( (Game_mode & GM_IN_MISSION) && MULTIPLAYER_MASTER && (objp->wingnum == -1) ){
-			send_ship_create_packet( &Objects[objnum], (objp==Arriving_support_ship)?1:0 );
 		}
 	}
 
@@ -1507,11 +1455,6 @@ int parse_object(mission *pm, int flag, p_object *objp)
 
 		objp->ship_class = 0;
 	}
-
-	// if this is a multiplayer dogfight mission, skip support ships
-	if((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_DOGFIGHT) && (Ship_info[objp->ship_class].flags & SIF_SUPPORT)){
-		return 0;
-	}		
 
 	// optional alternate name type
 	objp->alt_type_index = -1;
@@ -1764,20 +1707,12 @@ int parse_object(mission *pm, int flag, p_object *objp)
 
 	objp->wingnum = -1;					// set the wing number to -1 -- possibly to be set later
 
-	// for multiplayer, assign a network signature to this parse object.  Doing this here will
-	// allow servers to use the signature with clients when creating new ships, instead of having
-	// to pass ship names all the time
-	if ( Game_mode & GM_MULTIPLAYER ){
-		objp->net_signature = multi_assign_network_signature( MULTI_SIG_SHIP );
-	}
-
 	// set the wing_status position to be -1 for all objects.  This will get set to an appropriate
 	// value when the wing positions are finally determined.
 	objp->wing_status_wing_index = -1;
 	objp->wing_status_wing_pos = -1;
-	objp->respawn_count = 0;
 
-	// if this if the starting player ship, then copy if to Starting_player_pobject (used for ingame join)
+	// if this if the starting player ship, then copy if to Starting_player_pobject
 	if ( !stricmp( objp->name, Player_start_shipname) ) {
 		Player_start_pobject = *objp;
 		Player_start_pobject.flags |= P_SF_PLAYER_START_VALID;
@@ -1800,10 +1735,6 @@ int parse_object(mission *pm, int flag, p_object *objp)
 		memcpy( &ship_arrivals[num_ship_arrivals], objp, sizeof(p_object) );
 		list_append(&ship_arrival_list, &ship_arrivals[num_ship_arrivals]);
 		num_ship_arrivals++;
-	}
-	// ingame joiners bail here.
-	else if((Game_mode & GM_MULTIPLAYER) && (Net_player->flags & NETINFO_FLAG_INGAME_JOIN)){
-		return 1;
 	}
 	else {
 		int	real_objnum;
@@ -1915,34 +1846,13 @@ void parse_objects(mission *pm, int flag)
 
 	Assert(pm != NULL);	
 
-	required_string("#Objects");	
+	required_string("#Objects");
 
 	// parse in objects
-	num_ship_original = 0;
 	while (required_string_either("#Wings", "$Name:")){
 		// not all objects are always valid or legal
-		if(parse_object(pm, flag, &temp)){
-			// add to the default list
-			if(num_ship_original < MAX_SHIP_ORIGINAL){
-				memcpy(&ship_original[num_ship_original++], &temp, sizeof(p_object));
-			}
-		}
+		parse_object(pm, flag, &temp);
 	}
-}
-
-p_object *mission_parse_get_original_ship( ushort net_signature )
-{
-	int idx;
-
-	// look for original ships
-	for(idx=0; idx<num_ship_original; idx++){
-		if(ship_original[idx].net_signature == net_signature){
-			return &ship_original[idx];
-		}
-	}
-
-	// boo
-	return NULL;
 }
 
 int find_wing_name(char *name)
@@ -1960,124 +1870,101 @@ int find_wing_name(char *name)
 
 // function to create ships in the wing that need to be created.  We psas the wing pointer, it's index
 // into the Wings array
-int parse_wing_create_ships( wing *wingp, int num_to_create, int force, int specific_instance )
+int parse_wing_create_ships( wing *wingp, int num_to_create )
 {
 	p_object *objp;
 	int wingnum, objnum, num_create_save;
 	int time_to_arrive;
-	int pre_create_count;
 
-	// we need to send this in multiplayer
-	pre_create_count = wingp->total_arrived_count;
+	// can't create any ships if the arrival cue is false or the timestamp has not elapsed.
+	if ( !eval_sexp(wingp->arrival_cue) ) /* || !timestamp_elapsed(wingp->arrival_delay) ) */
+		return 0;
 
-	// force is used to force creation of the wing -- used for multiplayer
-	if ( !force ) {
-		// we only want to evaluate the arrival cue of the wing if:
-		// 1) single player
-		// 2) multiplayer and I am the host of the game
-		// can't create any ships if the arrival cue is false or the timestamp has not elapsed.
-
-		if ( !eval_sexp(wingp->arrival_cue) ) /* || !timestamp_elapsed(wingp->arrival_delay) ) */
-			return 0;
-
-		// once the sexpressions becomes true, then check the arrival delay on the wing.  The first time, the
-		// arrival delay will be <= 0 meaning that no timer object has been set yet.  Set up the timestamp
-		// which should always give a number >= 0;
-		if ( wingp->arrival_delay <= 0 ) {
-			wingp->arrival_delay = timestamp( -wingp->arrival_delay * 1000 );
-			Assert ( wingp->arrival_delay >= 0 );
-		}
-
-		if ( !timestamp_elapsed( wingp->arrival_delay ) )
-			return 0;
-
-		// if wing is coming from docking bay, then be sure that ship we are arriving from actually exists
-		// (or will exist).
-		if ( wingp->arrival_location == ARRIVE_FROM_DOCK_BAY ) {
-			int shipnum;
-			char *name;
-
-			Assert( wingp->arrival_anchor >= 0 );
-			name = Parse_names[wingp->arrival_anchor];
-
-			// see if ship is yet to arrive.  If so, then return -1 so we can evaluate again later.
-			if ( mission_parse_get_arrival_ship( name ) )
-				return 0;
-
-			// see if ship is in mission.  If not, then we can assume it was destroyed or departed since
-			// it is not on the arrival list (as shown by above if statement).
-			shipnum = ship_name_lookup( name );
-			if ( shipnum == -1 ) {
-				int num_remaining;
-				// since this wing cannot arrive from this place, we need to mark the wing as destroyed and
-				// set the wing variables appropriatly.  Good for directives.
-
-				// set the gone flag
-				wingp->flags |= WF_WING_GONE;
-
-				// if the current wave is zero, it never existed
-				wingp->flags |= WF_NEVER_EXISTED;
-
-				// mark the number of waves and number of ships destroyed equal to the last wave and the number
-				// of ships yet to arrive
-				num_remaining = ( (wingp->num_waves - wingp->current_wave) * wingp->wave_count);
-				wingp->total_arrived_count += num_remaining;
-				wingp->current_wave = wingp->num_waves;
-
-				// replaced following three lines of code with mission log call because of bug with
-				// the Ships_exited list.
-				//index = ship_find_exited_ship_by_name( name );
-				//Assert( index != -1 );
-				//if (Ships_exited[index].flags & SEF_DESTROYED ) {
-				if ( mission_log_get_time(LOG_SHIP_DESTROYED, name, NULL, NULL) ) {
-					wingp->total_destroyed += num_remaining;
-				} else {
-					wingp->total_departed += num_remaining;
-				}
-
-				Sexp_nodes[wingp->arrival_cue].value = SEXP_KNOWN_FALSE;
-				return 0;
-			}
-		}
-
-		if ( num_to_create == 0 )
-			return 0;
-
-		// check the wave_delay_timestamp field.  If it is not valid, make it valid (based on wave delay min
-		// and max valuds).  If it is valid, and not elapsed, then return.  If it is valid and elasped, then
-		// continue on.
-		if ( !timestamp_valid(wingp->wave_delay_timestamp) ) {
-
-			// if at least one of these is valid, then reset the timestamp.  If they are both zero, we will create the
-			// wave
-			if ( (wingp->wave_delay_min > 0) || (wingp->wave_delay_max > 0) ) {
-				Assert ( wingp->wave_delay_min <= wingp->wave_delay_max );
-				time_to_arrive = wingp->wave_delay_min + (int)(frand() * (wingp->wave_delay_max - wingp->wave_delay_min));
-
-				// MWA -- 5/18/98
-				// HACK HACK -- in the presense of Mike Comet and Mitri, I have introduced one of the most
-				// serious breaches of coding standards.  I'm to lazy to fix this the correct way.  Insert
-				// a delay before the next wave of the wing can arrive to that clients in the game have ample
-				// time to kill off any ships in the wing before the next wave arrives.
-				if ( Game_mode & GM_MULTIPLAYER ){
-					time_to_arrive += 7;
-				}
-				wingp->wave_delay_timestamp = timestamp(time_to_arrive * 1000);
-				return 0;
-			}
-
-			// if we get here, both min and max values are 0;  See comments above for a most serious hack
-			time_to_arrive = 0;
-			if ( Game_mode & GM_MULTIPLAYER )
-				time_to_arrive += 7;
-			time_to_arrive *= 1000;
-			wingp->wave_delay_timestamp = timestamp(time_to_arrive);
-		}
-
-		// now check to see if the wave_delay_timestamp is elapsed or not
-		if ( !timestamp_elapsed(wingp->wave_delay_timestamp) )
-			return 0;
+	// once the sexpressions becomes true, then check the arrival delay on the wing.  The first time, the
+	// arrival delay will be <= 0 meaning that no timer object has been set yet.  Set up the timestamp
+	// which should always give a number >= 0;
+	if ( wingp->arrival_delay <= 0 ) {
+		wingp->arrival_delay = timestamp( -wingp->arrival_delay * 1000 );
+		Assert ( wingp->arrival_delay >= 0 );
 	}
+
+	if ( !timestamp_elapsed( wingp->arrival_delay ) )
+		return 0;
+
+	// if wing is coming from docking bay, then be sure that ship we are arriving from actually exists
+	// (or will exist).
+	if ( wingp->arrival_location == ARRIVE_FROM_DOCK_BAY ) {
+		int shipnum;
+		char *name;
+
+		Assert( wingp->arrival_anchor >= 0 );
+		name = Parse_names[wingp->arrival_anchor];
+
+		// see if ship is yet to arrive.  If so, then return -1 so we can evaluate again later.
+		if ( mission_parse_get_arrival_ship( name ) )
+			return 0;
+
+		// see if ship is in mission.  If not, then we can assume it was destroyed or departed since
+		// it is not on the arrival list (as shown by above if statement).
+		shipnum = ship_name_lookup( name );
+		if ( shipnum == -1 ) {
+			int num_remaining;
+			// since this wing cannot arrive from this place, we need to mark the wing as destroyed and
+			// set the wing variables appropriatly.  Good for directives.
+
+			// set the gone flag
+			wingp->flags |= WF_WING_GONE;
+
+			// if the current wave is zero, it never existed
+			wingp->flags |= WF_NEVER_EXISTED;
+
+			// mark the number of waves and number of ships destroyed equal to the last wave and the number
+			// of ships yet to arrive
+			num_remaining = ( (wingp->num_waves - wingp->current_wave) * wingp->wave_count);
+			wingp->total_arrived_count += num_remaining;
+			wingp->current_wave = wingp->num_waves;
+
+			// replaced following three lines of code with mission log call because of bug with
+			// the Ships_exited list.
+			//index = ship_find_exited_ship_by_name( name );
+			//Assert( index != -1 );
+			//if (Ships_exited[index].flags & SEF_DESTROYED ) {
+			if ( mission_log_get_time(LOG_SHIP_DESTROYED, name, NULL, NULL) ) {
+				wingp->total_destroyed += num_remaining;
+			} else {
+				wingp->total_departed += num_remaining;
+			}
+
+			Sexp_nodes[wingp->arrival_cue].value = SEXP_KNOWN_FALSE;
+			return 0;
+		}
+	}
+
+	if ( num_to_create == 0 )
+		return 0;
+
+	// check the wave_delay_timestamp field.  If it is not valid, make it valid (based on wave delay min
+	// and max valuds).  If it is valid, and not elapsed, then return.  If it is valid and elasped, then
+	// continue on.
+	if ( !timestamp_valid(wingp->wave_delay_timestamp) ) {
+
+		// if at least one of these is valid, then reset the timestamp.  If they are both zero, we will create the
+		// wave
+		if ( (wingp->wave_delay_min > 0) || (wingp->wave_delay_max > 0) ) {
+			Assert ( wingp->wave_delay_min <= wingp->wave_delay_max );
+			time_to_arrive = wingp->wave_delay_min + (int)(frand() * (wingp->wave_delay_max - wingp->wave_delay_min));
+
+			wingp->wave_delay_timestamp = timestamp(time_to_arrive * 1000);
+			return 0;
+		}
+
+		// if we get here, both min and max values are 0
+		wingp->wave_delay_timestamp = timestamp(0);
+	}
+
+	// now check to see if the wave_delay_timestamp is elapsed or not
+	if ( !timestamp_elapsed(wingp->wave_delay_timestamp) )
+		return 0;
 
 	// finally we can create the wing.
 
@@ -2107,15 +1994,6 @@ int parse_wing_create_ships( wing *wingp, int num_to_create, int force, int spec
 		if ( objp->wingnum == wingnum ) {
 			ai_info *aip;
 
-			// when ingame joining, we need to create a specific ship out of the list of ships for a
-			// wing.  specific_instance is a 0 based integer which specified which ship in the wing
-			// to create.  So, only create the ship we actually need to.
-			if ( (Game_mode & GM_MULTIPLAYER) && (specific_instance > 0) ) {
-				specific_instance--;
-				objp = temp;
-				continue;
-			}
-
 			Assert ( !(objp->flags & P_SF_CANNOT_ARRIVE) );		// get allender
 
 			int index;
@@ -2129,12 +2007,6 @@ int parse_wing_create_ships( wing *wingp, int num_to_create, int force, int spec
 
 			// bash the ship name to be the name of the wing + sone number if there is > 1 wave in
 			// this wing
-			// also, if multplayer, set the parse object's net signature to be wing's net signature
-			// base + total_arrived_count (before adding 1)
-			if ( Game_mode & GM_MULTIPLAYER ){
-				objp->net_signature = (ushort)(wingp->net_signature + wingp->total_arrived_count);
-			}
-
 			wingp->total_arrived_count++;
 			if ( wingp->num_waves > 1 ){
 				sprintf(objp->name, NOX("%s %d"), wingp->name, wingp->total_arrived_count);
@@ -2167,10 +2039,9 @@ int parse_wing_create_ships( wing *wingp, int num_to_create, int force, int spec
 
 			wingp->current_count++;
 
-			// keep any player ship on the parse object list -- used for respawns
-			// 5/8/98 -- MWA -- don't remove ships from the list when you are ingame joining
+			// keep any player ship on the parse object list
 			if ( !(objp->flags & P_OF_PLAYER_START) ) {
-				if ( (Game_mode & GM_NORMAL) || !(Net_player->flags & NETINFO_FLAG_INGAME_JOIN) ) {
+				if ( Game_mode & GM_NORMAL ) {
 					if ( wingp->num_waves == wingp->current_wave ) {	// only remove ship if one wave in wing
 						list_remove( &ship_arrival_list, objp);			// remove objp from the list
 						if ( objp->ai_goals != -1 ){
@@ -2181,16 +2052,9 @@ int parse_wing_create_ships( wing *wingp, int num_to_create, int force, int spec
 			}
 
 			// flag ship with SF_FROM_PLAYER_WING if a member of player starting wings
-			if ( (Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_TEAM) ) {
-				// but for team vs. team games, then just check the alpha and zeta wings
-				if ( !(stricmp(Starting_wing_names[STARTING_WING_ALPHA], wingp->name)) || !(stricmp(Starting_wing_names[STARTING_WING_ZETA], wingp->name)) ) {
+			for (int i = 0; i < MAX_STARTING_WINGS; i++ ) {
+				if ( !stricmp(Starting_wing_names[i], wingp->name) ) {
 					Ships[Objects[objnum].instance].flags |= SF_FROM_PLAYER_WING;
-				}
-			} else {
-				for (int i = 0; i < MAX_STARTING_WINGS; i++ ) {
-					if ( !stricmp(Starting_wing_names[i], wingp->name) ) {
-						Ships[Objects[objnum].instance].flags |= SF_FROM_PLAYER_WING;
-					} 
 				}
 			}
 
@@ -2206,8 +2070,7 @@ int parse_wing_create_ships( wing *wingp, int num_to_create, int force, int spec
 
 	Assert ( num_to_create == 0 );		// we should always have enough ships in the list!!!
 
-	// possibly play some event driven music here.  Send a network packet indicating the wing was
-	// created.  Only do this stuff if actually in the mission.
+	// possibly play some event driven music here.  Only do this stuff if actually in the mission.
 	if ( (objnum != -1) && (Game_mode & GM_IN_MISSION) ) {		// if true, we have created at least one new ship.
 		int i, ship_num;
 
@@ -2234,12 +2097,6 @@ int parse_wing_create_ships( wing *wingp, int num_to_create, int force, int spec
 
 		// possibly change the location where these ships arrive based on the wings arrival location
 		mission_set_wing_arrival_location( wingp, num_create_save );
-
-		// if in multiplayer (and I am the host) and in the mission, send a wing create command to all
-		// other players
-		if ( MULTIPLAYER_MASTER ){
-			send_wing_create_packet( wingp, num_create_save, pre_create_count );
-		}
 
 #ifndef NDEBUG
 		// test code to check to be sure that all ships in the wing are ignoring the same types
@@ -2408,35 +2265,6 @@ void parse_wing(mission *pm)
 	for (i=0; i<MAX_AI_GOALS; i++) {
 		wingp->ai_goals[i].ai_mode = AI_GOAL_NONE;
 		wingp->ai_goals[i].priority = -1;
-	}
-
-	// 7/13/98 -- MWA
-	// error checking against the player ship wings to be sure that wave count doesn't exceed one for
-	// these wings.
-	if ( Game_mode & GM_MULTIPLAYER ) {
-		for (i = 0; i < MAX_STARTING_WINGS+1; i++ ) {
-			if ( !stricmp(Starting_wing_names[i], wingp->name) ) {
-				if ( wingp->num_waves > 1 ) {
-					// only end the game if we're the server - clients will eventually find out :)
-					if(Net_player->flags & NETINFO_FLAG_AM_MASTER){
-						multi_quit_game(PROMPT_NONE, MULTI_END_NOTIFY_NONE, MULTI_END_ERROR_WAVE_COUNT);																
-					}
-					// Error(LOCATION, "Player wings Alpha, Beta, Gamma, or Zeta cannot have more than 1 wave.");
-				}
-			}
-		}
-	}
-
-	// Get the next starting signature for this in this wing.  We want to reserve wave_count * num_waves
-	// of signature.  These can be used to construct wings for ingame joiners.
-	if ( Game_mode & GM_MULTIPLAYER ) {
-		int next_signature;
-
-		wingp->net_signature = multi_assign_network_signature( MULTI_SIG_SHIP );
-		next_signature = wingp->net_signature + (wingp->wave_count * wingp->num_waves);
-		if ( next_signature > SHIP_SIG_MAX )
-			Error(LOCATION, "Too many total ships in mission (%d) for network signature assignment", SHIP_SIG_MAX);
-		multi_set_network_signature( (ushort)next_signature, MULTI_SIG_SHIP );
 	}
 
 	for (i=0; i<MAX_SHIPS_PER_WING; i++)
@@ -3136,7 +2964,6 @@ void parse_mission(mission *pm, int flag)
 	Subsys_index = 0;
 
 	parse_mission_info(pm);	
-	Current_file_checksum = netmisc_calc_checksum(pm,MISSION_CHECKSUM_SIZE);
 	if ( flag == MISSION_PARSE_MISSION_INFO )
 		return;
 	parse_plot_info(pm);
@@ -3191,13 +3018,8 @@ void post_process_mission()
 		Player->ci.forward_cruise_percent = Player_obj->phys_info.vel.z / Player_ship->current_max_speed * 100.0f;
 
 	// put in hard coded starting wing names.
-	if((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_TEAM)){
-		Starting_wings[0] = wing_name_lookup(Starting_wing_names[0],1);
-		Starting_wings[1] = wing_name_lookup(Starting_wing_names[MAX_STARTING_WINGS],1);
-	} else {
-		for (i = 0; i < MAX_STARTING_WINGS; i++ ) {
-			Starting_wings[i] = wing_name_lookup(Starting_wing_names[i], 1);
-		}
+	for (i = 0; i < MAX_STARTING_WINGS; i++ ) {
+		Starting_wings[i] = wing_name_lookup(Starting_wing_names[i], 1);
 	}
 
 	init_ai_system();
@@ -3370,10 +3192,6 @@ void post_process_mission()
 	Mission_departure_timestamp = timestamp( DEPARTURE_TIMESTAMP );
 	Mission_end_time = -1;
 
-	if(Game_mode & GM_MULTIPLAYER){ 
-		multi_respawn_build_points();
-	}	
-
 	// maybe reset hotkey defaults when loading new mission
 	if ( Last_file_checksum != Current_file_checksum ){
 		mission_hotkey_reset_saved();
@@ -3382,13 +3200,6 @@ void post_process_mission()
 	Allow_arrival_music_timestamp=timestamp(0);
 	Allow_arrival_message_timestamp=timestamp(0);
 	Arrival_message_delay_timestamp = timestamp(-1);
-
-	int idx;
-	for(idx=0; idx<2; idx++){
-		Allow_arrival_music_timestamp_m[idx]=timestamp(0);
-		Allow_arrival_message_timestamp_m[idx]=timestamp(0);
-		Arrival_message_delay_timestamp_m[idx] = timestamp(-1);
-	}	
 
 	Last_file_checksum = Current_file_checksum;
 }
@@ -3700,26 +3511,6 @@ int mission_parse_is_multi(char *filename, char *mission_name)
 	return 0;
 }
 
-// function which gets called to retrieve useful information about a mission.  We will get the
-// name, description, and number of players for a mission.  Probably used for multiplayer only?
-// The calling function can use the information in The_mission to get the name/description of the mission
-// if needed.
-
-int mission_parse_get_multi_mission_info( char *filename )
-{
-	if ( parse_main(filename, MISSION_PARSE_MISSION_INFO) ){
-		return -1;
-	}
-
-	Assert( The_mission.game_type & MISSION_TYPE_MULTI );		// assume multiplayer only for now?
-
-	// return the number of parse_players.  later, we might want to include (optionally?) the number
-	// of other ships in the main players wing (usually wing 'alpha') for inclusion of number of
-	// players allowed.
-
-	return The_mission.num_players;
-}
-
 // returns true or false if this is on the yet to arrive list
 int mission_parse_ship_arrived( char *shipname )
 {
@@ -3739,19 +3530,6 @@ p_object *mission_parse_get_arrival_ship( char *name )
 
 	for ( objp = GET_FIRST(&ship_arrival_list); objp !=END_OF_LIST(&ship_arrival_list); objp = GET_NEXT(objp) )	{
 		if ( !stricmp( objp->name, name) )
-			return objp;			// still on the arrival list
-	}
-
-	return NULL;
-}
-
-// return the parse object on the ship arrival list associated with the given signature
-p_object *mission_parse_get_arrival_ship( ushort net_signature )
-{
-	p_object *objp;
-
-	for ( objp = GET_FIRST(&ship_arrival_list); objp !=END_OF_LIST(&ship_arrival_list); objp = GET_NEXT(objp) )	{
-		if ( objp->net_signature == net_signature )
 			return objp;			// still on the arrival list
 	}
 
@@ -3838,11 +3616,8 @@ int mission_set_arrival_location(int anchor, int location, int dist, int objnum,
 		// scaled by the distance given by the designer.  Arriving in front of a ship means
 		// entering the battle in the view cone.
 		if ( location == ARRIVE_NEAR_SHIP ) {
-			// get a random vector -- use static randvec if in multiplayer
-			if ( Game_mode & GM_NORMAL )
-				vm_vec_rand_vec_quick(&rand_vec);
-			else
-				static_randvec( Objects[objnum].net_signature, &rand_vec );
+			// get a random vector
+			vm_vec_rand_vec_quick(&rand_vec);
 		} else if ( location == ARRIVE_IN_FRONT_OF_SHIP ) {
 			vector t1, t2, t3;
 			int r1, r2;
@@ -3853,15 +3628,8 @@ int mission_set_arrival_location(int anchor, int location, int dist, int objnum,
 			// If these are not available, this would be an expensive method.
 			//x = cos(angle)
 			x = (float)cos(ANG_TO_RAD(45));
-			if ( Game_mode & GM_NORMAL ) {
-				r1 = rand() < RAND_MAX/2 ? -1 : 1;
-				r2 = rand() < RAND_MAX/2 ? -1 : 1;
-			} else {
-				// in multiplayer, use the static rand functions so that all clients can get the
-				// same information.
-				r1 = static_rand(Objects[objnum].net_signature) < RAND_MAX/2 ? -1 : 1;
-				r2 = static_rand(Objects[objnum].net_signature+1) < RAND_MAX/2 ? -1 : 1;
-			}
+			r1 = rand() < RAND_MAX/2 ? -1 : 1;
+			r2 = rand() < RAND_MAX/2 ? -1 : 1;
 
 			vm_vec_copy_scale(&t1, &(Objects[anchor_objnum].orient.fvec), x);
 			vm_vec_copy_scale(&t2, &(Objects[anchor_objnum].orient.rvec), (1.0f - x) * r1);
@@ -3911,11 +3679,6 @@ void mission_parse_mark_reinforcement_available(char *name)
 		if ( !stricmp(rp->name, name) ) {
 			if ( !(rp->flags & RF_IS_AVAILABLE) ) {
 				rp->flags |= RF_IS_AVAILABLE;
-
-				// tell all of the clients.
-				if ( MULTIPLAYER_MASTER ) {
-					send_reinforcement_avail( i );
-				}
 			}
 			return;
 		}
@@ -3937,8 +3700,7 @@ int mission_did_ship_arrive(p_object *objp)
 	// process
 	if ( objp->flags & P_SF_REINFORCEMENT ) {
 
-		// if this ship did arrive, mark the reinforcement as available, and tell clients if in multiplayer
-		// mode
+		// if this ship did arrive, mark the reinforcement as available
 		if ( did_arrive ) {
 			mission_parse_mark_reinforcement_available(objp->name);
 		}
@@ -4025,8 +3787,7 @@ void mission_parse_mark_non_arrivals()
 }
 
 // function to deal with support ship arrival.  objnum is the object number of the arriving support
-// ship.  This function can get called from either single or multiplayer.  Needed to that clients
-// can know when to abort rearm.
+// ship.
 void mission_parse_support_arrived( int objnum )
 {
 	int i;
@@ -4072,7 +3833,7 @@ void mission_eval_arrivals()
 	// before checking arrivals, check to see if we should play a message concerning arrivals
 	// of other wings.  We use the timestamps to delay the arrival message slightly for
 	// better effect
-	if ( timestamp_valid(Arrival_message_delay_timestamp) && timestamp_elapsed(Arrival_message_delay_timestamp) && !((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_TEAM)) ){
+	if ( timestamp_valid(Arrival_message_delay_timestamp) && timestamp_elapsed(Arrival_message_delay_timestamp) ){
 		int rship, use_terran;
 
 		// use terran command 25% of time
@@ -4080,9 +3841,9 @@ void mission_eval_arrivals()
 
 		rship = ship_get_random_player_wing_ship( SHIP_GET_NO_PLAYERS );
 		if ( (rship == -1) || use_terran ){
-			message_send_builtin_to_player( MESSAGE_ARRIVE_ENEMY, NULL, MESSAGE_PRIORITY_LOW, MESSAGE_TIME_SOON, 0, 0, -1, -1 );
+			message_send_builtin_to_player( MESSAGE_ARRIVE_ENEMY, NULL, MESSAGE_PRIORITY_LOW, MESSAGE_TIME_SOON, 0, 0);
 		} else if ( rship != -1 ) {
-			message_send_builtin_to_player( MESSAGE_ARRIVE_ENEMY, &Ships[rship], MESSAGE_PRIORITY_LOW, MESSAGE_TIME_SOON, 0, 0, -1, -1 );
+			message_send_builtin_to_player( MESSAGE_ARRIVE_ENEMY, &Ships[rship], MESSAGE_PRIORITY_LOW, MESSAGE_TIME_SOON, 0, 0);
 		}
 
 		Arrival_message_delay_timestamp = timestamp(-1);		// make the stamp invalid
@@ -4186,63 +3947,40 @@ void mission_eval_arrivals()
 					continue;
 				}
 
-				// multiplayer team vs. team
-				if((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_TEAM)){
-					// send a hostile wing arrived message
-					rship = Wings[i].ship_index[0];
-
-					int multi_team_filter = Ships[rship].team == TEAM_FRIENDLY ? 1 : 0;
-
-					// there are two timestamps at work here.  One to control how often the player receives
-					// messages about incoming hostile waves, and the other to control how long after
-					// the wing arrives does the player actually get the message.
-					if ( timestamp_elapsed(Allow_arrival_message_timestamp_m[multi_team_filter]) ) {
-						if ( !timestamp_valid(Arrival_message_delay_timestamp_m[multi_team_filter]) ){
-							Arrival_message_delay_timestamp_m[multi_team_filter] = timestamp_rand(ARRIVAL_MESSAGE_DELAY_MIN, ARRIVAL_MESSAGE_DELAY_MAX );
-						}
-						Allow_arrival_message_timestamp_m[multi_team_filter] = timestamp(ARRIVAL_MESSAGE_MIN_SEPARATION);					
-						
-						// send to the proper team
-						message_send_builtin_to_player( MESSAGE_ARRIVE_ENEMY, NULL, MESSAGE_PRIORITY_LOW, MESSAGE_TIME_SOON, 0, 0, -1, multi_team_filter );
+				// see if this is a starting player wing
+				if ( i == Starting_wings[STARTING_WING_BETA] ) {					// this is the beta wing
+					rship = ship_get_random_ship_in_wing( i, SHIP_GET_NO_PLAYERS );
+					if ( rship != -1 ){
+						message_send_builtin_to_player( MESSAGE_BETA_ARRIVED, &Ships[rship], MESSAGE_PRIORITY_LOW, MESSAGE_TIME_SOON, 0, 0);
 					}
-				} 
-				// everything else
-					else {
-					// see if this is a starting player wing
-					if ( i == Starting_wings[STARTING_WING_BETA] ) {					// this is the beta wing
-						rship = ship_get_random_ship_in_wing( i, SHIP_GET_NO_PLAYERS );
-						if ( rship != -1 ){
-							message_send_builtin_to_player( MESSAGE_BETA_ARRIVED, &Ships[rship], MESSAGE_PRIORITY_LOW, MESSAGE_TIME_SOON, 0, 0, -1, -1 );
-						}
-					} else if ( i == Starting_wings[STARTING_WING_GAMMA] ) {			// this is the gamma wing
-						rship = ship_get_random_ship_in_wing( i, SHIP_GET_NO_PLAYERS );
-						if ( rship != -1 ) {
-							message_send_builtin_to_player( MESSAGE_GAMMA_ARRIVED, &Ships[rship], MESSAGE_PRIORITY_LOW, MESSAGE_TIME_SOON, 0, 0, -1, -1 );
-						}
-					} else if ( !stricmp( wingp->name, "delta") ) {
-						rship = ship_get_random_ship_in_wing( i, SHIP_GET_NO_PLAYERS );
-						if ( rship != -1 ) {
-							message_send_builtin_to_player( MESSAGE_DELTA_ARRIVED, &Ships[rship], MESSAGE_PRIORITY_LOW, MESSAGE_TIME_SOON, 0, 0, -1, -1 );
-						}
-					} else if ( !stricmp(wingp->name, "epsilon") ) {
-						rship = ship_get_random_ship_in_wing( i, SHIP_GET_NO_PLAYERS );
-						if ( rship != -1 ) {
-							message_send_builtin_to_player( MESSAGE_EPSILON_ARRIVED, &Ships[rship], MESSAGE_PRIORITY_LOW, MESSAGE_TIME_SOON, 0, 0, -1, -1 );
-						}
-					} else {
-						// see if we have a hostile wing that arrived
-						rship = Wings[i].ship_index[0];
-						if ( Ships[rship].team != TEAM_FRIENDLY ) {
+				} else if ( i == Starting_wings[STARTING_WING_GAMMA] ) {			// this is the gamma wing
+					rship = ship_get_random_ship_in_wing( i, SHIP_GET_NO_PLAYERS );
+					if ( rship != -1 ) {
+						message_send_builtin_to_player( MESSAGE_GAMMA_ARRIVED, &Ships[rship], MESSAGE_PRIORITY_LOW, MESSAGE_TIME_SOON, 0, 0);
+					}
+				} else if ( !stricmp( wingp->name, "delta") ) {
+					rship = ship_get_random_ship_in_wing( i, SHIP_GET_NO_PLAYERS );
+					if ( rship != -1 ) {
+						message_send_builtin_to_player( MESSAGE_DELTA_ARRIVED, &Ships[rship], MESSAGE_PRIORITY_LOW, MESSAGE_TIME_SOON, 0, 0);
+					}
+				} else if ( !stricmp(wingp->name, "epsilon") ) {
+					rship = ship_get_random_ship_in_wing( i, SHIP_GET_NO_PLAYERS );
+					if ( rship != -1 ) {
+						message_send_builtin_to_player( MESSAGE_EPSILON_ARRIVED, &Ships[rship], MESSAGE_PRIORITY_LOW, MESSAGE_TIME_SOON, 0, 0);
+					}
+				} else {
+					// see if we have a hostile wing that arrived
+					rship = Wings[i].ship_index[0];
+					if ( Ships[rship].team != TEAM_FRIENDLY ) {
 
-							// there are two timestamps at work here.  One to control how often the player receives
-							// messages about incoming hostile waves, and the other to control how long after
-							// the wing arrives does the player actually get the message.
-							if ( timestamp_elapsed(Allow_arrival_message_timestamp) ) {
-								if ( !timestamp_valid(Arrival_message_delay_timestamp) ){
-									Arrival_message_delay_timestamp = timestamp_rand(ARRIVAL_MESSAGE_DELAY_MIN, ARRIVAL_MESSAGE_DELAY_MAX );
-								}
-								Allow_arrival_message_timestamp = timestamp(ARRIVAL_MESSAGE_MIN_SEPARATION);
+						// there are two timestamps at work here.  One to control how often the player receives
+						// messages about incoming hostile waves, and the other to control how long after
+						// the wing arrives does the player actually get the message.
+						if ( timestamp_elapsed(Allow_arrival_message_timestamp) ) {
+							if ( !timestamp_valid(Arrival_message_delay_timestamp) ){
+								Arrival_message_delay_timestamp = timestamp_rand(ARRIVAL_MESSAGE_DELAY_MIN, ARRIVAL_MESSAGE_DELAY_MAX );
 							}
+							Allow_arrival_message_timestamp = timestamp(ARRIVAL_MESSAGE_MIN_SEPARATION);
 						}
 					}
 				}
@@ -4511,10 +4249,6 @@ void mission_add_to_arriving_support( object *requester_objp )
 
 	strcpy( Arriving_repair_targets[Num_arriving_repair_targets], Ships[requester_objp->instance].ship_name );
 	Num_arriving_repair_targets++;
-
-	if ( MULTIPLAYER_MASTER ){
-		multi_maybe_send_repair_info( requester_objp, NULL, REPAIR_INFO_WARP_ADD );
-	}	
 }
 
 extern int pp_collide_any(vector *curpos, vector *goalpos, float radius, object *ignore_objp1, object *ignore_objp2, int big_only_flag);
@@ -4525,10 +4259,7 @@ int get_warp_in_pos(vector *pos, object *objp, float x, float y, float z)
 {
 	float	rand_val;
 
-	if ( Game_mode & GM_NORMAL )
-		rand_val = frand();
-	else
-		rand_val = static_randf(objp->net_signature);
+	rand_val = frand();
 
 	rand_val = 1.0f + (rand_val - 0.5f)*0.2f;
 
@@ -4684,10 +4415,8 @@ void mission_warp_in_support_ship( object *requester_objp )
 	pobj->docked_with[0] = '\0';
 	pobj->group = -1;
 	pobj->persona_index = -1;
-	pobj->net_signature = multi_assign_network_signature(MULTI_SIG_SHIP);
 	pobj->wing_status_wing_index = -1;
 	pobj->wing_status_wing_pos = -1;
-	pobj->respawn_count = 0;
 	pobj->alt_type_index = -1;
 
 }
@@ -4746,9 +4475,6 @@ int mission_remove_scheduled_repair( object *objp )
 		strcpy( Arriving_repair_targets[i], Arriving_repair_targets[i+1] );
 
 	Num_arriving_repair_targets--;
-
-	if ( MULTIPLAYER_MASTER )
-		multi_maybe_send_repair_info( objp, NULL, REPAIR_INFO_WARP_REMOVE );
 
 	return 1;
 }

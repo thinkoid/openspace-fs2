@@ -19,13 +19,11 @@
 #include "particle.h"
 #include "linklist.h"
 #include "hudescort.h"
+#include "scoring.h"
+#include "hudtarget.h"
 #include "shiphit.h"
-#include "multiutil.h"
-#include "staticrand.h"
-#include "multimsgs.h"
 #include "systemvars.h"
 #include "localize.h"
-#include "multi.h"
 
 #ifndef FS2_DEMO
 
@@ -227,8 +225,6 @@ object *asteroid_create(asteroid_field *asfieldp, int asteroid_type, int asteroi
 	vector			pos, delta_bound;
 	angles			angs;
 	float				radius;
-	ushort			signature;
-	int				rand_base;
 
 	// bogus
 	if(asfieldp == NULL){
@@ -249,11 +245,6 @@ object *asteroid_create(asteroid_field *asfieldp, int asteroid_type, int asteroi
 	if((asteroid_type < 0) || (asteroid_type >= Num_asteroid_types)){
 		return NULL;
 	}
-
-	// HACK: multiplayer asteroid subtype always 0 to keep subtype in sync
-	if ( Game_mode & GM_MULTIPLAYER) {
-		asteroid_subtype = 0;
-	}	
 
 	if( (asteroid_subtype < 0) || (asteroid_subtype >= MAX_ASTEROID_POFS)){
 		return NULL;
@@ -282,9 +273,6 @@ object *asteroid_create(asteroid_field *asfieldp, int asteroid_type, int asteroi
 
 	vm_vec_sub(&delta_bound, &asfieldp->max_bound, &asfieldp->min_bound);
 
-	// for multiplayer, we want to do a static_rand so that everything behaves the same on all machines
-	signature = 0;
-	rand_base = 0;
 	if ( Game_mode & GM_NORMAL ) {
 		pos.x = asfieldp->min_bound.x + delta_bound.x * frand();
 		pos.y = asfieldp->min_bound.y + delta_bound.y * frand();
@@ -295,19 +283,6 @@ object *asteroid_create(asteroid_field *asfieldp, int asteroid_type, int asteroi
 		angs.p = frand() * 2*PI;
 		angs.b = frand() * 2*PI;
 		angs.h = frand() * 2*PI;
-	} else {
-		signature = multi_assign_network_signature( MULTI_SIG_ASTEROID );
-		rand_base = signature;
-
-		pos.x = asfieldp->min_bound.x + delta_bound.x * static_randf( rand_base++ );
-		pos.y = asfieldp->min_bound.y + delta_bound.y * static_randf( rand_base++ );
-		pos.z = asfieldp->min_bound.z + delta_bound.z * static_randf( rand_base++ );
-
-		inner_bound_pos_fixup(asfieldp, &pos);
-		// vm_set_identity(&orient);
-		angs.p = static_randf( rand_base++ ) * 2*PI;
-		angs.b = static_randf( rand_base++ ) * 2*PI;
-		angs.h = static_randf( rand_base++ ) * 2*PI;
 	}
 
 	vm_angles_2_matrix(&orient, &angs);
@@ -327,10 +302,6 @@ object *asteroid_create(asteroid_field *asfieldp, int asteroid_type, int asteroi
 
 	objp = &Objects[objnum];
 
-	if ( Game_mode & GM_MULTIPLAYER ){
-		objp->net_signature = signature;
-	}
-
 	Num_asteroids++;
 
 	if (radius < 1.0) {
@@ -343,11 +314,6 @@ object *asteroid_create(asteroid_field *asfieldp, int asteroid_type, int asteroi
 		vm_vec_scale(&rotvel, frand()/4.0f + 0.1f);
 		objp->phys_info.rotvel = rotvel;
 		vm_vec_rand_vec_quick(&objp->phys_info.vel);
-	} else {
-		static_randvec( rand_base++, &rotvel );
-		vm_vec_scale(&rotvel, static_randf(rand_base++)/4.0f + 0.1f);
-		objp->phys_info.rotvel = rotvel;
-		static_randvec( rand_base++, &objp->phys_info.vel );
 	}
 
 
@@ -355,8 +321,6 @@ object *asteroid_create(asteroid_field *asfieldp, int asteroid_type, int asteroi
 
 	if ( Game_mode & GM_NORMAL ) {
 		speed = asteroid_cap_speed(asteroid_type, asfieldp->speed*frand_range(0.5f + (float) Game_skill_level/NUM_SKILL_LEVELS, 2.0f + (float) (2*Game_skill_level)/NUM_SKILL_LEVELS));
-	} else {
-		speed = asteroid_cap_speed(asteroid_type, asfieldp->speed*static_randf_range(rand_base++, 0.5f + (float) Game_skill_level/NUM_SKILL_LEVELS, 2.0f + (float) (2*Game_skill_level)/NUM_SKILL_LEVELS));
 	}
 	
 	vm_vec_scale(&objp->phys_info.vel, speed);
@@ -402,10 +366,6 @@ void asteroid_sub_create(object *parent_objp, int asteroid_type, vector *relvec)
 	if (new_objp == NULL)
 		return;
 
-	if ( MULTIPLAYER_MASTER ){
-		send_asteroid_create( new_objp, parent_objp, asteroid_type, relvec );
-	}
-
 	//	Now, bash some values.
 	vm_vec_scale_add(&new_objp->pos, &parent_objp->pos, relvec, 0.5f * parent_objp->radius);
 	float parent_speed = vm_vec_mag_quick(&parent_objp->phys_info.vel);
@@ -417,8 +377,6 @@ void asteroid_sub_create(object *parent_objp, int asteroid_type, vector *relvec)
 	new_objp->phys_info.vel = parent_objp->phys_info.vel;
 	if ( Game_mode & GM_NORMAL )
 		speed = asteroid_cap_speed(asteroid_type, (frand() + 2.0f) * parent_speed);
-	else
-		speed = asteroid_cap_speed(asteroid_type, (static_randf(new_objp->net_signature)+2.0f) * parent_speed);
 
 	vm_vec_scale_add2(&new_objp->phys_info.vel, relvec, speed);
 	if (vm_vec_mag_quick(&new_objp->phys_info.vel) > 80.0f)
@@ -605,13 +563,9 @@ void asteroid_level_init()
 	asteroid_obj_list_init();
 }
 
-// return !0 if asteroid should be wrapped, 0 otherwise.  Multiplayer clients will always return
-// 0 from this function.  We will force a wrap on the clients when server tells us
+// return !0 if asteroid should be wrapped, 0 otherwise.
 int asteroid_should_wrap(object *objp, asteroid_field *asfieldp)
 {
-	if ( MULTIPLAYER_CLIENT )
-		return 0;
-
 	if (objp->pos.x < asfieldp->min_bound.x) {
 		return 1;
 	}
@@ -766,10 +720,6 @@ void maybe_throw_asteroid(int count)
 					// DA: 4/22/98  We get next line for free when new object (in obj_create_list) is merged.
 					// this line gives too many collision pairs.
 					// asteroid_update_collide(objp);
-
-					if ( MULTIPLAYER_MASTER ) {
-						send_asteroid_throw( objp );
-					}
 				}
 			}
 
@@ -847,9 +797,6 @@ void asteroid_maybe_reposition(object *objp, asteroid_field *asfieldp)
 					vm_vec_scale_add(&objp->last_pos, &objp->pos, &objp->phys_info.vel, -flFrametime);
 
 					asteroid_update_collide(objp);
-
-					if ( MULTIPLAYER_MASTER )
-						send_asteroid_throw( objp );
 				}
 			}
 		}
@@ -1311,10 +1258,6 @@ void asteroid_hit( object * asteroid_obj, object * other_obj, vector * hitpos, f
 		return;
 	}
 
-	if ( MULTIPLAYER_MASTER ){
-		send_asteroid_hit( asteroid_obj, other_obj, hitpos, damage );
-	}
-
 	asteroid_obj->hull_strength -= damage;
 
 	//nprintf(("AI", "Asteroid collided with %s, hull = %.2f\n", Object_type_names[other_obj->type], asteroid_obj->hull_strength));
@@ -1446,56 +1389,51 @@ void asteroid_maybe_break_up(object *asteroid_obj)
 
 		asteroid_obj->flags |= OF_SHOULD_BE_DEAD;
 
-		// multiplayer clients won't go through the following code.  asteroid_sub_create will send
-		// a create packet to the client in the above named function
-		if ( !MULTIPLAYER_CLIENT ) {
+		switch (asp->type) {
+		case ASTEROID_TYPE_SMALL:
+			break;
+		case ASTEROID_TYPE_MEDIUM:
+			asc_get_relvec(&relvec, asteroid_obj, &asp->death_hit_pos);
+			asteroid_sub_create(asteroid_obj, ASTEROID_TYPE_SMALL, &relvec);
 
-			switch (asp->type) {
-			case ASTEROID_TYPE_SMALL:
-				break;
-			case ASTEROID_TYPE_MEDIUM:
-				asc_get_relvec(&relvec, asteroid_obj, &asp->death_hit_pos);
-				asteroid_sub_create(asteroid_obj, ASTEROID_TYPE_SMALL, &relvec);
-			
-				vm_vec_normalized_dir(&vfh, &asteroid_obj->pos, &asp->death_hit_pos);
-				vm_vec_copy_scale(&tvec, &vfh, 2.0f);
-				vm_vec_sub2(&tvec, &relvec);
-				asteroid_sub_create(asteroid_obj, ASTEROID_TYPE_SMALL, &tvec);
-				
-				break;
-			case ASTEROID_TYPE_BIG:
-				asc_get_relvec(&relvec, asteroid_obj, &asp->death_hit_pos);
-				asteroid_sub_create(asteroid_obj, ASTEROID_TYPE_MEDIUM, &relvec);
-			
-				vm_vec_normalized_dir(&vfh, &asteroid_obj->pos, &asp->death_hit_pos);
-				vm_vec_copy_scale(&tvec, &vfh, 2.0f);
-				vm_vec_sub2(&tvec, &relvec);
-				asteroid_sub_create(asteroid_obj, ASTEROID_TYPE_MEDIUM, &tvec);
+			vm_vec_normalized_dir(&vfh, &asteroid_obj->pos, &asp->death_hit_pos);
+			vm_vec_copy_scale(&tvec, &vfh, 2.0f);
+			vm_vec_sub2(&tvec, &relvec);
+			asteroid_sub_create(asteroid_obj, ASTEROID_TYPE_SMALL, &tvec);
 
-				while (frand() > 0.6f) {
-					vector	rvec, tvec2;
-					vm_vec_rand_vec_quick(&rvec);
-					vm_vec_scale_add(&tvec2, &vfh, &rvec, 0.75f);
-					asteroid_sub_create(asteroid_obj, ASTEROID_TYPE_SMALL, &tvec2);
-				}
+			break;
+		case ASTEROID_TYPE_BIG:
+			asc_get_relvec(&relvec, asteroid_obj, &asp->death_hit_pos);
+			asteroid_sub_create(asteroid_obj, ASTEROID_TYPE_MEDIUM, &relvec);
 
-				break;
+			vm_vec_normalized_dir(&vfh, &asteroid_obj->pos, &asp->death_hit_pos);
+			vm_vec_copy_scale(&tvec, &vfh, 2.0f);
+			vm_vec_sub2(&tvec, &relvec);
+			asteroid_sub_create(asteroid_obj, ASTEROID_TYPE_MEDIUM, &tvec);
 
-			// ship debris does not break up
-			case	DEBRIS_TERRAN_SMALL:
-			case	DEBRIS_TERRAN_MEDIUM:
-			case	DEBRIS_TERRAN_LARGE:
-			case	DEBRIS_VASUDAN_SMALL:
-			case	DEBRIS_VASUDAN_MEDIUM:
-			case	DEBRIS_VASUDAN_LARGE:
-			case	DEBRIS_SHIVAN_SMALL:
-			case	DEBRIS_SHIVAN_MEDIUM:
-			case	DEBRIS_SHIVAN_LARGE:
-				break;
-
-			default:
-				Int3();
+			while (frand() > 0.6f) {
+				vector	rvec, tvec2;
+				vm_vec_rand_vec_quick(&rvec);
+				vm_vec_scale_add(&tvec2, &vfh, &rvec, 0.75f);
+				asteroid_sub_create(asteroid_obj, ASTEROID_TYPE_SMALL, &tvec2);
 			}
+
+			break;
+
+		// ship debris does not break up
+		case	DEBRIS_TERRAN_SMALL:
+		case	DEBRIS_TERRAN_MEDIUM:
+		case	DEBRIS_TERRAN_LARGE:
+		case	DEBRIS_VASUDAN_SMALL:
+		case	DEBRIS_VASUDAN_MEDIUM:
+		case	DEBRIS_VASUDAN_LARGE:
+		case	DEBRIS_SHIVAN_SMALL:
+		case	DEBRIS_SHIVAN_MEDIUM:
+		case	DEBRIS_SHIVAN_LARGE:
+			break;
+
+		default:
+			Int3();
 		}
 
 		asp->final_death_time = timestamp(-1);
@@ -1599,11 +1537,6 @@ void asteroid_update_collide_flag(object *asteroid_objp)
 	asp = &Asteroids[asteroid_objp->instance];
 	asp->collide_objnum = -1;
 	asp->collide_objsig = -1;
-
-	// multiplayer dogfight
-	if((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_DOGFIGHT)){
-		return;
-	}
 
 	num_escorts = hud_escort_num_ships_on_list();
 

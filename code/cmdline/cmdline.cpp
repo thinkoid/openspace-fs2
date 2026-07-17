@@ -12,7 +12,6 @@
 #include "cmdline.h"
 #include "linklist.h"
 #include "systemvars.h"
-#include "multi.h"
 #include "cfile.h"
 
 // variables
@@ -33,50 +32,21 @@ public:
 };
 
 // here are the command line parameters that we will be using for FreeSpace
-cmdline_parm standalone_arg("-standalone", NULL);
 cmdline_parm nosound_arg("-nosound", NULL);
 cmdline_parm nomusic_arg("-nomusic", NULL);
-cmdline_parm startgame_arg("-startgame", NULL);
-cmdline_parm gamename_arg("-gamename", NULL);
-cmdline_parm gamepassword_arg("-password", NULL);
-cmdline_parm gameclosed_arg("-closed", NULL);
-cmdline_parm gamerestricted_arg("-restricted", NULL);
-cmdline_parm allowabove_arg("-allowabove", NULL);
-cmdline_parm allowbelow_arg("-allowbelow", NULL);
-cmdline_parm port_arg("-port", NULL);
-cmdline_parm connect_arg("-connect", NULL);
-cmdline_parm multilog_arg("-multilog", NULL);
-cmdline_parm server_firing_arg("-oldfire", NULL);
-cmdline_parm client_dodamage("-clientdamage", NULL);
 cmdline_parm pof_spew("-pofspew", NULL);
 cmdline_parm d3d_32bit("-32bit", NULL);
 cmdline_parm mouse_coords("-coords", NULL);
-cmdline_parm timeout("-timeout", NULL);
 cmdline_parm d3d_window("-window", NULL);
 
-int Cmdline_multi_stream_chat_to_file = 0;
 int Cmdline_freespace_no_sound = 0;
 int Cmdline_freespace_no_music = 0;
 int Cmdline_gimme_all_medals = 0;
 int Cmdline_use_last_pilot = 0;
-int Cmdline_multi_protocol = -1;
 int Cmdline_cd_check = 1;
-int Cmdline_start_netgame = 0;
-int Cmdline_closed_game = 0;
-int Cmdline_restricted_game = 0;
-int Cmdline_network_port = -1;
-char *Cmdline_game_name = NULL;
-char *Cmdline_game_password = NULL;
-char *Cmdline_rank_above= NULL;
-char *Cmdline_rank_below = NULL;
-char *Cmdline_connect_addr = NULL;
-int Cmdline_multi_log = 0;
-int Cmdline_server_firing = 0;
-int Cmdline_client_dodamage = 0;
 int Cmdline_spew_pof_info = 0;
 int Cmdline_force_32bit = 0;
 int Cmdline_mouse_coords = 0;
-int Cmdline_timeout = -1;
 
 int Cmdline_window = 0;
 
@@ -300,11 +270,6 @@ int parse_cmdline(char *cmdline)
 {
 	os_init_cmdline(cmdline);
 
-	// is this a standalone server??
-	if (standalone_arg.found()) {
-		Is_standalone = 1;
-	}
-
 	// run with no sound
 	if ( nosound_arg.found() ) {
 		Cmdline_freespace_no_sound = 1;
@@ -314,76 +279,6 @@ int parse_cmdline(char *cmdline)
 	if ( nomusic_arg.found() ) {
 		Cmdline_freespace_no_music = 1;
 	}
-
-	// should we start a network game
-	if ( startgame_arg.found() ) {
-		Cmdline_use_last_pilot = 1;
-		Cmdline_start_netgame = 1;
-	}
-
-	// closed network game
-	if ( gameclosed_arg.found() ) {
-		Cmdline_closed_game = 1;
-	}
-
-	// restircted network game
-	if ( gamerestricted_arg.found() ) {
-		Cmdline_restricted_game = 1;
-	}
-
-	// get the name of the network game
-	if ( gamename_arg.found() ) {
-		Cmdline_game_name = gamename_arg.str();
-
-		// be sure that this string fits in our limits
-		if ( strlen(Cmdline_game_name) > MAX_GAMENAME_LEN ) {
-			Cmdline_game_name[MAX_GAMENAME_LEN-1] = '\0';
-		}
-	}
-
-	// get the password for a pssword game
-	if ( gamepassword_arg.found() ) {
-		Cmdline_game_password = gamepassword_arg.str();
-
-		// be sure that this string fits in our limits
-		if ( strlen(Cmdline_game_name) > MAX_PASSWD_LEN ) {
-			Cmdline_game_name[MAX_PASSWD_LEN-1] = '\0';
-		}
-	}
-
-	// set the rank above/below arguments
-	if ( allowabove_arg.found() ) {
-		Cmdline_rank_above = allowabove_arg.str();
-	}
-	if ( allowbelow_arg.found() ) {
-		Cmdline_rank_below = allowbelow_arg.str();
-	}
-
-	// get the port number for games
-	if ( port_arg.found() ) {
-		Cmdline_network_port = port_arg.get_int();
-	}
-
-	// the connect argument specifies to join a game at this particular address
-	if ( connect_arg.found() ) {
-		Cmdline_use_last_pilot = 1;
-		Cmdline_connect_addr = connect_arg.str();
-	}
-
-	// see if the multilog flag was set
-	if ( multilog_arg.found() ){
-		Cmdline_multi_log = 1;
-	}	
-
-	// maybe use old-school server-side firing
-	if (server_firing_arg.found() ){
-		Cmdline_server_firing = 1;
-	}
-
-	// maybe use old-school client damage
-	if(client_dodamage.found()){
-		Cmdline_client_dodamage = 1;
-	}	
 
 	// spew pof info
 	if(pof_spew.found()){
@@ -398,11 +293,6 @@ int parse_cmdline(char *cmdline)
 	// mouse coords
 	if(mouse_coords.found()){
 		Cmdline_mouse_coords = 1;
-	}
-
-	// net timeout
-	if(timeout.found()){
-		Cmdline_timeout = timeout.get_int();
 	}
 
 	// d3d windowed

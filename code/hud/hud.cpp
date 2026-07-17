@@ -16,8 +16,6 @@
 #include "hudmessage.h"
 #include "sound.h"
 #include "player.h"
-#include "multi.h"
-#include "multiutil.h"
 #include "gamesnd.h"
 #include "hudsquadmsg.h"
 #include "timer.h"
@@ -36,15 +34,12 @@
 #include "missiontraining.h"
 #include "bmpman.h"
 #include "radar.h"
-#include "hudobserver.h"
 #include "hudtargetbox.h"
 #include "hudconfig.h"
 #include "missiongoals.h"
 #include "asteroid.h"
 #include "starfield.h"
 #include "hudwingmanstatus.h"
-#include "multi_voice.h"
-#include "multi_pmsg.h"
 #include "redalert.h"
 #include "emp.h"
 #include "alphacolors.h"
@@ -104,26 +99,6 @@ void hud_start_text_flash(char *txt, int t);
 void hud_maybe_show_text_flash_icon();
 
 
-// multiplayer messaging text
-int Multi_msg_coords[GR_NUM_RESOLUTIONS][2] = {
-	{ // GR_640
-		5, 150
-	},
-	{ // GR_1024
-		8, 240
-	}
-};
-
-// multiplayer voice stuff
-int Voice_coords[GR_NUM_RESOLUTIONS][2] = {
-	{ // GR_640
-		5, 165
-	},
-	{ // GR_1024
-		8, 255
-	}
-};
-
 // redalert downloading new orders text
 int Red_text_coords[GR_NUM_RESOLUTIONS][2] = {
 	{ // GR_640
@@ -170,16 +145,6 @@ int Head_message_coords[GR_NUM_RESOLUTIONS][2] = {
 	}
 };
 
-// ping text coords
-int Ping_coords[GR_NUM_RESOLUTIONS][2] = {
-	{ // GR_640
-		560, 3
-	},
-	{ // GR_1024
-		896, 5
-	}
-};
-
 // supernova coords
 int Supernova_coords[GR_NUM_RESOLUTIONS][2] = {
 	{ // GR_640
@@ -188,22 +153,6 @@ int Supernova_coords[GR_NUM_RESOLUTIONS][2] = {
 	{ // GR_1024
 		170, 170
 	}
-};
-	
-// used to draw the netlag icon on the HUD
-hud_frames Netlag_icon;
-int Netlag_icon_loaded=0;
-int Netlag_coords[GR_NUM_RESOLUTIONS][2] = {
-	{ // GR_640
-		386, 331
-	},
-	{ // GR_1024
-		627, 529
-	}
-};
-char Netlag_fname[GR_NUM_RESOLUTIONS][MAX_FILENAME_LEN] = {
-	"netlag1",
-	"netlag1"
 };
 
 // used to draw the kills gauge
@@ -510,8 +459,6 @@ int hud_subspace_notify_active();
 int hud_objective_notify_active();
 void hud_subspace_notify_abort();
 void hud_maybe_display_subspace_notify();
-void hud_init_netlag_icon();
-void hud_maybe_show_netlag_icon();
 void hud_maybe_display_red_alert();
 void hud_init_kills_gauge();
 void hud_show_kills_gauge();
@@ -633,7 +580,6 @@ void HUD_init()
 	hud_anim_init(&Target_static, Target_window_coords[gr_screen.res][0], Target_window_coords[gr_screen.res][1], NOX("TargetStatic"));
 	hud_targetbox_static_init();
 	hud_init_text_flash_gauge();
-	hud_init_netlag_icon();	
 	hud_init_talking_head_gauge();
 	hud_init_mission_time_gauge();
 	hud_init_kills_gauge();
@@ -1116,35 +1062,6 @@ void hud_maybe_display_supernova()
 	gr_printf(Supernova_coords[gr_screen.res][0], Supernova_coords[gr_screen.res][1], "Supernova Warning : %.2f s", time_left);
 }
 
-// render multiplayer ping time to the server if appropriate
-void hud_render_multi_ping()
-{
-	// if we shouldn't be displaying a ping time, return here
-	if(!multi_show_ingame_ping()){
-		return;
-	}
-	
-	// if we're in multiplayer mode, display our ping time to the server
-	if((Game_mode & GM_MULTIPLAYER) && (Net_player != NULL) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER)){
-		char ping_str[50];
-		memset(ping_str,0,50);
-
-		// if our ping is positive, display it
-		if((Netgame.server != NULL) && (Netgame.server->s_info.ping.ping_avg > 0)){
-			// get the string
-			if(Netgame.server->s_info.ping.ping_avg >= 1000){
-				sprintf(ping_str,XSTR("> 1 sec",628));
-			} else {
-				sprintf(ping_str,XSTR("%d ms",629),Netgame.server->s_info.ping.ping_avg);
-			}
-
-			// blit the string out
-			hud_set_default_color();
-			gr_string(Ping_coords[gr_screen.res][0], Ping_coords[gr_screen.res][1], ping_str);
-		}
-	}
-}
-
 // render all the 2D gauges on the HUD
 void HUD_render_2d(float frametime)
 {
@@ -1187,15 +1104,6 @@ void HUD_render_2d(float frametime)
 
 		// text flash gauge
 		hud_maybe_show_text_flash_icon();
-
-		// maybe show the netlag icon
-		if(Game_mode & GM_MULTIPLAYER){
-			hud_maybe_show_netlag_icon();
-
-			if(Net_player->flags & NETINFO_FLAG_OBSERVER){
-				hud_render_observer();					
-			}
-		}
 
 		// draw the reticle
 		hud_show_reticle();
@@ -1318,17 +1226,9 @@ void HUD_render_2d(float frametime)
 
 		// show the directives popup and/or training popup
 		message_training_display();
-
-		// if this is a multiplayer game, blit any icons/bitmaps indicating voice recording or playback
-		if(Game_mode & GM_MULTIPLAYER){
-			hud_show_voice_status();
-		}
 	}
 
 	hud_show_messages();
-
-	// maybe render any necessary multiplayer text messaging strings being entered
-	hud_maybe_render_multi_text();
 
 	// show red alert notify gauge when moving to red alert
 	hud_maybe_display_red_alert();	
@@ -1345,8 +1245,6 @@ void HUD_render_2d(float frametime)
 			return;
 		}
 	}
-
-	hud_render_multi_ping();	
 }
 
 
@@ -1375,18 +1273,6 @@ void update_throttle_sound()
 	// determine what engine sound to play
 	float percent_throttle;
 //	int	throttle_pitch;
-
-	// if we're a multiplayer observer, stop any engine sounds from playing and return
-	if((Game_mode & GM_MULTIPLAYER) && (Net_player->flags & NETINFO_FLAG_OBSERVER)){
-		// stop engine sound if it is playing
-		if(Player_engine_snd_loop != -1){
-			snd_stop(Player_engine_snd_loop);
-			Player_engine_snd_loop = -1;
-		}
-
-		// return
-		return;
-	}
 
 	if ( timestamp_elapsed(throttle_sound_check_id) ) {
 
@@ -1826,48 +1712,6 @@ void hud_show_kills_gauge()
 	gr_string(Kills_text_val_coords[gr_screen.res][0]-w, Kills_text_val_coords[gr_screen.res][1], num_kills_string);
 }
 
-// maybe show the netlag icon on the hud
-void hud_maybe_show_netlag_icon()
-{
-	int lag_status;
-
-	if ( Netlag_icon.first_frame == -1 ) {
-		Int3();
-		return;
-	}
-
-	lag_status = multi_query_lag_status();	
-
-	switch(lag_status) {
-	case 0:
-		// draw the net lag icon flashing
-		hud_targetbox_start_flash(TBOX_FLASH_NETLAG);
-		if(hud_targetbox_maybe_flash(TBOX_FLASH_NETLAG)){
-			hud_set_gauge_color(HUD_LAG_GAUGE, HUD_C_BRIGHT);
-		} else {
-			hud_set_gauge_color(HUD_LAG_GAUGE);
-		}
-		gr_set_bitmap(Netlag_icon.first_frame);
-		break;
-	case 1:
-		// draw the disconnected icon flashing fast
-		if(hud_targetbox_maybe_flash(TBOX_FLASH_NETLAG,1)){
-			hud_set_gauge_color(HUD_LAG_GAUGE, HUD_C_BRIGHT);
-		} else {
-			hud_set_gauge_color(HUD_LAG_GAUGE);
-		}
-		gr_set_bitmap(Netlag_icon.first_frame+1);
-		break;
-	default:
-		// nothing to draw
-		return;
-	}
-	
-	if(emp_should_blit_gauge()){
-		gr_aabitmap(Netlag_coords[gr_screen.res][0], Netlag_coords[gr_screen.res][1]);
-	}
-}
-
 // load in kills gauge if required
 void hud_init_kills_gauge()
 {
@@ -1878,19 +1722,6 @@ void hud_init_kills_gauge()
 			return;
 		}
 		Kills_gauge_loaded = 1;
-	}
-}
-
-// load in netlag icon if required
-void hud_init_netlag_icon()
-{
-	if ( !Netlag_icon_loaded ) {
-		Netlag_icon.first_frame = bm_load_animation(Netlag_fname[gr_screen.res], &Netlag_icon.num_frames);
-		if ( Netlag_icon.first_frame == -1 ) {
-			Warning(LOCATION, "Could not load in the netlag ani: Netlag_fname[gr_screen.res]\n");
-			return;
-		}
-		Netlag_icon_loaded = 1;
 	}
 }
 
@@ -2067,11 +1898,6 @@ void hud_support_view_blit()
 	char	outstr[64];
 	
 	if ( !Hud_support_view_active ) {
-		return;
-	}
-
-	// don't render this gauge for multiplayer observers
-	if((Game_mode & GM_MULTIPLAYER) && ((Net_player->flags & NETINFO_FLAG_OBSERVER) || (Player_obj->type == OBJ_OBSERVER))){
 		return;
 	}
 
@@ -2459,12 +2285,7 @@ void hud_add_objective_messsage(int type, int status)
 	Objective_display.goal_type=type;
 	Objective_display.goal_status=status;
 
-	// if this is a multiplayer tvt game
-	if((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_TEAM) && (Net_player != NULL)){
-		mission_goal_fetch_num_resolved(type, &Objective_display.goal_nresolved, &Objective_display.goal_ntotal, Net_player->p_info.team);
-	} else {
-		mission_goal_fetch_num_resolved(type, &Objective_display.goal_nresolved, &Objective_display.goal_ntotal);
-	}
+	mission_goal_fetch_num_resolved(type, &Objective_display.goal_nresolved, &Objective_display.goal_ntotal);
 
 	// TODO: play a sound?
 }
@@ -2670,36 +2491,6 @@ int hud_wing_index_from_ship(int shipnum)
 	return (i*4+wing_slot);
 }
 
-void hud_show_voice_status()
-{
-	char play_callsign[CALLSIGN_LEN+5];
-	
-	// if we are currently playing a rtvoice sound stream from another player back
-	memset(play_callsign,0,CALLSIGN_LEN+5);
-	switch(multi_voice_status()){
-	// the player has been denied the voice token
-	case MULTI_VOICE_STATUS_DENIED:
-		// show a red indicator or something
-		gr_string(Voice_coords[gr_screen.res][0], Voice_coords[gr_screen.res][1], XSTR( "[voice denied]", 243));
-		break;
-
-	// the player is currently recording
-	case MULTI_VOICE_STATUS_RECORDING:
-		gr_string(Voice_coords[gr_screen.res][0], Voice_coords[gr_screen.res][1], XSTR( "[recording voice]", 244));
-		break;
-		
-	// the player is current playing back voice from someone
-	case MULTI_VOICE_STATUS_PLAYING:
-		gr_string(Voice_coords[gr_screen.res][0], Voice_coords[gr_screen.res][1], XSTR( "[playing voice]", 245));
-		break;
-
-	// nothing voice related is happening on my machine
-	case MULTI_VOICE_STATUS_IDLE:
-		// probably shouldn't be displaying anything
-		break;
-	}	
-}
-
 void hud_subspace_notify_abort()
 {
 	HUD_abort_subspace_timer = timestamp(1500);
@@ -2735,21 +2526,6 @@ void hud_start_objective_notify()
 int hud_objective_notify_active()
 {
 	return Objective_notify_active;
-}
-
-// render multiplayer text message currently being entered if any
-void hud_maybe_render_multi_text()
-{
-	char txt[MULTI_MSG_MAX_TEXT_LEN+20];
-
-	// clear the text
-	memset(txt,0,MULTI_MSG_MAX_TEXT_LEN+1);
-
-	// if there is valid multiplayer message text to be displayed
-	if(multi_msg_message_text(txt)){
-		gr_set_color_fast(&Color_normal);
-		gr_string(Multi_msg_coords[gr_screen.res][0], Multi_msg_coords[gr_screen.res][1], txt);
-	}
 }
 
 // cut any text off after (and including) '#' char
@@ -2858,7 +2634,6 @@ void hud_page_in()
 		bm_page_in_aabitmap( Damage_gauges[i].first_frame, Damage_gauges[i].num_frames);
 	}
 
-	bm_page_in_aabitmap( Netlag_icon.first_frame, Netlag_icon.num_frames);			
 	bm_page_in_aabitmap( Support_view_gauge.first_frame, Support_view_gauge.num_frames);
 	bm_page_in_aabitmap( Objective_display_gauge.first_frame, Objective_display_gauge.num_frames);		
 

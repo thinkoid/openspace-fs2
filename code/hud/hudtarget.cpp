@@ -43,7 +43,6 @@
 #include "missionhotkey.h"
 #include "asteroid.h"
 #include "jumpnode.h"
-#include "multi.h"
 #include "emp.h"
 #include "alphacolors.h"
 #include "localize.h"
@@ -727,10 +726,6 @@ void hud_target_hotkey_add_remove( int k, object *ctarget, int how_to_add )
 {
 	htarget_list *hitem, *plist;
 
-	// don't do anything if a standalone multiplayer server
-	if ( MULTIPLAYER_STANDALONE )
-		return;
-
 	if ( k < 0 || k > 7 ) {
 		nprintf(("Warning", "Bogus hotkey %d sent to hud_target_hotkey_add_remove\n"));
 		return;
@@ -1179,10 +1174,7 @@ void hud_target_common(int team, int next_flag)
 			shipp = &Ships[A->instance];	// get a pointer to the ship information
 
 			if ( !hud_team_matches_filter(team, shipp->team) ) {
-				// if we're in multiplayer dogfight, ignore this
-				if(!((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_DOGFIGHT))){
-					continue;
-				}
+				continue;
 			}
 
 			if ( A == Player_obj || (shipp->flags & TARGET_SHIP_IGNORE_FLAGS) ){
@@ -1922,12 +1914,9 @@ void evaluate_ship_as_closest_target(esct *esct)
 	// player being targeted, so we will want closest distance from player
 	targeting_player = (esct->attacked_objnum == OBJ_INDEX(Player_obj));
 
-	// filter on team, except in multiplayer
+	// filter on team
 	if ( !hud_team_matches_filter(esct->team, esct->shipp->team) ) {
-		// if we're in multiplayer dogfight, ignore this
-		if(!((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_DOGFIGHT))){
-			return;
-		}
+		return;
 	}
 
 	// check if player or ignore ship
@@ -3104,8 +3093,7 @@ void hud_prune_hotkeys()
 		}	// end while
 	}	// end for
 
-	// save the hotkey sets with mission time reaches a certain point.  Code was put here because this
-	// function always called for both single/multiplayer.  Maybe not the best location, but whatever.
+	// save the hotkey sets with mission time reaches a certain point
 	mission_hotkey_maybe_save_sets();
 }
 
@@ -3149,11 +3137,7 @@ void hud_show_selection_set()
 		Assert ( targetp->instance >=0 && targetp->instance < MAX_SHIPS );
 		target_shipp = &Ships[targetp->instance];
 
-		if ( (Game_mode & GM_MULTIPLAYER) && (target_shipp == Player_ship) ) {
-			continue;
-		}
-
-		// find the current target vertex 
+		// find the current target vertex
 		//
 		g3_rotate_vertex(&target_point,&targetp->pos);
 
@@ -4697,8 +4681,7 @@ int hud_sensors_ok(ship *sp, int show_msg)
 
 	// If playing on lowest skill level, sensors don't affect targeting
 	// If dead, still allow player to target, despite any subsystem damage
-	// If i'm a multiplayer observer, allow me to target
-	if ( (Game_skill_level == 0) || (Game_mode & GM_DEAD) || ((Game_mode & GM_MULTIPLAYER) && (Net_player->flags & NETINFO_FLAG_OBSERVER)) ) {
+	if ( (Game_skill_level == 0) || (Game_mode & GM_DEAD) ) {
 		return 1;
 	}
 
@@ -4793,10 +4776,7 @@ void hud_target_next_list(int hostile, int next_flag)
 
 		// choose from the correct team
 		if ( !hud_team_matches_filter(valid_team, shipp->team) ) {
-			// if we're in multiplayer dogfight, ignore this
-			if(!((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_DOGFIGHT))){
-				continue;
-			}
+			continue;
 		}
 
 		// always ignore navbuoys and cargo
@@ -4987,10 +4967,7 @@ int hud_target_closest_repair_ship(int goal_objnum)
 
 		// only consider friendly ships
 		if ( !hud_team_matches_filter(Player_ship->team, shipp->team)) {
-			// if we're in multiplayer dogfight, ignore this
-			if(!((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_DOGFIGHT))){
-				continue;
-			}
+			continue;
 		}
 
 		if(hud_target_invalid_awacs(A)){

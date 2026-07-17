@@ -32,19 +32,15 @@
 #include "eventmusic.h"
 #include "missioncampaign.h"
 #include "object.h"
-#include "multi.h"
 #include "snazzyui.h"
 #include "bmpman.h"
 #include "missionbrief.h"
+#include "player.h"
 #include "missionbriefcommon.h"
 #include "missiongrid.h"
 #include "bmpman.h"
-#include "multimsgs.h"
 #include "cmdline.h"
 #include "contexthelp.h"
-#include "chatbox.h"
-#include "multiteamselect.h"
-#include "multiui.h"
 #include "asteroid.h"
 #include "popup.h"
 #include "sexp.h"
@@ -71,7 +67,6 @@ static int Brief_goals_coords[GR_NUM_RESOLUTIONS][4] = {
 static int	Current_brief_stage;	// what stage of the briefing we're on
 static int	Last_brief_stage;
 static int	Num_brief_stages;
-static int	Brief_multiplayer = FALSE;
 
 static int	Brief_last_auto_advance = 0;	// timestamp of last auto-advance
 
@@ -141,19 +136,9 @@ static char *Brief_filename[GR_NUM_RESOLUTIONS] = {
 	"2_Brief"
 };
 
-static char *Brief_multi_filename[GR_NUM_RESOLUTIONS] = {
-	"BriefMulti",
-	"2_BriefMulti"
-};
-
 static char *Brief_mask_filename[GR_NUM_RESOLUTIONS] = {
 	"Brief-m",
 	"2_Brief-m"
-};
-
-static char *Brief_multi_mask_filename[GR_NUM_RESOLUTIONS] = {
-	"BriefMulti-m",
-	"2_BriefMulti-m"
 };
 
 
@@ -235,11 +220,6 @@ static char *Brief_mask_single[GR_NUM_RESOLUTIONS] = {
 	"brief-m",		// GR_640
 	"2_brief-m"		// GR_1024
 };
-
-static char *Brief_mask_multi[GR_NUM_RESOLUTIONS] = {
-	"briefmulti-m",		// GR_640
-	"2_briefmulti-m"			// GR_1024
-};
 //XSTR:ON
 
 struct brief_buttons {	
@@ -256,13 +236,12 @@ struct brief_buttons {
 int	Brief_grid_bitmap = -1;
 int	Brief_text_bitmap = -1;
 
-int	Brief_multitext_bitmap = -1;
 int	Brief_background_bitmap =-1;
 
 UI_WINDOW Brief_ui_window;
 
 // Briefing specific buttons
-#define NUM_BRIEF_BUTTONS 10
+#define NUM_BRIEF_BUTTONS 9
 
 brief_buttons	Brief_buttons[GR_NUM_RESOLUTIONS][NUM_BRIEF_BUTTONS] = {
 	{ // GR_640
@@ -274,33 +253,29 @@ brief_buttons	Brief_buttons[GR_NUM_RESOLUTIONS][NUM_BRIEF_BUTTONS] = {
 		brief_buttons("BRB_13",		0,		447,	117,	157,	13),			
 		brief_buttons("BRB_15",		562,	0,		117,	157,	15),			// skip training
 		brief_buttons("BRB_16",		56,	116,	117,	157,	16),
-		brief_buttons("TSB_34",		603,	374,	117,	157,	34),	
-		brief_buttons("BRB_15",		562,	0,		117,	157,	15)			// exit loop	
-	}, 
+		brief_buttons("BRB_15",		562,	0,		117,	157,	15)			// exit loop
+	},
 	{ // GR_1024
 		brief_buttons("2_BRB_08",		175,	187,	117,	157,	8),
 		brief_buttons("2_BRB_09",		135,	187,	117,	157,	9),
 		brief_buttons("2_BRB_10",		47,	187,	117,	157,	10),
 		brief_buttons("2_BRB_11",		8,		187,	117,	157,	11),
 		brief_buttons("2_BRB_12",		0,		649,	117,	157,	12),
-		brief_buttons("2_BRB_13",		0,		716,	117,	157,	13),			
+		brief_buttons("2_BRB_13",		0,		716,	117,	157,	13),
 		brief_buttons("2_BRB_15",		900,	0,		117,	157,	15),		// skip training
 		brief_buttons("2_BRB_16",		91,	187,	117,	157,	16),
-		brief_buttons("2_TSB_34",		966,	599,	117,	157,	34),			
-		brief_buttons("2_BRB_15",		900,	0,		117,	157,	15)			// exit loop	
-	}, 	
+		brief_buttons("2_BRB_15",		900,	0,		117,	157,	15)			// exit loop
+	},
 };
 
 // briefing UI
-#define BRIEF_SELECT_NUM_TEXT			3
+#define BRIEF_SELECT_NUM_TEXT			2
 UI_XSTR Brief_select_text[GR_NUM_RESOLUTIONS][BRIEF_SELECT_NUM_TEXT] = {
 	{ // GR_640
-		{ "Lock",				1270,	602,	364,	UI_XSTR_COLOR_GREEN, -1, &Brief_buttons[0][BRIEF_BUTTON_MULTI_LOCK].button },
 		{ "Skip Training",	1442,	467,	7,		UI_XSTR_COLOR_GREEN, -1, &Brief_buttons[0][BRIEF_BUTTON_SKIP_TRAINING].button },
 		{ "Exit Loop",			1477,	490,	7,		UI_XSTR_COLOR_GREEN, -1, &Brief_buttons[0][BRIEF_BUTTON_EXIT_LOOP].button }
-	}, 
+	},
 	{ // GR_1024
-		{ "Lock",				1270,	964,	584,	UI_XSTR_COLOR_GREEN, -1, &Brief_buttons[1][BRIEF_BUTTON_MULTI_LOCK].button },
 		{ "Skip Training",	1442,	805,	12,	UI_XSTR_COLOR_GREEN, -1, &Brief_buttons[1][BRIEF_BUTTON_SKIP_TRAINING].button },
 		{ "Exit Loop",			1477,	830,	12,	UI_XSTR_COLOR_GREEN, -1, &Brief_buttons[1][BRIEF_BUTTON_EXIT_LOOP].button }
 	}
@@ -310,13 +285,6 @@ UI_XSTR Brief_select_text[GR_NUM_RESOLUTIONS][BRIEF_SELECT_NUM_TEXT] = {
 static int Title_coords[GR_NUM_RESOLUTIONS][2] = {
 	{575, 117},		// GR_640
 	{918, 194}		// GR_1024
-};
-
-// coordinates for briefing title in multiplayer briefings -- the x value is for the LEFT side of the text
-// third coord is max width of area for it to fit into (it is force fit there)
-static int Title_coords_multi[GR_NUM_RESOLUTIONS][3] = {
-	{1, 105, 190},		// GR_640
-	{1, 174, 304}		// GR_1024
 };
 
 // briefing line widths
@@ -551,17 +519,6 @@ void brief_button_do(int i)
 		case BRIEF_BUTTON_EXIT_LOOP:
 			brief_exit_loop_pressed();
 			break;
-
-		case BRIEF_BUTTON_MULTI_LOCK:
-			Assert(Game_mode & GM_MULTIPLAYER);			
-			// the "lock" button has been pressed
-			multi_ts_lock_pressed();
-
-			// disable the button if it is now locked
-			if(multi_ts_is_locked()){
-				Brief_buttons[gr_screen.res][BRIEF_BUTTON_MULTI_LOCK].button.disable();
-			}
-			break;
 	} // end switch
 }
 
@@ -659,23 +616,6 @@ void brief_buttons_init()
 		Brief_buttons[gr_screen.res][BRIEF_BUTTON_EXIT_LOOP].button.unhide();
 	}
 
-	// maybe disable the multi-lock button
-	if(!(Game_mode & GM_MULTIPLAYER)){
-		Brief_buttons[gr_screen.res][BRIEF_BUTTON_MULTI_LOCK].button.hide();
-		Brief_buttons[gr_screen.res][BRIEF_BUTTON_MULTI_LOCK].button.disable();
-	} else {
-		// if we're not the host of the game (or a tema captain in team vs. team mode), disable the lock button
-		if(Netgame.type_flags & NG_TYPE_TEAM){
-			if(!(Net_player->flags & NETINFO_FLAG_TEAM_CAPTAIN)){
-				Brief_buttons[gr_screen.res][BRIEF_BUTTON_MULTI_LOCK].button.disable();
-			}
-		} else {
-			if(!(Net_player->flags & NETINFO_FLAG_GAME_HOST)){
-				Brief_buttons[gr_screen.res][BRIEF_BUTTON_MULTI_LOCK].button.disable();
-			}
-		}
-	}
-
 	// create close button for closeup popup
 	Closeup_close_button.create( &Brief_ui_window, "", Closeup_button_coords[gr_screen.res][BRIEF_X_COORD], Closeup_button_coords[gr_screen.res][BRIEF_Y_COORD], 60, 30, 0, 1 );
 	Closeup_close_button.set_highlight_action( common_play_highlight_sound );
@@ -753,11 +693,7 @@ void brief_load_bitmaps()
 //
 void brief_ui_init()
 {
-	if(Game_mode & GM_MULTIPLAYER) {
-		Brief_background_bitmap = bm_load(Brief_multi_filename[gr_screen.res]);
-	} else {
-		Brief_background_bitmap = bm_load(Brief_filename[gr_screen.res]);	
-	}
+	Brief_background_bitmap = bm_load(Brief_filename[gr_screen.res]);
 
 	if ( Num_brief_stages <= 0 ){
 		return;
@@ -808,12 +744,6 @@ void brief_compact_stages()
 {
 	int num, result, i;
 
-	/*
-	if((Game_mode & GM_MULTIPLAYER) && (Netgame.campaign_mode == MP_CAMPAIGN) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER)){
-		Game_mode |= GM_CAMPAIGN_MODE;
-	}
-	*/
-
 	num = 0;
 	while ( num < Briefing->num_stages ) {
 		result = eval_sexp( Briefing->stages[num].formula );
@@ -843,12 +773,6 @@ void brief_compact_stages()
 		}
 		num++;
 	}
-
-	/*
-	if((Game_mode & GM_MULTIPLAYER) && (Netgame.campaign_mode == MP_CAMPAIGN) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER)){
-		Game_mode &= ~(GM_CAMPAIGN_MODE);
-	}
-	*/
 }
 
 
@@ -865,12 +789,6 @@ void brief_init()
 	demo_reset_trailer_timer();
 #endif
 
-	// for multiplayer, change the state in my netplayer structure
-	// and initialize the briefing chat area thingy
-	if ( Game_mode & GM_MULTIPLAYER ){
-		Net_player->state = NETPLAYER_STATE_BRIEFING;
-	}
-
 	// Non standard briefing in red alert mission
 	if ( red_alert_mission() ) {
 		gameseq_post_event(GS_EVENT_RED_ALERT);
@@ -878,11 +796,7 @@ void brief_init()
 	}
 
 	// get a pointer to the appropriate briefing structure
-	if((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_TEAM)){
-		Briefing = &Briefings[Net_player->p_info.team];
-	} else {
-		Briefing = &Briefings[0];			
-	}
+	Briefing = &Briefings[0];
 
 	Brief_last_auto_advance = 0;
 
@@ -927,11 +841,7 @@ void brief_init()
 	nprintf(("Alan","Entering brief_init()\n"));
 	common_select_init();
 
-	if(Game_mode & GM_MULTIPLAYER) {
-		BriefingMaskBitmap = bm_load(Brief_multi_mask_filename[gr_screen.res]);
-	} else {
-		BriefingMaskBitmap = bm_load(Brief_mask_filename[gr_screen.res]);
-	}
+	BriefingMaskBitmap = bm_load(Brief_mask_filename[gr_screen.res]);
 
 	if (BriefingMaskBitmap < 0) {
 		Error(LOCATION,"Could not load in 'brief-m'!");
@@ -968,27 +878,14 @@ void brief_init()
 	// init common UI
 	Brief_ui_window.create( 0, 0, gr_screen.max_w, gr_screen.max_h, 0 );
 
-	if(Game_mode & GM_MULTIPLAYER){
-		Brief_ui_window.set_mask_bmap(Brief_mask_multi[gr_screen.res]);
-	} else {
-		Brief_ui_window.set_mask_bmap(Brief_mask_single[gr_screen.res]);
-	}
+	Brief_ui_window.set_mask_bmap(Brief_mask_single[gr_screen.res]);
 
 	Brief_ui_window.tooltip_handler = brief_tooltip_handler;
 	common_buttons_init(&Brief_ui_window);
 	brief_buttons_init();
 
-	// if multiplayer, initialize a few other systems
-	if(Game_mode & GM_MULTIPLAYER){		
-		// again, should not be necessary, but we'll leave it for now
-		chatbox_create();
-
-		// force the chatbox to be small
-		chatbox_force_small();
-	}
-
 	// set up the screen regions
-	brief_init_screen(Brief_multiplayer);
+	brief_init_screen();
 
 	// init briefing specific UI
 	brief_ui_init();
@@ -1185,21 +1082,14 @@ void brief_render(float frametime)
 
 #if !defined(NDEBUG) || defined(INTERPLAYQA)
 	gr_set_color_fast(&Color_normal);
-	int title_y_offset = (Game_mode & GM_MULTIPLAYER) ? 20 : 10;
+	int title_y_offset = 10;
 	gr_printf(Brief_bmap_coords[gr_screen.res][0], Brief_bmap_coords[gr_screen.res][1]-title_y_offset, NOX("[name: %s, mod: %s]"), Mission_filename, The_mission.modified);
 #endif
 
 	// output mission title
 	gr_set_color_fast(&Color_bright_white);
-	if (Game_mode & GM_MULTIPLAYER) {
-		char buf[256];
-		strncpy(buf, The_mission.name, 256);
-		gr_force_fit_string(buf, 255, Title_coords_multi[gr_screen.res][2]);
-		gr_string(Title_coords_multi[gr_screen.res][0], Title_coords_multi[gr_screen.res][1], buf);
-	} else {
-		gr_get_string_size(&w, NULL, The_mission.name);
-		gr_string(Title_coords[gr_screen.res][0] - w, Title_coords[gr_screen.res][1], The_mission.name);
-	}
+	gr_get_string_size(&w, NULL, The_mission.name);
+	gr_string(Title_coords[gr_screen.res][0] - w, Title_coords[gr_screen.res][1], The_mission.name);
 
 	// maybe do objectives
 	if (Current_brief_stage == Briefing->num_stages) {
@@ -1749,34 +1639,7 @@ void brief_do_frame(float frametime)
 		if (Closeup_icon) {
 			brief_render_closeup(Closeup_icon->ship_class, frametime);
 		}
-
-		// render some extra stuff in multiplayer
-		if (Game_mode & GM_MULTIPLAYER) {
-			// should render this last so that it overlaps all controls
-			chatbox_render();
-
-			// render the status indicator for the voice system
-			multi_common_voice_display_status();
-
-			// blit the "ships/players" locked button
-			// multi_ts_blit_locked_button();
-
-			// maybe blit the multiplayer "locked" button	
-			// if its locked, everyone blits it as such
-			if(multi_ts_is_locked()){
-				Brief_buttons[gr_screen.res][BRIEF_BUTTON_MULTI_LOCK].button.draw_forced(2);
-			} 
-			// anyone who can't hit the button sees it off, otherwise
-			else {
-				if( ((Netgame.type_flags & NG_TYPE_TEAM) && !(Net_player->flags & NETINFO_FLAG_TEAM_CAPTAIN)) ||
-					 ((Netgame.type_flags & NG_TYPE_TEAM) && !(Net_player->flags & NETINFO_FLAG_GAME_HOST)) ){
-					Brief_buttons[gr_screen.res][BRIEF_BUTTON_MULTI_LOCK].button.draw_forced(0);
-				} else {
-					Brief_buttons[gr_screen.res][BRIEF_BUTTON_MULTI_LOCK].button.draw();
-				}
-			}
-		}
-	}		
+	}
 
 	// maybe flash a button if player hasn't done anything for a while
 	brief_maybe_flash_button();
@@ -1790,11 +1653,7 @@ void brief_do_frame(float frametime)
 	// loop so there isn't a skip in the animation (since ship_create() can take a long time if
 	// the ship model is not in memory
 	if (Commit_pressed) {
-		if (Game_mode & GM_MULTIPLAYER) {
-			multi_ts_commit_pressed();
-		} else {
-			commit_pressed();
-		}
+		commit_pressed();
 
 		Commit_pressed = 0;
 	}
@@ -1819,11 +1678,6 @@ void brief_unload_bitmaps()
 	if(Brief_grid_bitmap != -1){
 		bm_unload(Brief_grid_bitmap);
 		Brief_grid_bitmap = -1;
-	}
-
-	if ( Brief_multitext_bitmap != -1 ) {
-		bm_unload(Brief_multitext_bitmap);
-		Brief_multitext_bitmap = -1;
 	}
 
 	if ( Brief_background_bitmap != -1 ) {

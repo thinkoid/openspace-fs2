@@ -131,7 +131,7 @@ void game_set_frametime(int state);
 void game_stop_looped_sounds();
 
 // do stuff that may need to be done regardless of state
-void game_do_state_common(int state,int no_networking = 0);
+void game_do_state_common(int state);
 
 
 // skill level --------------------------------------------------------

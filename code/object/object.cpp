@@ -32,8 +32,6 @@
 #include "shockwave.h"
 #include "afterburner.h"
 #include "timer.h"
-#include "multi.h"
-#include "multiutil.h"
 #include "objcollide.h"
 #include "lighting.h"
 #include "observer.h"
@@ -533,14 +531,9 @@ void obj_delete(int objnum)
 		cmeasure_delete( objp );
 		break;
 	case OBJ_GHOST:
-		if((!Game_mode & GM_MULTIPLAYER)){
-			mprintf(("Warning: Tried to delete a ghost!"));
-			objp->flags &= ~OF_SHOULD_BE_DEAD;
-			return;
-		} else {
-			// we need to be able to delete GHOST objects in multiplayer to allow for player respawns.
-			nprintf(("Network","Deleting GHOST object\n"));
-		}		
+		// retail guarded this with (!Game_mode & GM_MULTIPLAYER) -- a precedence
+		// bug that made the warn-and-refuse branch unreachable, so the shipped
+		// behavior was to always delete ghosts.  Keep the shipped behavior.
 		break;
 	case OBJ_OBSERVER:
 		observer_delete(objp);
@@ -679,7 +672,6 @@ float Avg_delay_total;
 */
 
 // function to deal with firing player things like lasers, missiles, etc.
-// separated out because of multiplayer issues.
 void obj_player_fire_stuff( object *objp, control_info ci )
 {
 	ship *shipp;
@@ -692,36 +684,30 @@ void obj_player_fire_stuff( object *objp, control_info ci )
 		shipp = &Ships[objp->instance];
 	}
 
-	// single player pilots, and all players in multiplayer take care of firing their own primaries
-	if(!(Game_mode & GM_MULTIPLAYER) || (objp == Player_obj)){
-		if ( ci.fire_primary_count ) {
-			// flag the ship as having the trigger down
-			if(shipp != NULL){
-				shipp->flags |= SF_TRIGGER_DOWN;
-			}
-
-			// fire non-streaming primaries here
-			ship_fire_primary( objp, 0 );			
-		} else {
-			// unflag the ship as having the trigger down
-			if(shipp != NULL){
-				shipp->flags &= ~(SF_TRIGGER_DOWN);
-			}
+	if ( ci.fire_primary_count ) {
+		// flag the ship as having the trigger down
+		if(shipp != NULL){
+			shipp->flags |= SF_TRIGGER_DOWN;
 		}
 
-		if ( ci.fire_countermeasure_count ){
-			ship_launch_countermeasure( objp );
+		// fire non-streaming primaries here
+		ship_fire_primary( objp, 0 );
+	} else {
+		// unflag the ship as having the trigger down
+		if(shipp != NULL){
+			shipp->flags &= ~(SF_TRIGGER_DOWN);
 		}
 	}
 
-	// single player and multiplayer masters do all of the following
-	if ( !MULTIPLAYER_CLIENT ) {		
-		if ( ci.fire_secondary_count ){
-			ship_fire_secondary( objp );
+	if ( ci.fire_countermeasure_count ){
+		ship_launch_countermeasure( objp );
+	}
 
-			// kill the secondary count
-			ci.fire_secondary_count = 0;
-		}
+	if ( ci.fire_secondary_count ){
+		ship_fire_secondary( objp );
+
+		// kill the secondary count
+		ci.fire_secondary_count = 0;
 	}
 
 	// everyone does the following for their own ships.
@@ -796,13 +782,6 @@ void obj_move_call_physics(object *objp, float frametime)
 				}
 			}			
 
-			// in multiplayer, if this object was just updatd (i.e. clients send their own positions),
-			// then reset the flag and don't move the object.
-			if ( MULTIPLAYER_MASTER && (objp->flags & OF_JUST_UPDATED) ) {
-				objp->flags &= ~OF_JUST_UPDATED;
-				goto obj_maybe_fire;
-			}
-
 			if ( (objp->type == OBJ_ASTEROID) && (Model_caching && (!D3D_enabled) ) )	{
 				// If we're doing model caching, don't rotate asteroids
 				vector tmp = objp->phys_info.rotvel;
@@ -814,15 +793,9 @@ void obj_move_call_physics(object *objp, float frametime)
 				physics_sim(&objp->pos, &objp->orient, &objp->phys_info, frametime );		// simulate the physics
 			}
 
-			// This code seems to have no effect - DB 1/12/99
-			//if ( MULTIPLAYER_CLIENT && (objp != Player_obj) ){
-			//	return;
-			//}
-
 			// if the object is the player object, do things that need to be done after the ship
-			// is moved (like firing weapons, etc).  This routine will get called either single
-			// or multiplayer.  We must find the player object to get to the control info field
-obj_maybe_fire:
+			// is moved (like firing weapons, etc).  We must find the player object to get to
+			// the control info field
 			if ( (objp->flags & OF_PLAYER_SHIP) && (objp->type != OBJ_OBSERVER) && (objp == Player_obj)) {
 				player *pp;
 				if(Player != NULL){
@@ -939,43 +912,6 @@ void obj_set_flags( object *obj, uint new_flags )
 		CheckObjects[objnum].flags = new_flags;
 		CheckObjects[objnum].flags &= ~(OF_NOT_IN_COLL);		
 #endif
-		return;
-	}
-
-	// for a multiplayer host -- use this debug code to help trap when non-player ships are getting
-	// marked as OF_COULD_BE_PLAYER
-	// this code is pretty much debug code and shouldn't be relied on to always do the right thing
-	// for flags other than 
-	if ( MULTIPLAYER_MASTER && !(obj->flags & OF_COULD_BE_PLAYER) && (new_flags & OF_COULD_BE_PLAYER) ) {
-		ship *shipp;
-		int team, slot;
-
-		// this flag sometimes gets set for observers.
-		if ( obj->type == OBJ_OBSERVER ) {
-			return;
-		}
-
-		// sanity checks
-		if ( (obj->type != OBJ_SHIP) || (obj->instance < 0) ) {
-			// Int3();
-			return;				// return because we really don't want to set the flag
-		}
-
-		// see if this ship is really a player ship (or should be)
-		shipp = &Ships[obj->instance];
-		extern void multi_ts_get_team_and_slot(char *, int *, int *);
-		multi_ts_get_team_and_slot(shipp->ship_name,&team,&slot);
-		if ( (shipp->wingnum == -1) || (team == -1) || (slot==-1) ) {
-			Int3();
-			return;
-		}
-
-		// set the flag
-		obj->flags = new_flags;
-#ifdef OBJECT_CHECK
-		CheckObjects[objnum].flags = new_flags;
-#endif
-
 		return;
 	}
 
@@ -1196,8 +1132,6 @@ void obj_move_all_post(object *objp, float frametime)
 	case OBJ_GHOST:
 		break;
 	case OBJ_OBSERVER:
-		void observer_process_post(object *objp);
-		observer_process_post(objp);
 		break;
 	case OBJ_JUMP_NODE:
 		radar_plot_object(objp);
@@ -1230,9 +1164,7 @@ void obj_move_all(float frametime)
 	obj_merge_created_list();
 
 	// Clear the table that tells which groups of weapons have cast light so far.
-	if(!(Game_mode & GM_MULTIPLAYER) || (MULTIPLAYER_MASTER)){
-		obj_clear_weapon_group_id_list();
-	}
+	obj_clear_weapon_group_id_list();
 
 	MONITOR_INC( NumObjects, num_objects );	
 
@@ -1254,10 +1186,8 @@ void obj_move_all(float frametime)
 				continue;
 			}
 
-#ifdef OBJECT_CHECK 
-			// if(! ((Game_mode & GM_MULTIPLAYER) && (Net_player != NULL) && !(Net_player->flags & NETINFO_FLAG_AM_MASTER)) ){
-				obj_check_object( objp );
-			// }
+#ifdef OBJECT_CHECK
+			obj_check_object( objp );
 #endif
 
 			// pre-move
@@ -1267,13 +1197,8 @@ void obj_move_all(float frametime)
 			objp->last_pos = cur_pos;
 			objp->last_orient = objp->orient;
 
-			// if this is an object which should be interpolated in multiplayer, do so
-			if(multi_oo_is_interp_object(objp)){
-				multi_oo_interp(objp);
-			} else {
-				// physics
-				obj_move_call_physics(objp, frametime);
-			}
+			// physics
+			obj_move_call_physics(objp, frametime);
 
 			// move post
 			obj_move_all_post(objp, frametime);
@@ -1400,156 +1325,6 @@ void obj_init_all_ships_physics()
 			physics_ship_init(objp);
 	}
 
-}
-
-// do client-side pre-interpolation object movement
-void obj_client_pre_interpolate()
-{
-	object *objp;
-	
-	// duh
-	obj_delete_all_that_should_be_dead();
-
-	// client side processing of warping in effect stages
-	multi_do_client_warp(flFrametime);     
-	
-	// client side movement of an observer
-	if((Net_player->flags & NETINFO_FLAG_OBSERVER) || (Player_obj->type == OBJ_OBSERVER)){
-		obj_observer_move(flFrametime);   
-	}
-	
-	// run everything except ships through physics (and ourselves of course)	
-	obj_merge_created_list();						// must merge any objects created by the host!
-
-	objp = GET_FIRST(&obj_used_list);
-	for ( objp = GET_FIRST(&obj_used_list); objp !=END_OF_LIST(&obj_used_list); objp = GET_NEXT(objp) )	{
-		if((objp != Player_obj) && (objp->type == OBJ_SHIP)){
-			continue;
-		}
-
-		// for all non-dead object which are _not_ ships
-		if ( !(objp->flags&OF_SHOULD_BE_DEAD) )	{				
-			// pre-move step
-			obj_move_all_pre(objp, flFrametime);
-
-			// store position and orientation
-			objp->last_pos = objp->pos;
-			objp->last_orient = objp->orient;
-
-			// call physics
-			obj_move_call_physics(objp, flFrametime);
-
-			// post-move step
-			obj_move_all_post(objp, flFrametime);
-		}
-	}
-}
-
-// do client-side post-interpolation object movement
-void obj_client_post_interpolate()
-{
-	object *objp;
-
-	//	After all objects have been moved, move all docked objects.
-	objp = GET_FIRST(&obj_used_list);
-	while( objp !=END_OF_LIST(&obj_used_list) )	{
-		if ( (objp->type == OBJ_SHIP) || (objp != Player_obj) ) {
-			move_docked_objects(objp);
-		}
-		objp = GET_NEXT(objp);
-	}	
-
-	// check collisions
-	obj_check_all_collisions();		
-
-	// do post-collision stuff for beam weapons
-	beam_move_all_post();
-}
-
-#if 0
-// following function is used in multiplayer only.  It deals with simulating objects on the client
-// side.  Lasers will always get moved by the client (i.e. no object position info is ever sent for them).
-// same for dumb missiles and possibly others.  We might move ships based on the last time their posision
-// was updated
-void obj_client_simulate(float frametime)
-{
-	object *objp;
-
-	obj_delete_all_that_should_be_dead();
-
-	multi_do_client_warp(frametime);     // client side processing of warping in effect stages
-	
-	if(Net_player->flags & NETINFO_FLAG_OBSERVER){
-		obj_observer_move(frametime);   // client side movement of an observer
-	}
-
-	/*
-	obj_merge_created_list();						// must merge any objects created by the host!
-	objp = GET_FIRST(&obj_used_list);
-	for ( objp = GET_FIRST(&obj_used_list); objp !=END_OF_LIST(&obj_used_list); objp = GET_NEXT(objp) )	{
-
-		if ( !(objp->flags&OF_SHOULD_BE_DEAD) )	{
-			vector	cur_pos = objp->pos;			// Save the current position
-
-			obj_move_all_pre(objp, frametime);
-
-			int predict_from_server_pos = 1;
-
-			// If not visible (or not a ship), bash position
-			if ( (!obj_visible_from_eye(&cur_pos)) || (objp->type != OBJ_SHIP) ) {
-				predict_from_server_pos = 0;
-			}
-
-			// If this is a player ship, don't predict from server position
-			if ( objp->flags & OF_PLAYER_SHIP ) {
-				predict_from_server_pos = 0;
-			}
-
-			if ( predict_from_server_pos ) {
-				obj_client_predict_pos(objp, frametime);
-			} else {
-				obj_client_bash_pos(objp, frametime);
-			}
-
-			obj_move_all_post(objp, frametime);
-		}
-	}	
-	*/
-
-	//	After all objects have been moved, move all docked objects.
-	objp = GET_FIRST(&obj_used_list);
-	while( objp !=END_OF_LIST(&obj_used_list) )	{
-		if ( (objp->type == OBJ_SHIP) || (objp != Player_obj) ) {
-			move_docked_objects(objp);
-		}
-		objp = GET_NEXT(objp);
-	}
-
-	obj_check_all_collisions();	
-}
-#endif
-
-void obj_observer_move(float flFrametime)
-{
-	object *objp;
-	float ft;
-
-	// if i'm not in multiplayer, or not an observer, bail
-	if(!(Game_mode & GM_MULTIPLAYER) || (Net_player == NULL) || !(Net_player->flags & NETINFO_FLAG_OBSERVER) || (Player_obj->type != OBJ_OBSERVER)){
-		return;
-	}
-
-	objp = Player_obj;
-
-	// obj_move_all_pre(objp, flFrametime);
-
-	objp->last_pos = objp->pos;
-	objp->last_orient = objp->orient;		// save the orientation -- useful in multiplayer.
-
-	ft = flFrametime;
-	obj_move_call_physics( objp, ft );
-	obj_move_all_post(objp, flFrametime);
-   objp->flags &= ~OF_JUST_UPDATED;
 }
 
 // function to return a vector of the average position of all ships in the mission.

@@ -108,7 +108,6 @@ typedef struct MissionMessage {
 	char	name[NAME_LENGTH];					// used to identify this message
 	char	message[MESSAGE_LENGTH];			// actual message
 	int	persona_index;							// which persona says this message
-	int	multi_team;								// multiplayer team filter (important for TvT only)
 
 	// unions for avi/wave information.  Because of issues with Fred, we are using
 	// the union to specify either the index into the avi or wave arrays above,
@@ -172,15 +171,12 @@ void	message_queue_message( int message_num, int priority, int timing, char *who
 
 // functions which send messages to player -- called externally
 void	message_send_unique_to_player( char *id, void *data, int source, int priority, int group, int delay);
-void	message_send_builtin_to_player( int type, ship *shipp, int priority, int timing, int group, int delay, int multi_target, int multi_team_filter );
+void	message_send_builtin_to_player( int type, ship *shipp, int priority, int timing, int group, int delay );
 
 // functions to deal with personas
 int	message_persona_name_lookup( char *name );
 
 // preload mission messages (this is called by the level paging code when running with low memory)
 void message_pagein_mission_messages();
-
-// given a message id#, should it be filtered for me?
-int message_filter_multi(int id);
 
 #endif

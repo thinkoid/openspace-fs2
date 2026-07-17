@@ -93,14 +93,9 @@ void unload_wing_icons();
 void	common_flash_button_init();
 int	common_flash_bright();
 
-// functions for the multiplayer chat window
-void common_render_chat_window();
-void multi_chat_scroll_up();
-void multi_chat_scroll_down();
-
 void	set_active_ui(UI_WINDOW *ui_window);
 
-// music functions exported for multiplayer team selection screen to start briefing music
+// music functions
 void common_music_init( int score_index );
 void common_music_do();
 void common_music_close();
@@ -189,8 +184,6 @@ void wss_restore_loadout();
 void wss_direct_restore_loadout();
 
 int wss_get_mode(int from_slot, int from_list, int to_slot, int to_list, int wl_ship_slot);
-int store_wss_data(ubyte *block, int max_size, int sound,int player_index);
-int restore_wss_data(ubyte *block);
 
 ///////////////////////////////////////////////////////////
 // NEWSTUFF END

@@ -466,7 +466,7 @@ int hud_bracket_num_ships_attacking(int objnum)
 				break;
 			}
 
-			if ( ((Game_mode & GM_MULTIPLAYER) || (aip->mode == AIM_CHASE)) && (aip->target_objnum == objnum))
+			if ( (aip->mode == AIM_CHASE) && (aip->target_objnum == objnum))
 				if (Ships[objp->instance].team != Ships[Objects[objnum].instance].team)
 					count++;
 		}

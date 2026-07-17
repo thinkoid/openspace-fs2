@@ -458,11 +458,6 @@ int bm_load( char * real_filename )
 
 	if ( !bm_inited ) bm_init();
 
-	// nice little trick for keeping standalone memory usage way low - always return a bogus bitmap 
-	if(Game_mode & GM_STANDALONE_SERVER){
-		strcpy(filename,"test128");
-	}
-
 	// make sure no one passed an extension
 	strcpy( filename, real_filename );
 	char *p = strchr( filename, '.' );
@@ -828,7 +823,7 @@ static void bm_convert_format( int bitmapnum, bitmap *bmp, ubyte bpp, ubyte flag
 	int idx;	
 	int r, g, b, a;
 
-	if(Fred_running || Pofview_running || Is_standalone || ((gr_screen.mode == GR_SOFTWARE) && (bmp->bpp == 8))){
+	if(Fred_running || Pofview_running || ((gr_screen.mode == GR_SOFTWARE) && (bmp->bpp == 8))){
 		Assert(bmp->bpp == 8);
 
 		return;
@@ -912,7 +907,6 @@ void bm_lock_pcx( int handle, int bitmapnum, bitmap_entry *be, bitmap *bmp, ubyt
 
 	// allocate bitmap data
 	if(bpp == 8){
-		// Assert(Fred_running || Pofview_running || Is_standalone);		
 			data = (ubyte *)bm_malloc(bitmapnum, bmp->w * bmp->h );
 		#ifdef BMPMAN_NDEBUG
 			Assert( be->data_size == bmp->w * bmp->h );
@@ -1034,7 +1028,7 @@ void bm_lock_ani( int handle, int bitmapnum, bitmap_entry *be, bitmap *bmp, ubyt
 			bm->flags |= BMP_TEX_XPARENT;	// software blitter honors index 255
 		}
 		// briefing editor in Fred2 uses aabitmaps (ani's) - force to 8 bit
-		if(Fred_running || Is_standalone){
+		if(Fred_running){
 			bm->bpp = 8;
 		} else {
 			bm->bpp = bpp;
@@ -1180,7 +1174,7 @@ void bm_lock_tga( int handle, int bitmapnum, bitmap_entry *be, bitmap *bmp, ubyt
 	// Unload any existing data
 	bm_free_data( bitmapnum );	
 
-	if(Fred_running || Is_standalone){
+	if(Fred_running){
 		Assert(bpp == 8);
 	} else {
 		Assert(bpp == 16);
@@ -1244,24 +1238,16 @@ bitmap * bm_lock( int handle, ubyte bpp, ubyte flags )
 
 //	flags &= (~BMP_RLE);
 
-	// if we're on a standalone server, aways for it to lock to 8 bits
-	if(Is_standalone){
-		bpp = 8;
-		flags = 0;
-	} 
-	// otherwise do it as normal
-	else {
-		if(Fred_running || Pofview_running || (gr_screen.mode == GR_SOFTWARE)){
-			// software renderer: 8bpp is the norm; a few FS2-era paths
-			// (beam section info) lock at 16 and work via the 1555 guns
-			Assert( bpp == 8 || bpp == 16 );
-			Assert( (bm_bitmaps[bitmapnum].type == BM_TYPE_PCX) || (bm_bitmaps[bitmapnum].type == BM_TYPE_ANI) || (bm_bitmaps[bitmapnum].type == BM_TYPE_TGA) || (bm_bitmaps[bitmapnum].type == BM_TYPE_USER));
+	if(Fred_running || Pofview_running || (gr_screen.mode == GR_SOFTWARE)){
+		// software renderer: 8bpp is the norm; a few FS2-era paths
+		// (beam section info) lock at 16 and work via the 1555 guns
+		Assert( bpp == 8 || bpp == 16 );
+		Assert( (bm_bitmaps[bitmapnum].type == BM_TYPE_PCX) || (bm_bitmaps[bitmapnum].type == BM_TYPE_ANI) || (bm_bitmaps[bitmapnum].type == BM_TYPE_TGA) || (bm_bitmaps[bitmapnum].type == BM_TYPE_USER));
+	} else {
+		if(flags & BMP_AABITMAP){
+			Assert( bpp == 8 );
 		} else {
-			if(flags & BMP_AABITMAP){
-				Assert( bpp == 8 );
-			} else {
-				Assert( bpp == 16 );
-			}
+			Assert( bpp == 16 );
 		}
 	}
 

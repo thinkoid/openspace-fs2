@@ -272,33 +272,6 @@ void launch_context_help()
 			}
 			break;
 
-		case GS_STATE_MULTI_HOST_SETUP:
-			if ( !help_overlay_active(MULTI_CREATE_OVERLAY) ) {
-				help_overlay_set_state(MULTI_CREATE_OVERLAY, 1);
-			}
-			else {
-				help_overlay_set_state(MULTI_CREATE_OVERLAY, 0);
-			}
-			break;
-
-		case GS_STATE_MULTI_START_GAME:
-			if ( !help_overlay_active(MULTI_START_OVERLAY) ) {
-				help_overlay_set_state(MULTI_START_OVERLAY, 1);
-			}
-			else {
-				help_overlay_set_state(MULTI_START_OVERLAY, 0);
-			}
-			break;
-
-		case GS_STATE_MULTI_JOIN_GAME:
-			if ( !help_overlay_active(MULTI_JOIN_OVERLAY) ) {
-				help_overlay_set_state(MULTI_JOIN_OVERLAY, 1);
-			}
-			else {
-				help_overlay_set_state(MULTI_JOIN_OVERLAY, 0);
-			}
-			break;
-
 		case GS_STATE_HOTKEY_SCREEN:
 			if ( !help_overlay_active(HOTKEY_OVERLAY) ) {
 				help_overlay_set_state(HOTKEY_OVERLAY, 1);

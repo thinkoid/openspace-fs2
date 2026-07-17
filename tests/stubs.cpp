@@ -39,28 +39,3 @@ debug_command::debug_command(const char *_name, const char *_help, void (*_func)
 	func = _func;
 }
 
-
-// network/multiutil.cpp:980 — real body; single-player mission load
-// checksums mission data with it
-ushort netmisc_calc_checksum( void * vptr, int len )
-{
-	ubyte * ptr = (ubyte *)vptr;
-	unsigned int sum1,sum2;
-
-	sum1 = sum2 = 0;
-
-	while(len--)	{
-		sum1 += *ptr++;
-		if (sum1 >= 255 ) sum1 -= 255;
-		sum2 += sum1;
-	}
-	sum2 %= 255;
-
-	return (unsigned short)((sum1<<8)+ sum2);
-}
-
-// network/multi.cpp — retail multi_init pointed Net_player at slot 0 even in
-// single-player; plenty of gameplay code indexes Net_players through it
-#include "multi.h"
-net_player Net_players[MAX_PLAYERS];
-net_player *Net_player = &Net_players[0];

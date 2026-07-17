@@ -12,13 +12,12 @@
 
 // general defines
 #define PLAYER_SELECT_MODE_SINGLE	0							// looking through single player pilots
-#define PLAYER_SELECT_MODE_MULTI    1							// looking through multi player pilots
 
 // flag indicating if this is the absolute first pilot created and selected. Used to determine
 // if the main hall should display the help overlay screen
 extern int Player_select_very_first_pilot;			
 
-// functions for selecting single/multiplayer pilots at the very beginning of Freespace
+// functions for selecting pilots at the very beginning of Freespace
 void player_select_init();
 void player_select_do();
 void player_select_close();

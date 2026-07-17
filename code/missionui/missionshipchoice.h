@@ -61,8 +61,6 @@ void ship_stop_animation();
 int ss_get_ship_class(int ship_entry_index);
 int ss_get_selected_ship();
 
-void ss_blit_ship_icon(int x,int y,int ship_class,int bmap_num);
-
 // called from weapon select
 int	ss_return_ship(int wing_block, int wing_slot, int *ship_index, p_object **ppobjp);
 void	ss_return_name(int wing_block, int wing_slot, char *name);
@@ -71,9 +69,6 @@ int	ss_return_saindex(int slot_num);
 int	ss_disabled_slot(int slot_num);
 int	ss_wing_slot_is_console_player(int index);
 
-// lock/unlock any necessary slots for multiplayer
-void ss_recalc_multiplayer_slots();
-
 int	create_default_player_ship( int use_last_flown = 1 );
 void	update_player_ship(int si_index);
 
@@ -81,10 +76,6 @@ void ss_synch_interface();
 
 // set the necessary pointers
 void ss_set_team_pointers(int team);
-
-// called by multiplayer team select to set the slot based flags
-void ss_make_slot_empty(int slot_index);
-void ss_make_slot_full(int slot_index);
 
 int ss_dump_to_list(int from_slot, int to_list, int *sound);
 int ss_swap_slot_slot(int from_slot, int to_slot, int *sound);

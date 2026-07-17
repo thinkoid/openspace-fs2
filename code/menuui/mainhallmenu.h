@@ -36,8 +36,6 @@ void main_hall_start_ambient();
 void main_hall_stop_ambient();
 void main_hall_reset_ambient_vol();
 
-void main_hall_do_multi_ready();
-
 // make the vasudan main hall funny
 void main_hall_vasudan_funny();
 

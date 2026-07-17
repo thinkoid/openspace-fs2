@@ -23,7 +23,6 @@
 #include "math.h"
 #include "gamesnd.h"
 #include "hudtargetbox.h"
-#include "multi.h"
 #include "emp.h"
 #include "localize.h"
 
@@ -234,10 +233,6 @@ void hud_update_reticle( player *pp )
 {
 	int rval;
 	ship *shipp;
-
-	// multiplayer clients won't call this routine
-	if ( MULTIPLAYER_CLIENT || MULTI_OBSERVER(Net_players[MY_NET_PLAYER_NUM]))
-		return;
 
 	shipp = &Ships[Objects[pp->objnum].instance];
 

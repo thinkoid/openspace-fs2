@@ -13,7 +13,6 @@
 #include "neb.h"
 #include "awacs.h"
 #include "missionparse.h"
-#include "multi.h"
 
 // ----------------------------------------------------------------------------------------------------
 // AWACS DEFINES/VARS
@@ -173,11 +172,6 @@ float awacs_get_level(object *target, ship *viewer, int use_awacs)
 	int closest_index = -1;
 	int idx;
 	ship *shipp;	
-
-	// if the viewer is me, and I'm a multiplayer observer, its always viewable
-	if((viewer == Player_ship) && (Game_mode & GM_MULTIPLAYER) && (Net_player != NULL) && MULTI_OBSERVER(Net_players[MY_NET_PLAYER_NUM])){
-		return 1.5f;
-	}
 
 	// ships on the same teamare always viewable
 	if((target->type == OBJ_SHIP) && (Ships[target->instance].team == viewer->team)){

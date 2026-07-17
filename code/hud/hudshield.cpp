@@ -21,7 +21,6 @@
 #include "hudshield.h"
 #include "hudescort.h"
 #include "emp.h"
-#include "multi.h"
 
 #define NUM_SHIELD_LEVELS		8
 
@@ -369,8 +368,8 @@ void hud_shield_equalize(object *objp, player *pl)
 	if(!all_equal){
 		strength = get_shield_strength(objp);
 		if ( strength != 0 ) {
-			// maybe impose a 2% penalty - server side and single player only
-			if(!MULTIPLAYER_CLIENT &&  (pl->shield_penalty_stamp < 0) || timestamp_elapsed_safe(pl->shield_penalty_stamp, 1000) ){
+			// maybe impose a 2% penalty
+			if( (pl->shield_penalty_stamp < 0) || timestamp_elapsed_safe(pl->shield_penalty_stamp, 1000) ){
 				strength *= 0.98f;
 
 				// reset the penalty timestamp

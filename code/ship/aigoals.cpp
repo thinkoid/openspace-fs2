@@ -17,8 +17,6 @@
 #include "linklist.h"
 #include "timer.h"
 #include "player.h"
-#include "multimsgs.h"
-#include "multi.h"
 
 // all ai goals dealt with in this code are goals that are specified through
 // sexpressions in the mission file.  They are either specified as part of a
@@ -1079,8 +1077,7 @@ int ai_mission_goal_achievable( int objnum, ai_goal *aigp )
 		int shipnum;
 
 		// MWA -- 4/22/98.  Check for the ship actually being in the mission before
-		// checking departure and destroyed.  In multiplayer, since ships can respawn,
-		// they get log entries for being destroyed even though they have respawned.
+		// checking departure and destroyed.
 		shipnum = ship_name_lookup( aigp->ship_name );
 		if ( shipnum == -1 ) {
 			status = mission_log_get_time( LOG_SHIP_DEPART, aigp->ship_name, NULL, NULL);
@@ -1533,10 +1530,6 @@ void ai_process_mission_orders( int objnum, ai_info *aip )
 	//nprintf(("AI", "New goal for %s = %i\n", Ships[objp->instance].ship_name, aip->goals[0].ai_mode));
 
 	current_goal = &aip->goals[0];
-
-	if ( MULTIPLAYER_MASTER ){
-		send_ai_info_update_packet( objp, AI_UPDATE_ORDERS );
-	}
 
 	// if this object was flying in formation off of another object, remove the flag that tells him
 	// to do this.  The form-on-my-wing command is removed from the goal list as soon as it is called, so

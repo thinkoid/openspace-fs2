@@ -10,6 +10,8 @@
 #include "freespace.h"
 #include "object.h"
 #include "missiongoals.h"
+#include "player.h"
+#include "scoring.h"
 #include "missionparse.h"
 #include "missionlog.h"
 #include "missiontraining.h"
@@ -25,15 +27,11 @@
 #include "parselo.h"
 #include "sexp.h"
 #include "eventmusic.h"
-#include "multi.h"
-#include "multimsgs.h"
-#include "stand_gui.h"
 #include "ui.h"
 #include "bmpman.h"
 #include "sound.h"
 #include "gamesnd.h"
 #include "alphacolors.h"
-#include "multi_team.h"
 
 // timestamp stuff for evaluating mission goals
 #define GOAL_TIMESTAMP				0				// make immediately eval
@@ -403,7 +401,7 @@ void mission_event_shutdown()
 // called once right before entering the show goals screen to do initializations.
 void mission_show_goals_init()
 {
-	int i, type, team_num=0;		// JAS: I set team_num to 0 because it was used without being initialized.
+	int i, type;
 	goal_buttons *b;
 
 	Scroll_offset = 0;
@@ -420,10 +418,6 @@ void mission_show_goals_init()
 	// fill up the lists so we can display the goals appropriately
 	for (i=0; i<Num_goals; i++) {
 		if (Mission_goals[i].type & INVALID_GOAL){  // don't count invalid goals here
-			continue;
-		}
-
-		if ( (Game_mode & GM_MULTIPLAYER) && (The_mission.game_type & MISSION_TYPE_MULTI_TEAMS) && (Mission_goals[i].team != team_num) ){
 			continue;
 		}
 
@@ -579,7 +573,7 @@ void mission_show_goals_do_frame(float frametime)
 // Called once right before entering the Mission Log screen to do initializations.
 int ML_objectives_init(int x, int y, int w, int h)
 {
-	int i, type, team_num;
+	int i, type;
 
 	Primary_goal_list.count = 0;
 	Secondary_goal_list.count = 0;
@@ -591,18 +585,9 @@ int ML_objectives_init(int x, int y, int w, int h)
 	Goal_screen_text_h = h;
 	Goal_screen_icon_x = x;
 
-	team_num = 0;			// this is the default team -- we will change it if in a multiplayer team v. team game
-	if ( (Game_mode & GM_MULTIPLAYER) && (The_mission.game_type & MISSION_TYPE_MULTI_TEAMS) ){
-		team_num = Net_player->p_info.team;
-	}
-
 	// fill up the lists so we can display the goals appropriately
 	for (i=0; i<Num_goals; i++) {
 		if (Mission_goals[i].type & INVALID_GOAL){  // don't count invalid goals here
-			continue;
-		}
-
-		if ( (Game_mode & GM_MULTIPLAYER) && (The_mission.game_type & MISSION_TYPE_MULTI_TEAMS) && (Mission_goals[i].team != team_num) ){
 			continue;
 		}
 
@@ -720,19 +705,13 @@ void mission_goal_status_change( int goal_num, int new_status)
 	Assert(goal_num < Num_goals);
 	Assert((new_status == GOAL_FAILED) || (new_status == GOAL_COMPLETE));
 
-	// if in a multiplayer game, send a status change to clients
-	if ( MULTIPLAYER_MASTER ){
-		send_mission_goal_info_packet( goal_num, new_status, -1 );
-	}
-
 	type = Mission_goals[goal_num].type & GOAL_TYPE_MASK;
 	Mission_goals[goal_num].satisfied = new_status;
 	if ( new_status == GOAL_FAILED ) {
 		// don't display bonus goal failure
 		if ( type != BONUS_GOAL ) {
 
-			// only do HUD and music is goals are my teams goals.
-			if ( (Game_mode & GM_NORMAL) || ((Net_player != NULL) && (Net_player->p_info.team == Mission_goals[goal_num].team)) ) {
+			if ( Game_mode & GM_NORMAL ) {
 				hud_add_objective_messsage(type, new_status);
 				if ( !Mission_goals[goal_num].flags & MGF_NO_MUSIC ) {	// maybe play event music
 					event_music_primary_goal_failed();
@@ -742,22 +721,17 @@ void mission_goal_status_change( int goal_num, int new_status)
 		}
 		mission_log_add_entry( LOG_GOAL_FAILED, Mission_goals[goal_num].name, NULL, goal_num );
 	} else if ( new_status == GOAL_COMPLETE ) {
-		if ( (Game_mode & GM_NORMAL) || ((Net_player != NULL) && (Net_player->p_info.team == Mission_goals[goal_num].team))) {
+		if ( Game_mode & GM_NORMAL ) {
 			hud_add_objective_messsage(type, new_status);
 			// cue for Event Music
 			if ( !(Mission_goals[goal_num].flags & MGF_NO_MUSIC) ) {
 				event_music_primary_goals_met();
-			}			
+			}
 			mission_log_add_entry( LOG_GOAL_SATISFIED, Mission_goals[goal_num].name, NULL, goal_num );
-		}	
-		
-		if(Game_mode & GM_MULTIPLAYER){
-			// squad war
-			multi_team_maybe_add_score((int)(Mission_goals[goal_num].score * scoring_get_scale_factor()), Mission_goals[goal_num].team);	
-		} else {
-			// deal with the score
-			Player->stats.m_score += (int)(Mission_goals[goal_num].score * scoring_get_scale_factor());			
 		}
+
+		// deal with the score
+		Player->stats.m_score += (int)(Mission_goals[goal_num].score * scoring_get_scale_factor());
 	}
 }
 
@@ -836,11 +810,6 @@ void mission_event_unset_directive_special(int event)
 // function which evaluates and processes the given event
 void mission_process_event( int event )
 {
-	int store_flags = Mission_events[event].flags;
-	int store_formula = Mission_events[event].formula;
-	int store_result = Mission_events[event].result;
-	int store_count = Mission_events[event].count;
-
 	int result, sindex;
 
 	Directive_count = 0;
@@ -912,13 +881,8 @@ void mission_process_event( int event )
 			Mission_events[event].timestamp = (int)Missiontime;
 			Mission_events[event].formula = -1;
 
-			if(Game_mode & GM_MULTIPLAYER){
-				// squad war
-				multi_team_maybe_add_score((int)(Mission_events[event].score * scoring_get_scale_factor()), Mission_events[event].team);
-			} else {
-				// deal with the player's score
-				Player->stats.m_score += (int)(Mission_events[event].score * scoring_get_scale_factor());			
-			}
+			// deal with the player's score
+			Player->stats.m_score += (int)(Mission_events[event].score * scoring_get_scale_factor());
 		} else {
 			// set the timestamp to time out 'interval' seconds in the future.  We must also reset the
 			// value at the sexpresion node to unknown so that it will get reevaled
@@ -926,11 +890,6 @@ void mission_process_event( int event )
 //			Sexp_nodes[Mission_events[event].formula].value = SEXP_UNKNOWN;
 		}
 	}
-
-	// see if anything has changed	
-	if(MULTIPLAYER_MASTER && ((store_flags != Mission_events[event].flags) || (store_formula != Mission_events[event].formula) || (store_result != Mission_events[event].result) || (store_count != Mission_events[event].count)) ){
-		send_event_update_packet(event);
-	}	
 }
 
 // Maybe play a directive success sound... need to poll since the sound is delayed from when
@@ -1010,11 +969,6 @@ void mission_eval_goals()
 	if ( !hud_disabled() && hud_gauge_active(HUD_DIRECTIVES_VIEW) ) {
 		mission_maybe_play_directive_success_sound();
 	}
-
-   // update goal status if playing on a multiplayer standalone server
-	if (Game_mode & GM_STANDALONE_SERVER){
-		std_multi_update_goals();
-	}
 }
 
 //	evaluate_primary_goals() will determine if the primary goals for a mission are complete
@@ -1068,18 +1022,12 @@ int mission_goals_met()
 	return all_goals_met;
 }
 
-// function used to actually change the status (valid/invalid) of a goal.  Called externally
-// with multiplayer code
+// function used to actually change the status (valid/invalid) of a goal.
 void mission_goal_validation_change( int goal_num, int valid )
 {
 	// only incomplete goals can have their status changed
 	if ( Mission_goals[goal_num].satisfied != GOAL_INCOMPLETE ){
 		return;
-	}
-
-	// if in multiplayer, then send a packet
-	if ( MULTIPLAYER_MASTER ){
-		send_mission_goal_info_packet( goal_num, -1, valid );
 	}
 
 	// change the valid status

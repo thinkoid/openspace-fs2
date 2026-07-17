@@ -34,9 +34,7 @@ void level_page_in()
 
 	mprintf(( "Beginning level bitmap paging...\n" ));
 
-	if(!(Game_mode & GM_STANDALONE_SERVER)){		
-		bm_page_in_start();
-	}
+	bm_page_in_start();
 
 	// Most important ones first
 	ship_page_in();
@@ -58,9 +56,7 @@ void level_page_in()
 		message_pagein_mission_messages();
 	}
 
-	if(!(Game_mode & GM_STANDALONE_SERVER)){
-		bm_page_in_stop();
-	}
+	bm_page_in_stop();
 
 	mprintf(( "Ending level bitmap paging...\n" ));
 

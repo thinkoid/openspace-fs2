@@ -18,7 +18,6 @@
 #include "missioncampaign.h"		// for mission/campaign stuff
 #include "scoring.h"             // for scoring/stats
 #include "keycontrol.h"				// for button_info
-#include "multi_options.h"
 
 
 #define CALLSIGN_LEN					28		//	shortened from 32 to allow .plr to be attached without exceeding MAX_FILENAME_LEN
@@ -70,6 +69,42 @@
 #endif  // RELEASE_REAL
 
 
+// inert multiplayer option blocks - serialized in the pilot file, so they must keep their
+// exact retail byte layout (formerly network/multi_options.h). Never used as anything but data.
+// BE AWARE : any changes made to this structure will mess with the player file. it will have to be upped!!!!
+typedef struct multi_local_options {
+	int flags;																	// misc player options
+	int obj_update_level;													// one off the flags above indicating how often to refresh objects
+} multi_local_options;
+
+// BE AWARE : any changes made to this structure will mess with the player file. it will have to be upped!!!!
+typedef struct multi_server_options {
+	// misc settings and flags
+	ubyte squad_set;															// see MSO_SQUAD_*
+	ubyte endgame_set;														// see MSO_END_*
+	int flags;																	// see MSO_FLAG_*
+
+	// default respawn count
+	uint respawn;
+
+	// default max # of observers
+	ubyte max_observers;
+
+	// default skill level
+	ubyte skill_level;
+
+	// voice settings
+	ubyte voice_qos;															// voice quality of sound
+	int voice_token_wait;													// min time between token gets for a given player
+	int voice_record_time;													// max duration for voice recording (in ms)
+
+	// time limit
+	fix mission_time_limit;													// mission time limit (set to -1 for no limit)
+
+	// kill limit
+	int kill_limit;															// kill limit for a furball mission
+} multi_server_options;
+
 typedef struct campaign_stats {
 	char campaign_name[MAX_FILENAME_LEN+1];	// insurance
 	scoring_struct stats;
@@ -111,7 +146,7 @@ typedef struct player {
 	int				objnum;										// object number for this player
 	button_info		bi;												// structure that holds bit vectors for button presses
 	control_info	ci;											// control info structure for this player
-	scoring_struct stats;										// scoring and stats info for the player (points to multi_stats or single_stats)	
+	scoring_struct stats;										// scoring and stats info for the player
 	
 	int				friendly_hits;								//	Number of times hit a friendly ship this mission.
 	float				friendly_damage;							//	Total friendly damage done in mission.  Diminishes over time.
@@ -171,8 +206,8 @@ typedef struct player {
 	int				threat_flags;								// threat flags
 	int				auto_advance;								// auto-advance through briefing?
 
-	multi_local_options m_local_options;					// options for local player in multiplayer mode (ignore for single player pilots)
-	multi_server_options m_server_options;					// options for netgame host/server in multiplayer mode
+	multi_local_options m_local_options;					// inert multiplayer options block - kept only for pilot file compatibility
+	multi_server_options m_server_options;					// inert multiplayer options block - kept only for pilot file compatibility
 
 	int				insignia_texture;							// player's insignia bitmap (or -1 if none). should correspond to squad filename
 																		// NOTE : this bitmap is in TEXTURE format. do not try to use this bitmap to 

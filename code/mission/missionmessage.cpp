@@ -18,14 +18,11 @@
 #include "gamesnd.h"
 #include "sound.h"
 #include "freespace.h"
-#include "multi.h"
-#include "multimsgs.h"
 #include "gamesequence.h"
 #include "animplay.h"
 #include "controlsconfig.h"
 #include "audiostr.h"
 #include "hudsquadmsg.h"
-#include "multiutil.h"
 #include "hud.h"
 #include "subsysdamage.h"
 #include "emp.h"
@@ -298,21 +295,10 @@ void message_parse( )
 	required_string("$Name:");
 	stuff_string(msgp->name, F_NAME, NULL);
 
-	// team
-	msgp->multi_team = -1;
+	// team filter is only meaningful in multiplayer TvT -- parse and discard
 	if(optional_string("$Team:")){
 		int mt;
 		stuff_int(&mt);
-
-		// keep it real
-		if((mt < 0) || (mt >= 2)){
-			mt = -1;
-		}
-
-		// only bother with filters if multiplayer and TvT
-		if(Fred_running || ((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_TEAM)) ){
-			msgp->multi_team = mt;
-		}
 	}
 
 	// backwards compatibility for old fred missions - all new ones should use $MessageNew
@@ -1349,47 +1335,8 @@ int message_get_persona( ship *shipp )
 	return 0;
 }
 
-// given a message id#, should it be filtered for me?
-int message_filter_multi(int id)
-{
-	// not multiplayer
-	if(!(Game_mode & GM_MULTIPLAYER)){
-		return 0;
-	}
-
-	// bogus
-	if((id < 0) || (id >= Num_messages)){
-		mprintf(("Filtering bogus mission message!\n"));
-		return 1;
-	}
-
-	// builtin messages
-	if(id < Num_builtin_messages){
-	}
-	// mission-specific messages
-	else {
-		// not team filtered
-		if(Messages[id].multi_team < 0){
-			return 0;
-		}
-
-		// not TvT
-		if(!(Netgame.type_flags & NG_TYPE_TEAM)){
-			return 0;
-		}
-
-		// is this for my team?
-		if((Net_player != NULL) && (Net_player->p_info.team != Messages[id].multi_team)){
-			mprintf(("Filtering team-based mission message!\n"));
-			return 1;
-		}
-	}		
-	
-	return 0;
-}
-
-// send_unique_to_player sends a mission unique (specific) message to the player (possibly a multiplayer
-// person).  These messages are *not* the builtin messages
+// send_unique_to_player sends a mission unique (specific) message to the player.
+// These messages are *not* the builtin messages
 void message_send_unique_to_player( char *id, void *data, int m_source, int priority, int group, int delay )
 {
 	int i, source;
@@ -1420,8 +1367,8 @@ void message_send_unique_to_player( char *id, void *data, int m_source, int prio
 					mprintf(("Warning:  Message %d has no persona assigned.\n", i));
 				}
 
-				// get a ship						
-				ship_index = ship_get_random_player_wing_ship( SHIP_GET_NO_PLAYERS, 0.0f, m_persona, 1, Messages[i].multi_team);
+				// get a ship
+				ship_index = ship_get_random_player_wing_ship( SHIP_GET_NO_PLAYERS, 0.0f, m_persona, 1 );
 
 				// if the ship_index is -1, then make the message come from Terran command
 				if ( ship_index == -1 ) {
@@ -1443,26 +1390,14 @@ void message_send_unique_to_player( char *id, void *data, int m_source, int prio
 				Assert( !(Ship_info[shipp->ship_info_index].flags & SIF_NOT_FLYABLE) );		// get allender or alan
 			}
 
-			// not multiplayer or this message is for me, then queue it
-			// if ( !(Game_mode & GM_MULTIPLAYER) || ((multi_target == -1) || (multi_target == MY_NET_PLAYER_NUM)) ){
-
-			// maybe filter it out altogether
-			if(!message_filter_multi(i)){
-				message_queue_message( i, priority, MESSAGE_TIME_ANYTIME, who_from, source, group, delay );
-			}
+			message_queue_message( i, priority, MESSAGE_TIME_ANYTIME, who_from, source, group, delay );
 
 			// record to the demo if necessary
 			if(Game_mode & GM_DEMO_RECORD){
 				demo_POST_unique_message(id, who_from, m_source, priority);
 			}
-			// }
 
-			// send a message packet to a player if destined for everyone or only a specific person
-			if ( MULTIPLAYER_MASTER ){
-				send_mission_message_packet( i, who_from, priority, MESSAGE_TIME_SOON, source, -1, -1, -1);
-			}			
-
-			return;		// all done with displaying		
+			return;		// all done with displaying
 		}
 	}
 	nprintf (("messaging", "Couldn't find message id %s to send to player!\n", id ));
@@ -1471,7 +1406,7 @@ void message_send_unique_to_player( char *id, void *data, int m_source, int prio
 // send builtin_to_player sends a message (from messages.tbl) to the player.  These messages are
 // the generic infomrational type messages.  The have priorities like misison specific messages,
 // and use a timing to tell how long we should wait before playing this message
-void message_send_builtin_to_player( int type, ship *shipp, int priority, int timing, int group, int delay, int multi_target, int multi_team_filter )
+void message_send_builtin_to_player( int type, ship *shipp, int priority, int timing, int group, int delay )
 {
 	int i, persona_index;
 	int source;	
@@ -1533,33 +1468,11 @@ void message_send_builtin_to_player( int type, ship *shipp, int priority, int ti
 				who_from = SUPPORT_NAME;
 			}
 
-			// determine what we should actually do with this dang message.  In multiplayer, we must
-			// deal with the fact that this message might not get played on my machine if I am a server
+			message_queue_message( i, priority, timing, who_from, source, group, delay, type );
 
-			// not multiplayer or this message is for me, then queue it
-			if ( !(Game_mode & GM_MULTIPLAYER) || ((multi_target == -1) || (multi_target == MY_NET_PLAYER_NUM)) ){
-
-				// if this filter matches mine
-				if( (multi_team_filter < 0) || !(Netgame.type_flags & NG_TYPE_TEAM) || ((Net_player != NULL) && (Net_player->p_info.team == multi_team_filter)) ){
-					message_queue_message( i, priority, timing, who_from, source, group, delay, type );
-
-					// post a builtin message
-					if(Game_mode & GM_DEMO_RECORD){
-						demo_POST_builtin_message(type, shipp, priority, timing);
-					}
-				}
-			}
-
-			// send a message packet to a player if destined for everyone or only a specific person
-			if ( MULTIPLAYER_MASTER ) {
-				// only send a message if it is of a particular type
-				if(multi_target == -1){
-					if(multi_message_should_broadcast(type)){				
-						send_mission_message_packet( i, who_from, priority, timing, source, type, -1, multi_team_filter );
-					}
-				} else {
-					send_mission_message_packet( i, who_from, priority, timing, source, type, multi_target, multi_team_filter );
-				}
+			// post a builtin message
+			if(Game_mode & GM_DEMO_RECORD){
+				demo_POST_builtin_message(type, shipp, priority, timing);
 			}
 
 			return;		// all done with displaying

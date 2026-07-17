@@ -26,15 +26,12 @@
 #define BRIEF_BUTTON_SCROLL_DOWN		5
 #define BRIEF_BUTTON_SKIP_TRAINING	6
 #define BRIEF_BUTTON_PAUSE				7
-#define BRIEF_BUTTON_MULTI_LOCK		8
-#define BRIEF_BUTTON_EXIT_LOOP		9
+#define BRIEF_BUTTON_EXIT_LOOP		8
 
 
 #define NUM_BREIFING_REGIONS	(NUM_COMMON_REGIONS + 8)
 
-extern int	Brief_multitext_bitmap;	// bitmap for multiplayer chat window
 extern int	Brief_background_bitmap;
-extern UI_INPUTBOX	Common_multi_text_inputbox[3];
 
 // Sounds
 #define		BRIEFING_MUSIC_DELAY	2500		// 650 ms delay before breifing music starts

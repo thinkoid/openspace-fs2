@@ -23,7 +23,6 @@
 #include "bmpman.h"
 #include "3d.h"
 #include "linklist.h"
-#include "multi.h"
 #include "emp.h"
 
 
@@ -321,10 +320,7 @@ int hud_abort_lock()
 
 	// if the target is friendly, don't lock!
 	if ( hud_team_matches_filter(Player_ship->team, target_team)) {
-		// if we're in multiplayer dogfight, ignore this
-		if(!((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_DOGFIGHT))){
-			return 1;
-		}
+		return 1;
 	}
 
 	return 0;
@@ -420,11 +416,6 @@ void hud_update_lock_indicator(float frametime)
 	weapon_info	*wip;
 	vector		lock_world_pos;
 
-	// if i'm a multiplayer observer, bail here
-	if((Game_mode & GM_MULTIPLAYER) && ((Net_player->flags & NETINFO_FLAG_OBSERVER) || (Player_obj->type == OBJ_OBSERVER)) ){
-		return;
-	}
-
 	Assert(Player_ai->target_objnum != -1);
 
 	// be sure to unset this flag, then possibly set later in this function so that
@@ -508,7 +499,7 @@ void hud_update_lock_indicator(float frametime)
 		}
 	}
 	else {
-		Player_ai->ai_flags |= AIF_SEEK_LOCK;		// set this flag so multiplayer's properly track lock on other ships
+		Player_ai->ai_flags |= AIF_SEEK_LOCK;
 		if ( Missile_lock_loop != -1 && snd_is_playing(Missile_lock_loop) ) {
 			snd_stop(Missile_lock_loop);
 			Missile_lock_loop = -1;

@@ -14,7 +14,6 @@
 
 #include "math.h"
 
-#define	GM_MULTIPLAYER					(1 << 0)
 #define	GM_NORMAL						(1 << 1)
 #define	GM_DEAD_DIED					(1 << 2)				//	Died, waiting to blow up.
 #define	GM_DEAD_BLEW_UP				(1 << 3)				//	Blew up.
@@ -23,7 +22,6 @@
 
 #define	GM_DEAD							(GM_DEAD_DIED | GM_DEAD_BLEW_UP | GM_DEAD_ABORTED)
 
-#define  GM_STANDALONE_SERVER			(1 << 8)
 #define	GM_STATS_TRANSFER				(1 << 9)				// in the process of stats transfer
 #define	GM_CAMPAIGN_MODE				(1 << 10)			// are we currently in a campaign.
 
@@ -97,7 +95,6 @@ extern angles	Viewer_slew_angles;
 extern vei		Viewer_external_info;
 extern vci		Viewer_chase_info;
 
-extern int Is_standalone;
 extern int Interface_framerate;				// show interface framerate during flips
 extern int Interface_last_tick;				// last timer tick on flip
 

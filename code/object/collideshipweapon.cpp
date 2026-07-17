@@ -16,9 +16,6 @@
 #include "hudwingmanstatus.h"
 #include "timer.h"
 #include "freespace.h"
-#include "multi.h"
-#include "multiutil.h"
-#include "multimsgs.h"
 
 
 extern float ai_endangered_time(object *ship_objp, object *weapon_objp);
@@ -54,7 +51,6 @@ void update_danger_weapon(object *ship_obj, object *weapon_obj)
 }
 
 // function to actually deal with weapon-ship hit stuff.  separated from check_collision routine below
-// because of multiplayer reasons.
 void ship_weapon_do_hit_stuff(object *ship_obj, object *weapon_obj, vector *world_hitpos, vector *hitpos, int quadrant_num, int submodel_num)
 {
 	weapon	*wp = &Weapons[weapon_obj->instance];
@@ -70,17 +66,7 @@ void ship_weapon_do_hit_stuff(object *ship_obj, object *weapon_obj, vector *worl
 
 	// deterine whack whack
 	float		blast = wip->mass;
-	vm_vec_copy_scale(&force, &weapon_obj->phys_info.vel, blast );	
-
-	// send player pain packet
-	if ( (MULTIPLAYER_MASTER) && !(shipp->flags & SF_DYING) ){
-		int np_index = multi_find_player_by_object(ship_obj);
-
-		// if this is a player ship
-		if((np_index >= 0) && (np_index != MY_NET_PLAYER_NUM) && (wip->subtype == WP_LASER)){
-			send_player_pain_packet(&Net_players[np_index], wp->weapon_info_index, wip->damage * weapon_get_damage_scale(wip, weapon_obj, ship_obj), &force, hitpos);
-		}
-	}	
+	vm_vec_copy_scale(&force, &weapon_obj->phys_info.vel, blast );
 
 	ship_apply_local_damage(ship_obj, weapon_obj, world_hitpos, damage, quadrant_num, CREATE_SPARKS, submodel_num);
 
@@ -94,11 +80,8 @@ void ship_weapon_do_hit_stuff(object *ship_obj, object *weapon_obj, vector *worl
 
 	// Apply a wack.  This used to be inside of ship_hit... duh! Ship_hit
 	// is to apply damage, not physics, so I moved it here.
-	// don't apply whack for multiplayer_client from laser - will occur with pain packet
-	if( !((wip->subtype == WP_LASER) && MULTIPLAYER_CLIENT) ) {		
-		// apply a whack		
-		ship_apply_whack( &force, hitpos, ship_obj );
-	}
+	// apply a whack
+	ship_apply_whack( &force, hitpos, ship_obj );
 }
 
 extern int Framecount;

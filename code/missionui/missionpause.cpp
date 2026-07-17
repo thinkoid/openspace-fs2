@@ -9,7 +9,6 @@
 
 #include "missionpause.h"
 #include "ui.h"
-#include "multi_pause.h"
 #include "popup.h"
 #include "2d.h"
 #include "bmpman.h"
@@ -43,15 +42,6 @@ int Please_wait_coords[GR_NUM_RESOLUTIONS][4] = {
 	}	
 };
 
-char *Pause_multi_fname[GR_NUM_RESOLUTIONS] = {
-	"MPPause",
-	"2_MPPause"
-};
-char *Pause_multi_mask[GR_NUM_RESOLUTIONS] = {
-	"MPPause-m",
-	"2_MPPause-m"
-};
-
 // pause window objects
 UI_WINDOW Pause_win;
 UI_CHECKBOX Pause_single_step;
@@ -65,7 +55,7 @@ UI_BUTTON Pause_continue;
 // if we're already paused
 int Paused = 0;
 
-// background screen (for the chatbox)
+// background screen
 int Pause_background_bitmap = -1;
 
 // saved background screen
@@ -88,7 +78,7 @@ extern int game_single_step;
 //
 
 // initialize the pause screen
-void pause_init(int multi)
+void pause_init()
 {
 	// if we're already paused. do nothing
 	if ( Paused ) {
@@ -98,90 +88,63 @@ void pause_init(int multi)
 	// pause all beam weapon sounds
 	beam_pause_sounds();
 
-	if(!(Game_mode & GM_STANDALONE_SERVER)){
-		Pause_saved_screen = gr_save_screen();
+	Pause_saved_screen = gr_save_screen();
 
-		// pause all game music
-		audiostream_pause_all();
+	// pause all game music
+	audiostream_pause_all();
 
-		//JAS: REMOVED CALL TO SET INTERFACE PALETTE TO GET RID OF SCREEN CLEAR WHEN PAUSING
-		//common_set_interface_palette();  // set the interface palette
-		Pause_win.create(0, 0, gr_screen.max_w, gr_screen.max_h, 0);	
+	//JAS: REMOVED CALL TO SET INTERFACE PALETTE TO GET RID OF SCREEN CLEAR WHEN PAUSING
+	//common_set_interface_palette();  // set the interface palette
+	Pause_win.create(0, 0, gr_screen.max_w, gr_screen.max_h, 0);
 
-		if (multi) {
-			Pause_win.set_mask_bmap(Pause_multi_mask[gr_screen.res]);
-			Pause_background_bitmap = bm_load(Pause_multi_fname[gr_screen.res]);
-
-			multi_pause_init(&Pause_win);		
-		} else {
-			Pause_background_bitmap = bm_load(Pause_bmp_name[gr_screen.res]);
-		}
-	} else {
-		multi_pause_init(NULL);
-	}
+	Pause_background_bitmap = bm_load(Pause_bmp_name[gr_screen.res]);
 
 	Paused = 1;
 }
 
-// pause do frame - will handle running multiplayer operations if necessary
-void pause_do(int multi)
+// pause do frame
+void pause_do()
 {
 	int k;
 	char *pause_str = XSTR("Paused", 767);
 	int str_w, str_h;
 
-	if(Game_mode & GM_STANDALONE_SERVER){
-		multi_pause_do();
-	} else {		
-		//	RENDER A GAME FRAME HERE AS THE BACKGROUND
-		gr_restore_screen(Pause_saved_screen);
-		if (Pause_background_bitmap >= 0) {
-			gr_set_bitmap(Pause_background_bitmap);
-			if(multi){
-				gr_bitmap(0,0);
-			} else {
-				// draw the bitmap
-				gr_bitmap(Please_wait_coords[gr_screen.res][0], Please_wait_coords[gr_screen.res][1]);
+	//	RENDER A GAME FRAME HERE AS THE BACKGROUND
+	gr_restore_screen(Pause_saved_screen);
+	if (Pause_background_bitmap >= 0) {
+		gr_set_bitmap(Pause_background_bitmap);
 
-				// draw "Paused" on it
-				gr_set_color_fast(&Color_normal);
-				gr_set_font(FONT2);
-				gr_get_string_size(&str_w, &str_h, pause_str);
-				gr_string((gr_screen.max_w - str_w) / 2, (gr_screen.max_h - str_h) / 2, pause_str);
-				gr_set_font(FONT1);
-			}
-		}
-	
-		// the multi paused screen will do its own window processing
-		if (multi) {
-			multi_pause_do();
-		}
-		// otherwise process the ui window here
-		else {
-			k = Pause_win.process() & ~KEY_DEBUGGED;
-			switch (k) {			
-			case KEY_ESC:
-			case KEY_PAUSE:
-				gameseq_post_event(GS_EVENT_PREVIOUS_STATE);		
-				break;
-			}	// end switch
-		}
-	
-		// draw the background window
-		Pause_win.draw();		
+		// draw the bitmap
+		gr_bitmap(Please_wait_coords[gr_screen.res][0], Please_wait_coords[gr_screen.res][1]);
 
-		// a very unique case where we shouldn't be doing the page flip because we're inside of popup code
-		if(!popup_active()){
-			gr_flip();
-		} else {
-			// this should only be happening in a very unique multiplayer case
-			Assert(Game_mode & GM_MULTIPLAYER);
-		}
+		// draw "Paused" on it
+		gr_set_color_fast(&Color_normal);
+		gr_set_font(FONT2);
+		gr_get_string_size(&str_w, &str_h, pause_str);
+		gr_string((gr_screen.max_w - str_w) / 2, (gr_screen.max_h - str_h) / 2, pause_str);
+		gr_set_font(FONT1);
+	}
+
+	// process the ui window here
+	k = Pause_win.process() & ~KEY_DEBUGGED;
+	switch (k) {
+	case KEY_ESC:
+	case KEY_PAUSE:
+		gameseq_post_event(GS_EVENT_PREVIOUS_STATE);
+		break;
+	}	// end switch
+
+	// draw the background window
+	Pause_win.draw();
+
+	// a very unique case where we shouldn't be doing the page flip because we're inside of popup code
+	if(!popup_active()){
+		gr_flip();
 	}
 }
 
 // close the pause screen
-void pause_close(int multi)
+void pause_close()
 {
 	// if we're not paused - do nothing
 	if ( !Paused ) {
@@ -192,24 +155,17 @@ void pause_close(int multi)
 	beam_unpause_sounds();
 
 	// deinit stuff
-	if(Game_mode & GM_STANDALONE_SERVER){
-		multi_pause_close();
-	} else {
-		gr_free_screen(Pause_saved_screen);	
+	gr_free_screen(Pause_saved_screen);
 
-		if (Pause_background_bitmap){
-			bm_unload(Pause_background_bitmap);
-		}
-
-		Pause_win.destroy();		
-		game_flush();
-		if (multi) {
-			multi_pause_close();
-		}
-
-		// unpause all the music
-		audiostream_unpause_all();		
+	if (Pause_background_bitmap){
+		bm_unload(Pause_background_bitmap);
 	}
+
+	Pause_win.destroy();
+	game_flush();
+
+	// unpause all the music
+	audiostream_unpause_all();
 
 	Paused = 0;
 }

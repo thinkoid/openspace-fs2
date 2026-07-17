@@ -36,7 +36,6 @@ angles	Viewer_slew_angles;			//	Angles of viewer relative to forward.
 vei		Viewer_external_info;		//	Viewer angles to ship in external view.
 vci		Viewer_chase_info;			// View chase camera information
 
-int Is_standalone;
 int Rand_count;
 
 int Interface_last_tick = -1;			// last timer tick on flip

@@ -17,9 +17,7 @@
 #include "missionparse.h"
 #include "neb.h"
 #include "neblightning.h"
-#include "multi.h"
 #include "emp.h"
-#include "multimsgs.h"
 
 // ------------------------------------------------------------------------------------------------------
 // NEBULA LIGHTNING DEFINES/VARS
@@ -605,11 +603,6 @@ void nebl_process()
 	// non-nebula mission
 	if(!(The_mission.flags & MISSION_FLAG_FULLNEB)){
 		return;
-	}		
-	
-	// non servers in multiplayer don't do this
-	if((Game_mode & GM_MULTIPLAYER) && !MULTIPLAYER_MASTER){
-		return;
 	}
 
 	// if there's no chosen storm
@@ -781,11 +774,6 @@ void nebl_bolt(int type, vector *start, vector *strike)
 	// setup the rest of the data	
 	bolt->used = 1;	
 	bolt->width = bi->b_poly_pct * bolt_len;
-
-	// if i'm a multiplayer master, send a bolt packet
-	if(MULTIPLAYER_MASTER){
-		send_lightning_packet(type, start, strike);
-	}
 }
 
 // get the current # of active lightning bolts

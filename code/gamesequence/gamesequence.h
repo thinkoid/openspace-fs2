@@ -36,7 +36,6 @@
 #define GS_EVENT_START_BRIEFING					15		// go to the briefing for the current mission
 #define GS_EVENT_DEBUG_PAUSE_GAME				16
 #define GS_EVENT_HUD_CONFIG						17		// start the HUD configuration screen
-#define GS_EVENT_MULTI_JOIN_GAME					18		// start multiplayer join game screen
 #define GS_EVENT_CONTROL_CONFIG					19		// get user to choose what type of controller to config
 #define GS_EVENT_EVENT_DEBUG						20		 // an event debug trace scroll list display screen
 #define GS_EVENT_WEAPON_SELECTION				21		// Do weapon loadout 
@@ -49,29 +48,17 @@
 #define GS_EVENT_SHOW_GOALS						28		// Show the goal status screen
 #define GS_EVENT_HOTKEY_SCREEN					29		// Show the hotkey assignment screen
 #define GS_EVENT_VIEW_MEDALS						30		// Go to the View Medals screen
-#define GS_EVENT_MULTI_HOST_SETUP				31		// host setup for multiplayer
-#define GS_EVENT_MULTI_CLIENT_SETUP				32		// client setup for multiplayer
 #define GS_EVENT_DEBRIEF							33		// go to debriefing
 #define GS_EVENT_GOTO_VIEW_CUTSCENES_SCREEN  34    // go to the demo management screen
-#define GS_EVENT_MULTI_STD_WAIT					35    // standalone wait state
-#define GS_EVENT_STANDALONE_MAIN				   36    // the main do-nothing state of the standalone
-#define GS_EVENT_MULTI_PAUSE				      37    // pause your multiplayer game
-#define GS_EVENT_TEAM_SELECT						38		// team selection for multiplayer
 #define GS_EVENT_TRAINING_PAUSE					39		// pause game while training message is displayed
-#define GS_EVENT_INGAME_PRE_JOIN				   40    // go to ship selection screen for ingame join
 #define GS_EVENT_PLAYER_WARPOUT_START			41		// player hit 'j' to warp out
 #define GS_EVENT_PLAYER_WARPOUT_START_FORCED 42		// player is being forced out of mission no matter what
 #define GS_EVENT_PLAYER_WARPOUT_STOP			43		// player hit 'esc' or something to cancel warp out
 #define GS_EVENT_PLAYER_WARPOUT_DONE_STAGE1	44		// player ship got up to speed
 #define GS_EVENT_PLAYER_WARPOUT_DONE_STAGE2	45		// player ship got through the warp effect
 #define GS_EVENT_PLAYER_WARPOUT_DONE			46		// warp effect went away
-#define GS_EVENT_STANDALONE_POSTGAME			47	   // debriefing, etc
 #define GS_EVENT_INITIAL_PLAYER_SELECT			48		// initial screen where player selects from multi/single player pilots
 #define GS_EVENT_GAME_INIT                   49
-#define GS_EVENT_MULTI_MISSION_SYNC          50    // sychronize/transfer/load any mission specific data in multiplayer
-#define GS_EVENT_MULTI_START_GAME				51		// immediately before the create game screen for the host to set the game variables
-#define GS_EVENT_MULTI_HOST_OPTIONS				52		// options the host can set while in the create game scree
-#define GS_EVENT_MULTI_DOGFIGHT_DEBRIEF		53		// multiplayer furball debriefing screen (replaces normal debriefing)
 #define GS_EVENT_CAMPAIGN_ROOM					54
 #define GS_EVENT_CMD_BRIEF							55		// switch to command briefing screen
 #define GS_EVENT_TOGGLE_GLIDE						56		//	GS_EVENT_TOGGLE_GLIDE
@@ -105,7 +92,6 @@ extern char *GS_event_text[];		// text description for the GS_EVENT_* #defines a
 #define GS_STATE_SHIP_SELECT						12
 #define GS_STATE_DEBUG_PAUSED						13
 #define GS_STATE_HUD_CONFIG						14
-#define GS_STATE_MULTI_JOIN_GAME					15
 #define GS_STATE_CONTROL_CONFIG					16
 #define GS_STATE_WEAPON_SELECT					17
 #define GS_STATE_MISSION_LOG_SCROLLBACK		18
@@ -116,23 +102,11 @@ extern char *GS_event_text[];		// text description for the GS_EVENT_* #defines a
 #define GS_STATE_SHOW_GOALS						23
 #define GS_STATE_HOTKEY_SCREEN					24
 #define GS_STATE_VIEW_MEDALS						25		// Go to the View Medals screen
-#define GS_STATE_MULTI_HOST_SETUP				26		// state where host sets up multiplayer game
-#define GS_STATE_MULTI_CLIENT_SETUP				27		// client setup for multiplayer game
 #define GS_STATE_DEBRIEF							28
 #define GS_STATE_VIEW_CUTSCENES		         29
-#define GS_STATE_MULTI_STD_WAIT					30
-#define GS_STATE_STANDALONE_MAIN				   31
-#define GS_STATE_MULTI_PAUSED				      32
-#define GS_STATE_TEAM_SELECT						33
 #define GS_STATE_TRAINING_PAUSED					34		 // game is paused while training msg is being read.
-#define GS_STATE_INGAME_PRE_JOIN				   35		 // go to ship selection screen for ingame join
 #define GS_STATE_EVENT_DEBUG						36		 // an event debug trace scroll list display screen
-#define GS_STATE_STANDALONE_POSTGAME			37		 // debriefing, etc.
 #define GS_STATE_INITIAL_PLAYER_SELECT			38
-#define GS_STATE_MULTI_MISSION_SYNC				39
-#define GS_STATE_MULTI_START_GAME				40
-#define GS_STATE_MULTI_HOST_OPTIONS				41
-#define GS_STATE_MULTI_DOGFIGHT_DEBRIEF		42
 #define GS_STATE_CAMPAIGN_ROOM					43
 #define GS_STATE_CMD_BRIEF							44		// command briefing screen
 #define GS_STATE_RED_ALERT							45		// red alert screen

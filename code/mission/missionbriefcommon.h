@@ -235,7 +235,7 @@ void brief_reset();
 void debrief_reset(); 
 void brief_close_map();
 void brief_init_map();
-void brief_init_screen(int multiplayer_flag);
+void brief_init_screen();
 void brief_render_map(int stage_num, float frametime);
 void brief_set_new_stage(vector *pos, matrix *orient, int time, int stage_num);
 void brief_camera_move(float frametime, int stage_num);

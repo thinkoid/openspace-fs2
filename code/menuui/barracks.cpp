@@ -582,14 +582,12 @@ int barracks_pilot_accepted()
 //	Skill_level = get_default_skill_level();
 
 	// MWA -- I think that we should be writing Cur_pilot here.
-	//write_pilot_file(!is_pilot_multi(Cur_pilot));
 	write_pilot_file( Cur_pilot );
-	
-	// when we store the LastPlayer key, we have to mark it as being single or multiplayer, so we know where to look for him
-	// (since we could have a single and a multiplayer pilot with the same callsign)
-	// we'll distinguish them by putting an M and the end of the multiplayer callsign and a P at the end of a single player
+
+	// when we store the LastPlayer key, we have to mark it as being single player
+	// (retail put an M at the end of a multiplayer callsign and an S at the end of a single player)
 	strcpy(str, Cur_pilot->callsign);
-	strcat(str, is_pilot_multi(Cur_pilot) ? NOX("M") : NOX("S"));
+	strcat(str, NOX("S"));
 	os_config_write_string( NULL, "LastPlayer", str );
 	return 0;
 }
@@ -808,41 +806,27 @@ int barracks_pilot_filter(char *filename)
 void barracks_squad_change_popup()
 {
 	// show a popup
-	popup( PF_USE_AFFIRMATIVE_ICON | PF_NO_NETWORKING, 1, POPUP_OK, XSTR("You cannot change your squadron in Single Player mode.", 1445));
+	popup( PF_USE_AFFIRMATIVE_ICON, 1, POPUP_OK, XSTR("You cannot change your squadron in Single Player mode.", 1445));
 }
 
 
 void barracks_init_player_stuff(int mode)
 {
-	// determine if we should be looking for single or multiplayers at the outset
 	Player_sel_mode = mode;
-	
-	// get the list of pilots based upon whether we're in single or multiplayer mode
+
+	// get the list of pilots
 	Num_pilots = 0;
 	Get_file_list_filter = barracks_pilot_filter;
 
-	// single player specific stuff
-	if (mode == PLAYER_SELECT_MODE_SINGLE) {
-		Num_pilots = cf_get_file_list_preallocated(MAX_PILOTS, Pilots_arr, Pilots, CF_TYPE_SINGLE_PLAYERS, NOX("*.plr"), CF_SORT_TIME);
+	Num_pilots = cf_get_file_list_preallocated(MAX_PILOTS, Pilots_arr, Pilots, CF_TYPE_SINGLE_PLAYERS, NOX("*.plr"), CF_SORT_TIME);
 
-		// disable squad logo switching		
-		Buttons[gr_screen.res][B_SQUAD_PREV_BUTTON].button.hide();
-		Buttons[gr_screen.res][B_SQUAD_PREV_BUTTON].button.disable();
-		Buttons[gr_screen.res][B_SQUAD_PREV_BUTTON].button.set_disabled_action(barracks_squad_change_popup);
-		Buttons[gr_screen.res][B_SQUAD_NEXT_BUTTON].button.hide();
-		Buttons[gr_screen.res][B_SQUAD_NEXT_BUTTON].button.disable();			
-		Buttons[gr_screen.res][B_SQUAD_NEXT_BUTTON].button.set_disabled_action(barracks_squad_change_popup);
-	}
-	// multiplayer specific stuff
-	else {
-		Num_pilots = cf_get_file_list_preallocated(MAX_PILOTS, Pilots_arr, Pilots, CF_TYPE_MULTI_PLAYERS, NOX("*.plr"), CF_SORT_TIME);
-
-		// enable squad logo switching
-		Buttons[gr_screen.res][B_SQUAD_PREV_BUTTON].button.enable();
-		Buttons[gr_screen.res][B_SQUAD_PREV_BUTTON].button.unhide();
-		Buttons[gr_screen.res][B_SQUAD_NEXT_BUTTON].button.enable();
-		Buttons[gr_screen.res][B_SQUAD_NEXT_BUTTON].button.unhide();			
-	}
+	// disable squad logo switching
+	Buttons[gr_screen.res][B_SQUAD_PREV_BUTTON].button.hide();
+	Buttons[gr_screen.res][B_SQUAD_PREV_BUTTON].button.disable();
+	Buttons[gr_screen.res][B_SQUAD_PREV_BUTTON].button.set_disabled_action(barracks_squad_change_popup);
+	Buttons[gr_screen.res][B_SQUAD_NEXT_BUTTON].button.hide();
+	Buttons[gr_screen.res][B_SQUAD_NEXT_BUTTON].button.disable();
+	Buttons[gr_screen.res][B_SQUAD_NEXT_BUTTON].button.set_disabled_action(barracks_squad_change_popup);
 
 	int ranks[MAX_PILOTS];
 
@@ -904,13 +888,9 @@ void barracks_button_pressed(int n)
 		case B_PILOT_SET_ACTIVE_BUTTON:
 			if (barracks_new_pilot_selected()){
 				gamesnd_play_iface(SND_GENERAL_FAIL);
-				
+
 				// throw up a popup telling the player that he should create a pilot first
-				if(Player_sel_mode == PLAYER_SELECT_MODE_SINGLE){
-					popup(PF_USE_AFFIRMATIVE_ICON,1,POPUP_OK,XSTR( "You must create a single player pilot.", 66));
-				} else {
-					popup(PF_USE_AFFIRMATIVE_ICON,1,POPUP_OK,XSTR( "You must create a multi player pilot.", 67));
-				}
+				popup(PF_USE_AFFIRMATIVE_ICON,1,POPUP_OK,XSTR( "You must create a single player pilot.", 66));
 			} else {
 				gamesnd_play_iface(SND_SCROLL);
 			}
@@ -924,11 +904,7 @@ void barracks_button_pressed(int n)
 				gamesnd_play_iface(SND_GENERAL_FAIL);
 
 				// throw up a popup telling the player that he should create a pilot first
-				if(Player_sel_mode == PLAYER_SELECT_MODE_SINGLE){
-					popup(PF_USE_AFFIRMATIVE_ICON,1,POPUP_OK,XSTR( "You must create a single player pilot.", 66));
-				} else {
-					popup(PF_USE_AFFIRMATIVE_ICON,1,POPUP_OK,XSTR( "You must create a multi player pilot.", 67));
-				}
+				popup(PF_USE_AFFIRMATIVE_ICON,1,POPUP_OK,XSTR( "You must create a single player pilot.", 66));
 			}
 			break;
 
@@ -942,54 +918,10 @@ void barracks_button_pressed(int n)
 			barracks_create_new_pilot();
 			break;
 
-		case B_PILOT_CONVERT_BUTTON: {
-#if defined(DEMO) || defined(OEM_BUILD)
-			game_feature_not_in_demo_popup();
-#else
-			char temp[256], *str;
-			char old_pic[256] = "";
-			char old_squad_pic[256] = "";
-			char old_squad[256] = "";
-			int z;
-
-			if (!barracks_new_pilot_selected()) {
-				if (Player_sel_mode == PLAYER_SELECT_MODE_SINGLE)
-					str = XSTR( "multiplayer", 68);
-				else
-					str = XSTR( "single player", 69);
-
-				sprintf(temp, XSTR( "This will overwrite your %s pilot.  Proceed?", 70), str);
-				if (!verify_pilot_file(Cur_pilot->callsign, Player_sel_mode == PLAYER_SELECT_MODE_MULTI)) {
-					z = popup(0, 2, POPUP_CANCEL, POPUP_OK, temp);
-					if (z != 1)
-						break;
-				}
-
-				strcpy(old_pic, Cur_pilot->image_filename);
-				strcpy(old_squad_pic, Cur_pilot->squad_filename);
-				strcpy(old_squad, Cur_pilot->squad_name);
-				init_new_pilot(Cur_pilot, 0);
-				strcpy(Cur_pilot->image_filename, old_pic);
-				strcpy(Cur_pilot->squad_filename, old_squad_pic);
-				strcpy(Cur_pilot->squad_name, old_squad);
-				if (Player_sel_mode == PLAYER_SELECT_MODE_SINGLE) {
-					Cur_pilot->flags |= PLAYER_FLAGS_IS_MULTI;
-					write_pilot_file();
-					barracks_init_player_stuff(PLAYER_SELECT_MODE_MULTI);
-
-				} else {
-					write_pilot_file();
-					barracks_init_player_stuff(PLAYER_SELECT_MODE_SINGLE);
-				}
-
-				gamesnd_play_iface(SND_USER_SELECT);
-
-			} else {
-				gamesnd_play_iface(SND_GENERAL_FAIL);
-			}
-#endif
+		case B_PILOT_CONVERT_BUTTON:
+			// single/multiplayer pilot conversion is gone from this build
+			gamesnd_play_iface(SND_GENERAL_FAIL);
 			break;
-		}
 
 		case B_PILOT_CREATE_BOTTON:
 			Clone_flag = 0;
@@ -1020,21 +952,11 @@ void barracks_button_pressed(int n)
 			break;
 
 		case B_PILOT_SINGLE_MODE_BUTTON:
-			if (Player_sel_mode != PLAYER_SELECT_MODE_SINGLE) {
-				gamesnd_play_iface(SND_USER_SELECT);
-				barracks_init_player_stuff(PLAYER_SELECT_MODE_SINGLE);
-			}						
+			// already in single player mode
 			break;
 
 		case B_PILOT_MULTI_MODE_BUTTON:
-#if defined(DEMO) || defined(OEM_BUILD) // not for FS2_DEMO
-			game_feature_not_in_demo_popup();
-#else
-			if (Player_sel_mode != PLAYER_SELECT_MODE_MULTI) {
-				gamesnd_play_iface(SND_USER_SELECT);
-				barracks_init_player_stuff(PLAYER_SELECT_MODE_MULTI);
-			}
-#endif
+			// multiplayer is gone from this build
 			break;
 	}
 }
@@ -1045,17 +967,12 @@ void barracks_display_pilot_callsigns(int prospective_pilot)
 	int y = 0;
 	int cur_pilot_idx = List_scroll_offset;
 
-	int multi = 0;
-	if (Player_sel_mode == PLAYER_SELECT_MODE_MULTI) {
-		multi = 1;
-	}
-
 	int font_height = gr_get_font_height();
 	while (y + font_height <= Barracks_list_coords[gr_screen.res][BARRACKS_H_COORD]) {
 		if (cur_pilot_idx >= Num_pilots)
 			break;
 
-		if (!stricmp(Cur_pilot->callsign, Pilots[cur_pilot_idx]) && (is_pilot_multi(Cur_pilot) == multi)) {
+		if (!stricmp(Cur_pilot->callsign, Pilots[cur_pilot_idx])) {
 			if ((cur_pilot_idx == Selected_line) || (cur_pilot_idx == prospective_pilot)) {
 				gr_set_color_fast(&Color_text_active_hi);
 			} else {
@@ -1176,16 +1093,9 @@ void barracks_accept_new_pilot_callsign()
 	
 	// again, make sure we set his flags correctly to ensure that he gets saved to the proper directory and gets
 	// displayed correctly
-	if (Player_sel_mode == PLAYER_SELECT_MODE_SINGLE) {
-		Cur_pilot->flags &= ~(PLAYER_FLAGS_IS_MULTI);
-	} else {
-		Cur_pilot->flags |= PLAYER_FLAGS_IS_MULTI;
-		Cur_pilot->stats.flags |= STATS_FLAG_MULTIPLAYER;
-	}
+	Cur_pilot->flags &= ~(PLAYER_FLAGS_IS_MULTI);
 
-	if ( !(Game_mode & GM_STANDALONE_SERVER) ) {
-		write_pilot_file(Cur_pilot);
-	}
+	write_pilot_file(Cur_pilot);
 
 	Selected_line = 0;
 	barracks_new_pilot_selected();
@@ -1219,8 +1129,6 @@ void barracks_draw_pilot_pic()
 // draw squad image and clean up afterwards
 void barracks_draw_squad_pic()
 {
-	char buf[40];
-
 	// draw pilot pic
 	if (Cur_pilot->callsign[0] && (Pic_squad_number >= 0) && (Pic_squad_number < Num_pilot_squad_images)) {
 		if (Pilot_squad_images[Pic_squad_number] >= 0) {
@@ -1230,16 +1138,10 @@ void barracks_draw_squad_pic()
 			gr_set_bitmap(Pilot_squad_images[Pic_squad_number]);
 			gr_bitmap(Barracks_squad_coords[gr_screen.res][BARRACKS_X_COORD], Barracks_squad_coords[gr_screen.res][BARRACKS_Y_COORD]);
 			Palman_allow_any_color = 0;
-
-			// print number of current squad pic
-			if(Player_sel_mode != PLAYER_SELECT_MODE_SINGLE){
-				sprintf(buf,XSTR( "%d of %d", 71), Pic_squad_number+1, Num_pilot_squad_images);
-				gr_printf(Barracks_squad_number_coords[gr_screen.res][BARRACKS_X_COORD], Barracks_squad_number_coords[gr_screen.res][BARRACKS_Y_COORD], buf);
-			}
 		}
 	} else {
 		Pic_squad_number = -1;
-	}	
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -1312,19 +1214,10 @@ void barracks_init()
 	Cur_pilot = &Players[Player_num];
 
 	// disable squad logo selection buttons in single player
-	if(!(Cur_pilot->flags & PLAYER_FLAGS_IS_MULTI)){
-		// squad logo picture buttons		
-		Buttons[gr_screen.res][B_SQUAD_PREV_BUTTON].button.hide();
-		Buttons[gr_screen.res][B_SQUAD_PREV_BUTTON].button.disable();
-		Buttons[gr_screen.res][B_SQUAD_NEXT_BUTTON].button.hide();
-		Buttons[gr_screen.res][B_SQUAD_NEXT_BUTTON].button.disable();
-	} else {
-		// squad logo picture buttons		
-		Buttons[gr_screen.res][B_SQUAD_PREV_BUTTON].button.enable();
-		Buttons[gr_screen.res][B_SQUAD_PREV_BUTTON].button.unhide();
-		Buttons[gr_screen.res][B_SQUAD_NEXT_BUTTON].button.enable();
-		Buttons[gr_screen.res][B_SQUAD_NEXT_BUTTON].button.unhide();		
-	}
+	Buttons[gr_screen.res][B_SQUAD_PREV_BUTTON].button.hide();
+	Buttons[gr_screen.res][B_SQUAD_PREV_BUTTON].button.disable();
+	Buttons[gr_screen.res][B_SQUAD_NEXT_BUTTON].button.hide();
+	Buttons[gr_screen.res][B_SQUAD_NEXT_BUTTON].button.disable();
 
 	// set up hotkeys for buttons so we draw the correct animation frame when a key is pressed
 	barracks_set_hotkeys(1);
@@ -1345,18 +1238,12 @@ void barracks_init()
 	// init stats
 	barracks_init_stats(&Cur_pilot->stats);
 
-	// disable some buttons for the multiplayer beta and e3 build
-#if defined(MULTIPLAYER_BETA_BUILD) || defined(E3_BUILD) || defined(PRESS_TOUR_BUILD)
+	// disable some buttons for the e3 build
+#if defined(E3_BUILD) || defined(PRESS_TOUR_BUILD)
 	Buttons[gr_screen.res][B_PILOT_CLONE_BUTTON].button.hide();
-	Buttons[gr_screen.res][B_PILOT_CONVERT_BUTTON].button.hide();	
-	Buttons[gr_screen.res][B_PILOT_CLONE_BUTTON].button.disable();	
-	Buttons[gr_screen.res][B_PILOT_CONVERT_BUTTON].button.disable();	
-#endif
-
-	// multiplayer beta build
-#ifdef MULTIPLAYER_BETA_BUILD
-	Buttons[gr_screen.res][B_PILOT_SINGLE_MODE_BUTTON].button.hide();
-	Buttons[gr_screen.res][B_PILOT_SINGLE_MODE_BUTTON].button.disable();
+	Buttons[gr_screen.res][B_PILOT_CONVERT_BUTTON].button.hide();
+	Buttons[gr_screen.res][B_PILOT_CLONE_BUTTON].button.disable();
+	Buttons[gr_screen.res][B_PILOT_CONVERT_BUTTON].button.disable();
 #endif
 
 	// e3 build
@@ -1364,15 +1251,8 @@ void barracks_init()
 	Buttons[gr_screen.res][B_PILOT_MULTI_MODE_BUTTON].button.hide();
 	Buttons[gr_screen.res][B_PILOT_MULTI_MODE_BUTTON].button.disable();
 #endif
-	
-	// base the mode we're in (single or multi) on the status of the currently selected pilot
-#ifdef MULTIPLAYER_BETA_BUILD
-	barracks_init_player_stuff(1);
-#elif defined(E3_BUILD) || defined(PRESS_TOUR_BUILD)
-	barracks_init_player_stuff(0);
-#else
-	barracks_init_player_stuff(is_pilot_multi(Player));	
-#endif
+
+	barracks_init_player_stuff(PLAYER_SELECT_MODE_SINGLE);
 }
 
 // -----------------------------------------------------------------------------
@@ -1434,20 +1314,6 @@ void barracks_do_frame(float frametime)
 					// kill the overlay
 					help_overlay_set_state(BARRACKS_OVERLAY,0);
 				}
-				break;
-
-			case KEY_TAB:  // switch mode (simgle/multi)
-#if defined(DEMO) || defined(OEM_BUILD) // not for FS2_DEMO
-	game_feature_not_in_demo_popup();
-#else
-				if (Player_sel_mode == PLAYER_SELECT_MODE_SINGLE) {
-					barracks_init_player_stuff(PLAYER_SELECT_MODE_MULTI);
-				} else {
-					barracks_init_player_stuff(PLAYER_SELECT_MODE_SINGLE);
-				}
-
-				gamesnd_play_iface(SND_USER_SELECT);
-#endif
 				break;
 
 			case KEY_F1:  // show help overlay
@@ -1544,12 +1410,8 @@ void barracks_do_frame(float frametime)
 	// draw the window	
 	Ui_window.draw();	
 
-	// light up the correct mode button (single or multi)	
-	if (Player_sel_mode == PLAYER_SELECT_MODE_SINGLE) {
-		Buttons[gr_screen.res][B_PILOT_SINGLE_MODE_BUTTON].button.draw_forced(2);
-	} else {
-		Buttons[gr_screen.res][B_PILOT_MULTI_MODE_BUTTON].button.draw_forced(2);
-	}	
+	// light up the single player mode button
+	Buttons[gr_screen.res][B_PILOT_SINGLE_MODE_BUTTON].button.draw_forced(2);
 
 	// write out pilot call signs
 	barracks_display_pilot_callsigns(prospective_pilot);

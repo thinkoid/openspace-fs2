@@ -36,13 +36,11 @@
 #include "missionmessage.h"
 #include "cmeasure.h"
 #include "staticrand.h"
-#include "multimsgs.h"
 #include "afterburner.h"
 #include "hudets.h"
 #include "shipfx.h"
 #include "shiphit.h"
 #include "aibig.h"
-#include "multiutil.h"
 #include "hud.h"
 #include "objcollide.h"
 #include "asteroid.h"
@@ -53,9 +51,7 @@
 #include "localize.h"
 #include "flak.h"
 #include "beam.h"
-#include "multi.h"
 #include "swarm.h"
-#include "multi_team.h"
 #include "awacs.h"
 #include "fvi.h"
 
@@ -1211,11 +1207,7 @@ int set_target_objnum(ai_info *aip, int objnum)
 	} else {
 		aip->previous_target_objnum = aip->target_objnum;
 
-		// ignore this assert if a multiplayer observer
-		if((Game_mode & GM_MULTIPLAYER) && (aip == Player_ai) && (Player_obj->type == OBJ_OBSERVER)){
-		} else {
-			Assert(objnum != Ships[aip->shipnum].objnum);	//	make sure not targeting self
-		}
+		Assert(objnum != Ships[aip->shipnum].objnum);	//	make sure not targeting self
 
 		// if stealth target, init ai_info for stealth
 		if ( (objnum > 0) && is_object_stealth_ship(&Objects[objnum]) ) {
@@ -1248,7 +1240,6 @@ ship_subsys *set_targeted_subsys(ai_info *aip, ship_subsys *new_subsys, int pare
 		if (new_subsys->system_info->type == SUBSYSTEM_ENGINE) {
 			if ( aip != Player_ai ) {
 				ai_select_primary_weapon(&Objects[Ships[aip->shipnum].objnum], &Objects[parent_objnum], WIF_PUNCTURE);
-				ship_primary_changed(&Ships[aip->shipnum]);	// AL: maybe send multiplayer information when AI ship changes primaries
 			}
 		}
 
@@ -3268,11 +3259,6 @@ void ai_do_objects_docked_stuff(object *docker, object *dockee)
 	aip->dock_signature = dockee->signature;
 	other_aip->dock_signature = docker->signature;
 
-	// add multiplayer hook here to deal with docked objects.  We need to only send information
-	// about the object that is docking.  Both flags will get updated.
-	if ( MULTIPLAYER_MASTER )
-		send_ai_info_update_packet( docker, AI_UPDATE_DOCK );
-
 }
 
 // code which is called when objects become undocked. Equivalent of above function.
@@ -3281,12 +3267,6 @@ void ai_do_objects_docked_stuff(object *docker, object *dockee)
 void ai_do_objects_undocked_stuff( object *docker, object *dockee )
 {
 	ai_info *aip, *other_aip;
-
-	// add multiplayer hook here to deal with undocked objects.  Do it before we
-	// do anything else.  We don't need to send info for both objects, since we can find
-	// it be dock_objnum
-	if ( MULTIPLAYER_MASTER )
-		send_ai_info_update_packet( docker, AI_UPDATE_UNDOCK );
 
 	aip = &Ai_info[Ships[docker->instance].ai_index];
 
@@ -3454,14 +3434,6 @@ void ai_form_on_wing(object *objp, object *goal_objp)
 	ai_info	*aip;
 	ship			*shipp;
 	ship_info	*sip;
-
-	// objp == goal_objp sometimes in multiplayer when someone leaves a game -- make a simple
-	// out for this case.
-	if ( Game_mode & GM_MULTIPLAYER ) {
-		if ( objp == goal_objp ) {
-			return;
-		}
-	}
 
 	Assert(objp != goal_objp);		//	Bogus!  Told to form on own's wing!
 
@@ -4587,23 +4559,21 @@ int ai_maybe_fire_afterburner(object *objp, ai_info *aip)
 		return 0;		//	Lowest level never aburners away
 	else  {
 		//	Maybe don't afterburner because of a potential collision with the player.
-		//	If not multiplayer, near player and player in front, probably don't afterburner.
-		if (!(Game_mode & GM_MULTIPLAYER)) {
-			if (Ships[objp->instance].team == Player_ship->team) {
-				float	dist;
+		//	If near player and player in front, probably don't afterburner.
+		if (Ships[objp->instance].team == Player_ship->team) {
+			float	dist;
 
-				dist = vm_vec_dist_quick(&objp->pos, &Player_obj->pos) - Player_obj->radius - objp->radius;
-				if (dist < 150.0f) {
-					vector	v2p;
-					float		dot;
+			dist = vm_vec_dist_quick(&objp->pos, &Player_obj->pos) - Player_obj->radius - objp->radius;
+			if (dist < 150.0f) {
+				vector	v2p;
+				float		dot;
 
-					vm_vec_normalized_dir(&v2p, &Player_obj->pos, &objp->pos);
-					dot = vm_vec_dot(&v2p, &objp->orient.fvec);
+				vm_vec_normalized_dir(&v2p, &Player_obj->pos, &objp->pos);
+				dot = vm_vec_dot(&v2p, &objp->orient.fvec);
 
-					if (dot > 0.0f) {
-						if (dot * dist > 50.0f)
-							return 0;
-					}
+				if (dot > 0.0f) {
+					if (dot * dist > 50.0f)
+						return 0;
 				}
 			}
 		}
@@ -5193,7 +5163,6 @@ void ai_fire_primary_weapon(object *objp)
 			flags = WIF_PUNCTURE;
 		}
 		ai_select_primary_weapon(objp, enemy_objp, flags);
-		ship_primary_changed(shipp);	// AL: maybe send multiplayer information when AI ship changes primaries
 		aip->primary_select_timestamp = timestamp(5 * 1000);	//	Maybe change primary weapon five seconds from now.
 	}
 
@@ -5390,7 +5359,6 @@ void ai_select_secondary_weapon(object *objp, ship_weapon *swp, int priority1 = 
 	}
 
 
-	ship_secondary_changed(&Ships[objp->instance]);	// AL: let multiplayer know if secondary bank has changed
 	// nprintf(("AI", "Ship %s selected weapon %s\n", Ships[objp->instance].ship_name, Weapon_info[swp->secondary_bank_weapons[swp->current_secondary_bank]].name));
 }
 
@@ -5902,11 +5870,8 @@ void set_predicted_enemy_pos(vector *predicted_enemy_pos, object *pobjp, object 
 	range_time = 2.0f;
 
 	//	Make it take longer for enemies to get player's allies in range based on skill level.
-	// but don't bias team v. team missions
-	if ( !((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_TEAM)) ) {
-		if (Ships[pobjp->instance].team != Ships[Player_obj->instance].team) {
-			range_time += In_range_time[Game_skill_level];
-		}
+	if (Ships[pobjp->instance].team != Ships[Player_obj->instance].team) {
+		range_time += In_range_time[Game_skill_level];
 	}
 	//nprintf(("AI", "time enemy in range = %7.3f\n", aip->time_enemy_in_range));
 
@@ -9221,8 +9186,7 @@ object *ai_find_docked_object( object *docker )
 
 
 // function to clean up ai flags, variables, and other interesting information
-// for a ship that was getting repaired.  The how parameter is useful for multiplayer
-// only in that it tells us why the repaired ship is being cleaned up.
+// for a ship that was getting repaired.
 void ai_do_objects_repairing_stuff( object *repaired_objp, object *repair_objp, int how )
 {
 	ai_info *aip, *repair_aip;
@@ -9231,16 +9195,10 @@ void ai_do_objects_repairing_stuff( object *repaired_objp, object *repair_objp, 
 	Assert( repaired_objp->type == OBJ_SHIP);
 	aip = &Ai_info[Ships[repaired_objp->instance].ai_index];
 
-	// multiplayer
 	int p_index;
 	p_index = -1;
-	if(Game_mode & GM_MULTIPLAYER){
-		p_index = multi_find_player_by_object(repaired_objp);		
-	}		
-	else {		
-		if(repaired_objp == Player_obj){
-			p_index = Player_num;
-		}
+	if(repaired_objp == Player_obj){
+		p_index = Player_num;
 	}
 
 	switch( how ) {
@@ -9251,24 +9209,7 @@ void ai_do_objects_repairing_stuff( object *repaired_objp, object *repair_objp, 
 
 		// if this is a player ship, then subtract the repair penalty from this player's score
 		if ( repaired_objp->flags & OF_PLAYER_SHIP ) {
-			if ( !(Game_mode & GM_MULTIPLAYER) ) {
-				Player->stats.m_score -= (int)(REPAIR_PENALTY * scoring_get_scale_factor());			// subtract the penalty
-			} else {
-				/*
-				int pnum;
-
-				// multiplayer game -- find the player, then subtract the score
-				pnum = multi_find_player_by_object( repaired_objp );
-				if ( pnum != -1 ) {
-					Net_players[pnum].player->stats.m_score -= (int)(REPAIR_PENALTY * scoring_get_scale_factor());
-
-					// squad war
-					multi_team_maybe_add_score(-(int)(REPAIR_PENALTY * scoring_get_scale_factor()), Net_players[pnum].p_info.team);
-				} else {
-					nprintf(("Network", "Couldn't find player for ship %s for repair penalty\n", Ships[repaired_objp->instance].ship_name));
-				}
-				*/
-			}
+			Player->stats.m_score -= (int)(REPAIR_PENALTY * scoring_get_scale_factor());			// subtract the penalty
 		}
 		break;
 
@@ -9312,10 +9253,10 @@ void ai_do_objects_repairing_stuff( object *repaired_objp, object *repair_objp, 
 
 			// send appropriate message to player here
 			if ( how == REPAIR_INFO_KILLED ){
-				message_send_builtin_to_player( MESSAGE_SUPPORT_KILLED, NULL, MESSAGE_PRIORITY_HIGH, MESSAGE_TIME_SOON, 0, 0, p_index, -1 );
+				message_send_builtin_to_player( MESSAGE_SUPPORT_KILLED, NULL, MESSAGE_PRIORITY_HIGH, MESSAGE_TIME_SOON, 0, 0);
 			} else {
 				if ( repair_objp ){
-					message_send_builtin_to_player( MESSAGE_REPAIR_ABORTED, &Ships[repair_objp->instance], MESSAGE_PRIORITY_NORMAL, MESSAGE_TIME_SOON, 0, 0, p_index, -1 );
+					message_send_builtin_to_player( MESSAGE_REPAIR_ABORTED, &Ships[repair_objp->instance], MESSAGE_PRIORITY_NORMAL, MESSAGE_TIME_SOON, 0, 0);
 				}
 			}
 		}
@@ -9335,13 +9276,12 @@ void ai_do_objects_repairing_stuff( object *repaired_objp, object *repair_objp, 
 			
 			hud_support_view_stop();			
 
-			message_send_builtin_to_player(MESSAGE_REPAIR_DONE, &Ships[repair_objp->instance], MESSAGE_PRIORITY_LOW, MESSAGE_TIME_SOON, 0, 0, p_index, -1);
+			message_send_builtin_to_player(MESSAGE_REPAIR_DONE, &Ships[repair_objp->instance], MESSAGE_PRIORITY_LOW, MESSAGE_TIME_SOON, 0, 0);
 		}
 		stamp = timestamp((int) ((30 + 10*frand()) * 1000));
 		break;
 
 	case REPAIR_INFO_ONWAY:
-		// need to set the dock_signature so that clients in multiplayer games rearm correctly
 		Assert( repair_objp );
 		aip->dock_signature = repair_objp->signature; 
 		aip->dock_objnum = OBJ_INDEX(repair_objp);
@@ -9391,8 +9331,6 @@ void ai_do_objects_repairing_stuff( object *repaired_objp, object *repair_objp, 
 			Int3();		// bogus type of repair info
 		}
 	}
-
-	multi_maybe_send_repair_info( repaired_objp, repair_objp, how );
 }
 
 //	Cleanup AI stuff for when a ship was supposed to dock with another, but the ship
@@ -9417,7 +9355,7 @@ void ai_cleanup_dock_mode(ai_info *aip, ship *shipp)
 		// MWA -- 3/38/98  Check to see if this guy is queued for a support ship, or there is already
 		// one in the mission
 		if ( mission_is_repair_scheduled(objp) ) {
-			mission_remove_scheduled_repair( objp );			// this function will notify multiplayer clients.
+			mission_remove_scheduled_repair( objp );
 		} else {
 			if ( aip->dock_objnum != -1 )
 				ai_do_objects_repairing_stuff( objp, &Objects[aip->dock_objnum], REPAIR_INFO_ABORT );
@@ -10210,39 +10148,27 @@ void turret_set_next_fire_timestamp(ship_subsys *turret, ai_info *aip)
 
 	wait = Weapon_info[weapon_id].fire_wait * 1000.0f;
 
-	// make side even for team vs. team
-	if ((Game_mode & GM_MULTIPLAYER) && (Netgame.type_flags & NG_TYPE_TEAM)) {
-		// flak guns need to fire more rapidly
-		if (Weapon_info[weapon_id].wi_flags & WIF_FLAK) {
+	// flak guns need to fire more rapidly
+	if (Weapon_info[weapon_id].wi_flags & WIF_FLAK) {
+		if (Ships[aip->shipnum].team == TEAM_FRIENDLY) {
 			wait *= Ship_fire_delay_scale_friendly[Game_skill_level] * 0.5f;
-			wait += (Num_ai_classes - aip->ai_class - 1) * 40.0f;
 		} else {
-			wait *= Ship_fire_delay_scale_friendly[Game_skill_level];
-			wait += (Num_ai_classes - aip->ai_class - 1) * 100.0f;
+			wait *= Ship_fire_delay_scale_hostile[Game_skill_level] * 0.5f;
 		}
-	} else {
-		// flak guns need to fire more rapidly
-		if (Weapon_info[weapon_id].wi_flags & WIF_FLAK) {
-			if (Ships[aip->shipnum].team == TEAM_FRIENDLY) {
-				wait *= Ship_fire_delay_scale_friendly[Game_skill_level] * 0.5f;
-			} else {
-				wait *= Ship_fire_delay_scale_hostile[Game_skill_level] * 0.5f;
-			}	
-			wait += (Num_ai_classes - aip->ai_class - 1) * 40.0f;
+		wait += (Num_ai_classes - aip->ai_class - 1) * 40.0f;
 
-		} else if (Weapon_info[weapon_id].wi_flags & WIF_HUGE) {
-			// make huge weapons fire independently of team
+	} else if (Weapon_info[weapon_id].wi_flags & WIF_HUGE) {
+		// make huge weapons fire independently of team
+		wait *= Ship_fire_delay_scale_friendly[Game_skill_level];
+		wait += (Num_ai_classes - aip->ai_class - 1) * 100.0f;
+	} else {
+		// give team friendly an advantage
+		if (Ships[aip->shipnum].team == TEAM_FRIENDLY) {
 			wait *= Ship_fire_delay_scale_friendly[Game_skill_level];
-			wait += (Num_ai_classes - aip->ai_class - 1) * 100.0f;
 		} else {
-			// give team friendly an advantage
-			if (Ships[aip->shipnum].team == TEAM_FRIENDLY) {
-				wait *= Ship_fire_delay_scale_friendly[Game_skill_level];
-			} else {
-				wait *= Ship_fire_delay_scale_hostile[Game_skill_level];
-			}	
-			wait += (Num_ai_classes - aip->ai_class - 1) * 100.0f;
+			wait *= Ship_fire_delay_scale_hostile[Game_skill_level];
 		}
+		wait += (Num_ai_classes - aip->ai_class - 1) * 100.0f;
 	}
 
 	// vary wait time +/- 10%
@@ -10356,19 +10282,6 @@ void turret_fire_weapon(ship_subsys *turret, int parent_objnum, vector *turret_p
 					// determine what that range was
 					flak_range = flak_get_range(&Objects[weapon_objnum]);
 				}
-
-				// in multiplayer (and the master), then send a turret fired packet.
-				if ( MULTIPLAYER_MASTER && (weapon_objnum != -1) ) {
-					int subsys_index;
-
-					subsys_index = ship_get_index_from_subsys(turret, parent_objnum );
-					Assert( subsys_index != -1 );
-					if(Weapon_info[turret_weapon_class].wi_flags & WIF_FLAK){			
-						send_flak_fired_packet( parent_objnum, subsys_index, weapon_objnum, flak_range );
-					} else {
-						send_turret_fired_packet( parent_objnum, subsys_index, weapon_objnum );
-					}
-				}
 			}
 		}
 	} else {
@@ -10414,15 +10327,6 @@ void turret_swarm_fire_from_turret(ship_subsys *turret, int parent_objnum, int t
 			if ( parent_objnum != OBJ_INDEX(Player_obj) ) {
 				snd_play_3d( &Snds[Weapon_info[turret_weapon_class].launch_snd], &turret_pos, &View_position );
 			}
-		}
-		
-		// in multiplayer (and the master), then send a turret fired packet.
-		if ( MULTIPLAYER_MASTER && (weapon_objnum != -1) ) {
-			int subsys_index;
-
-			subsys_index = ship_get_index_from_subsys(turret, parent_objnum );
-			Assert( subsys_index != -1 );
-			send_turret_fired_packet( parent_objnum, subsys_index, weapon_objnum );
 		}
 	}
 }
@@ -11158,9 +11062,6 @@ int Chaos_frame = -1;
 //	Only true if objp is a player
 int formation_is_leader_chaotic(object *objp)
 {
-	if (Game_mode & GM_MULTIPLAYER)
-		return 0;
-
 	if (objp != Player_obj)
 		return 0;
 
@@ -11515,19 +11416,15 @@ void ai_do_repair_frame(object *objp, ai_info *aip, float frametime)
 					repair_aip->submode_start_time = Missiontime;
 
 					// if repairing player object -- tell him done with repair
-					if ( !MULTIPLAYER_CLIENT ){
-						ai_do_objects_repairing_stuff( objp, &Objects[dock_objnum], REPAIR_INFO_COMPLETE );
-					}
+					ai_do_objects_repairing_stuff( objp, &Objects[dock_objnum], REPAIR_INFO_COMPLETE );
 				}
 			}
 		} else if (aip->ai_flags & AIF_AWAITING_REPAIR) {
 			//	If this ship has been awaiting repair for 90+ seconds, abort.
-			if ( !MULTIPLAYER_CLIENT ) {
-				if ((Game_mode & GM_MULTIPLAYER) || (objp != Player_obj)) {
-					if ((repair_aip->goal_objnum == OBJ_INDEX(objp)) && (timestamp_elapsed(aip->abort_rearm_timestamp))) {
-						ai_abort_rearm_request(objp);
-						aip->next_rearm_request_timestamp = timestamp(NEXT_REARM_TIMESTAMP);
-					}
+			if (objp != Player_obj) {
+				if ((repair_aip->goal_objnum == OBJ_INDEX(objp)) && (timestamp_elapsed(aip->abort_rearm_timestamp))) {
+					ai_abort_rearm_request(objp);
+					aip->next_rearm_request_timestamp = timestamp(NEXT_REARM_TIMESTAMP);
 				}
 			}
 		}
@@ -13164,8 +13061,7 @@ int ai_await_repair_frame(object *objp, ai_info *aip)
 void ai_maybe_self_destruct(object *objp, ai_info *aip)
 {
 	//	Friendly ships can be repaired, so no self-destruct.
-	//	In multiplayer, just don't self-destruct.  I figured there would be a problem. -- MK, 3/19/98.
-	if ((Ships[objp->instance].team == TEAM_FRIENDLY) || (Game_mode & GM_MULTIPLAYER))
+	if (Ships[objp->instance].team == TEAM_FRIENDLY)
 		return;
 
 	//	Small ships in a wing blow themselves up after awhile if engine or weapons system has been destroyed.
@@ -13883,11 +13779,6 @@ void process_friendly_hit_message( int message, object *objp )
 {
 	int index;
 
-	// no traitor in multiplayer
-	if(Game_mode & GM_MULTIPLAYER){
-		return;
-	}
-
 	// don't send this message if a player ship was hit.
 	if ( objp->flags & OF_PLAYER_SHIP ){
 		return;
@@ -13905,9 +13796,9 @@ void process_friendly_hit_message( int message, object *objp )
 	}
 
 	if ( index >= 0){
-		message_send_builtin_to_player( message, &Ships[index], MESSAGE_PRIORITY_HIGH, MESSAGE_TIME_ANYTIME, 0, 0, -1, -1 );
+		message_send_builtin_to_player( message, &Ships[index], MESSAGE_PRIORITY_HIGH, MESSAGE_TIME_ANYTIME, 0, 0);
 	} else {
-		message_send_builtin_to_player( message, NULL, MESSAGE_PRIORITY_HIGH, MESSAGE_TIME_ANYTIME, 0, 0, -1, -1 );
+		message_send_builtin_to_player( message, NULL, MESSAGE_PRIORITY_HIGH, MESSAGE_TIME_ANYTIME, 0, 0);
 	}
 }
 
@@ -13916,12 +13807,7 @@ extern	void ship_set_subsystem_strength( ship *shipp, int type, float strength )
 //	Object *objp_weapon, fired by *objp_hitter, hit object *objp_ship.
 void maybe_process_friendly_hit(object *objp_hitter, object *objp_hit, object *objp_weapon)
 {
-	// no turning traitor in multiplayer
-	if ( Game_mode & GM_MULTIPLAYER ) {
-		return;
-	}
-
-	// ditto if mission says no traitors allowed
+	// no turning traitor if mission says no traitors allowed
 	if (The_mission.flags & MISSION_FLAG_NO_TRAITOR) {
 		return;
 	}
@@ -14005,7 +13891,7 @@ void maybe_process_friendly_hit(object *objp_hitter, object *objp_hit, object *o
 		if (is_instructor(objp_hit)) {
 			// it's not nice to hit your instructor
 			if (pp->friendly_damage > FRIENDLY_DAMAGE_THRESHOLD) {
-				message_send_builtin_to_player( MESSAGE_INSTRUCTOR_ATTACK, NULL, MESSAGE_PRIORITY_HIGH, MESSAGE_TIME_IMMEDIATE, 0, 0, -1, -1);
+				message_send_builtin_to_player( MESSAGE_INSTRUCTOR_ATTACK, NULL, MESSAGE_PRIORITY_HIGH, MESSAGE_TIME_IMMEDIATE, 0, 0);
 				pp->last_warning_message_time = Missiontime;
 				ship_set_subsystem_strength( Player_ship, SUBSYSTEM_WEAPONS, 0.0f);
 
@@ -14020,7 +13906,7 @@ void maybe_process_friendly_hit(object *objp_hitter, object *objp_hit, object *o
 			} else if (Missiontime - pp->last_warning_message_time > F1_0*4) {
 				// warning every 4 sec
 				// use NULL as the message sender here since it is the Terran Command persona
-				message_send_builtin_to_player( MESSAGE_INSTRUCTOR_HIT, NULL, MESSAGE_PRIORITY_HIGH, MESSAGE_TIME_IMMEDIATE, 0, 0, -1, -1);
+				message_send_builtin_to_player( MESSAGE_INSTRUCTOR_HIT, NULL, MESSAGE_PRIORITY_HIGH, MESSAGE_TIME_IMMEDIATE, 0, 0);
 				pp->last_warning_message_time = Missiontime;
 			}
 
@@ -14274,7 +14160,7 @@ void ai_ship_hit(object *objp_ship, object *hit_objp, vector *hitpos, int shield
 		objp_hitter = &Objects[hitter_objnum];
 		maybe_process_friendly_hit(objp_hitter, objp_ship, hit_objp);		//	Deal with player's friendly fire.
 
-		if ( (shipp->team & TEAM_FRIENDLY) && !(Game_mode & GM_MULTIPLAYER) ) {
+		if ( shipp->team & TEAM_FRIENDLY ) {
 			ship_maybe_ask_for_help(shipp);
 		}
 	} else if (hit_objp->type == OBJ_SHIP) {

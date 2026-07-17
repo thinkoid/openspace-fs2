@@ -63,11 +63,6 @@ int trail_create(trail_info info)
 	int trail_num;
 	trail *trailp;
 
-	// standalone server should never create trails
-	if(Game_mode & GM_STANDALONE_SERVER){
-		return -1;
-	}
-
 	if ( !Detail.weapon_extras )	{
 		// No trails at slot 0
 		return -1;

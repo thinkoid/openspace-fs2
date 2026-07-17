@@ -15,7 +15,6 @@
 #include "object.h"
 // (glide.h removed)
 #include "timer.h"
-#include "multi.h"
 #include "freespace.h"
 #include "key.h"
 #include "nebula.h"
@@ -300,11 +299,6 @@ void neb2_level_init()
 {
 	int idx;		
 
-	// standalone servers can bail here
-	if(Game_mode & GM_STANDALONE_SERVER){
-		return;
-	}
-
 	// if the mission is not a fullneb mission, skip
 	if(!(The_mission.flags & MISSION_FLAG_FULLNEB)){
 		Neb2_render_mode = NEB2_RENDER_NONE;
@@ -365,11 +359,6 @@ void neb2_level_close()
 {
 	int idx;
 	
-	// standalone servers can bail here
-	if(Game_mode & GM_STANDALONE_SERVER){
-		return;
-	}
-
 	// if the mission is not a fullneb mission, skip
 	if(!(The_mission.flags & MISSION_FLAG_FULLNEB)){
 		return;
@@ -390,11 +379,6 @@ void neb2_level_close()
 // call before beginning all rendering
 void neb2_render_setup(vector *eye_pos, matrix *eye_orient)
 {
-	// standalone servers can bail here
-	if(Game_mode & GM_STANDALONE_SERVER){
-		return;
-	}
-
 	// if the mission is not a fullneb mission, skip
 	if(!(The_mission.flags & MISSION_FLAG_FULLNEB)){		
 		return;
@@ -856,11 +840,6 @@ void neb2_render_player()
 	float frame_area = max_area;
 	float total_area = 0.0f;
 #endif
-
-	// standalone servers can bail here
-	if(Game_mode & GM_STANDALONE_SERVER){
-		return;
-	}
 
 	// if the mission is not a fullneb mission, skip
 	if(!(The_mission.flags & MISSION_FLAG_FULLNEB)){

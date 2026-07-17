@@ -30,7 +30,6 @@
 #include "gamesnd.h"
 #include "radar.h"
 #include "linklist.h"
-#include "multi.h"
 #include "emp.h"
 #include "freespace.h"
 #include "localize.h"
@@ -258,17 +257,6 @@ void radar_plot_object( object *objp )
 	int		xpos, ypos, color=0;
 	vector	*world_pos = &objp->pos;	
 	float		awacs_level;
-
-	// don't process anything here.  Somehow, a jumpnode object caused this function
-	// to get entered on server side.
-	if( Game_mode & GM_STANDALONE_SERVER ){
-		return;
-	}
-
-	// multiplayer clients ingame joining should skip this function
-	if ( MULTIPLAYER_CLIENT && (Net_player->flags & NETINFO_FLAG_INGAME_JOIN) ){
-		return;
-	}
 
 	// get team-wide awacs level for the object if not ship
 	int ship_is_visible = 0;

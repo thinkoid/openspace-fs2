@@ -16,7 +16,6 @@
 #include "hudtargetbox.h"
 #include "linklist.h"
 #include "systemvars.h"
-#include "multi.h"
 #include "emp.h"
 
 #define HUD_WINGMAN_STATUS_NUM_FRAMES	5
@@ -271,8 +270,6 @@ int hud_wingman_status_wing_index(char *wing_name)
 		return 3;
 	} else if ( !stricmp("epsilon", wing_name) ) {
 		return 4;
-	} else if ( (Game_mode & GM_MULTIPLAYER) && IS_MISSION_MULTI_TEAMS && !stricmp("zeta", wing_name) ) {
-		return 5;
 	} else {
 		return -1;
 	}
@@ -318,15 +315,6 @@ void hud_set_wingman_status_none( int wing_index, int wing_pos)
 	HUD_wingman_status[wing_index].used = used;
 }
 
-// flags a given player wing ship as "alive" (for multiplayer respawns )
-void hud_set_wingman_status_alive( int wing_index, int wing_pos)
-{
-	Assert(wing_index >= 0 && wing_index < HUD_WINGMAN_MAX_WINGS);
-	Assert(wing_pos >= 0 && wing_index < HUD_WINGMAN_MAX_SHIPS_PER_WINGS);
-
-	HUD_wingman_status[wing_index].status[wing_pos] = HUD_WINGMAN_STATUS_ALIVE;
-}
-
 // get the hull percent for a specific ship, return value 0.0 -> 1.0
 float hud_get_ship_hull_percent(int ship_index)
 {
@@ -356,31 +344,6 @@ void hud_wingman_status_init_late_wings()
 	}
 */
 }
-
-// function which marks the other team wing as not used for the wingman status gauge
-void hud_wingman_kill_multi_teams()
-{
-	int wing_index;
-
-	// do nothing in single player or non team v. team games
-	if ( Game_mode & GM_NORMAL )
-		return;
-
-	if ( !IS_MISSION_MULTI_TEAMS )
-		return;
-
-	wing_index = -1;
-	if ( Net_player->p_info.team == 0 )
-		wing_index = hud_wingman_status_wing_index(NOX("zeta"));
-	else if ( Net_player->p_info.team == 1 )
-		wing_index = hud_wingman_status_wing_index(NOX("alpha"));
-
-	if ( wing_index == -1 )
-		return;
-
-	HUD_wingman_status[wing_index].ignore = 1;
-}
-
 
 // called once per level to init the wingman status gauge.  Loads in the frames the first time
 void hud_init_wingman_status_gauge()
@@ -412,7 +375,6 @@ void hud_init_wingman_status_gauge()
 	}
 
 	hud_wingman_status_init_late_wings();
-	hud_wingman_kill_multi_teams();
 	hud_wingman_status_update();
 }
 

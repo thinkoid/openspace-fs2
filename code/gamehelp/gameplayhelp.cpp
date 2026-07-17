@@ -227,12 +227,8 @@ void gameplay_help_init()
 		Ui_window.add_XSTR(&Game_help_text[gr_screen.res][i]);
 	}
 
-	// set the proper last screen # based upon game mode
-	if(Game_mode & GM_MULTIPLAYER){
-		Gp_last_screen = GP_LAST_SCREEN_MULTI;
-	} else {
-		Gp_last_screen = GP_LAST_SCREEN_SINGLE;
-	}
+	// set the proper last screen #
+	Gp_last_screen = GP_LAST_SCREEN_SINGLE;
 
 	// setup hotkeys so lights flash when keys are pressed
 	Buttons[gr_screen.res][CONTINUE_BUTTON].button.set_hotkey(KEY_CTRLED | KEY_ENTER);
