@@ -16,8 +16,9 @@
 
 extern int Gr_cursor;
 
-#define GR_SCREEN_PTR(type,x,y) ((type *)(uint(gr_screen.offscreen_buffer) + uint(((x)+gr_screen.offset_x)*sizeof(type)) + uint(((y)+gr_screen.offset_y)*gr_screen.rowsize)))
-#define GR_SCREEN_PTR_SIZE(bpp,x,y) ((uint)(uint(gr_screen.offscreen_buffer) + uint(((x)+gr_screen.offset_x)*(bpp)) + uint(((y)+gr_screen.offset_y)*gr_screen.rowsize)))
+// pointer math through uintptr_t; retail used uint (32-bit pointers)
+#define GR_SCREEN_PTR(type,x,y) ((type *)(uintptr_t(gr_screen.offscreen_buffer) + uintptr_t(((x)+gr_screen.offset_x)*sizeof(type)) + uintptr_t(((y)+gr_screen.offset_y)*gr_screen.rowsize)))
+#define GR_SCREEN_PTR_SIZE(bpp,x,y) ((uintptr_t)(uintptr_t(gr_screen.offscreen_buffer) + uintptr_t(((x)+gr_screen.offset_x)*(bpp)) + uintptr_t(((y)+gr_screen.offset_y)*gr_screen.rowsize)))
 
 extern ubyte Gr_original_palette[768];		// The palette 
 extern ubyte Gr_current_palette[768];

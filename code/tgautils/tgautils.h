@@ -11,6 +11,8 @@
 #ifndef __TARGA_H
 #define __TARGA_H
 
+#include "pstypes.h"
+
 // --------------------
 //
 // Defines
@@ -33,6 +35,7 @@ int targa_write_bitmap(char *filename, ubyte *data, ubyte *palette, int w, int h
 
 // The following are used by the tools\vani code.
 int targa_compress(char *out, char *in, int outsize, int pixsize, int bytecount);
-int targa_uncompress( ubyte *dst, ubyte *src, int bitmap_width, int bytes_per_pixel );
+// (retail header declared 4 params; the implementation and caller use 5)
+int targa_uncompress( ubyte *dst, ubyte *src, int bitmap_width, int bytes_per_pixel, int dest_size );
 
 #endif // __TARGA_H

@@ -101,6 +101,31 @@ long filelength(int fd)
 	return (long)st.st_size;
 }
 
+void _splitpath(const char *path, char *drive, char *dir, char *fname, char *ext)
+{
+	if (drive)
+		drive[0] = 0;	// no drives here
+
+	const char *base = strrchr(path, '/');
+	base = base ? base + 1 : path;
+
+	if (dir) {
+		strncpy(dir, path, base - path);
+		dir[base - path] = 0;
+	}
+
+	const char *dot = strrchr(base, '.');
+	if (!dot)
+		dot = base + strlen(base);
+
+	if (fname) {
+		strncpy(fname, base, dot - base);
+		fname[dot - base] = 0;
+	}
+	if (ext)
+		strcpy(ext, dot);
+}
+
 void *vm_malloc(int size)
 {
 	return malloc(size);

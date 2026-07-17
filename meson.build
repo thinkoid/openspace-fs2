@@ -24,6 +24,15 @@ inc = include_directories(
     'code/weapon')
 
 foundation_src = files(
+    'code/anim/packunpack.cpp',
+    'code/bmpman/bmpman.cpp',
+    'code/model/modelcollide.cpp',
+    'code/model/modelinterp.cpp',
+    'code/model/modeloctant.cpp',
+    'code/model/modelread.cpp',
+    'code/palman/palman.cpp',
+    'code/pcxutils/pcxutils.cpp',
+    'code/tgautils/tgautils.cpp',
     'code/cfile/cfile.cpp',
     'code/cfile/cfilearchive.cpp',
     'code/cfile/cfilelist.cpp',

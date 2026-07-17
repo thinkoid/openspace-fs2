@@ -32,10 +32,12 @@
 
 #include <ctype.h>
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>	// For NULL, etc
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>	// strcasecmp
+#include <unistd.h>
 
 // MSVC runtime spellings used throughout the retail sources
 #define stricmp strcasecmp
@@ -44,6 +46,11 @@
 #define _cdecl
 #define __cdecl
 #define _MAX_PATH 260
+#define _MAX_FNAME 256
+#define _unlink unlink
+
+// MSVC path splitter; any output pointer may be NULL
+void _splitpath(const char *path, char *drive, char *dir, char *fname, char *ext);
 
 inline char *strlwr(char *str)
 {
@@ -161,7 +168,7 @@ typedef struct bitmap {
 	short	rowsize;	// What you need to add to go to next row
 	ubyte	bpp;		// How many bits per pixel it is. (7,8,15,16,24,32)
 	ubyte	flags;	// See the BMP_???? defines for values
-	uint	data;		// Pointer to data, or maybe offset into VRAM.
+	uintptr_t	data;	// Pointer to data, or maybe offset into VRAM.  (was uint; pointers no longer fit in 32 bits)
 	ubyte *palette;	// If bpp==8, this is pointer to palette.   If the BMP_NO_PALETTE_MAP flag
 							// is not set, this palette just points to the screen palette. (gr_palette)
 

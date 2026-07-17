@@ -10,6 +10,8 @@
 #ifndef _FONT_H
 #define _FONT_H
 
+#include "pstypes.h"
+
 #define MAX_FONTS 3
 
 #define FONT_VERSION 0

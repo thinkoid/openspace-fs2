@@ -14,6 +14,11 @@ vp_ls = executable('vp_ls',
     include_directories: inc,
     link_with: foundation)
 
+pof_dump = executable('pof_dump',
+    ['pof_dump.cpp', 'stubs.cpp', 'gamestubs_gen.cpp'],
+    include_directories: inc,
+    link_with: foundation)
+
 math_test = executable('math_test',
     ['math_test.cpp', 'stubs.cpp'],
     include_directories: inc,
