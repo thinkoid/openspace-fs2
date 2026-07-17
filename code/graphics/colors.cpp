@@ -16,7 +16,8 @@
 #include "systemvars.h"
 
 //#define MAX_ALPHACOLORS 36
-#define MAX_ALPHACOLORS 72
+//#define MAX_ALPHACOLORS 72
+#define MAX_ALPHACOLORS 256	// software tables are 4KB each; slots never recycle across screens
 
 alphacolor Alphacolors[MAX_ALPHACOLORS];
 static int Alphacolors_intited = 0;

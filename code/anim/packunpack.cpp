@@ -100,13 +100,12 @@ int anim_get_next_frame(anim_instance *inst)
 	}
 
 	if (inst->parent->flags & ANF_XPARENT) {
-		// bitmap_flags = BMP_XPARENT;
-		bitmap_flags = 0;
+		bitmap_flags = BMP_TEX_XPARENT;	// was commented (16bpp used green-swizzle)
 	} else {
 		bitmap_flags = 0;
 	}
 
-	bpp = 16;
+	bpp = (gr_screen.mode == GR_SOFTWARE) ? 8 : 16;
 	if(inst->aa_color != NULL){
 		bitmap_flags |= BMP_AABITMAP;
 		aabitmap = 1;
@@ -207,12 +206,11 @@ int anim_get_frame(anim_instance *inst, int frame_num, int xlate_pal)
 
 	bitmap_flags = 0;
 	if (inst->parent->flags & ANF_XPARENT) {
-		// bitmap_flags = BMP_XPARENT;
-		bitmap_flags = 0;
+		bitmap_flags = BMP_TEX_XPARENT;
 	}
 
 	if ( inst->frame_num == frame_num ) {
-		bm = bm_create(16, inst->parent->width, inst->parent->height, inst->frame, bitmap_flags);
+		bm = bm_create((gr_screen.mode == GR_SOFTWARE) ? 8 : 16, inst->parent->width, inst->parent->height, inst->frame, bitmap_flags);
 		bm_unload(bm);
 		return bm;
 	}
@@ -653,6 +651,10 @@ int unpack_pixel(anim_instance *ai, ubyte *data, ubyte pix, int aabitmap, int bp
 		default:
 			Int3();
 		}
+	} else if (bpp == 8) {
+		// software mode: pix is already translated into the game palette
+		// (transparent colors became index 255 in anim_set_palette)
+		bit_8 = pix;
 	} else {		
 		// if the pixel value is 255, or is the xparent color, make it so		
 		if(((a->palette[pix*3] == a->xparent_r) && (a->palette[pix*3+1] == a->xparent_g) && (a->palette[pix*3+2] == a->xparent_b)) ){
@@ -707,6 +709,10 @@ int unpack_pixel_count(anim_instance *ai, ubyte *data, ubyte pix, int count, int
 		default :
 			Int3();			
 		}
+	} else if (bpp == 8) {
+		// software mode: pix is already translated into the game palette
+		// (transparent colors became index 255 in anim_set_palette)
+		bit_8 = pix;
 	} else {		
 		// if the pixel value is 255, or is the xparent color, make it so		
 		if(((a->palette[pix*3] == a->xparent_r) && (a->palette[pix*3+1] == a->xparent_g) && (a->palette[pix*3+2] == a->xparent_b)) ){
@@ -1115,16 +1121,16 @@ void anim_set_palette(anim *ptr)
 {
 	int i, xparent_found = 0;
 	
-	// create the palette translation look-up table
+	// create the palette translation look-up table (restored: retail left an
+	// identity table + "TODO: actually convert" when hardware modes stopped
+	// needing it; the software renderer needs the real mapping)
 	for ( i = 0; i < 256; i++ ) {
-
-		//if ( (ptr->palette[i*3] == ptr->xparent_r) && (ptr->palette[i*3+1] == ptr->xparent_g) && (ptr->palette[i*3+2] == ptr->xparent_b) ) {
-		//	ptr->palette_translation[i] = 255;
-		//	xparent_found = 1;
-		//} else	{
-			// ptr->palette_translation[i] = (ubyte)palette_find( ptr->palette[i*3], ptr->palette[i*3+1], ptr->palette[i*3+2] );
-			ptr->palette_translation[i] = (ubyte)i;
-		//}
+		if ( (ptr->palette[i*3] == ptr->xparent_r) && (ptr->palette[i*3+1] == ptr->xparent_g) && (ptr->palette[i*3+2] == ptr->xparent_b) ) {
+			ptr->palette_translation[i] = 255;
+			xparent_found = 1;
+		} else	{
+			ptr->palette_translation[i] = (ubyte)palette_find( ptr->palette[i*3], ptr->palette[i*3+1], ptr->palette[i*3+2] );
+		}
 	}	
 
 	if ( xparent_found ) {

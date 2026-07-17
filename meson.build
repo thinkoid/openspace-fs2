@@ -180,6 +180,7 @@ foundation_src = files(
     'code/graphics/tmapscantiled128x128.cpp',
     'code/graphics/tmapscantiled256x256.cpp',
     'code/io/joy.cpp',
+    'code/io/keycontrol.cpp',
     'code/io/key.cpp',
     'code/io/mouse.cpp',
     'code/io/timer.cpp',

@@ -108,6 +108,11 @@ void game_start_time()
 	oracle_trap2("game_start_time");
 }
 
+void game_stop_looped_sounds()
+{
+	oracle_trap2("game_stop_looped_sounds");
+}
+
 void game_stop_time()
 {
 	oracle_trap2("game_stop_time");
@@ -136,7 +141,10 @@ void set_cdrom_path(int)
 // data symbols, zero-backed
 unsigned char Camera_pos[1 << 20];
 unsigned char Dead_player_last_vel[1 << 20];
+unsigned char Debug_octant[1 << 20];
 unsigned char flFrametime[1 << 20];
+unsigned char Framerate_delay[1 << 20];
+int Fred_running = 0;
 unsigned char Game_current_mission_filename[1 << 20];
 unsigned char Game_ships_tbl_valid[1 << 20];
 unsigned char game_single_step[1 << 20];
@@ -145,14 +153,12 @@ unsigned char Game_subspace_effect[1 << 20];
 unsigned char Game_time_compression[1 << 20];
 unsigned char Game_weapons_tbl_valid[1 << 20];
 unsigned char last_single_step[1 << 20];
+int Pofview_running = 0;
 unsigned char Show_target_debug_info[1 << 20];
 unsigned char Show_target_weapons[1 << 20];
 unsigned char Sun_drew[1 << 20];
+unsigned char Test_begin[1 << 20];
+unsigned char tst[1 << 20];
 unsigned char Viewer_zoom[1 << 20];
 unsigned char Warpout_forced[1 << 20];
 unsigned char Warpout_time[1 << 20];
-
-// freespace2/freespace.cpp globals (tests do not link the game main)
-int Fred_running = 0;
-int Pofview_running = 0;
-int Nebedit_running = 0;

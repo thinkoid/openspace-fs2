@@ -12,7 +12,6 @@
 struct UI_WINDOW;
 struct ai_info;
 struct beam_info;
-struct button_info;
 struct game_snd;
 struct multi_local_options;
 struct multi_server_options;
@@ -112,16 +111,6 @@ long audiostream_unpause_all()
 long audiostream_unpause(int)
 {
 	return -1;
-}
-
-void button_info_do(button_info*)
-{
-	oracle_trap("button_info_do");
-}
-
-void button_info_query(button_info*, int)
-{
-	oracle_trap("button_info_query");
 }
 
 void d3d_flush()
@@ -231,21 +220,6 @@ long ds_using_ds3d()
 void find_player_id(short)
 {
 	oracle_trap("find_player_id");
-}
-
-void game_process_cheats(int)
-{
-	oracle_trap("game_process_cheats");
-}
-
-void game_process_keys()
-{
-	oracle_trap("game_process_keys");
-}
-
-void game_process_pause_key()
-{
-	oracle_trap("game_process_pause_key");
 }
 
 void gr_d3d_activate(int)
@@ -578,6 +552,11 @@ long multi_get_player_ship(int)
 	return -1;
 }
 
+long multi_handle_end_mission_request()
+{
+	return -1;
+}
+
 long multi_host_options_close()
 {
 	return -1;
@@ -678,12 +657,22 @@ long multi_msg_eval_wing_squadmsg(int, int, ai_info*, int)
 	return -1;
 }
 
+long multi_msg_key_down(int)
+{
+	return -1;
+}
+
 long multi_msg_message_text(char*)
 {
 	return -1;
 }
 
 long multi_num_players()
+{
+	return -1;
+}
+
+long multi_obs_zoom_to_target()
 {
 	return -1;
 }
@@ -748,6 +737,11 @@ long multi_pause_init(UI_WINDOW*)
 	return -1;
 }
 
+long multi_pause_request(int)
+{
+	return -1;
+}
+
 long multi_pinfo_popup(net_player*)
 {
 	return -1;
@@ -794,6 +788,11 @@ long multi_respawn_normal()
 }
 
 long multi_respawn_observer()
+{
+	return -1;
+}
+
+long multi_server_update_player_weapons(net_player*, ship*)
 {
 	return -1;
 }
@@ -978,19 +977,9 @@ long multi_voice_test_record_stop()
 	return -1;
 }
 
-void netmisc_calc_checksum(void*, int)
-{
-	oracle_trap("netmisc_calc_checksum");
-}
-
 void oo_display()
 {
 	oracle_trap("oo_display");
-}
-
-void process_set_of_keys(int, int, int*)
-{
-	oracle_trap("process_set_of_keys");
 }
 
 long psnet_close()
@@ -1176,6 +1165,11 @@ void send_reinforcement_avail(int)
 void send_secondary_fired_packet(ship*, unsigned short, int, int, int)
 {
 	oracle_trap("send_secondary_fired_packet");
+}
+
+void send_self_destruct_packet()
+{
+	oracle_trap("send_self_destruct_packet");
 }
 
 void send_ship_create_packet(object*, int)
@@ -1413,7 +1407,6 @@ void windebug_memwatch_init()
 }
 
 // data symbols, zero-backed
-unsigned char All_movies_enabled[1 << 20];
 unsigned char D3D_32bit[1 << 20];
 unsigned char D3D_fog_mode[1 << 20];
 unsigned char D3D_inited[1 << 20];
@@ -1421,8 +1414,6 @@ unsigned char D3d_rendition_uvs[1 << 20];
 unsigned char D3D_textures_in[1 << 20];
 unsigned char D3D_textures_in_frame[1 << 20];
 unsigned char D3D_zbias[1 << 20];
-unsigned char Dead_key_set[1 << 20];
-unsigned char Dead_key_set_size[1 << 20];
 unsigned char Demo_error[1 << 20];
 unsigned char Demo_make[1 << 20];
 unsigned char Glide_explosion_vram[1 << 20];
@@ -1432,6 +1423,7 @@ unsigned char Glide_voodoo3[1 << 20];
 unsigned char Ipx_active[1 << 20];
 unsigned char Master_sound_volume[1 << 20];
 unsigned char Master_voice_volume[1 << 20];
+unsigned char Multi_button_info_ok[1 << 20];
 unsigned char Multi_chat_stream[1 << 20];
 unsigned char Multi_common_icons[1 << 20];
 unsigned char Multi_connection_speed[1 << 20];
@@ -1459,5 +1451,4 @@ unsigned char Snd_hram[1 << 20];
 unsigned char Snd_sram[1 << 20];
 unsigned char Sound_enabled[1 << 20];
 unsigned char Tcp_active[1 << 20];
-unsigned char Tool_enabled[1 << 20];
 unsigned char TotalRam[1 << 20];

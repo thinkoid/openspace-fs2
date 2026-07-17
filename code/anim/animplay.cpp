@@ -408,10 +408,9 @@ int anim_show_next_frame(anim_instance *instance, float frametime)
 	}
 
 	if (instance->parent->flags & ANF_XPARENT){
-		// bitmap_flags = BMP_XPARENT;
-		bitmap_flags = 0;
+		bitmap_flags = BMP_TEX_XPARENT;	// was commented (16bpp used green-swizzle)
 	} 
-	bpp = 16;
+	bpp = (gr_screen.mode == GR_SOFTWARE) ? 8 : 16;	// unpack must match the bm_create below
 	if(instance->aa_color != NULL){
 		bitmap_flags |= BMP_AABITMAP;
 		aabitmap = 1;
@@ -492,7 +491,7 @@ int anim_show_next_frame(anim_instance *instance, float frametime)
 		if ( instance->last_bitmap != -1 ){
 			bm_release(instance->last_bitmap);
 		}
-		bitmap_id = bm_create(16, instance->parent->width, instance->parent->height, instance->frame, bitmap_flags);
+		bitmap_id = bm_create((gr_screen.mode == GR_SOFTWARE) ? 8 : 16, instance->parent->width, instance->parent->height, instance->frame, bitmap_flags);
 	}
 	
 	if ( bitmap_id == -1 ) {

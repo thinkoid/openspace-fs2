@@ -351,7 +351,8 @@ int bm_create( int bpp, int w, int h, void * data, int flags )
 
 	// Assert((bpp==32)||(bpp==8));
 	if(bpp != 16){
-		Assert(flags & BMP_AABITMAP);
+		// software mode creates plain 8bpp frames too (anim playback)
+		Assert((flags & BMP_AABITMAP) || ((gr_screen.mode == GR_SOFTWARE) && (bpp == 8)));
 	} else {
 		Assert(bpp == 16);
 	}
@@ -894,6 +895,9 @@ void bm_swizzle_8bit_for_fred(bitmap_entry *be, bitmap *bmp, ubyte *data, ubyte 
 		ubyte c = palxlat[data[i]];			
 		data[i] = c;		
 	}			
+	if ( pcx_xparent_index != -1 )	{
+		bmp->flags |= BMP_TEX_XPARENT;	// software blitter skips index 255
+	}
 	be->palette_checksum = gr_palette_checksum;	
 }
 
@@ -944,8 +948,13 @@ void bm_lock_pcx( int handle, int bitmapnum, bitmap_entry *be, bitmap *bmp, ubyt
 			//return -1;
 		}
 
-		// now swizzle the thing into the proper format
-		if(Fred_running || Pofview_running){
+		// translate the PCX's own palette into the current game palette
+		// (green -> 255 transparent).  FRED always did this; the software
+		// renderer needs it for the same reason.
+		// BMP_AABITMAP at 8bpp means "raw indexes, hands off" — the click
+		// masks (X-m.pcx) are locked that way and their pixels are region
+		// ids, not colors
+		if(Fred_running || Pofview_running || ((gr_screen.mode == GR_SOFTWARE) && !(flags & BMP_AABITMAP))){
 			bm_swizzle_8bit_for_fred(be, bmp, data, palette);
 		}
 	} else {	
@@ -970,7 +979,7 @@ void bm_lock_pcx( int handle, int bitmapnum, bitmap_entry *be, bitmap *bmp, ubyt
 	Assert( be->data_size > 0 );
 	#endif		
 	
-	bmp->flags = 0;	
+	bmp->flags &= BMP_TEX_XPARENT;	// was = 0; keep the 8bpp green-swizzle result
 	bm_convert_format( bitmapnum, bmp, bpp, flags );
 }
 
@@ -1000,6 +1009,10 @@ void bm_lock_ani( int handle, int bitmapnum, bitmap_entry *be, bitmap *bmp, ubyt
 	if ( the_anim->total_frames != bm_bitmaps[first_frame].info.ani.num_frames )	{
 		can_drop_frames = 1;
 	}
+	// keep the ANI's palette translation + ANF_XPARENT current before the
+	// flags/unpack below (nothing else runs the check on this path)
+	anim_check_for_palette_change(the_anim_instance);
+
 	bm = &bm_bitmaps[first_frame].bm;
 	if(bpp == 16){
 		size = bm->w * bm->h * 2;
@@ -1014,7 +1027,12 @@ void bm_lock_ani( int handle, int bitmapnum, bitmap_entry *be, bitmap *bmp, ubyt
 		// Unload any existing data
 		bm_free_data( first_frame+i );
 
+		be->palette_checksum = gr_palette_checksum;	// translations below bake this palette in
+
 		bm->flags = 0;
+		if (the_anim->flags & ANF_XPARENT)	{
+			bm->flags |= BMP_TEX_XPARENT;	// software blitter honors index 255
+		}
 		// briefing editor in Fred2 uses aabitmaps (ani's) - force to 8 bit
 		if(Fred_running || Is_standalone){
 			bm->bpp = 8;
@@ -1023,7 +1041,12 @@ void bm_lock_ani( int handle, int bitmapnum, bitmap_entry *be, bitmap *bmp, ubyt
 		}
 		bm->data = (uintptr_t)bm_malloc(first_frame + i, size);
 
-		frame_data = anim_get_next_raw_buffer(the_anim_instance, 0 ,flags & BMP_AABITMAP ? 1 : 0, bm->bpp);
+		// software 8bpp: translate ANI indexes into the game palette (aabitmaps
+		// are alpha levels and never translate)
+		{
+			int do_xlate = (bm->bpp == 8) && !(flags & BMP_AABITMAP);
+			frame_data = anim_get_next_raw_buffer(the_anim_instance, do_xlate, flags & BMP_AABITMAP ? 1 : 0, bm->bpp);
+		}
 
 		if ( frame_data == NULL ) {
 			// Error(LOCATION,"Fatal error locking .ani file: %s\n", be->filename);
@@ -1136,10 +1159,11 @@ void bm_lock_user( int handle, int bitmapnum, bitmap_entry *be, bitmap *bmp, uby
 			memcpy((char*)bmp->data + (idx * 2), &bit_16, sizeof(ushort));
 		}
 		*/		
-		Assert(flags & BMP_AABITMAP);
+		// software mode also creates plain 8bpp user bitmaps (anim frames)
+		Assert((flags & BMP_AABITMAP) || (gr_screen.mode == GR_SOFTWARE));
 		bmp->bpp = bpp;
-		bmp->flags = be->info.user.flags;		
-		bmp->data = (uintptr_t)be->info.user.data;								
+		bmp->flags = be->info.user.flags;
+		bmp->data = (uintptr_t)be->info.user.data;
 		break;
 		
 	// default:
@@ -1231,7 +1255,7 @@ bitmap * bm_lock( int handle, ubyte bpp, ubyte flags )
 			// software renderer: 8bpp is the norm; a few FS2-era paths
 			// (beam section info) lock at 16 and work via the 1555 guns
 			Assert( bpp == 8 || bpp == 16 );
-			Assert( (bm_bitmaps[bitmapnum].type == BM_TYPE_PCX) || (bm_bitmaps[bitmapnum].type == BM_TYPE_ANI) || (bm_bitmaps[bitmapnum].type == BM_TYPE_TGA));
+			Assert( (bm_bitmaps[bitmapnum].type == BM_TYPE_PCX) || (bm_bitmaps[bitmapnum].type == BM_TYPE_ANI) || (bm_bitmaps[bitmapnum].type == BM_TYPE_TGA) || (bm_bitmaps[bitmapnum].type == BM_TYPE_USER));
 		} else {
 			if(flags & BMP_AABITMAP){
 				Assert( bpp == 8 );
@@ -1263,7 +1287,16 @@ bitmap * bm_lock( int handle, ubyte bpp, ubyte flags )
 
 	// if bitmap hasn't been loaded yet, then load it from disk
 	// reread the bitmap from disk under certain conditions
+	// restored: retail hardcoded pal_changed=0 (hardware modes kept raw
+	// data).  Software translations bake the palette in, so a palette
+	// change must reload the bitmap (the swizzle stamps palette_checksum).
 	int pal_changed = 0;
+	if ( (gr_screen.mode == GR_SOFTWARE) && (bmp->data != 0) && (bmp->bpp == 8)
+			&& !(flags & BMP_AABITMAP)
+			&& ((be->type == BM_TYPE_PCX) || (be->type == BM_TYPE_ANI))
+			&& (be->palette_checksum != gr_palette_checksum) )	{
+		pal_changed = 1;
+	}
 	int rle_changed = 0;
 	int fake_xparent_changed = 0;	
 	if ( (bmp->data == NULL) || (bpp != bmp->bpp) || pal_changed || rle_changed || fake_xparent_changed ) {
