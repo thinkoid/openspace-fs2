@@ -52,13 +52,13 @@ float frand_range(float min, float max);
 //       (int)floor(x)      use fl_round_2048(x-0.5f)
 // for values in the range -2048 to 2048
 
-extern const float *p_fl_magic;
-
+// Retail did this with the 2^52+2^51 magic-add trick, which depended on
+// x87 extended-precision float arithmetic: under SSE2 the float add wipes
+// out x and the low word reads back 0 for every input.  lrintf() is the
+// same round-to-nearest-even the x87 trick computed.
 inline int fl_round_2048( float x )
 {
-	double tmp_quad;
-	tmp_quad = x + *p_fl_magic;
-	return *((int *)&tmp_quad);
+	return (int)lrintf(x);
 }
 
 /*

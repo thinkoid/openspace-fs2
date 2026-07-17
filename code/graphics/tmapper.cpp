@@ -345,13 +345,22 @@ void grx_tmapper( int nverts, vertex **verts, uint flags )
 //	tmap_scanline = tmap_scan_generic;
 
 	// combos retail's table never listed (e.g. TEXTURED|CORRECT|XPARENT
-	// from laser quads) degrade gracefully instead of asserting
-	if ( tmap_scanline == NULL )
-		tmap_scanline = tmap_scanline_table[flags & ~TMAP_FLAG_CORRECT];
-	if ( tmap_scanline == NULL )
-		tmap_scanline = tmap_scanline_table[flags & (TMAP_FLAG_TEXTURED|TMAP_FLAG_XPARENT)];
-	if ( tmap_scanline == NULL )
-		tmap_scanline = tmap_scanline_table[flags & TMAP_FLAG_TEXTURED];
+	// from laser quads) degrade gracefully instead of asserting.  The
+	// flags must degrade WITH the scanline: the per-span setup below
+	// branches on them, and a linear scanline fed by the perspective
+	// setup reads stale fx_u/fx_v and walks off the texture.
+	if ( tmap_scanline == NULL )	{
+		uint fallback[3] = { flags & ~TMAP_FLAG_CORRECT,
+			flags & (TMAP_FLAG_TEXTURED|TMAP_FLAG_XPARENT),
+			flags & TMAP_FLAG_TEXTURED };
+		for (i = 0; i < 3; i++ )	{
+			if ( tmap_scanline_table[fallback[i]] != NULL )	{
+				flags = fallback[i];
+				tmap_scanline = tmap_scanline_table[flags];
+				break;
+			}
+		}
+	}
 
 #ifndef NDEBUG
 	Assert( tmap_scanline != NULL );

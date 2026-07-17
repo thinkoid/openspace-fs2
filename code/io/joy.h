@@ -34,6 +34,7 @@ extern int Dead_zone_size;  // percentage of range that is dead zone
 
 int	joy_init();
 void	joy_flush();
+void	joy_process();		// per-frame state refresh, called from os_poll()
 int	joy_get_pos(int * x, int * y, int *z, int *r);
 int	joy_down_count(int btn, int reset_count = 1);
 int	joy_down(int btn);

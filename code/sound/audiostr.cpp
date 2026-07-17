@@ -1,24 +1,23 @@
 /*
  * Copyright (C) Volition, Inc. 1999.  All rights reserved.
  *
- * All source code herein is the property of Volition, Inc. You may not sell 
- * or otherwise commercially exploit the source or things you created based on the 
+ * All source code herein is the property of Volition, Inc. You may not sell
+ * or otherwise commercially exploit the source or things you created based on the
  * source.
  *
 */
 
-#define VC_EXTRALEAN
-#define STRICT
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+
+#include <SDL.h>
+#include <AL/al.h>
 
 #include "pstypes.h"
 
-#include <windows.h>
-#include <mmsystem.h>
-#include <mmreg.h>
-#include <msacm.h>
-#include "vdsound.h"
 #include "audiostr.h"
-#include "cfile.h"		// needed for cf_get_path
+#include "cfile.h"		// needed for cf_find_file_location
 #include "timer.h"
 #include "sound.h"		/* for Snd_sram */
 #include "acm.h"
@@ -30,14 +29,19 @@
 #define FAILURE FALSE
 #endif // SUCCESS
 
-typedef BOOL (*TIMERCALLBACK)(DWORD);
+typedef int (*TIMERCALLBACK)(void *);
+
+#define MAX_STREAM_BUFFERS 4
 
 #define BIGBUF_SIZE					180000			// This can be reduced to 88200 once we don't use any stereo
 //#define BIGBUF_SIZE					88300			// This can be reduced to 88200 once we don't use any stereo
 unsigned char *Wavedata_load_buffer = NULL;		// buffer used for cueing audiostreams
 unsigned char *Wavedata_service_buffer = NULL;	// buffer used for servicing audiostreams
 
-CRITICAL_SECTION Global_service_lock;
+// The audiostream service timer fires on the SDL timer thread, so the
+// critical sections here are real SDL mutexes (SDL mutexes are recursive,
+// matching the Win32 CRITICAL_SECTION semantics the code was written for).
+SDL_mutex *Global_service_lock = NULL;
 
 #define COMPRESSED_BUFFER_SIZE	88300
 unsigned char *Compressed_buffer = NULL;				// Used to load in compressed data during a cueing interval
@@ -45,28 +49,75 @@ unsigned char *Compressed_service_buffer = NULL;	// Used to read in compressed d
 
 #define AS_HIGHEST_MAX				999999999	// max uncompressed filesize supported is 999 meg
 
+// the on-disk WAVEFORMATEX is 18 bytes; the ds.h struct pads to 20.  The ACM
+// decoder parses the fmt chunk verbatim, so the ADPCM extra bytes must sit
+// right after the 18 header bytes (matching acm.cpp)
+#define WAVEFORMATEX_DISK_SIZE	18
+
+// check for an OpenAL error from the preceding call, print it out.
+// Returns 1 if an error was raised, 0 if all is well.
+static int openal_error(const char *where)
+{
+	ALenum err = alGetError();
+
+	if ( err != AL_NO_ERROR ) {
+		nprintf(("SOUND", "SOUND ==> OpenAL error in %s: %s\n", where, (const char *)alGetString(err)));
+		return 1;
+	}
+
+	return 0;
+}
+
+// wave chunk reading helpers.  The RIFF fields are read one by one, since
+// the in-memory WAVEFORMATEX layout doesn't match the packed on-disk layout.
+static int audiostr_read_word(FILE *fp, WORD *i)
+{
+	if ( fread( i, 1, sizeof(WORD), fp ) != sizeof(WORD) )
+		return 0;
+
+	*i = INTEL_SHORT(*i);
+	return 1;
+}
+
+static int audiostr_read_dword(FILE *fp, DWORD *i)
+{
+	if ( fread( i, 1, sizeof(DWORD), fp ) != sizeof(DWORD) )
+		return 0;
+
+	*i = INTEL_INT(*i);
+	return 1;
+}
+
+static int audiostr_read_uint(FILE *fp, uint *i)
+{
+	if ( fread( i, 1, sizeof(uint), fp ) != sizeof(uint) )
+		return 0;
+
+	*i = INTEL_INT(*i);
+	return 1;
+}
+
 // Classes
 
 // Timer
 //
-// Wrapper class for Windows multimedia timer services. Provides
-// both periodic and one-shot events. User must supply callback
-// for periodic events.
-// 
+// Wrapper class for the SDL timer services. Provides
+// periodic events. User must supply callback.
+//
 
 class Timer
 {
 public:
     void constructor(void);
     void destructor(void);
-    BOOL Create (UINT nPeriod, UINT nRes, DWORD dwUser,  TIMERCALLBACK pfnCallback);
+    int Create (uint nPeriod, uint nRes, void *dwUser, TIMERCALLBACK pfnCallback);
 protected:
-    static void CALLBACK TimeProc(UINT uID, UINT uMsg, DWORD dwUser, DWORD dw1, DWORD dw2);
+    static Uint32 TimeProc(Uint32 interval, void *param);
     TIMERCALLBACK m_pfnCallback;
-    DWORD m_dwUser;
-    UINT m_nPeriod;
-    UINT m_nRes;
-    UINT m_nIDTimer;
+    void *m_dwUser;
+    uint m_nPeriod;
+    uint m_nRes;
+    SDL_TimerID m_nIDTimer;
 };
 
 
@@ -79,7 +130,7 @@ protected:
 // Public Methods:
 //
 // Public Data:
-//   
+//
 //
 
 class WaveFile
@@ -87,65 +138,44 @@ class WaveFile
 public:
 	void Init(void);
 	void Close(void);
-	BOOL Open (LPSTR pszFilename);
-	BOOL Cue (void);
-	int	Read (BYTE * pbDest, UINT cbSize, int service=1);
-	UINT GetNumBytesRemaining (void) { return (m_nDataSize - m_nBytesPlayed); }
-	UINT GetUncompressedAvgDataRate (void) { return (m_nUncompressedAvgDataRate); }
-	UINT GetDataSize (void) { return (m_nDataSize); }
-	UINT GetNumBytesPlayed (void) { return (m_nBytesPlayed); }
-	BYTE GetSilenceData (void);
-	WAVEFORMATEX m_wfmt;					// format of wave file used by Direct Sound
+	int Open (char *pszFilename);
+	int Cue (void);
+	int	Read (ubyte *pbDest, uint cbSize, int service=1);
+	uint GetNumBytesRemaining (void) { return (m_nDataSize - m_nBytesPlayed); }
+	uint GetUncompressedAvgDataRate (void) { return (m_nUncompressedAvgDataRate); }
+	uint GetDataSize (void) { return (m_nDataSize); }
+	uint GetNumBytesPlayed (void) { return (m_nBytesPlayed); }
+	ubyte GetSilenceData (void);
+	WAVEFORMATEX m_wfmt;					// format of wave file used by the sound system
 	WAVEFORMATEX * m_pwfmt_original;	// foramt of wave file from actual wave source
-	UINT m_total_uncompressed_bytes_read;
-	UINT m_max_uncompressed_bytes_to_read;
-	UINT	m_bits_per_sample_uncompressed;
+	uint m_total_uncompressed_bytes_read;
+	uint m_max_uncompressed_bytes_to_read;
+	uint	m_bits_per_sample_uncompressed;
+	ALenum m_ALformat;						// OpenAL buffer format matching m_wfmt
 
 protected:
-	UINT m_data_offset;						// number of bytes to actual wave data
+	uint m_data_offset;						// absolute file offset to actual wave data
 	int  m_data_bytes_left;
-	HMMIO	cfp;
+	FILE	*cfp;
 
-	UINT m_wave_format;						// format of wave source (ie WAVE_FORMAT_PCM, WAVE_FORMAT_ADPCM)
-	UINT m_nBlockAlign;						// wave data block alignment spec
-	UINT m_nUncompressedAvgDataRate;		// average wave data rate
-	UINT m_nDataSize;							// size of data chunk
-	UINT m_nBytesPlayed;						// offset into data chunk
-	BOOL m_abort_next_read;
+	uint m_wave_format;						// format of wave source (ie WAVE_FORMAT_PCM, WAVE_FORMAT_ADPCM)
+	uint m_nBlockAlign;						// wave data block alignment spec
+	uint m_nUncompressedAvgDataRate;		// average wave data rate
+	uint m_nDataSize;							// size of data chunk
+	uint m_nBytesPlayed;						// offset into data chunk
+	int m_abort_next_read;
 
-	HACMSTREAM		m_hStream;
+	void			*m_hStream;
 	int				m_hStream_open;
 	WAVEFORMATEX	m_wfxDest;
-};
-
-// Classes
-
-// AudioStreamServices
-//
-// DirectSound apportions services on a per-window basis to allow
-// sound from background windows to be muted. The AudioStreamServices
-// class encapsulates the initialization of DirectSound services.
-//
-// Each window that wants to create AudioStream objects must
-// first create and initialize an AudioStreamServices object. 
-// All AudioStream objects must be destroyed before the associated 
-// AudioStreamServices object is destroyed.
-class AudioStreamServices
-{
-public:
-    void Constructor(void);
-    BOOL Initialize ();
-    LPDIRECTSOUND GetPDS (void) { return m_pds; }
-protected:
-    LPDIRECTSOUND m_pds;
+	char			m_wFilename[MAX_FILENAME_LEN];
 };
 
 
 // AudioStream
 //
-// Audio stream interface class for playing WAV files using DirectSound.
-// Users of this class must create AudioStreamServices object before
-// creating an AudioStream object.
+// Audio stream interface class for playing WAV files using OpenAL
+// buffer queueing on a dedicated source.
 //
 // Public Methods:
 //
@@ -161,8 +191,8 @@ class AudioStream
 public:
 	AudioStream (void);
 	~AudioStream (void);
-	BOOL Create (LPSTR pszFilename, AudioStreamServices * pass);
-	BOOL Destroy (void);
+	int Create (char *pszFilename);
+	int Destroy (void);
 	void Play (long volume, int looping);
 	int Is_Playing(){ return(m_fPlaying); }
 	int Is_Paused(){ return(m_bIsPaused); }
@@ -181,80 +211,44 @@ public:
 	int	Is_looping() { return m_bLooping; }
 	int	status;
 	int	type;
-	UINT m_bits_per_sample_uncompressed;
+	uint m_bits_per_sample_uncompressed;
 
 protected:
 	void Cue (void);
-	BOOL WriteWaveData (UINT cbSize, UINT* num_bytes_written,int service=1);
-	BOOL WriteSilence (UINT cbSize);
-	DWORD GetMaxWriteSize (void);
-	BOOL ServiceBuffer (void);
-	static BOOL TimerCallback (DWORD dwUser);
+	int WriteWaveData (uint cbSize, uint* num_bytes_written,int service=1);
+	uint GetMaxWriteSize (void);
+	int ServiceBuffer (void);
+	static int TimerCallback (void *dwUser);
 
-	AudioStreamServices * m_pass;  // ptr to AudioStreamServices object
-	LPDIRECTSOUNDBUFFER m_pdsb;    // ptr to Direct Sound buffer
+	ALuint m_source_id;							// name of the OpenAL source
+	ALuint m_buffer_ids[MAX_STREAM_BUFFERS];	// names of the queued buffers
+	int m_play_buffer_id;						// round-robin index of next buffer to fill
+
 	WaveFile * m_pwavefile;        // ptr to WaveFile object
 	Timer m_timer;              // ptr to Timer object
-	BOOL m_fCued;                  // semaphore (stream cued)
-	BOOL m_fPlaying;               // semaphore (stream playing)
-	DSBUFFERDESC m_dsbd;           // Direct Sound buffer description
-	LONG m_lInService;             // reentrancy semaphore
-	UINT m_cbBufOffset;            // last write position
-	UINT m_nBufLength;             // length of sound buffer in msec
-	UINT m_cbBufSize;              // size of sound buffer in bytes
-	UINT m_nBufService;            // service interval in msec
-	UINT m_nTimeStarted;           // time (in system time) playback started
+	int m_fCued;                  // semaphore (stream cued)
+	int m_fPlaying;               // semaphore (stream playing)
+	long m_lInService;             // reentrancy semaphore
+	uint m_cbBufOffset;            // last write position
+	uint m_nBufLength;             // length of sound buffer in msec
+	uint m_cbBufSize;              // size of sound buffer in bytes
+	uint m_nBufService;            // service interval in msec
+	uint m_nTimeStarted;           // time (in system time) playback started
 
-	BOOL	m_bLooping;						// whether or not to loop playback
-	BOOL	m_bFade;							// fade out music 
-	BOOL	m_bDestroy_when_faded;
-	LONG  m_lVolume;						// volume of stream ( 0 -> -10 000 )
-	LONG	m_lCutoffVolume;
-	BOOL  m_bIsPaused;					// stream is stopped, but not rewinded
-	UINT	m_silence_written;			// number of bytes of silence written to buffer
-	UINT  m_bReadingDone;				// no more bytes to be read from disk, still have remaining buffer to play
-	DWORD	m_fade_timer_id;				// timestamp so we know when to start fade
-	DWORD	m_finished_id;					// timestamp so we know when we've played #bytes required
-	BOOL	m_bPastLimit;					// flag to show we've played past the number of bytes requred
-	LONG	m_lDefaultVolume;
-	HRESULT h_result;
+	int	m_bLooping;						// whether or not to loop playback
+	int	m_bFade;							// fade out music
+	int	m_bDestroy_when_faded;
+	long  m_lVolume;						// volume of stream ( 0 -> -10 000 )
+	long	m_lCutoffVolume;
+	int  m_bIsPaused;					// stream is stopped, but not rewinded
+	uint  m_bReadingDone;				// no more bytes to be read from disk, still have remaining buffer to play
+	uint	m_fade_timer_id;				// timestamp so we know when to start fade
+	uint	m_finished_id;					// timestamp so we know when we've played #bytes required
+	int	m_bPastLimit;					// flag to show we've played past the number of bytes requred
+	long	m_lDefaultVolume;
 
-	CRITICAL_SECTION write_lock;
+	SDL_mutex *write_lock;
 };
-
-
-// AudioStreamServices class implementation
-//
-////////////////////////////////////////////////////////////
-
-// Constructor
-void AudioStreamServices::Constructor(void)
-{
-    // Initialize member data
-    m_pds = NULL;
-
-    // It would seem to make sense to initialize DirectSound here,
-    // but because there could be an error, it's best done in a
-    // separate member function, ::Initialize.
-}
-
-
-extern LPDIRECTSOUND pDirectSound;		// From Sound.cpp
-
-
-// Initialize
-BOOL AudioStreamServices::Initialize ()
-{
-    
-    BOOL fRtn = SUCCESS;    // assume success
-
-    if (m_pds == NULL)  {
-		m_pds = pDirectSound;
-    }
-
-    return (fRtn);
-}
-
 
 
 //
@@ -263,20 +257,20 @@ BOOL AudioStreamServices::Initialize ()
 ////////////////////////////////////////////////////////////
 
 // The following constants are the defaults for our streaming buffer operation.
-const UINT DefBufferLength          = 2000; // default buffer length in msec
-const UINT DefBufferServiceInterval = 250;  // default buffer service interval in msec
+const uint DefBufferLength          = 2000; // default buffer length in msec
+const uint DefBufferServiceInterval = 250;  // default buffer service interval in msec
 
 // Constructor
 AudioStream::AudioStream (void)
 {
-	InitializeCriticalSection( &write_lock );
+	write_lock = SDL_CreateMutex();
 }
 
 
 // Destructor
 AudioStream::~AudioStream (void)
 {
-	DeleteCriticalSection( &write_lock );
+	SDL_DestroyMutex( write_lock );
 }
 
 
@@ -287,16 +281,14 @@ void AudioStream::Init_Data ()
 	m_fade_timer_id = 0;
 	m_finished_id = 0;
 	m_bPastLimit = FALSE;
-	
+
 	m_bDestroy_when_faded = FALSE;
 	m_lVolume = 0;
 	m_lCutoffVolume = -10000;
 	m_bIsPaused = FALSE;
-	m_silence_written = 0;
 	m_bReadingDone = FALSE;
 
 	m_pwavefile = NULL;
-	m_pdsb = NULL;
 	m_fPlaying = m_fCued = FALSE;
 	m_lInService = FALSE;
 	m_cbBufOffset = 0;
@@ -304,22 +296,24 @@ void AudioStream::Init_Data ()
 	m_cbBufSize = 0;
 	m_nBufService = DefBufferServiceInterval;
 	m_nTimeStarted = 0;
+
+	memset(m_buffer_ids, 0, sizeof(m_buffer_ids));
+	m_source_id = 0;
+	m_play_buffer_id = 0;
 }
 
 // Create
-BOOL AudioStream::Create (LPSTR pszFilename, AudioStreamServices * pass)
+int AudioStream::Create (char *pszFilename)
 {
-	BOOL fRtn = SUCCESS;    // assume success
+	int fRtn = SUCCESS;    // assume success
 
 	Assert(pszFilename);
-	Assert(pass);
 
-	m_pass = pass;
 	Init_Data();
 
-	if (pszFilename && m_pass) {
+	if (pszFilename) {
 		// Create a new WaveFile object
-	
+
 		m_pwavefile = (WaveFile *)malloc(sizeof(WaveFile));
 		Assert(m_pwavefile);
 
@@ -333,44 +327,51 @@ BOOL AudioStream::Create (LPSTR pszFilename, AudioStreamServices * pass)
 				// Buffer size is average data rate times length of buffer
 				// No need for buffer to be larger than wave data though
 				m_cbBufSize = (m_pwavefile->GetUncompressedAvgDataRate () * m_nBufLength) / 1000;
+				// cut it down by the number of buffers we rotate with to maintain some measure of sane memory usage
+				m_cbBufSize /= MAX_STREAM_BUFFERS;
+
+				// ??? there tends to be static in the audio if m_cbBufSize equals the samples per second, so make it unequal
+				if ( (m_cbBufSize == m_pwavefile->m_wfmt.nSamplesPerSec) || (m_cbBufSize == 11025) || (m_cbBufSize == 22050) )
+					m_cbBufSize = (uint)((float)m_cbBufSize * 1.3f);
+
+				// if the requested buffer size is too big then cap it
+				m_cbBufSize = (m_cbBufSize > BIGBUF_SIZE) ? BIGBUF_SIZE : m_cbBufSize;
+
 				nprintf(("SOUND", "SOUND => Stream buffer created using %d bytes\n", m_cbBufSize));
-				// m_cbBufSize = (m_cbBufSize > m_pwavefile->GetDataSize ()) ? m_pwavefile->GetDataSize () : m_cbBufSize;
 
-				//nprintf(("Sound", "SOUND => average data rate = %d\n\r", m_pwavefile->GetUncompressedAvgDataRate ()));
-				//nprintf(("Sound", "SOUND => m_cbBufSize = %d\n\r", m_cbBufSize));
-
-				// Create sound buffer
-				HRESULT hr;
-				memset (&m_dsbd, 0, sizeof (DSBUFFERDESC));
-				m_dsbd.dwSize = sizeof (DSBUFFERDESC);
-				m_dsbd.dwBufferBytes = m_cbBufSize;
-				m_dsbd.lpwfxFormat = &m_pwavefile->m_wfmt;
-				m_dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME | DSBCAPS_LOCSOFTWARE;
-
-				hr = (m_pass->GetPDS ())->CreateSoundBuffer (&m_dsbd, &m_pdsb, NULL);
-				if (hr == DS_OK) {
-					// Cue for playback
-					Cue ();
-					Snd_sram += m_cbBufSize;
-				}
-				else {
-					// Error, unable to create DirectSound buffer
-					nprintf(("Sound", "SOUND => Error, unable to create DirectSound buffer\n\r"));
-					if (hr == DSERR_BADFORMAT) {
-						nprintf(("Sound", "SOUND => Bad format (probably ADPCM)\n\r"));
-					}
-
+				// Create the OpenAL source and rotating buffer set
+				alGetError();
+				alGenSources(1, &m_source_id);
+				if ( openal_error("alGenSources") ) {
 					fRtn = FAILURE;
+					goto ErrorExit;
 				}
+
+				alGenBuffers(MAX_STREAM_BUFFERS, m_buffer_ids);
+				if ( openal_error("alGenBuffers") ) {
+					fRtn = FAILURE;
+					goto ErrorExit;
+				}
+
+				// streams are always at full volume, straight ahead
+				alSourcef(m_source_id, AL_ROLLOFF_FACTOR, 0);
+				alSourcei(m_source_id, AL_SOURCE_RELATIVE, AL_TRUE);
+
+				ALfloat posv[] = { 0, 0, 0 };
+				alSourcefv(m_source_id, AL_POSITION, posv);
+
+				alSourcef(m_source_id, AL_GAIN, 1);
+				openal_error("source setup");
+
+				// Cue for playback
+				Cue ();
+				Snd_sram += (m_cbBufSize * MAX_STREAM_BUFFERS);
 			}
 			else {
 				// Error opening file
 				nprintf(("SOUND", "SOUND => Failed to open wave file: %s\n\r", pszFilename));
-				m_pwavefile->Close();
-				free(m_pwavefile);
-				m_pwavefile = NULL;
 				fRtn = FAILURE;
-			}   
+			}
 		}
 		else {
 			// Error, unable to create WaveFile object
@@ -383,25 +384,46 @@ BOOL AudioStream::Create (LPSTR pszFilename, AudioStreamServices * pass)
 		fRtn = FAILURE;
 	}
 
+ErrorExit:
+	if ( (fRtn == FAILURE) && (m_pwavefile) ) {
+		if ( m_source_id ) {
+			alDeleteSources(1, &m_source_id);
+			m_source_id = 0;
+		}
+
+		m_pwavefile->Close();
+		free(m_pwavefile);
+		m_pwavefile = NULL;
+	}
+
 	return (fRtn);
 }
 
 
 // Destroy
-BOOL AudioStream::Destroy (void)
+int AudioStream::Destroy (void)
 {
-	BOOL fRtn = SUCCESS;
+	int fRtn = SUCCESS;
 
-	EnterCriticalSection(&write_lock);
-	
+	SDL_LockMutex(write_lock);
+
 	// Stop playback
 	Stop ();
 
-	// Release DirectSound buffer
-	if (m_pdsb) {
-		m_pdsb->Release ();
-		m_pdsb = NULL;
-		Snd_sram -= m_cbBufSize;
+	// Release sound source and buffers
+	if ( m_source_id ) {
+		alDeleteSources(1, &m_source_id);
+		m_source_id = 0;
+
+		for (int i = 0; i < MAX_STREAM_BUFFERS; i++) {
+			// make sure that the buffer is real before trying to delete, it could crash for some otherwise
+			if ( (m_buffer_ids[i] != 0) && alIsBuffer(m_buffer_ids[i]) ) {
+				alDeleteBuffers(1, &m_buffer_ids[i]);
+			}
+			m_buffer_ids[i] = 0;
+		}
+
+		Snd_sram -= (m_cbBufSize * MAX_STREAM_BUFFERS);
 	}
 
 	// Delete WaveFile object
@@ -413,25 +435,19 @@ BOOL AudioStream::Destroy (void)
 
 	status = ASF_FREE;
 
-	LeaveCriticalSection(&write_lock);
+	SDL_UnlockMutex(write_lock);
 
 	return fRtn;
 }
 
 // WriteWaveData
 //
-// Writes wave data to sound buffer. This is a helper method used by Create and
-// ServiceBuffer; it's not exposed to users of the AudioStream class.
-BOOL AudioStream::WriteWaveData (UINT size, UINT *num_bytes_written, int service)
+// Writes wave data to a queued OpenAL buffer. This is a helper method used
+// by Create and ServiceBuffer; it's not exposed to users of the AudioStream
+// class.
+int AudioStream::WriteWaveData (uint size, uint *num_bytes_written, int service)
 {
-	HRESULT hr;
-	LPBYTE lpbuf1 = NULL;
-	LPBYTE lpbuf2 = NULL;
-	DWORD dwsize1 = 0;
-	DWORD dwsize2 = 0;
-	DWORD dwbyteswritten1 = 0;
-	DWORD dwbyteswritten2 = 0;
-	BOOL fRtn = SUCCESS;
+	int fRtn = SUCCESS;
 	unsigned char	*uncompressed_wave_data;
 
 	*num_bytes_written = 0;
@@ -440,14 +456,14 @@ BOOL AudioStream::WriteWaveData (UINT size, UINT *num_bytes_written, int service
 		return fRtn;
 	}
 
-	if ( !m_pdsb || !m_pwavefile ) {
+	if ( (m_buffer_ids[0] == 0) || !m_pwavefile ) {
 		return fRtn;
 	}
 
 	if ( service ) {
-		EnterCriticalSection(&Global_service_lock);
+		SDL_LockMutex(Global_service_lock);
 	}
-		    
+
 	if ( service ) {
 		uncompressed_wave_data = Wavedata_service_buffer;
 	} else {
@@ -456,99 +472,50 @@ BOOL AudioStream::WriteWaveData (UINT size, UINT *num_bytes_written, int service
 
 	int num_bytes_read = 0;
 
-    // Lock the sound buffer
-	hr = m_pdsb->Lock (m_cbBufOffset, size, (void**)(&lpbuf1), &dwsize1, (void**)(&lpbuf2), &dwsize2, 0);
-	if (hr == DS_OK) {
-		// Write data to sound buffer. Because the sound buffer is circular, we may have to
-		// do two write operations if locked portion of buffer wraps around to start of buffer.
-		Assert(lpbuf1);
-		
-		num_bytes_read = m_pwavefile->Read(uncompressed_wave_data, dwsize1+dwsize2,service);
-		if ( num_bytes_read == -1 ) {
-			// means nothing left to read!
-			num_bytes_read = 0;
-			m_bReadingDone = 1;
-		}
-
-		if ( num_bytes_read > 0 ) {
-			if ( (unsigned int)num_bytes_read > dwsize1 ) {
-				dwbyteswritten1 = dwsize1;
-				dwbyteswritten2 = num_bytes_read - dwsize1;
-
-				memcpy(lpbuf1, uncompressed_wave_data, dwsize1);
-				Assert(lpbuf2);
-				memcpy(lpbuf2, uncompressed_wave_data+dwsize1, num_bytes_read-dwsize1);
-			} else {
-				dwbyteswritten1 = num_bytes_read;
-				dwbyteswritten2 = 0;
-				memcpy(lpbuf1, uncompressed_wave_data, num_bytes_read);
-			}
-		}
-			
-		// Update our buffer offset and unlock sound buffer
-		m_cbBufOffset = (m_cbBufOffset + dwbyteswritten1 + dwbyteswritten2) % m_cbBufSize;
-		*num_bytes_written = dwbyteswritten1 + dwbyteswritten2;
-		m_pdsb->Unlock (lpbuf1, dwsize1, lpbuf2, dwsize2);
-    }
-	else {
-		// Error locking sound buffer
-		nprintf(("SOUND", "SOUND ==> Error, unable to lock sound buffer in AudioStr\n"));
-		fRtn = FAILURE;
+	num_bytes_read = m_pwavefile->Read(uncompressed_wave_data, m_cbBufSize, service);
+	if ( num_bytes_read == -1 ) {
+		// means nothing left to read!
+		num_bytes_read = 0;
+		m_bReadingDone = 1;
 	}
+
+	if ( num_bytes_read > 0 ) {
+	//	nprintf(("SOUND", "SOUND ==> Queueing %d bytes of Data\n", num_bytes_read));
+
+		// unqueue and recycle any processed buffers
+		ALint p = 0;
+		ALuint bid[MAX_STREAM_BUFFERS];
+
+		alGetSourcei(m_source_id, AL_BUFFERS_PROCESSED, &p);
+
+		if ( p > 0 ) {
+			alSourceUnqueueBuffers(m_source_id, p, bid);
+		}
+
+		alGetError();
+		alBufferData(m_buffer_ids[m_play_buffer_id], m_pwavefile->m_ALformat, uncompressed_wave_data, num_bytes_read, m_pwavefile->m_wfmt.nSamplesPerSec);
+		if ( openal_error("alBufferData") ) {
+			fRtn = FAILURE;
+			goto ErrorExit;
+		}
+
+		alSourceQueueBuffers(m_source_id, 1, &m_buffer_ids[m_play_buffer_id]);
+		if ( openal_error("alSourceQueueBuffers") ) {
+			fRtn = FAILURE;
+			goto ErrorExit;
+		}
+
+		m_play_buffer_id++;
+		if (m_play_buffer_id >= MAX_STREAM_BUFFERS)
+			m_play_buffer_id = 0;
+
+		*num_bytes_written = num_bytes_read;
+	}
+
+ErrorExit:
 
 	if ( service ) {
-		LeaveCriticalSection(&Global_service_lock);
-	}
-    
-	return (fRtn);
-}
-
-
-// WriteSilence
-//
-// Writes silence to sound buffer. This is a helper method used by
-// ServiceBuffer; it's not exposed to users of the AudioStream class.
-BOOL AudioStream::WriteSilence (UINT size)
-{
-	HRESULT hr;
-	LPBYTE lpbuf1 = NULL;
-	LPBYTE lpbuf2 = NULL;
-	DWORD dwsize1 = 0;
-	DWORD dwsize2 = 0;
-	DWORD dwbyteswritten1 = 0;
-	DWORD dwbyteswritten2 = 0;
-	BOOL fRtn = SUCCESS;
-
-	// Lock the sound buffer
-	hr = m_pdsb->Lock (m_cbBufOffset, size, (void**)(&lpbuf1), &dwsize1, (void**)(&lpbuf2), &dwsize2, 0);
-	if (hr == DS_OK) {
-
-		// Get silence data for this file format. Although word sizes vary for different
-		// wave file formats, ::Lock will always return pointers on word boundaries.
-		// Because silence data for 16-bit PCM formats is 0x0000 or 0x00000000, we can
-		// get away with writing bytes and ignoring word size here.
-		BYTE bSilence = m_pwavefile->GetSilenceData ();
-        
-		// Write silence to sound buffer. Because the sound buffer is circular, we may have to
-		// do two write operations if locked portion of buffer wraps around to start of buffer.
-		memset (lpbuf1, bSilence, dwsize1);
-		dwbyteswritten1 = dwsize1;
-            
-     // Second write required?
-		if (lpbuf2) {
-			memset (lpbuf2, bSilence, dwsize2);
-			dwbyteswritten2 = dwsize2;
-		}
-            
-		// Update our buffer offset and unlock sound buffer
-		m_cbBufOffset = (m_cbBufOffset + dwbyteswritten1 + dwbyteswritten2) % m_cbBufSize;
-//		m_pdsb->Unlock (lpbuf1, dwbyteswritten1, lpbuf2, dwbyteswritten2);
-		m_pdsb->Unlock (lpbuf1, dwsize1, lpbuf2, dwsize2);
-	}
-	else {
-		// Error locking sound buffer
-		nprintf(("SOUND", "SOUND ==> Error, unable to lock sound buffer in AudioStr\n"));
-		fRtn = FAILURE;
+		SDL_UnlockMutex(Global_service_lock);
 	}
 
 	return (fRtn);
@@ -558,28 +525,24 @@ BOOL AudioStream::WriteSilence (UINT size)
 // GetMaxWriteSize
 //
 // Helper function to calculate max size of sound buffer write operation, i.e. how much
-// free space there is in buffer.
-DWORD AudioStream::GetMaxWriteSize (void)
+// free space there is in the buffer queue.
+uint AudioStream::GetMaxWriteSize (void)
 {
-	DWORD dwWriteCursor, dwPlayCursor, dwMaxSize;
+	uint dwMaxSize = m_cbBufSize;
+	ALint n = 0, q = 0;
 
-	// Get current play position
-	if (m_pdsb->GetCurrentPosition (&dwPlayCursor, &dwWriteCursor) == DS_OK) {
-		if (m_cbBufOffset <= dwPlayCursor) {
-			// Our write position trails play cursor
-			dwMaxSize = dwPlayCursor - m_cbBufOffset;
-		}
+	alGetError();
 
-		else  {// (m_cbBufOffset > dw7Cursor)
-			// Play cursor has wrapped
-			dwMaxSize = m_cbBufSize - m_cbBufOffset + dwPlayCursor;
-		}
-	}
-	else {
-		// GetCurrentPosition call failed
-		Int3();
+	alGetSourcei(m_source_id, AL_BUFFERS_PROCESSED, &n);
+	if ( openal_error("AL_BUFFERS_PROCESSED") )
+		return 0;
+
+	alGetSourcei(m_source_id, AL_BUFFERS_QUEUED, &q);
+	if ( openal_error("AL_BUFFERS_QUEUED") )
+		return 0;
+
+	if (!n && (q >= MAX_STREAM_BUFFERS))	// all buffers queued
 		dwMaxSize = 0;
-	}
 
 //	nprintf(("Alan","Max write size: %d\n", dwMaxSize));
 	return (dwMaxSize);
@@ -592,8 +555,8 @@ DWORD AudioStream::GetMaxWriteSize (void)
 //
 // Returns TRUE if buffer serviced normally; otherwise returns FALSE.
 #define FADE_VOLUME_INTERVAL	 	 					400		// 100 == 1db
-#define VOLUME_ATTENUATION_BEFORE_CUTOFF			3000		//  12db 
-BOOL AudioStream::ServiceBuffer (void)
+#define VOLUME_ATTENUATION_BEFORE_CUTOFF			3000		//  12db
+int AudioStream::ServiceBuffer (void)
 {
 	long	vol;
 	int	fRtn = TRUE;
@@ -601,135 +564,117 @@ BOOL AudioStream::ServiceBuffer (void)
 	if ( status != ASF_USED )
 		return FALSE;
 
-	EnterCriticalSection(&write_lock);
+	SDL_LockMutex(write_lock);
 
 	// status may have changed, so lets check once again
 	if ( status != ASF_USED ){
-		LeaveCriticalSection(&write_lock);
+		SDL_UnlockMutex(write_lock);
 		return FALSE;
 	}
 
-	// Check for reentrance
-	if (InterlockedExchange (&m_lInService, TRUE) == FALSE) {
-		if ( m_bFade == TRUE ) {
-			if ( m_lCutoffVolume == -10000 ) {
-				vol = Get_Volume();
-//				nprintf(("Alan","Volume is: %d\n",vol));
-				m_lCutoffVolume = max(vol - VOLUME_ATTENUATION_BEFORE_CUTOFF, -10000);
+	if ( m_bFade == TRUE ) {
+		if ( m_lCutoffVolume == -10000 ) {
+			vol = Get_Volume();
+//			nprintf(("Alan","Volume is: %d\n",vol));
+			m_lCutoffVolume = vol - VOLUME_ATTENUATION_BEFORE_CUTOFF;
+			if ( m_lCutoffVolume < -10000 )
+				m_lCutoffVolume = -10000;
+		}
+
+		vol = Get_Volume();
+		vol = vol - FADE_VOLUME_INTERVAL;	// decrease by 1db
+//		nprintf(("Alan","Volume is now: %d\n",vol));
+		Set_Volume(vol);
+
+//		nprintf(("Sound","SOUND => Volume for stream sound is %d\n",vol));
+//		nprintf(("Alan","Cuttoff Volume is: %d\n",m_lCutoffVolume));
+		if ( vol < m_lCutoffVolume ) {
+			m_bFade = 0;
+			m_lCutoffVolume = -10000;
+			if ( m_bDestroy_when_faded == TRUE ) {
+				SDL_UnlockMutex(write_lock);
+				Destroy();
+				return FALSE;
+			}
+			else {
+				Stop_and_Rewind();
+				SDL_UnlockMutex(write_lock);
+				return TRUE;
+			}
+		}
+	}
+
+	// All of sound not played yet, send more data to buffer
+	uint dwFreeSpace = GetMaxWriteSize ();
+
+	// Determine free space in sound buffer
+	if (dwFreeSpace) {
+
+		// Some wave data remains, but not enough to fill free space
+		// Send wave data to buffer, fill remainder of free space with silence
+		uint num_bytes_written;
+
+		if (WriteWaveData (dwFreeSpace, &num_bytes_written) == SUCCESS) {
+//			nprintf(("Alan","Num bytes written: %d\n", num_bytes_written));
+
+			if ( m_pwavefile->m_total_uncompressed_bytes_read >= m_pwavefile->m_max_uncompressed_bytes_to_read ) {
+				m_fade_timer_id = timer_get_milliseconds() + 1700;		// start fading 1.7 seconds from now
+				m_finished_id = timer_get_milliseconds() + 2000;		// 2 seconds left to play out buffer
+				m_pwavefile->m_max_uncompressed_bytes_to_read = AS_HIGHEST_MAX;
 			}
 
-			vol = Get_Volume();
-			vol = vol - FADE_VOLUME_INTERVAL;	// decrease by 1db
-//			nprintf(("Alan","Volume is now: %d\n",vol));
-			Set_Volume(vol);
+			if ( (m_fade_timer_id>0) && ((uint)timer_get_milliseconds() > m_fade_timer_id) ) {
+				m_fade_timer_id = 0;
+				Fade_and_Stop();
+			}
 
-//			nprintf(("Sound","SOUND => Volume for stream sound is %d\n",vol));
-//			nprintf(("Alan","Cuttoff Volume is: %d\n",m_lCutoffVolume));
-			if ( vol < m_lCutoffVolume ) {
-				m_bFade = 0;
-				m_lCutoffVolume = -10000;
+			if ( (m_finished_id>0) && ((uint)timer_get_milliseconds() > m_finished_id) ) {
+				m_finished_id = 0;
+				m_bPastLimit = TRUE;
+			}
+
+			// see if we're done: nothing left to read, and every queued buffer
+			// has been played through
+			ALint n = 0, q = 0;
+
+			alGetError();
+			alGetSourcei(m_source_id, AL_BUFFERS_PROCESSED, &n);
+			if ( openal_error("AL_BUFFERS_PROCESSED") )
+				m_bReadingDone = TRUE;
+
+			alGetSourcei(m_source_id, AL_BUFFERS_QUEUED, &q);
+
+			if ( m_bReadingDone && (n == q) ) {
 				if ( m_bDestroy_when_faded == TRUE ) {
-					LeaveCriticalSection(&write_lock);
-					Destroy();	
-					// Reset reentrancy semaphore
-					InterlockedExchange (&m_lInService, FALSE);
+					SDL_UnlockMutex(write_lock);
+					Destroy();
 					return FALSE;
+				}
+
+				// All of sound has played, stop playback or loop again
+				if ( m_bLooping && !m_bFade) {
+					Play(m_lVolume, m_bLooping);
 				}
 				else {
 					Stop_and_Rewind();
-					// Reset reentrancy semaphore
-					LeaveCriticalSection(&write_lock);
-					InterlockedExchange (&m_lInService, FALSE);
-					return TRUE;
 				}
 			}
 		}
-
-		// All of sound not played yet, send more data to buffer
-		DWORD dwFreeSpace = GetMaxWriteSize ();
-
-		// Determine free space in sound buffer
-		if (dwFreeSpace) {
-
-			// Some wave data remains, but not enough to fill free space
-			// Send wave data to buffer, fill remainder of free space with silence
-			uint num_bytes_written;
-
-			if (WriteWaveData (dwFreeSpace, &num_bytes_written) == SUCCESS) {
-//				nprintf(("Alan","Num bytes written: %d\n", num_bytes_written));
-
-				if ( m_pwavefile->m_total_uncompressed_bytes_read >= m_pwavefile->m_max_uncompressed_bytes_to_read ) {
-					m_fade_timer_id = timer_get_milliseconds() + 1700;		// start fading 1.7 seconds from now
-					m_finished_id = timer_get_milliseconds() + 2000;		// 2 seconds left to play out buffer
-					m_pwavefile->m_max_uncompressed_bytes_to_read = AS_HIGHEST_MAX;
-				}
-
-				if ( (m_fade_timer_id>0) && ((uint)timer_get_milliseconds() > m_fade_timer_id) ) {
-					m_fade_timer_id = 0;
-					Fade_and_Stop();
-				}
-
-				if ( (m_finished_id>0) && ((uint)timer_get_milliseconds() > m_finished_id) ) {
-					m_finished_id = 0;
-					m_bPastLimit = TRUE;
-				}
-
-				if ( (num_bytes_written < dwFreeSpace) && m_bReadingDone ) {
-					int num_bytes_silence;
-					num_bytes_silence = dwFreeSpace - num_bytes_written;
-
-					if ( num_bytes_silence > 0 ) {
-
-						m_silence_written += num_bytes_silence;
-						if (WriteSilence (num_bytes_silence) == FAILURE)	{
-							fRtn = FALSE;
-							Int3();
-						}
-
-						if ( m_silence_written >= m_cbBufSize ) {
-							m_silence_written = 0;
-
-							if ( m_bDestroy_when_faded == TRUE ) {
-								LeaveCriticalSection(&write_lock);
-								Destroy();
-								// Reset reentrancy semaphore
-								InterlockedExchange (&m_lInService, FALSE);
-								return FALSE;
-							}
-
-							// All of sound has played, stop playback or loop again
-							if ( m_bLooping && !m_bFade) {
-								Play(m_lVolume, m_bLooping);
-							}
-							else {
-								Stop_and_Rewind();
-							}
-						}
-					}
-				}
-			}
-			else {
-				// Error writing wave data
-				fRtn = FALSE;
-				Int3(); 
-			}
+		else {
+			// Error writing wave data
+			fRtn = FALSE;
+			Int3();
 		}
+	}
 
-        // Reset reentrancy semaphore
-        InterlockedExchange (&m_lInService, FALSE);
-    } else {
-		// Service routine reentered. Do nothing, just return
-		fRtn = FALSE;
-    }
-
-	LeaveCriticalSection(&write_lock);
+	SDL_UnlockMutex(write_lock);
 	return (fRtn);
 }
 
 // Cue
 void AudioStream::Cue (void)
 {
-	UINT num_bytes_written;
+	uint num_bytes_written;
 
 	if (!m_fCued) {
 		m_bFade = FALSE;
@@ -747,10 +692,14 @@ void AudioStream::Cue (void)
 		// Reset file ptr, etc
 		m_pwavefile->Cue ();
 
-		// Reset DirectSound buffer
-		m_pdsb->SetCurrentPosition (0);
+		// Unqueue any left-over processed buffers
+		ALint p = 0;
+		alGetSourcei(m_source_id, AL_BUFFERS_PROCESSED, &p);
 
-		// Fill buffer with wave data
+		if (p > 0)
+			alSourceUnqueueBuffers(m_source_id, p, m_buffer_ids);
+
+		// Fill first buffer with wave data
 		WriteWaveData (m_cbBufSize, &num_bytes_written,0);
 
 		m_fCued = TRUE;
@@ -761,7 +710,7 @@ void AudioStream::Cue (void)
 // Play
 void AudioStream::Play (long volume, int looping)
 {
-	if (m_pdsb) {
+	if (m_buffer_ids[0] != 0) {
 		// If playing, stop
 		if (m_fPlaying) {
 			if ( m_bIsPaused == FALSE)
@@ -778,42 +727,26 @@ void AudioStream::Play (long volume, int looping)
 		else
 			m_bLooping = 0;
 
-		// Begin DirectSound playback
-		HRESULT hr = m_pdsb->Play (0, 0, DSBPLAY_LOOPING);
-		if (hr == DS_OK) {
-			m_nTimeStarted = timer_get_milliseconds();
-			Set_Volume(volume);
-			// Kick off timer to service buffer
-			m_timer.constructor();
+		// Begin OpenAL playback
+		alSourcePlay(m_source_id);
+		openal_error("alSourcePlay");
 
-			m_timer.Create (m_nBufService, m_nBufService, DWORD (this), TimerCallback);
+		m_nTimeStarted = timer_get_milliseconds();
+		Set_Volume(volume);
 
-			// Playback begun, no longer cued
-			m_fPlaying = TRUE;
-			m_bIsPaused = FALSE;
-		}
-		else {
-			// If the buffer was lost, try to restore it
-			if ( hr == DSERR_BUFFERLOST ) {
-				hr = m_pdsb->Restore();
-				if ( hr == DS_OK ) {
-					hr = m_pdsb->Play (0, 0, DSBPLAY_LOOPING);
-				}
-				else {
-					nprintf(("Sound", "Sound => Lost a buffer, tried restoring but got %s\n", get_DSERR_text(hr) ));
-					Int3();	// get Alan, he wants to see this
-				}
-			}
+		// Kick off timer to service buffer
+		m_timer.constructor();
 
-			if ( hr != DS_OK ) {
-				nprintf(("Sound", "Sound => Play failed with return value %s\n", get_DSERR_text(hr) ));
-			}
-		}
+		m_timer.Create (m_nBufService, m_nBufService, (void *)this, TimerCallback);
+
+		// Playback begun, no longer cued
+		m_fPlaying = TRUE;
+		m_bIsPaused = FALSE;
 	}
 }
 
 // Timer callback for Timer object created by ::Play method.
-BOOL AudioStream::TimerCallback (DWORD dwUser)
+int AudioStream::TimerCallback (void *dwUser)
 {
     // dwUser contains ptr to AudioStream object
     AudioStream * pas = (AudioStream *) dwUser;
@@ -857,8 +790,13 @@ void AudioStream::Fade_and_Stop (void)
 void AudioStream::Stop(int paused)
 {
 	if (m_fPlaying) {
-		// Stop DirectSound playback
-		m_pdsb->Stop ();
+		if (paused) {
+			alSourcePause(m_source_id);
+		} else {
+			alSourceStop(m_source_id);
+		}
+		openal_error("Stop");
+
 		m_fPlaying = FALSE;
 		m_bIsPaused = paused;
 
@@ -871,14 +809,22 @@ void AudioStream::Stop(int paused)
 void AudioStream::Stop_and_Rewind (void)
 {
 	if (m_fPlaying) {
-		// Stop DirectSound playback
-		m_pdsb->Stop ();
+		// Stop playback
+		alSourceStop(m_source_id);
+		openal_error("Stop_and_Rewind");
 
 		// Delete Timer object
 		m_timer.destructor();
 
 		m_fPlaying = FALSE;
 	}
+
+	// Unqueue all processed buffers
+	ALint p = 0;
+	alGetSourcei(m_source_id, AL_BUFFERS_PROCESSED, &p);
+
+	if (p > 0)
+		alSourceUnqueueBuffers(m_source_id, p, m_buffer_ids);
 
 	m_fCued = FALSE;	// this will cause wave file to start from beginning
 	m_bReadingDone = FALSE;
@@ -889,15 +835,20 @@ void AudioStream::Set_Volume(long vol)
 {
 	if ( vol < -10000 )
 		vol = -10000;
-	
+
 	if ( vol > 0 )
 		vol = 0;
 
 	Assert( vol >= -10000 && vol <= 0 );
-	h_result = m_pdsb->SetVolume(vol);
+
+	// convert the DirectSound-style hundredths-of-decibels volume to a linear
+	// OpenAL gain
+	ALfloat alvol = (vol != -10000) ? powf(10.0f, (float)vol / (-600.0f / log10f(.5f))) : 0.0f;
+
+	alSourcef(m_source_id, AL_GAIN, alvol);
+	openal_error("Set_Volume");
+
 	m_lVolume = vol;
-	if ( h_result != DS_OK )
-		nprintf(("Sound","SOUND => SetVolume() failed with code '%s'\n", get_DSERR_text(h_result) ));
 }
 
 
@@ -910,7 +861,7 @@ long AudioStream::Get_Volume()
 // constructor
 void Timer::constructor(void)
 {
-	m_nIDTimer = NULL;
+	m_nIDTimer = 0;
 }
 
 
@@ -918,16 +869,16 @@ void Timer::constructor(void)
 void Timer::destructor(void)
 {
 	if (m_nIDTimer) {
-		timeKillEvent (m_nIDTimer);
-		m_nIDTimer = NULL;
+		SDL_RemoveTimer(m_nIDTimer);
+		m_nIDTimer = 0;
 	}
 }
 
 
 // Create
-BOOL Timer::Create (UINT nPeriod, UINT nRes, DWORD dwUser, TIMERCALLBACK pfnCallback)
+int Timer::Create (uint nPeriod, uint nRes, void *dwUser, TIMERCALLBACK pfnCallback)
 {
-	BOOL bRtn = SUCCESS;    // assume success
+	int bRtn = SUCCESS;    // assume success
 
 	Assert(pfnCallback);
 	Assert(nPeriod > 10);
@@ -938,7 +889,7 @@ BOOL Timer::Create (UINT nPeriod, UINT nRes, DWORD dwUser, TIMERCALLBACK pfnCall
 	m_dwUser = dwUser;
 	m_pfnCallback = pfnCallback;
 
-	if ((m_nIDTimer = timeSetEvent (m_nPeriod, m_nRes, TimeProc, (DWORD) this, TIME_PERIODIC)) == NULL) {
+	if ((m_nIDTimer = SDL_AddTimer (m_nPeriod, TimeProc, (void *)this)) == 0) {
 	  bRtn = FAILURE;
 	}
 
@@ -946,18 +897,22 @@ BOOL Timer::Create (UINT nPeriod, UINT nRes, DWORD dwUser, TIMERCALLBACK pfnCall
 }
 
 
-// Timer proc for multimedia timer callback set with timeSetTime().
+// Timer proc for the periodic timer callback set with SDL_AddTimer().
+// Runs on the SDL timer thread.
 //
-// Calls procedure specified when Timer object was created. The 
-// dwUser parameter contains "this" pointer for associated Timer object.
-// 
-void CALLBACK Timer::TimeProc(UINT uID, UINT uMsg, DWORD dwUser, DWORD dw1, DWORD dw2)
+// Calls procedure specified when Timer object was created. The
+// param parameter contains "this" pointer for associated Timer object.
+//
+Uint32 Timer::TimeProc(Uint32 interval, void *param)
 {
-    // dwUser contains ptr to Timer object
-    Timer * ptimer = (Timer *) dwUser;
+    // param contains ptr to Timer object
+    Timer * ptimer = (Timer *) param;
 
     // Call user-specified callback and pass back user specified data
     (ptimer->m_pfnCallback) (ptimer->m_dwUser);
+
+    // rearm for the next interval
+    return interval;
 }
 
 
@@ -978,6 +933,9 @@ void WaveFile::Init(void)
 	m_nBytesPlayed = 0;
 	m_total_uncompressed_bytes_read = 0;
 	m_max_uncompressed_bytes_to_read = AS_HIGHEST_MAX;
+	m_ALformat = AL_FORMAT_MONO16;
+
+	memset(m_wFilename, 0, MAX_FILENAME_LEN);
 
 	m_hStream_open = 0;
 	m_abort_next_read = FALSE;
@@ -999,82 +957,90 @@ void WaveFile::Close(void)
 
 	// Close file
 	if (cfp) {
-		//cfclose(cfp);
-		mmioClose( cfp, 0 );
+		fclose( cfp );
 		cfp = NULL;
 	}
 }
 
 
 // Open
-BOOL WaveFile::Open (LPSTR pszFilename)
+int WaveFile::Open (char *pszFilename)
 {
 	int done = FALSE;
 	WORD cbExtra = 0;
-	BOOL fRtn = SUCCESS;    // assume success
-	PCMWAVEFORMAT pcmwf;
-	char fullpath[_MAX_PATH];
+	int fRtn = SUCCESS;    // assume success
+	WAVEFORMATEX pcmwf;
+	char fullpath[MAX_PATH_LEN];
 
 	m_total_uncompressed_bytes_read = 0;
 	m_max_uncompressed_bytes_to_read = AS_HIGHEST_MAX;
 
 	int FileSize, FileOffset;
 
+	// audio streams are read straight out of the VP archive: find the real
+	// file on disk and the offset of this file within it
 	if ( !cf_find_file_location(pszFilename, CF_TYPE_ANY, fullpath, &FileSize, &FileOffset ))	{
 		goto OPEN_ERROR;
 	}
 
-	cfp = mmioOpen(fullpath, NULL, MMIO_ALLOCBUF | MMIO_READ);
+	cfp = fopen(fullpath, "rb");
 	if ( cfp == NULL ) {
 		goto OPEN_ERROR;
 	}
 
 	// Skip the "RIFF" tag and file size (8 bytes)
 	// Skip the "WAVE" tag (4 bytes)
-	mmioSeek( cfp, 12+FileOffset, SEEK_SET );
+	fseek( cfp, 12+FileOffset, SEEK_SET );
 
 	// Now read RIFF tags until the end of file
 	uint tag, size, next_chunk;
 
 	while(done == FALSE)	{
-		if ( mmioRead(cfp, (char *)&tag, sizeof(uint)) != sizeof(uint) )
+		if ( !audiostr_read_uint(cfp, &tag) )
 			break;
 
-		if ( mmioRead(cfp, (char *)&size, sizeof(uint)) != sizeof(uint) )
+		if ( !audiostr_read_uint(cfp, &size) )
 			break;
 
-		next_chunk = mmioSeek( cfp, 0, SEEK_CUR );
+		next_chunk = ftell( cfp );
 		next_chunk += size;
 
 		switch( tag )	{
 		case 0x20746d66:		// The 'fmt ' tag
-			mmioRead( cfp, (char *)&pcmwf, sizeof(PCMWAVEFORMAT) );
-			if ( pcmwf.wf.wFormatTag != WAVE_FORMAT_PCM ) {
-				mmioRead( cfp, (char *)&cbExtra, sizeof(short) );
+			audiostr_read_word( cfp, &pcmwf.wFormatTag );
+			audiostr_read_word( cfp, &pcmwf.nChannels );
+			audiostr_read_dword( cfp, &pcmwf.nSamplesPerSec );
+			audiostr_read_dword( cfp, &pcmwf.nAvgBytesPerSec );
+			audiostr_read_word( cfp, &pcmwf.nBlockAlign );
+			audiostr_read_word( cfp, &pcmwf.wBitsPerSample );
+
+			if ( pcmwf.wFormatTag != WAVE_FORMAT_PCM ) {
+				audiostr_read_word( cfp, &cbExtra );
 			}
 
 			// Allocate memory for WAVEFORMATEX structure + extra bytes
 			if ( (m_pwfmt_original = (WAVEFORMATEX *) malloc ( sizeof(WAVEFORMATEX)+cbExtra )) != NULL ){
-				Assert(m_pwfmt_original != NULL);
-				// Copy bytes from temporary format structure
-				memcpy (m_pwfmt_original, &pcmwf, sizeof(pcmwf));
+				// Copy fields from temporary format structure
+				*m_pwfmt_original = pcmwf;
 				m_pwfmt_original->cbSize = cbExtra;
 
-				// Read those extra bytes, append to WAVEFORMATEX structure
+				// Read those extra bytes, append to WAVEFORMATEX structure.
+				// They go at the on-disk offset, right behind the 18 header
+				// bytes, where the ACM decoder expects them
 				if (cbExtra != 0) {
-					mmioRead( cfp, (char *)((ubyte *)(m_pwfmt_original) + sizeof(WAVEFORMATEX)), cbExtra );
+					fread( (ubyte *)(m_pwfmt_original) + WAVEFORMATEX_DISK_SIZE, 1, cbExtra, cfp );
 				}
 			}
 			else {
 				Int3();		// malloc failed
 				goto OPEN_ERROR;
-			}	
+			}
 			break;
 
 		case 0x61746164:		// the 'data' tag
 			m_nDataSize = size;	// This is size of data chunk.  Compressed if ADPCM.
 			m_data_bytes_left = size;
-			m_data_offset = mmioSeek( cfp, 0, SEEK_CUR);
+			m_data_offset = ftell( cfp );
 			done = TRUE;
 			break;
 
@@ -1082,12 +1048,18 @@ BOOL WaveFile::Open (LPSTR pszFilename)
 			break;
 		}	// end switch
 
-		mmioSeek( cfp, next_chunk, SEEK_SET );
+		fseek( cfp, next_chunk, SEEK_SET );
 	}
 
-  	// At this stage, examine source format, and set up WAVEFORATEX structure for DirectSound.
-	// Since DirectSound only supports PCM, force this structure to be PCM compliant.  We will
-	// need to convert data on the fly later if our souce is not PCM
+	// make sure we found both the 'fmt ' and 'data' chunks
+	if ( !done || (m_pwfmt_original == NULL) ) {
+		goto OPEN_ERROR;
+	}
+
+  	// At this stage, examine source format, and set up the WAVEFORMATEX
+	// structure for the sound system.  OpenAL only takes PCM, so force this
+	// structure to be PCM compliant.  We will need to convert data on the fly
+	// later if our source is not PCM
 	switch ( m_pwfmt_original->wFormatTag ) {
 		case WAVE_FORMAT_PCM:
 			m_wave_format = WAVE_FORMAT_PCM;
@@ -1097,16 +1069,17 @@ BOOL WaveFile::Open (LPSTR pszFilename)
 		case WAVE_FORMAT_ADPCM:
 			m_wave_format = WAVE_FORMAT_ADPCM;
 			m_wfmt.wBitsPerSample = 16;
+			m_bits_per_sample_uncompressed = 16;
 			break;
 
 		default:
-			nprintf(("SOUND", "SOUND => Not supporting %d format for playing wave files\n"));
+			nprintf(("SOUND", "SOUND => Not supporting %d format for playing wave files\n", m_pwfmt_original->wFormatTag));
 			//Int3();
 			goto OPEN_ERROR;
 			break;
 
 	} // end switch
-            
+
 	// Set up the WAVEFORMATEX structure to have the right PCM characteristics
 	m_wfmt.wFormatTag = WAVE_FORMAT_PCM;
 	m_wfmt.nChannels = m_pwfmt_original->nChannels;
@@ -1119,12 +1092,29 @@ BOOL WaveFile::Open (LPSTR pszFilename)
 	m_nBlockAlign = m_pwfmt_original->nBlockAlign;
 	m_nUncompressedAvgDataRate = m_wfmt.nAvgBytesPerSec;
 
+	Assert( (m_wfmt.nChannels == 1) || (m_wfmt.nChannels == 2) );
+
+	// pick the matching OpenAL buffer format
+	switch ( m_wfmt.wBitsPerSample ) {
+		case 8:
+			m_ALformat = (m_wfmt.nChannels == 2) ? AL_FORMAT_STEREO8 : AL_FORMAT_MONO8;
+			break;
+
+		case 16:
+			m_ALformat = (m_wfmt.nChannels == 2) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
+			break;
+
+		default:
+			Int3();
+			goto OPEN_ERROR;
+	}
+
 	// Cue for streaming
 	Cue ();
- 
+
 	// Successful open
 	goto OPEN_DONE;
-    
+
 OPEN_ERROR:
 	// Handle all errors here
 	nprintf(("SOUND","SOUND ==> Could not open wave file %s for streaming\n",pszFilename));
@@ -1132,7 +1122,7 @@ OPEN_ERROR:
 	fRtn = FAILURE;
 	if (cfp != NULL) {
 		// Close file
-		mmioClose( cfp, 0 );
+		fclose( cfp );
 		cfp = NULL;
 	}
 	if (m_pwfmt_original)
@@ -1142,6 +1132,7 @@ OPEN_ERROR:
 	}
 
 OPEN_DONE:
+	strncpy(m_wFilename, pszFilename, MAX_FILENAME_LEN-1);
 	return (fRtn);
 }
 
@@ -1150,16 +1141,16 @@ OPEN_DONE:
 //
 // Set the file pointer to the start of wave data
 //
-BOOL WaveFile::Cue (void)
+int WaveFile::Cue (void)
 {
-	BOOL fRtn = SUCCESS;    // assume success
+	int fRtn = SUCCESS;    // assume success
 	int rval;
 
 	m_total_uncompressed_bytes_read = 0;
 	m_max_uncompressed_bytes_to_read = AS_HIGHEST_MAX;
 
-	rval = mmioSeek( cfp, m_data_offset, SEEK_SET );
-	if ( rval == -1 ) {
+	rval = fseek( cfp, m_data_offset, SEEK_SET );
+	if ( rval != 0 ) {
 		fRtn = FAILURE;
 	}
 
@@ -1173,11 +1164,11 @@ BOOL WaveFile::Cue (void)
 // Read
 //
 // Returns number of bytes actually read.
-// 
+//
 //	Returns -1 if there is nothing more to be read.  This function can return 0, since
-// sometimes the amount of bytes requested is too small for the ACM decompression to 
+// sometimes the amount of bytes requested is too small for the ACM decompression to
 // locate a suitable block
-int WaveFile::Read(BYTE *pbDest, UINT cbSize, int service)
+int WaveFile::Read(ubyte *pbDest, uint cbSize, int service)
 {
 	unsigned char	*dest_buf=NULL, *uncompressed_wave_data;
 	int				rc, uncompressed_bytes_written;
@@ -1200,7 +1191,7 @@ int WaveFile::Read(BYTE *pbDest, UINT cbSize, int service)
 
 		case WAVE_FORMAT_ADPCM:
 			if ( !m_hStream_open ) {
-				if ( !ACM_stream_open(m_pwfmt_original, &m_wfxDest, (void**)&m_hStream), m_bits_per_sample_uncompressed  ) {
+				if ( !ACM_stream_open(m_pwfmt_original, &m_wfxDest, (void**)&m_hStream, m_bits_per_sample_uncompressed)  ) {
 					m_hStream_open = 1;
 				} else {
 					Int3();
@@ -1208,7 +1199,7 @@ int WaveFile::Read(BYTE *pbDest, UINT cbSize, int service)
 			}
 
 			num_bytes_desired = cbSize;
-	
+
 			if ( service ) {
 				dest_buf = Compressed_service_buffer;
 			} else {
@@ -1225,12 +1216,12 @@ int WaveFile::Read(BYTE *pbDest, UINT cbSize, int service)
 			break;
 
 		default:
-			nprintf(("SOUND", "SOUND => Not supporting %d format for playing wave files\n"));
+			nprintf(("SOUND", "SOUND => Not supporting %d format for playing wave files\n", m_wave_format));
 			Int3();
 			break;
 
 	} // end switch
-                
+
 	num_bytes_read = 0;
 	convert_len = 0;
 	src_bytes_used = 0;
@@ -1252,7 +1243,7 @@ int WaveFile::Read(BYTE *pbDest, UINT cbSize, int service)
 			num_bytes_read = m_data_bytes_left;
 		}
 
-		actual_read = mmioRead( cfp, (char *)dest_buf, num_bytes_read );
+		actual_read = (int)fread( dest_buf, 1, num_bytes_read, cfp );
 		if ( (actual_read <= 0) || (m_abort_next_read) ) {
 			num_bytes_read = 0;
 			uncompressed_bytes_written = 0;
@@ -1260,7 +1251,7 @@ int WaveFile::Read(BYTE *pbDest, UINT cbSize, int service)
 		}
 
 		if ( num_bytes_desired >= (unsigned int)m_data_bytes_left ) {
-			m_abort_next_read = 1;			
+			m_abort_next_read = 1;
 		}
 
 		num_bytes_read = actual_read;
@@ -1274,14 +1265,18 @@ int WaveFile::Read(BYTE *pbDest, UINT cbSize, int service)
 					goto READ_ERROR;
 				}
 				if ( convert_len == 0 ) {
-					Int3();
+					if ( num_bytes_read < m_nBlockAlign ) {
+						nprintf(("SOUND", "SOUND => Warning: short read detected in ACM decode of '%s'\n", m_wFilename));
+					} else {
+						Int3();
+					}
 				}
 		}
 
 		Assert(src_bytes_used <= num_bytes_read);
 		if ( src_bytes_used < num_bytes_read ) {
 			// seek back file pointer to reposition before unused source data
-			mmioSeek(cfp, src_bytes_used - num_bytes_read, SEEK_CUR);
+			fseek(cfp, (int)src_bytes_used - (int)num_bytes_read, SEEK_CUR);
 		}
 
 		// Adjust number of bytes left
@@ -1300,7 +1295,7 @@ int WaveFile::Read(BYTE *pbDest, UINT cbSize, int service)
 		uncompressed_bytes_written = num_bytes_read;
 		goto READ_DONE;
 	}
-    
+
 READ_ERROR:
 	num_bytes_read = 0;
 	uncompressed_bytes_written = 0;
@@ -1327,9 +1322,9 @@ READ_DONE:
 // 16-bit mono      2 bytes         0x0000
 // 16-bit stereo    4 bytes         0x00000000
 //
-BYTE WaveFile::GetSilenceData (void)
+ubyte WaveFile::GetSilenceData (void)
 {
-	BYTE bSilenceData = 0;
+	ubyte bSilenceData = 0;
 
 	// Silence data depends on format of Wave file
 	if (m_pwfmt_original) {
@@ -1355,7 +1350,6 @@ BYTE WaveFile::GetSilenceData (void)
 }
 
 int Audiostream_inited = 0;
-AudioStreamServices * m_pass = NULL;   // ptr to AudioStreamServices object
 
 #define MAX_AUDIO_STREAMS	30
 AudioStream Audio_streams[MAX_AUDIO_STREAMS];
@@ -1369,20 +1363,6 @@ void audiostream_init()
 
 	if ( !ACM_is_inited() ) {
 		return;
-	}
-
-	// Create and initialize AudioStreamServices object.
-	// This must be done once and only once for each window that uses
-	// streaming services.
-	m_pass = (AudioStreamServices *)malloc(sizeof(AudioStreamServices));
-
-	if (m_pass)	{
-		m_pass->Constructor();
-		m_pass->Initialize();
-	
-		if ( !pDirectSound ) {
-			return;
-		}
 	}
 
 	// Allocate memory for the buffer which holds the uncompressed wave data that is streamed from the
@@ -1416,7 +1396,10 @@ void audiostream_init()
 		Audio_streams[i].type = ASF_NONE;
 	}
 
-	InitializeCriticalSection( &Global_service_lock );
+	// the service timer runs on the SDL timer thread
+	SDL_InitSubSystem(SDL_INIT_TIMER);
+
+	Global_service_lock = SDL_CreateMutex();
 
 	Audiostream_inited = 1;
 }
@@ -1434,12 +1417,6 @@ void audiostream_close()
 			Audio_streams[i].status = ASF_FREE;
 			Audio_streams[i].Destroy();
 		}
-	}
-
-	// Destroy AudioStreamServices object
-	if (m_pass)	{
-		free(m_pass);
-		m_pass = NULL;
 	}
 
 	// free global buffers
@@ -1463,7 +1440,8 @@ void audiostream_close()
 		Compressed_service_buffer = NULL;
 	}
 
-	DeleteCriticalSection( &Global_service_lock );
+	SDL_DestroyMutex( Global_service_lock );
+	Global_service_lock = NULL;
 
 	Audiostream_inited = 0;
 }
@@ -1475,7 +1453,7 @@ void audiostream_close()
 //									ASF_SOUNDFX
 //									ASF_EVENTMUSIC
 //									ASF_VOICE
-//	
+//
 // returns:	success => handle to identify streaming sound
 //				failure => -1
 int audiostream_open( char * filename, int type )
@@ -1500,17 +1478,17 @@ int audiostream_open( char * filename, int type )
 	switch(type) {
 	case ASF_VOICE:
 	case ASF_SOUNDFX:
-		Audio_streams[i].m_bits_per_sample_uncompressed = 8;
-		break;
 	case ASF_EVENTMUSIC:
+		// we always uncompress to 16 bits
 		Audio_streams[i].m_bits_per_sample_uncompressed = 16;
 		break;
 	default:
 		Int3();
+		Audio_streams[i].status = ASF_FREE;
 		return -1;
 	}
-	
-	rc = Audio_streams[i].Create(filename, m_pass);
+
+	rc = Audio_streams[i].Create(filename);
 	if ( rc == 0 ) {
 		Audio_streams[i].status = ASF_FREE;
 		return -1;
@@ -1551,8 +1529,6 @@ void audiostream_close_all(int fade)
 		audiostream_close_file(i, fade);
 	}
 }
-
-extern int ds_convert_volume(float volume);
 
 void audiostream_play(int i, float volume, int looping)
 {
@@ -1652,7 +1628,7 @@ int audiostream_is_paused(int i)
 	if ( Audio_streams[i].status == ASF_FREE )
 		return -1;
 
-	BOOL is_paused;
+	int is_paused;
 	is_paused = Audio_streams[i].Is_Paused();
 	return is_paused;
 }

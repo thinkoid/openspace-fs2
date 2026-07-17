@@ -7,6 +7,7 @@ project('fs2', 'cpp',
 add_project_arguments('-Wno-changes-meaning', language: 'cpp')
 
 sdl2_dep = dependency('sdl2')
+openal_dep = dependency('openal')
 
 # Retail sources use flat includes (#include "parselo.h"); the include path
 # supplies the directories, as the original MSVC project files did.
@@ -211,6 +212,11 @@ foundation_src = files(
     'code/math/spline.cpp',
     'code/math/staticrand.cpp',
     'code/math/vecmat.cpp',
+    'code/sound/acm.cpp',
+    'code/sound/audiostr.cpp',
+    'code/sound/ds.cpp',
+    'code/sound/ds3d.cpp',
+    'code/sound/sound.cpp',
     'code/localization/fhash.cpp',
     'code/localization/localize.cpp',
     'code/parse/encrypt.cpp',
@@ -219,13 +225,13 @@ foundation_src = files(
 
 foundation = static_library('foundation', foundation_src,
     include_directories: inc,
-    dependencies: sdl2_dep)
+    dependencies: [sdl2_dep, openal_dep])
 
 fs2 = executable('fs2',
     ['code/freespace2/freespace.cpp', 'tests/stubs.cpp', 'tests/gamestubs_gen.cpp'],
     include_directories: inc,
     link_with: foundation,
-    dependencies: sdl2_dep)
+    dependencies: [sdl2_dep, openal_dep])
 
 cfilearchiver = executable('cfilearchiver',
     'code/cfilearchiver/cfilearchiver.cpp',

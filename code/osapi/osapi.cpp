@@ -15,6 +15,7 @@
 #include "pstypes.h"
 #include "osapi.h"
 #include "key.h"
+#include "joy.h"
 #include "mouse.h"
 #include "outwnd.h"
 #include "2d.h"
@@ -64,7 +65,8 @@ void os_init(char * wclass, char * title, char *app_name, char *version_string )
 	strcpy( szWinTitle, title );
 	strcpy( szWinClass, wclass );
 
-	if ( SDL_Init(SDL_INIT_VIDEO) < 0 )	{
+	// TIMER drives the audio-stream service callbacks (audiostr.cpp)
+	if ( SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0 )	{
 		mprintf(( "SDL_Init failed: %s\n", SDL_GetError() ));
 	}
 
@@ -247,6 +249,9 @@ void os_poll()
 			break;
 		}
 	}
+
+	// retail polled the joystick from a winmm thread; we pump it here
+	joy_process();
 }
 
 // called at shutdown

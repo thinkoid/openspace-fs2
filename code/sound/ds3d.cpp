@@ -1,56 +1,25 @@
 /*
  * Copyright (C) Volition, Inc. 1999.  All rights reserved.
  *
- * All source code herein is the property of Volition, Inc. You may not sell 
- * or otherwise commercially exploit the source or things you created based on the 
+ * All source code herein is the property of Volition, Inc. You may not sell
+ * or otherwise commercially exploit the source or things you created based on the
  * source.
  *
 */
 
-#include "pstypes.h"
-#include <windows.h>
-#include <mmreg.h>
-#include "vdsound.h"
+// DirectSound3D listener/buffer updates rebuilt on the OpenAL listener and
+// per-source position attributes.
 
+#include "pstypes.h"
+// (windows.h removed)
 #include "ds3d.h"
 #include "ds.h"
 #include "channel.h"
-#include "sound.h"
-#include "object.h"
 
-typedef enum 
-{
-	DSPROPERTY_VMANAGER_MODE = 0,
-	DSPROPERTY_VMANAGER_PRIORITY,
-	DSPROPERTY_VMANAGER_STATE
-} DSPROPERTY_VMANAGER;
-
-
-typedef enum 
-{
-	DSPROPERTY_VMANAGER_MODE_DEFAULT = 0,
-	DSPROPERTY_VMANAGER_MODE_AUTO,
-	DSPROPERTY_VMANAGER_MODE_REPORT,
-	DSPROPERTY_VMANAGER_MODE_USER
-} VmMode;
-
-
-typedef enum 
-{
-	DSPROPERTY_VMANAGER_STATE_PLAYING3DHW = 0,
-	DSPROPERTY_VMANAGER_STATE_SILENT,
-	DSPROPERTY_VMANAGER_STATE_BUMPED,
-	DSPROPERTY_VMANAGER_STATE_PLAYFAILED
-} VmState;
-
-
-extern LPDIRECTSOUND pDirectSound;
+#include <AL/al.h>
 
 int DS3D_inited = FALSE;
 
-LPDIRECTSOUND3DLISTENER	pDS3D_listener = NULL;
-
-GUID DSPROPSETID_VoiceManager_Def = {0x62a69bae, 0xdf9d, 0x11d1, {0x99, 0xa6, 0x0, 0xc0, 0x4f, 0xc9, 0x9d, 0x46}};
 
 // ---------------------------------------------------------------------------------------
 // ds3d_update_buffer()
@@ -67,39 +36,35 @@ GUID DSPROPSETID_VoiceManager_Def = {0x62a69bae, 0xdf9d, 0x11d1, {0x99, 0xa6, 0x
 //
 int ds3d_update_buffer(int channel, float min, float max, vector *pos, vector *vel)
 {
-	HRESULT						hr;
-	LPDIRECTSOUND3DBUFFER	pds3db;
-	float							max_dist, min_dist;
-
 	if (DS3D_inited == FALSE)
 		return 0;
 
 	if ( channel == -1 )
 		return 0;
 
-	pds3db = Channels[channel].pds3db;
-	Assert( pds3db != NULL);
+	// set the min distance
+	OpenAL_ErrorPrint( alSourcef(Channels[channel].source_id, AL_REFERENCE_DISTANCE, min) );
+
+	// set the max distance
+	OpenAL_ErrorPrint( alSourcef(Channels[channel].source_id, AL_MAX_DISTANCE, max) );
+
+	// set rolloff factor
+	OpenAL_ErrorPrint( alSourcef(Channels[channel].source_id, AL_ROLLOFF_FACTOR, 1.0f) );
 
 	// set the buffer position
 	if ( pos != NULL ) {
-		hr = pds3db->SetPosition(pos->x, pos->y, pos->z, DS3D_DEFERRED);
+		ALfloat alpos[] = { pos->x, pos->y, pos->z };
+		OpenAL_ErrorPrint( alSourcefv(Channels[channel].source_id, AL_POSITION, alpos) );
 	}
 
-	// set the buffer veclocity
+	// set the buffer velocity
 	if ( vel != NULL ) {
-		hr = pds3db->SetVelocity(vel->x, vel->y, vel->z, DS3D_DEFERRED);
+		ALfloat alvel[] = { vel->x, vel->y, vel->z };
+		OpenAL_ErrorPrint( alSourcefv(Channels[channel].source_id, AL_VELOCITY, alvel) );
+	} else {
+		ALfloat alvel[] = { 0.0f, 0.0f, 0.0f };
+		OpenAL_ErrorPrint( alSourcefv(Channels[channel].source_id, AL_VELOCITY, alvel) );
 	}
-	else {
-		hr = pds3db->SetVelocity(0.0f, 0.0f, 0.0f, DS3D_DEFERRED);
-	}
-
-	// set the min distance
-	hr = pds3db->GetMinDistance(&min_dist);
-	hr = pds3db->SetMinDistance( min, DS3D_DEFERRED );
-	// set the max distance
-	hr = pds3db->GetMaxDistance(&max_dist);
-//	hr = pds3db->SetMaxDistance( max, DS3D_DEFERRED );
-	hr = pds3db->SetMaxDistance( 100000.0f, DS3D_DEFERRED );
 
 	return 0;
 }
@@ -113,90 +78,53 @@ int ds3d_update_buffer(int channel, float min, float max, vector *pos, vector *v
 //
 int ds3d_update_listener(vector *pos, vector *vel, matrix *orient)
 {
-	HRESULT			hr;
-
 	if (DS3D_inited == FALSE)
 		return 0;
 
-	if ( pDS3D_listener == NULL )
-		return -1;
-	
 	// set the listener position
 	if ( pos != NULL ) {
-		hr = pDS3D_listener->SetPosition(pos->x, pos->y, pos->z, DS3D_DEFERRED); 
+		OpenAL_ErrorPrint( alListener3f(AL_POSITION, pos->x, pos->y, pos->z) );
 	}
 
-	// set the listener veclocity
+	// set the listener velocity
 	if ( vel != NULL ) {
-		hr = pDS3D_listener->SetVelocity(vel->x, vel->y, vel->z, DS3D_DEFERRED); 
+		OpenAL_ErrorPrint( alListener3f(AL_VELOCITY, vel->x, vel->y, vel->z) );
 	}
 
+	// set the listener orientation
 	if ( orient != NULL ) {
-		hr = pDS3D_listener->SetOrientation(	orient->fvec.x, orient->fvec.y, orient->fvec.z,
-															orient->uvec.x, orient->uvec.y, orient->uvec.z,
-															DS3D_DEFERRED );
-	}
-
-	float rolloff_factor = 1.0f;
-	if (ds_using_a3d() == true) {
-		rolloff_factor = 3.0f;		// A3D rolloff
-	} else {
-		rolloff_factor = 3.0f;		// EAX rolloff
-	}
-
-	hr = pDS3D_listener->SetRolloffFactor( rolloff_factor, DS3D_DEFERRED );
-	hr = pDS3D_listener->SetDopplerFactor( 1.0f, DS3D_DEFERRED );
-	
-	hr = pDS3D_listener->CommitDeferredSettings();
-	if ( hr != DS_OK ) {
-		nprintf(("SOUND","Error in pDS3D_listener->CommitDeferredSettings(): %s\n", get_DSERR_text(hr) ));
-		return -1;
+		// fvec is the at/front vector, uvec is the up/top vector
+		ALfloat list_orien[] = { orient->fvec.x, orient->fvec.y, orient->fvec.z,
+									orient->uvec.x, orient->uvec.y, orient->uvec.z };
+		OpenAL_ErrorPrint( alListenerfv(AL_ORIENTATION, list_orien) );
 	}
 
 	return 0;
 }
 
 // ---------------------------------------------------------------------------------------
-// ds3d_init_listener()
-//
+// ds3d_set_sound_cone()
 //
 //	returns:		0		=>		success
 //					-1		=>		failure
 //
-int ds3d_init_listener()
+int ds3d_set_sound_cone(int channel, int inner_angle, int outer_angle, int vol)
 {
-	HRESULT			hr;
-
-	if ( pDS3D_listener != NULL )
+	if (DS3D_inited == FALSE)
 		return 0;
 
-	hr = pPrimaryBuffer->QueryInterface(IID_IDirectSound3DListener, (void**)&pDS3D_listener);
-	if (hr != DS_OK) {
-		nprintf(("Sound","SOUND => Fatal error calling pPrimaryBuffer->QueryInterface(): %s\n", get_DSERR_text(hr) ));
-		return -1;
-	}
+	OpenAL_ErrorPrint( alSourcei(Channels[channel].source_id, AL_CONE_INNER_ANGLE, inner_angle) );
+	OpenAL_ErrorPrint( alSourcei(Channels[channel].source_id, AL_CONE_OUTER_ANGLE, outer_angle) );
+	OpenAL_ErrorPrint( alSourcef(Channels[channel].source_id, AL_CONE_OUTER_GAIN, ds_get_percentage_vol(vol)) );
 
-	return 0;		
+	return 0;
 }
-
-// ---------------------------------------------------------------------------------------
-// ds3d_close_listener()
-//
-//
-void ds3d_close_listener()
-{
-	if ( pDS3D_listener != NULL ) {
-		pDS3D_listener->Release();
-		pDS3D_listener = NULL;
-	}
-}
-
 
 // ---------------------------------------------------------------------------------------
 // ds3d_init()
 //
-// Initialize the DirectSound3D system.  Call the initalization for the pDS3D_listener
-// 
+// Initialize the positional sound system.
+//
 // returns:     -1	=> init failed
 //              0		=> success
 int ds3d_init(int voice_manager_required)
@@ -204,41 +132,8 @@ int ds3d_init(int voice_manager_required)
 	if ( DS3D_inited == TRUE )
 		return 0;
 
-	if (voice_manager_required == 1) {
-		LPKSPROPERTYSET pset;
-		pset = (LPKSPROPERTYSET)ds_get_property_set_interface();
+	// the listener itself is set up in ds_init()
 
-		if (pset == NULL) {
-			nprintf(("Sound", "Disabling DirectSound3D since unable to get property set interface\n"));
-			return -1;
-		}
-
-		HRESULT hr;
-		unsigned long driver_support = 0;
-
-		hr = pset->QuerySupport(DSPROPSETID_VoiceManager_Def, DSPROPERTY_VMANAGER_MODE, &driver_support);
-		if (FAILED(hr)) {
-			nprintf(("Sound", "Driver does not support Voice Manager extension, so abort DirectSound3D initialization\n"));
-			return -1;
-		}
-
-		if ((driver_support & KSPROPERTY_SUPPORT_SET|KSPROPERTY_SUPPORT_GET) != (KSPROPERTY_SUPPORT_SET|KSPROPERTY_SUPPORT_GET)) {
-			nprintf(("Sound", "Driver does not support Voice Manager extension, so abort DirectSound3D initialization\n"));
-			return -1;
-		}
-
-		VmMode vmode = DSPROPERTY_VMANAGER_MODE_AUTO;
-		hr = pset->Set(DSPROPSETID_VoiceManager_Def, DSPROPERTY_VMANAGER_MODE, NULL, 0, &vmode, sizeof(float));
-		if (FAILED(hr)) {
-			nprintf(("Sound", "Driver does not support Voice Manager extension, so abort DirectSound3D initialization\n"));
-			return -1;
-		}
-	}
-
-	if (ds3d_init_listener() != 0) {
-		return -1;
-	}
-	
 	DS3D_inited = TRUE;
 	return 0;
 }
@@ -247,14 +142,12 @@ int ds3d_init(int voice_manager_required)
 // ---------------------------------------------------------------------------------------
 // ds3d_close()
 //
-// De-initialize the DirectSound3D system
-// 
+// De-initialize the positional sound system
+//
 void ds3d_close()
 {
 	if ( DS3D_inited == FALSE )
 		return;
 
-	ds3d_close_listener();
 	DS3D_inited = FALSE;
 }
-

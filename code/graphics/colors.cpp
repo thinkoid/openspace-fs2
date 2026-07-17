@@ -344,8 +344,9 @@ void grx_set_color_fast( color * dst )
 		Assert( dst->alphacolor <= MAX_ALPHACOLORS );
 		Assert( Alphacolors[dst->alphacolor].used );
 
-		// Current_alphacolor = &Alphacolors[dst->alphacolor];
-		Current_alphacolor = NULL;
+		// re-enabled: hardware-only era zeroed this, blanking every
+		// software aa consumer (fonts, aabitmaps, gradients)
+		Current_alphacolor = &Alphacolors[dst->alphacolor];
 	} else {
 		Current_alphacolor = NULL;
 	}

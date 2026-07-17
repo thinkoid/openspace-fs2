@@ -51,6 +51,42 @@ extern int							ds_initialized;
 // minimal replacement for the mmreg.h WAVEFORMATEX the sound API speaks
 typedef unsigned int DWORD;
 typedef unsigned short WORD;
+#define WAVE_FORMAT_PCM		1
+#define WAVE_FORMAT_ADPCM	2
+
+// OpenAL error helpers; the backend state lives in ds.cpp.  Returns the
+// readable error string, or NULL if no error is pending.  get_alc selects
+// the context (alc) error stream over the al one.
+const char *openal_error_string(int get_alc);
+
+// run x, then complain and run y (cleanup/return) if an AL error resulted
+#define OpenAL_ErrorCheck( x, y )	do {	\
+	x;	\
+	const char *error_text = openal_error_string(0);	\
+	if ( error_text != NULL ) {	\
+		nprintf(("Warning", "SOUND: %s:%d - OpenAL error = '%s'\n", __FILE__, __LINE__, error_text));	\
+		y;	\
+	}	\
+} while (0);
+
+// like OpenAL_ErrorCheck() except that it only reports the error from x
+#define OpenAL_ErrorPrint( x )	do {	\
+	x;	\
+	const char *error_text = openal_error_string(0);	\
+	if ( error_text != NULL ) {	\
+		nprintf(("Sound", "OpenAL ERROR: \"%s\" in %s, line %i\n", error_text, __FILE__, __LINE__));	\
+	}	\
+} while (0);
+
+// context (alc) variants of the above
+#define OpenAL_C_ErrorCheck( x, y )	do {	\
+	x;	\
+	const char *error_text = openal_error_string(1);	\
+	if ( error_text != NULL ) {	\
+		nprintf(("Warning", "SOUND: %s:%d - OpenAL error = '%s'\n", __FILE__, __LINE__, error_text));	\
+		y;	\
+	}	\
+} while (0);
 typedef struct WAVEFORMATEX {
 	WORD  wFormatTag;
 	WORD  nChannels;

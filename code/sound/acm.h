@@ -1,8 +1,8 @@
 /*
  * Copyright (C) Volition, Inc. 1999.  All rights reserved.
  *
- * All source code herein is the property of Volition, Inc. You may not sell 
- * or otherwise commercially exploit the source or things you created based on the 
+ * All source code herein is the property of Volition, Inc. You may not sell
+ * or otherwise commercially exploit the source or things you created based on the
  * source.
  *
 */
@@ -10,9 +10,8 @@
 #ifndef __FREESPACE_ACM_H__
 #define __FREESPACE_ACM_H__
 
-#include <mmreg.h>
-#include <msacm.h>
 #include "pstypes.h"
+#include "ds.h"		// WAVEFORMATEX, WORD/DWORD and the WAVE_FORMAT_* tags
 
 int	ACM_convert_ADPCM_to_PCM(WAVEFORMATEX *pwfxSrc, ubyte *src, int src_len, ubyte **dest, int max_dest_bytes, int *dest_len, unsigned int *src_bytes_used, unsigned short dest_bps=16);
 int	ACM_init();

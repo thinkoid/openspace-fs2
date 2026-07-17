@@ -12,105 +12,18 @@
 struct UI_WINDOW;
 struct ai_info;
 struct beam_info;
-struct game_snd;
 struct multi_local_options;
 struct multi_server_options;
 struct net_player;
 struct object;
 struct ship;
 struct ship_subsys;
-struct sound_env;
 struct wing;
 
 static void oracle_trap(const char *sym)
 {
 	fprintf(stderr, "oracle strayed into unported code: %s\n", sym);
 	abort();
-}
-
-long audiostream_close()
-{
-	return -1;
-}
-
-long audiostream_close_all(int)
-{
-	return -1;
-}
-
-long audiostream_close_file(int, int)
-{
-	return -1;
-}
-
-long audiostream_done_reading(int)
-{
-	return -1;
-}
-
-long audiostream_get_bytes_committed(int)
-{
-	return -1;
-}
-
-long audiostream_is_inited()
-{
-	return -1;
-}
-
-long audiostream_is_paused(int)
-{
-	return -1;
-}
-
-long audiostream_is_playing(int)
-{
-	return -1;
-}
-
-long audiostream_open(char*, int)
-{
-	return -1;
-}
-
-long audiostream_pause_all()
-{
-	return -1;
-}
-
-long audiostream_pause(int)
-{
-	return -1;
-}
-
-long audiostream_play(int, float, int)
-{
-	return -1;
-}
-
-long audiostream_set_byte_cutoff(int, unsigned int)
-{
-	return -1;
-}
-
-long audiostream_set_volume_all(float, int)
-{
-	return -1;
-}
-
-long audiostream_stop(int, int, int)
-{
-	return -1;
-}
-
-long audiostream_unpause_all()
-{
-	return -1;
-}
-
-long audiostream_unpause(int)
-{
-	return -1;
 }
 
 void d3d_flush()
@@ -129,90 +42,75 @@ void debug_console(void (*)())
 
 long demo_close()
 {
-	return -1;	// demo recorder is gone
+	return -1;
 }
 
 long demo_do_frame_end()
 {
-	return -1;	// demo recorder is gone
+	return -1;
 }
 
 long demo_do_frame_start()
 {
-	return -1;	// demo recorder is gone
+	return -1;
 }
 
 long demo_POST_builtin_message(int, ship*, int, int)
 {
-	return -1;	// demo recorder is gone
+	return -1;
 }
 
 long demo_POST_departed(int, int)
 {
-	return -1;	// demo recorder is gone
+	return -1;
 }
 
 long demo_POST_obj_create(char*, int)
 {
-	return -1;	// demo recorder is gone
+	return -1;
 }
 
 long demo_POST_primary_fired(object*, int, int)
 {
-	return -1;	// demo recorder is gone
+	return -1;
 }
 
 long demo_POST_ship_kill(object*)
 {
-	return -1;	// demo recorder is gone
+	return -1;
 }
 
 long demo_POST_unique_message(char*, char*, int, int)
 {
-	return -1;	// demo recorder is gone
+	return -1;
 }
 
 long demo_POST_warpin(int, int)
 {
-	return -1;	// demo recorder is gone
+	return -1;
 }
 
 long demo_POST_warpout(int, int)
 {
-	return -1;	// demo recorder is gone
+	return -1;
 }
 
 long demo_should_sim(object*)
 {
-	return -1;	// demo recorder is gone
+	return -1;
 }
 
 long demo_start_playback(char*)
 {
-	return -1;	// demo recorder is gone
+	return -1;
 }
 
 long demo_start_record(char*)
 {
-	return -1;	// demo recorder is gone
-}
-
-long ds3d_update_buffer(int, float, float, vector*, vector*)
-{
 	return -1;
 }
 
-long ds_get_channel(int)
-{
-	return -1;
-}
-
-long ds_get_play_position(int)
-{
-	return -1;
-}
-
-long ds_using_ds3d()
+long dscap_close()
 {
 	return -1;
 }
@@ -574,17 +472,17 @@ long multi_maybe_send_ship_status()
 
 long multi_message_should_broadcast(int)
 {
-	return -1;
+	return 0;
 }
 
 long multi_msg_eval_ship_squadmsg(int, int, ai_info*, int)
 {
-	return -1;
+	return 0;
 }
 
 long multi_msg_eval_wing_squadmsg(int, int, ai_info*, int)
 {
-	return -1;
+	return 0;
 }
 
 long multi_msg_key_down(int)
@@ -594,7 +492,7 @@ long multi_msg_key_down(int)
 
 long multi_msg_message_text(char*)
 {
-	return -1;
+	return 0;
 }
 
 long multi_num_players()
@@ -619,7 +517,7 @@ long multi_oo_interp(object*)
 
 long multi_oo_is_interp_object(object*)
 {
-	return -1;
+	return 0;
 }
 
 long multi_oo_rate_init_all()
@@ -734,7 +632,7 @@ long multi_set_network_signature(unsigned short, int)
 
 long multi_show_ingame_ping()
 {
-	return -1;
+	return 0;
 }
 
 long multi_standalone_postgame_close()
@@ -819,12 +717,12 @@ long multi_ts_common_init()
 
 long multi_ts_disabled_high_slot(int, int)
 {
-	return -1;
+	return 0;
 }
 
 long multi_ts_disabled_slot(int, int)
 {
-	return -1;
+	return 0;
 }
 
 long multi_ts_do()
@@ -844,7 +742,7 @@ long multi_ts_init()
 
 long multi_ts_is_locked()
 {
-	return -1;
+	return 0;
 }
 
 long multi_ts_lock_pressed()
@@ -909,7 +807,7 @@ long multi_voice_test_record_stop()
 
 long oo_display()
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long psnet_close()
@@ -959,340 +857,195 @@ long rtvoice_uncompress(unsigned char*, int, double, unsigned char*, int)
 
 long send_ai_info_update_packet(object*, char)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_asteroid_create(object*, object*, int, vector*)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_asteroid_hit(object*, object*, vector*, float)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_asteroid_throw(object*)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_beam_fired_packet(object*, ship_subsys*, object*, int, beam_info*)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_cargo_revealed_packet(ship*)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_change_iff_packet(unsigned short, int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_countermeasure_success_packet(int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_debrief_info(int*, int**)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_debris_update_packet(object*, int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_emp_effect(unsigned short, float, float)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_event_update_packet(int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_flak_fired_packet(int, int, int, float)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_game_chat_packet(net_player*, char*, int, net_player*, char*, int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_homing_weapon_info(int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_lightning_packet(int, vector*, vector*)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_mission_goal_info_packet(int, int, int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_mission_log_packet(int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_mission_message_packet(int, char*, int, int, int, int, int, int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_mission_sync_packet(int, int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_netplayer_update_packet(net_player*)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_NEW_countermeasure_fired_packet(object*, int, int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_NEW_primary_fired_packet(ship*, int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_player_order_packet(int, int, int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_player_pain_packet(net_player*, int, float, vector*, vector*)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_player_stats_block_packet(net_player*, int, net_player*)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_reinforcement_avail(int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_secondary_fired_packet(ship*, unsigned short, int, int, int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_self_destruct_packet()
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_ship_create_packet(object*, int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_ship_depart_packet(object*)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_ship_kill_packet(object*, object*, float, int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_subsystem_cargo_revealed_packet(ship*, int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_subsystem_destroyed_packet(ship*, int, vector)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_turret_fired_packet(int, int, int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_weapon_detonate_packet(object*)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_wing_create_packet(wing*, int, int)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_wss_request_packet(short, int, int, int, int, int, int, int, net_player*)
 {
-	return -1;	// multiplayer machinery, silent
+	return -1;
 }
 
 long send_wss_update_packet(int, unsigned char*, int)
-{
-	return -1;	// multiplayer machinery, silent
-}
-
-long snd_chg_loop_status(int, int)
-{
-	return -1;
-}
-
-long snd_close()
-{
-	return -1;
-}
-
-long snd_do_frame()
-{
-	return -1;
-}
-
-long snd_get_3d_vol_and_pan(game_snd*, vector*, float*, float*, float)
-{
-	return -1;
-}
-
-long snd_get_duration(int)
-{
-	return -1;
-}
-
-long snd_get_format(int, int*, int*)
-{
-	return -1;
-}
-
-long snd_get_pitch(int)
-{
-	return -1;
-}
-
-long snd_init(int, int)
-{
-	return -1;
-}
-
-long snd_is_inited()
-{
-	return -1;
-}
-
-long snd_is_playing(int)
-{
-	return -1;
-}
-
-long snd_load(game_snd*, int)
-{
-	return -1;
-}
-
-long snd_num_playing()
-{
-	return -1;
-}
-
-long snd_play_3d(game_snd*, vector*, vector*, float, vector*, int, float, int, vector*, float, int)
-{
-	return -1;
-}
-
-long snd_play(game_snd*, float, float, int, bool)
-{
-	return -1;
-}
-
-long snd_play_looping(game_snd*, float, int, int, float, int, int)
-{
-	return -1;
-}
-
-long snd_play_raw(int, float, float, int)
-{
-	return -1;
-}
-
-long snd_set_pan(int, float)
-{
-	return -1;
-}
-
-long snd_set_pitch(int, int)
-{
-	return -1;
-}
-
-long snd_set_pos(int, game_snd*, float, int)
-{
-	return -1;
-}
-
-long snd_set_volume(int, float)
-{
-	return -1;
-}
-
-long snd_spew_debug_info()
-{
-	return -1;
-}
-
-long snd_stop_all()
-{
-	return -1;
-}
-
-long snd_stop(int)
-{
-	return -1;
-}
-
-long snd_time_remaining(int, int, int)
-{
-	return -1;
-}
-
-long snd_unload(int)
-{
-	return -1;
-}
-
-long snd_update_3d_pos(int, game_snd*, vector*)
-{
-	return -1;
-}
-
-long snd_update_listener(vector*, vector*, matrix*)
-{
-	return -1;
-}
-
-long sound_env_disable()
-{
-	return -1;
-}
-
-long sound_env_set(sound_env*)
 {
 	return -1;
 }
@@ -1351,8 +1104,6 @@ unsigned char Glide_textures_in[1 << 20];
 unsigned char Glide_textures_in_frame[1 << 20];
 unsigned char Glide_voodoo3[1 << 20];
 unsigned char Ipx_active[1 << 20];
-unsigned char Master_sound_volume[1 << 20];
-unsigned char Master_voice_volume[1 << 20];
 unsigned char Multi_button_info_ok[1 << 20];
 unsigned char Multi_chat_stream[1 << 20];
 unsigned char Multi_common_icons[1 << 20];
@@ -1375,8 +1126,5 @@ unsigned char Netgame[1 << 20];
 unsigned char oo_arrive_time_count[1 << 20];
 unsigned char oo_interp_count[1 << 20];
 unsigned char OO_update_index[1 << 20];
-unsigned char Snd_hram[1 << 20];
-unsigned char Snd_sram[1 << 20];
-unsigned char Sound_enabled[1 << 20];
 unsigned char Tcp_active[1 << 20];
 unsigned char TotalRam[1 << 20];
