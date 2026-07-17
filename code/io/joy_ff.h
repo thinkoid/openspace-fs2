@@ -7,38 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/Io/Joy_ff.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:58 $
- * $Author: penguin $
- *
- * Code for joystick Force Feedback.
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:08  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:49a Dave
- * 
- * 4     5/08/98 5:31p Hoffoss
- * Isolated the joystick force feedback code more from dependence on other
- * libraries.
- * 
- * 3     5/07/98 12:24a Hoffoss
- * Finished up sidewinder force feedback support.
- * 
- * 2     5/04/98 11:08p Hoffoss
- * Expanded on Force Feedback code, and moved it all into Joy_ff.cpp.
- * Updated references everywhere to it.
- * 
- * $NoKeywords: $
- */
-
 #ifndef __JOY_FF_H__
 #define __JOY_FF_H__
 

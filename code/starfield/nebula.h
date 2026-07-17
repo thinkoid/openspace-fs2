@@ -7,37 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Starfield/Nebula.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:02 $
- * $Author: penguin $
- *
- * Include file for nebula stuff
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:13  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 2     10/07/98 10:54a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:51a Dave
- * 
- * 4     11/25/97 11:40a Hoffoss
- * Added support for nebula placement editing.
- * 
- * 3     11/24/97 12:04p John
- * 
- * 2     11/16/97 2:29p John
- * added versioning to nebulas; put nebula code into freespace.
- * 
- * 1     11/16/97 1:14p John
- *
- * $NoKeywords: $
- */
-
 #ifndef _NEBULA_H
 #define _NEBULA_H
 

@@ -7,37 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Network/multi_rate.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:00 $
- * $Author: penguin $
- * 
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:11  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 6     7/15/99 9:20a Andsager
- * FS2_DEMO initial checkin
- * 
- * 5     4/25/99 3:02p Dave
- * Build defines for the E3 build.
- * 
- * 4     4/09/99 2:21p Dave
- * Multiplayer beta stuff. CD checking.
- * 
- * 3     3/20/99 5:09p Dave
- * Fixed release build fred warnings and unhandled exception.
- * 
- * 2     3/09/99 6:24p Dave
- * More work on object update revamping. Identified several sources of
- * unnecessary bandwidth.
- *  
- *   
- * $NoKeywords: $
- */
-
 #include "timer.h"
 #include "2d.h"
 #include "alphacolors.h"

@@ -7,68 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/Io/Timer.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:58 $
- * $Author: penguin $
- *
- * Include file for timer stuff
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:08  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 4     5/26/99 3:19p Dave
- * Fixed release build errors.
- * 
- * 3     5/17/99 6:03p Dave
- * Added new timing code. Put in code to allow camera speed zooming.
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:49a Dave
- * 
- * 14    4/13/98 10:16a John
- * Switched gettime back to timer_get_milliseconds, which is now thread
- * safe.
- * 
- * 13    4/13/98 10:11a John
- * Made timer functions thread safe.  Made timer_init be called in all
- * projects.
- * 
- * 12    4/13/98 8:09a John
- * Made timer_get functions thread safe.
- * 
- * 11    12/02/97 3:56p John
- * fixed a bug with timestamp_until, created one with it rolling over.
- * 
- * 10    9/11/97 7:12p Hoffoss
- * Added more functionality to training sexp handling code.
- * 
- * 9     8/29/97 4:49p Allender
- * added mprintf to check for wrap problems with timestamp ticker
- * 
- * 8     8/28/97 1:38p Allender
- * from John:  changes to timer func to detect early rollever
- * 
- * 7     7/29/97 5:30p Lawrance
- * move gettime() from keyboard module to timer module
- * 
- * 6     7/16/97 4:42p Mike
- * Make afterburner shake viewer, not ship.
- * Shake for limited time.
- * Add timestamp_until() function to timer library.
- * 
- * 5     2/17/97 5:18p John
- * Added a bunch of RCS headers to a bunch of old files that don't have
- * them.
- *
- * $NoKeywords: $
- */
-
 #include <windows.h>
 
 #include	"limits.h"

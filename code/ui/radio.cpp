@@ -7,65 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/UI/RADIO.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:02 $
- * $Author: penguin $
- *
- * Code to handle radio buttons.
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:13  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 4     12/02/98 5:47p Dave
- * Put in interface xstr code. Converted barracks screen to new format.
- * 
- * 3     10/13/98 9:29a Dave
- * Started neatening up freespace.h. Many variables renamed and
- * reorganized. Added AlphaColors.[h,cpp]
- * 
- * 2     10/07/98 10:54a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:51a Dave
- * 
- * 9     3/10/98 4:19p John
- * Cleaned up graphics lib.  Took out most unused gr functions.   Made D3D
- * & Glide have popups and print screen.  Took out all >8bpp software
- * support.  Made Fred zbuffer.  Made zbuffer allocate dynamically to
- * support Fred.  Made zbuffering key off of functions rather than one
- * global variable.
- * 
- * 8     2/03/98 4:21p Hoffoss
- * Made UI controls draw white text when disabled.
- * 
- * 7     1/14/98 6:44p Hoffoss
- * Massive changes to UI code.  A lot cleaner and better now.  Did all
- * this to get the new UI_DOT_SLIDER to work properly, which the old code
- * wasn't flexible enough to handle.
- * 
- * 6     6/12/97 12:39p John
- * made ui use freespace colors
- * 
- * 5     6/11/97 1:13p John
- * Started fixing all the text colors in the game.
- * 
- * 4     5/26/97 10:26a Lawrance
- * get slider control working 100%
- * 
- * 3     1/01/97 6:46p Lawrance
- * changed text color of radio button to green from black
- * 
- * 2     11/15/96 11:43a John
- * 
- * 1     11/14/96 6:55p John
- *
- * $NoKeywords: $
- */
-
 #include "uidefs.h"
 #include "ui.h"
 #include "alphacolors.h"

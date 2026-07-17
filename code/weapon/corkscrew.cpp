@@ -7,17 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Weapon/Corkscrew.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:03 $
- * $Author: penguin $
- *
- * C module for managing corkscrew missiles
- * 
- * $NoKeywords: $
- */
-
 #include "corkscrew.h"
 #include "weapon.h"
 #include "ship.h"

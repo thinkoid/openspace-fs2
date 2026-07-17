@@ -7,53 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/CFile/CfileList.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:56 $
- * $Author: penguin $
- *
- * Code for doing directory lists and sorts
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:04  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 3     2/22/99 10:31p Andsager
- * Get rid of unneeded includes.
- * 
- * 2     10/07/98 10:52a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:48a Dave
- * 
- * 6     5/13/98 10:22p John
- * Added cfile functions to read/write rle compressed blocks of data.
- * Made palman use it for .clr files.  Made alphacolors calculate on the
- * fly rather than caching to/from disk.
- * 
- * 5     5/06/98 5:30p John
- * Removed unused cfilearchiver.  Removed/replaced some unused/little used
- * graphics functions, namely gradient_h and _v and pixel_sp.   Put in new
- * DirectX header files and libs that fixed the Direct3D alpha blending
- * problems.
- * 
- * 4     4/30/98 4:53p John
- * Restructured and cleaned up cfile code.  Added capability to read off
- * of CD-ROM drive and out of multiple pack files.
- * 
- * 3     4/10/98 12:18a Hoffoss
- * Make pilot image search in pack file possible.
- * 
- * 2     3/30/98 10:36p Allender
- * be sure to call _findclose() when done reading a file list
- * 
- * 1     12/28/97 11:48a John
- *
- * $NoKeywords: $
- */
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

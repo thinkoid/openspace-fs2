@@ -7,40 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Starfield/Supernova.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:02 $
- * $Author: penguin $
- *
- * Include file for nebula stuff
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:13  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 5     9/09/99 11:40p Dave
- * Handle an Assert() in beam code. Added supernova sounds. Play the right
- * 2 end movies properly, based upon what the player did in the mission.
- * 
- * 4     9/03/99 1:32a Dave
- * CD checking by act. Added support to play 2 cutscenes in a row
- * seamlessly. Fixed super low level cfile bug related to files in the
- * root directory of a CD. Added cheat code to set campaign mission # in
- * main hall.
- * 
- * 3     7/31/99 4:15p Dave
- * Fixed supernova particle velocities. Handle OBJ_NONE in target
- * monitoring view. Properly use objectives notify gauge colors.
- * 
- * 2     7/21/99 8:10p Dave
- * First run of supernova effect.
- *  
- *
- * $NoKeywords: $
- */
-
 #include "freespace.h"
 #include "vecmat.h"
 #include "object.h"

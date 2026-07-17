@@ -7,36 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Nebula/Neb.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:00 $
- * $Author: penguin $
- *
- * Nebula effect
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:10  mharris
- * Initial checkin - converted filenames and includes to lower case
- * 
- * 
- * 16    8/30/99 5:01p Dave
- * Made d3d do less state changing in the nebula. Use new chat server for
- * PXO.
- * 
- * 15    7/29/99 12:05a Dave
- * Nebula speed optimizations.
- * 
- * 14    7/26/99 10:12a Dave
- * Upped the max # of nebula backgrounds.
- * 
- * 13    5/24/99 5:45p Dave
- * Added detail levels to the nebula, with a decent speedup. Split nebula
- * lightning into its own section.
- * 
- * $NoKeywords: $
- */
-
 #ifndef _FS2_NEB2_EFFECT_HEADER_FILE
 #define _FS2_NEB2_EFFECT_HEADER_FILE
 

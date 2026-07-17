@@ -7,24 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Localization/fhash.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:58 $
- * $Author: penguin $
- *
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:09  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 4     12/01/98 4:46p Dave
- * Put in targa bitmap support (16 bit).
- *  
- * $NoKeywords: $
- */
-
 #ifndef _FRED_XSTR_HASH_TABLE_HEADER_FILE
 #define _FRED_XSTR_HASH_TABLE_HEADER_FILE
 

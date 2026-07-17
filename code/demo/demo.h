@@ -7,30 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Demo/Demo.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:56 $
- * $Author: penguin $
- *
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:04  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 3     3/29/99 6:17p Dave
- * More work on demo system. Got just about everything in except for
- * blowing ships up, secondary weapons and player death/warpout.
- * 
- * 2     3/28/99 5:58p Dave
- * Added early demo code. Make objects move. Nice and framerate
- * independant, but not much else. Don't use yet unless you're me :)
- *  
- *  
- * $NoKeywords: $
- */
-
 #ifndef _FS2_DEMO_SYSTEM_HEADER_FILE
 #define _FS2_DEMO_SYSTEM_HEADER_FILE
 

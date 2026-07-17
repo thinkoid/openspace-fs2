@@ -7,43 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Weapon/Emp.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:03 $
- * $Author: penguin $
- *
- * Header file for managing corkscrew missiles
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:13  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 4     7/02/99 4:31p Dave
- * Much more sophisticated lightning support.
- * 
- * 3     1/08/99 2:08p Dave
- * Fixed software rendering for pofview. Super early support for AWACS and
- * beam weapons.
- * 
- * 2     10/07/98 10:54a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:51a Dave
- * 
- * 3     8/28/98 3:29p Dave
- * EMP effect done. AI effects may need some tweaking as required.
- * 
- * 2     8/25/98 1:49p Dave
- * First rev of EMP effect. Player side stuff basically done. Next comes
- * AI code.
- * 
- * 1     8/24/98 9:29a Dave
- *
- * $NoKeywords: $
- */
-
 #ifndef __FREESPACE_EMP_MISSILE_HEADER_FILE_
 #define __FREESPACE_EMP_MISSILE_HEADER_FILE_
 

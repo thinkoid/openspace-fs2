@@ -7,57 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/Math/Floating.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:58 $
- * $Author: penguin $
- *
- * Low-level floating point math macros and routines
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:09  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 4     4/07/99 6:22p Dave
- * Fred and Freespace support for multiple background bitmaps and suns.
- * Fixed link errors on all subprojects. Moved encrypt_init() to
- * cfile_init() and lcl_init(), since its safe to call twice.
- * 
- * 3     11/05/98 4:18p Dave
- * First run nebula support. Beefed up localization a bit. Removed all
- * conditional compiles for foreign versions. Modified mission file
- * format.
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:49a Dave
- * 
- * 13    2/26/98 3:28p John
- * Changed all sqrt's to use fl_sqrt.  Took out isqrt function
- * 
- * 12    1/26/98 10:43p Mike
- * Make ships not all zoom away from an impending shockwave at the same
- * time.  Based on ai class and randomness
- * 
- * 11    1/17/98 3:32p Mike
- * Add rand_range(), returns random float in min..max.
- * 
- * 10    7/29/97 2:36p Hoffoss
- * Added header file required by _isnan().
- * 
- * 9     7/29/97 2:35p Hoffoss
- * Added a NaN check macro.
- * 
- * 8     2/17/97 5:18p John
- * Added a bunch of RCS headers to a bunch of old files that don't have
- * them.
- *
- * $NoKeywords: $
- */
-
 #ifndef _FLOATING_H
 #define _FLOATING_H
 

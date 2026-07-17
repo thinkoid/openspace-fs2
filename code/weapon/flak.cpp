@@ -7,29 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Weapon/Flak.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:03 $
- * $Author: penguin $
- *
- * flak functions
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:13  mharris
- * Initial checkin - converted filenames and includes to lower case
- * 
- * 
- * 9     7/31/99 2:57p Dave
- * Scaled flak aim and jitter by weapon subsystem strength.
- * 
- * 8     5/24/99 5:45p Dave
- * Added detail levels to the nebula, with a decent speedup. Split nebula
- * lightning into its own section.
- * 
- * $NoKeywords: $
- */
-
 #include "flak.h"
 #include "vecmat.h"
 #include "bmpman.h"

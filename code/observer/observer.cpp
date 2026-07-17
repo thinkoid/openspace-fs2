@@ -7,15 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Observer/Observer.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:01 $
- * $Author: penguin $
- *
- * $NoKeywords: $
- */
-
 #include "observer.h"
 #include "object.h"
 #include "vecmat.h"

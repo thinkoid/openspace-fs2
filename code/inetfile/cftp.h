@@ -7,29 +7,6 @@
  *
 */
 
- /*
- * $Logfile: /Freespace2/code/Inetfile/CFtp.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:58 $
- * $Author: penguin $
- *
- * FTP Client class (get only)
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:08  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 2     4/20/99 6:39p Dave
- * Almost done with artillery targeting. Added support for downloading
- * images on the PXO screen.
- * 
- * 1     4/20/99 4:37p Dave
- * 
- * Initial version
- *
- * $NoKeywords: $
- */
 #ifndef _CFTP_HEADER_
 #define _CFTP_HEADER_
 

@@ -7,17 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Weapon/Corkscrew.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:03 $
- * $Author: penguin $
- *
- * Header file for managing corkscrew missiles
- *
- * $NoKeywords: $
- */
-
 
 #ifndef __FREESPACE_CORKSCREW_H__
 #define __FREESPACE_CORKSCREW_H__

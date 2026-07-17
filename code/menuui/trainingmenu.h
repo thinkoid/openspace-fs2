@@ -7,45 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/MenuUI/TrainingMenu.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:59 $
- * $Author: penguin $
- *
- * Header file for code that controls the Training menu
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:10  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:49a Dave
- * 
- * 7     8/31/97 6:38p Lawrance
- * pass in frametime to do_frame loop
- * 
- * 6     11/21/96 7:14p Lawrance
- * converted menu code to use a file (menu.tbl) to get the data for the
- * menu
- * 
- * 5     11/13/96 4:02p Lawrance
- * complete over-haul of the menu system and the states associated with
- * them
- * 
- * 4     11/13/96 8:32a Lawrance
- * streamlined menu code
- * 
- * 3     11/06/96 8:54a Lawrance
- * added revision templates, made more efficient
- *
- * $NoKeywords: $
- *
-*/
-
 #ifndef _TRAININGMENU_H
 #define _TRAININGMENU_H
 

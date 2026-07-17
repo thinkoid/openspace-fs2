@@ -7,33 +7,7 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/ExceptionHandler/ExceptionHandler.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:57 $
- * $Author: penguin $
- *
- * Main file for dealing with exception handling
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:05  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 1     6/29/99 7:42p Dave
- * 
- * 3     1/19/99 9:07a Allender
- * removed compiler warning pragma's since we are already ignoring them in
- * vtypes.h
- * 
- * 2     1/18/99 4:34p Allender
- * added the exception handler routines from Game Developer for structured
- * exception handling in vsdk code
- *
- * $NoKeywords: $
- */
-
-// Copyright © 1998 Bruce Dawson.
+// Copyright (C) 1998 Bruce Dawson.
 /*
 This source file contains the exception handler for recording error
 information after crashes. See exceptionhandler.h for information

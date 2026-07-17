@@ -7,36 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Network/multi_pause.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:00 $
- * $Author: penguin $
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:11  mharris
- * Initial checkin - converted filenames and includes to lower case
- *  
- * 
- * 3     10/13/98 9:29a Dave
- * Started neatening up freespace.h. Many variables renamed and
- * reorganized. Added AlphaColors.[h,cpp]
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:50a Dave
- * 
- * 2     5/07/98 6:26p Dave
- * Fix strange boundary conditions which arise when players die/respawn
- * while the game is being ended. Spiff up the chatbox doskey thing a bit.
- * 
- * 1     4/14/98 12:18p Dave
- *
- * 
- * $NoKeywords: $
- */
-
 
 #ifndef _MULTI_PAUSE_HEADER_FILE
 #define _MULTI_PAUSE_HEADER_FILE

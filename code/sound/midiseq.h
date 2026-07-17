@@ -7,35 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Sound/midiseq.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:02 $
- * $Author: penguin $
- *
- * Header file with MIDI parsing constants and data structures
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:13  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 2     10/07/98 10:54a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:51a Dave
- * 
- * 1     4/28/97 4:45p John
- * Initial version of ripping sound & movie out of OsAPI.
- * 
- * 4     2/10/97 9:26a Lawrance
- * 
- * 3     1/31/97 2:40p Lawrance
- * MIDI playback working
- *
- * $NoKeywords: $
- */
-
 #ifndef __MIDIBASE_H__
 #define __MIDIBASE_H__
 

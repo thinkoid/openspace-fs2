@@ -7,28 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/ExceptionHandler/ExceptionHandler.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:57 $
- * $Author: penguin $
- *
- * Header file for program exception handling
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:05  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 1     6/29/99 7:42p Dave
- * 
- * 2     1/18/99 4:34p Allender
- * added the exception handler routines from Game Developer for structured
- * exception handling in vsdk code
- *
- * $NoKeywords: $
- */
-
 #pragma once		// Include this file only once
 
 #ifndef __EXCEPTION_HANDLER_H

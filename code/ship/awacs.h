@@ -7,34 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Ship/AWACS.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:02 $
- * $Author: penguin $
- *
- * all sorts of cool stuff about ships
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:12  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 4     6/02/99 12:52p Andsager
- * Added team-wide ship visibility.  Implemented for player.
- * 
- * 3     1/25/99 5:03a Dave
- * First run of stealth, AWACS and TAG missile support. New mission type
- * :)
- * 
- * 2     1/08/99 2:08p Dave
- * Fixed software rendering for pofview. Super early support for AWACS and
- * beam weapons.
- * 
- * 
- * $NoKeywords: $
- */
-
 #ifndef __FS2_AWACS_HEADER_FILE
 #define __FS2_AWACS_HEADER_FILE
 

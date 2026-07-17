@@ -7,23 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Network/multi_dogfight.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:00 $
- * $Author: penguin $
- * 
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:11  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 2     2/23/99 2:29p Dave
- * First run of oldschool dogfight mode. 
- *   
- * $NoKeywords: $
- */
-
 #ifndef __FS2_MULTIPLAYER_DOGFIGHT_HEADER_FILE
 #define __FS2_MULTIPLAYER_DOGFIGHT_HEADER_FILE
 

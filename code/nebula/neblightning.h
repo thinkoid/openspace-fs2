@@ -7,33 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Nebula/NebLightning.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:00 $
- * $Author: penguin $
- *
- * Nebula effect
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:10  mharris
- * Initial checkin - converted filenames and includes to lower case
- * 
- * 
- * 4     7/02/99 4:31p Dave
- * Much more sophisticated lightning support.
- * 
- * 3     5/26/99 11:46a Dave
- * Added ship-blasting lighting and made the randomization of lighting
- * much more customizable.
- * 
- * 2     5/24/99 5:45p Dave
- * Added detail levels to the nebula, with a decent speedup. Split nebula
- * lightning into its own section.
- * 
- * $NoKeywords: $
- */
-
 #ifndef __FS2_NEBULA_LIGHTNING_HEADER_FILE
 #define __FS2_NEBULA_LIGHTNING_HEADER_FILE
 

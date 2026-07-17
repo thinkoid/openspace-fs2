@@ -7,28 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/TgaUtils/TgaUtils.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:02 $
- * $Author: penguin $
- *
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:13  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 3     3/20/99 3:46p Dave
- * Added support for model-based background nebulae. Added 3 new
- * sexpressions.
- * 
- * 2     12/01/98 4:46p Dave
- * Put in targa bitmap support (16 bit).
- *  
- * $NoKeywords: $
- */
-
 
 #ifndef __TARGA_H
 #define __TARGA_H

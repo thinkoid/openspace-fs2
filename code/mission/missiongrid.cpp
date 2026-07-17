@@ -7,49 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/Mission/MissionGrid.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:59 $
- * $Author: penguin $
- *
- * C module for grid specific functions
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:10  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:49a Dave
- * 
- * 7     10/03/97 8:55a John
- * moved Fred's grid_render code out of MissionGrid and into Fred.   Added
- * code to turn background under overlays grey.
- * 
- * 6     7/28/97 2:21p John
- * changed vecmat functions to not return src.  Started putting in code
- * for inline vector math.    Fixed some bugs with optimizer.
- * 
- * 5     7/14/97 12:04a Lawrance
- * added function that navmap calls to draw elevation lines
- * 
- * 4     6/24/97 3:47p Hoffoss
- * Changed the default grid elevation to 0 instead of -10.
- * 
- * 3     6/18/97 11:36p Lawrance
- * move grid rendering code to MissionGrid.cpp
- * 
- * 2     6/12/97 11:25a Lawrance
- * added grid_read_camera_controls()
- * 
- * 1     6/12/97 10:17a Lawrance
- *
- * $NoKeywords: $
- */
-
 #include "physics.h"
 #include "key.h"
 #include "missiongrid.h"

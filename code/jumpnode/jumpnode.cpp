@@ -7,53 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/JumpNode/JumpNode.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:58 $
- * $Author: penguin $
- *
- * Module for everything to do with jump nodes
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:09  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:49a Dave
- * 
- * 9     6/13/98 6:01p Hoffoss
- * Externalized all new (or forgot to be added) strings to all the code.
- * 
- * 8     5/12/98 2:03p Adam
- * make jumpnode less bright
- * 
- * 7     4/01/98 8:38p Lawrance
- * Add support for jump node icons in the briefings.
- * 
- * 6     3/24/98 4:27p Lawrance
- * Use new method for dimming lines
- * 
- * 5     3/24/98 12:05p Lawrance
- * Don't set alpha color for jumpnode
- * 
- * 4     3/23/98 11:05a Lawrance
- * Dim jump node as it get farther away
- * 
- * 3     3/21/98 7:43p Lawrance
- * Disable jump node dimming until bug with alpha colors is fixed
- * 
- * 2     3/21/98 7:36p Lawrance
- * Move jump nodes to own lib.
- * 
- * 1     3/21/98 3:53p Lawrance
- *
- * $NoKeywords: $
- */
-
 int Num_jump_nodes = 0;
 
 #include "object.h"

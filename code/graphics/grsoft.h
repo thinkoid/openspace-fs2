@@ -7,36 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/Graphics/GrSoft.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:57 $
- * $Author: penguin $
- *
- * Include file for our software renderer
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:07  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 3     6/29/99 10:35a Dave
- * Interface polygon bitmaps! Whee!
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:49a Dave
- * 
- * 2     3/25/98 8:07p John
- * Restructured software rendering into two modules; One for windowed
- * debug mode and one for DirectX fullscreen.   
- * 
- * 1     5/12/97 12:14p John
- *
- * $NoKeywords: $
- */
-
 #ifndef _GRSOFT_H
 #define _GRSOFT_H
 

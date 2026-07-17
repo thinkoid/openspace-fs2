@@ -7,30 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/Math/spline.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:58 $
- * $Author: penguin $
- *
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:09  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 3     7/08/99 10:53a Dave
- * New multiplayer interpolation scheme. Not 100% done yet, but still
- * better than the old way.
- * 
- * 2     7/06/99 4:24p Dave
- * Mid-level checkin. Starting on some potentially cool multiplayer
- * smoothness crap.
- *  
- *
- * $NoKeywords: $
- */
-
 #ifndef __FS2_SPLINE_HEADER_FILE
 #define __FS2_SPLINE_HEADER_FILE
 

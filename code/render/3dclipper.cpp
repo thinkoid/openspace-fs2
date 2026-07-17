@@ -7,67 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Render/3dClipper.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:01 $
- * $Author: penguin $
- *
- * Polygon clipping functions
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:12  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:51a Dave
- * 
- * 13    4/10/98 5:20p John
- * Changed RGB in lighting structure to be ubytes.  Removed old
- * not-necessary 24 bpp software stuff.
- * 
- * 12    3/23/98 5:00p John
- * Improved missile trails.  Made smooth alpha under hardware.  Made end
- * taper.  Made trail touch weapon.
- * 
- * 11    3/16/98 4:51p John
- * Added low-level code to clip all polygons against an arbritary plane.
- * Took out all old model_interp_zclip and used this new method instead.  
- * 
- * 10    1/23/98 5:08p John
- * Took L out of vertex structure used B (blue) instead.   Took all small
- * fireballs out of fireball types and used particles instead.  Fixed some
- * debris explosion things.  Restructured fireball code.   Restructured
- * some lighting code.   Made dynamic lighting on by default. Made groups
- * of lasers only cast one light.  Made fireballs not cast light.
- * 
- * 9     9/09/97 3:39p Sandeep
- * warning level 4 bugs
- * 
- * 8     3/10/97 5:20p John
- * Differentiated between Gouraud and Flat shading.  Since we only do flat
- * shading as of now, we don't need to interpolate L in the outer loop.
- * This should save a few percent.
- * 
- * 7     3/10/97 2:25p John
- * Made pofview zbuffer.   Made textest work with new model code.  Took
- * out some unnecessary Asserts in the 3d clipper.
- * 
- * 
- * 6     12/23/96 11:00a John
- * Restructured POF stuff to support LOD in one pof.
- * 
- * 5     11/06/96 2:33p John
- * Added more asserts for checking that non-tiled UV's are between 0 and
- * 1.0.    Put code in the model_init code that checks for polys that have
- * a vertex duplicated and throws them out.
- *
- * $NoKeywords: $
- */
-
 #include "3dinternal.h"
 #include "tmapper.h"
 

@@ -7,31 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Network/multi_update.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:00 $
- * $Author: penguin $
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:11  mharris
- * Initial checkin - converted filenames and includes to lower case
- * 
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:50a Dave
- * 
- * 2     7/09/98 4:51p Dave
- * First revision of PXO autoupdate check system.
- * 
- * 1     7/09/98 2:09p Dave
- * 
- *
- * $NoKeywords: $
- */
-
 #ifndef _FREESPACE_AUTOUPDATE_THINGIE_HEADER_FILE
 #define _FREESPACE_AUTOUPDATE_THINGIE_HEADER_FILE
 

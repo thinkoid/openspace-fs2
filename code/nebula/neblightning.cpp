@@ -7,52 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Nebula/NebLightning.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:00 $
- * $Author: penguin $
- *
- * Nebula effect
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:10  mharris
- * Initial checkin - converted filenames and includes to lower case
- * 
- * 
- * 10    8/15/99 3:50p Dave
- * Don't process lightning at the very beginning of a mission.
- * 
- * 9     8/12/99 10:38a Anoop
- * Removed unnecessary Int3().
- * 
- * 8     8/05/99 2:06a Dave
- * Whee.
- * 
- * 7     7/27/99 9:51p Andsager
- * make mprintf's into nprintf's
- * 
- * 6     7/03/99 5:50p Dave
- * Make rotated bitmaps draw properly in padlock views.
- * 
- * 5     7/02/99 4:31p Dave
- * Much more sophisticated lightning support.
- * 
- * 4     6/09/99 10:32a Dave
- * Made random lighting bolts behave more like the E3 demo. Generally more
- * active.
- * 
- * 3     5/26/99 11:46a Dave
- * Added ship-blasting lighting and made the randomization of lighting
- * much more customizable.
- * 
- * 2     5/24/99 5:45p Dave
- * Added detail levels to the nebula, with a decent speedup. Split nebula
- * lightning into its own section.
- * 
- * $NoKeywords: $
- */
-
 #include "parselo.h"
 #include "linklist.h"
 #include "bmpman.h"

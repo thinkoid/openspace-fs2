@@ -7,63 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/Object/CollideWeaponWeapon.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:01 $
- * $Author: penguin $
- *
- * Routines to detect collisions and do physics, damage, etc for weapons and weapons
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:11  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 5     8/27/99 9:32a Andsager
- * Debug info for shooting down bombs
- * 
- * 4     8/27/99 1:34a Andsager
- * Modify damage by shockwaves for BIG|HUGE ships.  Modify shockwave damge
- * when weapon blows up.
- * 
- * 3     10/16/98 1:22p Andsager
- * clean up header files
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:50a Dave
- * 
- * 8     5/22/98 11:00a Mike
- * Balance sm3-09a.
- * 
- * 7     4/15/98 11:30p Mike
- * Make bombs not drop for first half second and increase arm time from
- * 1.0 to 1.5 seconds.
- * 
- * 6     3/05/98 5:48p Lawrance
- * Double radius of bombs when doing weapon-weapon collisions
- * 
- * 5     2/22/98 12:19p John
- * Externalized some strings
- * 
- * 4     2/14/98 3:38p Mike
- * Make bombs have arm time, drop for 1/2 second, have hull_strength.
- * Make them not fired until closer to target.
- * 
- * 3     10/24/97 2:14p Adam
- * removed nprintf() call whose string is too long
- * 
- * 2     9/17/97 5:12p John
- * Restructured collision routines.  Probably broke a lot of stuff.
- * 
- * 1     9/17/97 2:14p John
- * Initial revision
- *
- * $NoKeywords: $
- */
-
 
 #include "objcollide.h"
 #include "freespace.h"

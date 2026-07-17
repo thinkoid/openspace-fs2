@@ -7,16 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/MissionUI/MissionScreenCommon.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:59 $
- * $Author: penguin $
- *
- * $NoKeywords: $
- *
- */
-
 #ifndef _MISSION_SCREEN_COMMON_HEADER_FILE
 #define _MISSION_SCREEN_COMMON_HEADER_FILE
 

@@ -7,61 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Sound/dscap.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:02 $
- * $Author: penguin $
- *
- * C module for DirectSoundCapture code
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:13  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 2     10/07/98 10:54a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:51a Dave
- * 
- * 11    5/05/98 4:49p Lawrance
- * Put in code to authenticate A3D, improve A3D support
- * 
- * 10    4/24/98 2:17a Lawrance
- * Clear out record buffer when recording begins
- * 
- * 9     3/24/98 9:37a Lawrance
- * Only read up to a safe offset in the capture buffer.
- * 
- * 8     3/22/98 7:13p Lawrance
- * Get streaming of recording voice working
- * 
- * 7     2/26/98 2:54p Lawrance
- * Don't recreate capture buffer each time recording starts... just use
- * one.
- * 
- * 6     2/15/98 11:10p Lawrance
- * more work on real-time voice system
- * 
- * 5     2/15/98 4:43p Lawrance
- * work on real-time voice
- * 
- * 4     2/09/98 8:07p Lawrance
- * get buffer create working
- * 
- * 3     2/04/98 6:08p Lawrance
- * Read function pointers from dsound.dll, further work on
- * DirectSoundCapture.
- * 
- * 2     2/03/98 11:53p Lawrance
- * Adding support for DirectSoundCapture
- * 
- * 1     2/03/98 4:48p Lawrance
- *
- * $NoKeywords: $
- */
-
 #include "pstypes.h"
 #include "ds.h"
 #include "dscap.h"

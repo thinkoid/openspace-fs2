@@ -7,36 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/Math/StaticRand.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:58 $
- * $Author: penguin $
- *
- * static random functions.  Return "random" number based on integer inut
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:09  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:49a Dave
- * 
- * 4     3/17/98 12:16a Allender
- * asteroids in multiplayer -- minor problems with position being correct
- * 
- * 3     12/30/97 5:46p Lawrance
- * Rename rnd() to rand_alt().
- * 
- * 2     12/30/97 4:27p Lawrance
- * Add new rnd() function that doesn't affect rand() sequence.
- * 
- * 1     8/08/97 3:38p Allender
- */
-
 #include "staticrand.h"
 #include "vecmat.h"
 

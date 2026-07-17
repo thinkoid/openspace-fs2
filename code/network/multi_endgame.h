@@ -7,60 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Network/multi_endgame.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:00 $
- * $Author: penguin $
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:11  mharris
- * Initial checkin - converted filenames and includes to lower case
- * 
- * 
- * 3     8/22/99 1:55p Dave
- * Cleaned up host/team-captain leaving code.
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:50a Dave
- * 
- * 8     9/14/98 3:40p Allender
- * better error checking for invalid number of waves for player wings in a
- * multiplayer game.  Better popup message in FreeSpace side.
- * 
- * 7     9/11/98 4:14p Dave
- * Fixed file checksumming of < file_size. Put in more verbose kicking and
- * PXO stats store reporting.
- * 
- * 6     7/24/98 9:27a Dave
- * Tidied up endgame sequencing by removing several old flags and
- * standardizing _all_ endgame stuff with a single function call.
- * 
- * 5     7/13/98 5:19p Dave
- * 
- * 4     5/17/98 6:32p Dave
- * Make sure clients/servers aren't kicked out of the debriefing when team
- * captains leave a game. Fixed chatbox off-by-one error. Fixed image
- * xfer/pilot info popup stuff.
- * 
- * 3     5/03/98 7:04p Dave
- * Make team vs. team work mores smoothly with standalone. Change how host
- * interacts with standalone for picking missions. Put in a time limit for
- * ingame join ship select. Fix ingame join ship select screen for Vasudan
- * ship icons.
- * 
- * 2     4/30/98 5:12p Dave
- * Fixed game polling code for joining clients. Reworked some file xfer
- * stuff.
- * 
- * 1     4/22/98 5:50p Dave
- *  
- * 
- * $NoKeywords: $
- */
-
 #ifndef _MULTI_ENDGAME_HEADER_FILE
 #define _MULTI_ENDGAME_HEADER_FILE
 

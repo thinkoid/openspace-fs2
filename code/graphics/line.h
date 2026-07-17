@@ -7,57 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/Graphics/Line.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:57 $
- * $Author: penguin $
- *
- * Header file for line.cpp
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:07  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:49a Dave
- * 
- * 10    5/06/98 5:30p John
- * Removed unused cfilearchiver.  Removed/replaced some unused/little used
- * graphics functions, namely gradient_h and _v and pixel_sp.   Put in new
- * DirectX header files and libs that fixed the Direct3D alpha blending
- * problems.
- * 
- * 9     3/10/98 4:18p John
- * Cleaned up graphics lib.  Took out most unused gr functions.   Made D3D
- * & Glide have popups and print screen.  Took out all >8bpp software
- * support.  Made Fred zbuffer.  Made zbuffer allocate dynamically to
- * support Fred.  Made zbuffering key off of functions rather than one
- * global variable.
- * 
- * 8     10/03/97 9:10a John
- * added better antialiased line drawer
- * 
- * 7     6/13/97 5:35p John
- * added some antialiased bitmaps and lines
- * 
- * 6     11/26/96 6:50p John
- * Added some more hicolor primitives.  Made windowed mode run as current
- * bpp, if bpp is 8,16,or 32.
- * 
- * 5     10/26/96 2:56p John
- * Got gradient code working.
- * 
- * 4     10/26/96 1:40p John
- * Added some now primitives to the 2d library and
- * cleaned up some old ones.
- *
- * $NoKeywords: $
- */
-
 #ifndef _LINE_H
 #define _LINE_H
 

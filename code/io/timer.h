@@ -7,54 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/Io/Timer.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:58 $
- * $Author: penguin $
- *
- * Include file for timer stuff
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:08  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 3     5/17/99 6:03p Dave
- * Added new timing code. Put in code to allow camera speed zooming.
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:49a Dave
- * 
- * 11    4/14/98 2:26p Hoffoss
- * Removed function prototype that doesn't exist anymore.
- * 
- * 10    9/11/97 7:12p Hoffoss
- * Added more functionality to training sexp handling code.
- * 
- * 9     8/05/97 10:18a Lawrance
- * my_rand() being used temporarily instead of rand()
- * 
- * 8     7/29/97 5:30p Lawrance
- * move gettime() from keyboard module to timer module
- * 
- * 7     7/16/97 4:42p Mike
- * Make afterburner shake viewer, not ship.
- * Shake for limited time.
- * Add timestamp_until() function to timer library.
- * 
- * 6     6/26/97 12:05p Allender
- * fixed timestamp_valid macro
- * 
- * 5     2/17/97 5:18p John
- * Added a bunch of RCS headers to a bunch of old files that don't have
- * them.
- *
- * $NoKeywords: $
- */
-
 #ifndef _TIMER_H
 #define _TIMER_H
 

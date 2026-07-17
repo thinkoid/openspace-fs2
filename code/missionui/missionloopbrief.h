@@ -7,26 +7,6 @@
  *
 */
  
-/*
- * $Logfile: /Freespace2/code/MissionUI/MissionLoopBrief.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:59 $
- * $Author: penguin $
- *
- * Campaign Loop briefing screen
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:10  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 2     8/27/99 12:04a Dave
- * Campaign loop screen.
- *  
- *
- * $NoKeywords: $
- */
-
 #ifndef __FS2_CAMPAIGN_LOOP_BRIEF_HEADER_FILE
 #define __FS2_CAMPAIGN_LOOP_BRIEF_HEADER_FILE
 

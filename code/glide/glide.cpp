@@ -1,37 +1,3 @@
-/*
- * $Logfile: /Freespace2/code/glide/Glide.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:57 $
- * $Author: penguin $
- *
- * Code for dynamically loading glide libraries
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:07  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 3     11/11/98 5:37p Dave
- * Checkin for multiplayer testing.
- * 
- * 2     10/07/98 10:52a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:48a Dave
- * 
- * 4     3/18/98 1:57p John
- * Made non-perspective correct textures do 2d clipping before rendering.
- * 
- * 3     2/21/98 11:58a John
- * Put in some stuff to externalize strings
- * 
- * 2     2/19/98 6:13p John
- * Made Glide do texturing & zbuffering.
- * 
- * 1     1/05/98 10:38a John
- *
- * $NoKeywords: $
- */
 
 #define __MSC__
 #include <windows.h>

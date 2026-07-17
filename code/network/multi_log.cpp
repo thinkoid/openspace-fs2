@@ -7,57 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Network/multi_log.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:00 $
- * $Author: penguin $
- *
- * Header file to support multiplayer logging functions
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:11  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 8     8/17/99 2:24p Dave
- * Fixed wacky squad color stuff.
- * 
- * 7     6/07/99 9:51p Dave
- * Consolidated all multiplayer ports into one.
- * 
- * 6     4/27/99 2:59p Dave
- * Potential fix for reliable socket connection problem.
- * 
- * 5     4/09/99 2:21p Dave
- * Multiplayer beta stuff. CD checking.
- * 
- * 4     1/24/99 11:37p Dave
- * First full rev of beam weapons. Very customizable. Removed some bogus
- * Int3()'s in low level net code.
- * 
- * 3     11/19/98 4:19p Dave
- * Put IPX sockets back in psnet. Consolidated all multiplayer config
- * files into one.
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:50a Dave
- * 
- * 3     8/21/98 1:14p Dave
- * Put in log system hooks in useful places.
- * 
- * 2     8/20/98 5:31p Dave
- * Put in handy multiplayer logfile system. Now need to put in useful
- * applications of it all over the code.
- * 
- * 1     8/20/98 2:00p Dave
- *  
- *
- * $NoKeywords: $
- */
-
 #include <stdio.h>
 #include <stdarg.h>
 #include "multi_log.h"

@@ -7,51 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Network/multi_campaign.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:00 $
- * $Author: penguin $
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:11  mharris
- * Initial checkin - converted filenames and includes to lower case
- * 
- * 
- * 3     11/05/98 5:55p Dave
- * Big pass at reducing #includes
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:50a Dave
- * 
- * 7     5/21/98 12:14a Allender
- * fix ingame join problems
- * 
- * 6     5/19/98 8:35p Dave
- * Revamp PXO channel listing system. Send campaign goals/events to
- * clients for evaluation. Made lock button pressable on all screens. 
- * 
- * 5     5/05/98 5:02p Dave
- * Fix end-of-campaign sequencing to work right. Make all individual
- * missions of a campaign replayable.
- * 
- * 4     5/05/98 2:10p Dave
- * Verify campaign support for testing. More new tracker code.
- * 
- * 3     2/23/98 11:09p Dave
- * Finished up multiplayer campaign support. Seems bug-free.
- * 
- * 2     2/22/98 2:53p Dave
- * Put in groundwork for advanced multiplayer campaign  options.
- * 
- * 1     2/20/98 4:39p Dave
- * Split up mp campaign functionality into its own module.
- *  
- * $NoKeywords: $
- */
-
 #ifndef _MULTIPLAYER_CAMPAIGN_HEADER_FILE
 #define _MULTIPLAYER_CAMPAIGN_HEADER_FILE
 

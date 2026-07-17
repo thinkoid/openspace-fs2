@@ -7,29 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/MenuUI/fishtank.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:58 $
- * $Author: penguin $
- *
- * bloop
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:09  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 3     9/01/99 10:09a Dave
- * Pirate bob.
- * 
- * 2     8/26/99 9:45a Dave
- * First pass at easter eggs and cheats.
- * 
- *
- * $NoKeywords: $
- */
-
 #include "animplay.h"
 #include "packunpack.h"
 #include "2d.h"

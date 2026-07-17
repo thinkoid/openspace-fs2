@@ -7,16 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/Hud/HUDObserver.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:58 $
- * $Author: penguin $
- *
- * $NoKeywords: $
- *
- */
-
 #include "hud.h"
 #include "hudobserver.h"
 #include "freespace.h"

@@ -7,40 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Weapon/Trails.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:03 $
- * $Author: penguin $
- *
- * External defs for missile trail stuff
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:13  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 3     11/14/98 5:33p Dave
- * Lots of nebula work. Put in ship contrails.
- * 
- * 2     10/07/98 10:54a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:51a Dave
- * 
- * 3     3/23/98 5:00p John
- * Improved missile trails.  Made smooth alpha under hardware.  Made end
- * taper.  Made trail touch weapon.
- * 
- * 2     12/21/97 6:15p John
- * Made a seperate system for missile trails
- * 
- * 1     12/21/97 5:30p John
- * Initial version
- *
- * $NoKeywords: $
- */
-
 #ifndef _TRAILS_H
 #define _TRAILS_H
 

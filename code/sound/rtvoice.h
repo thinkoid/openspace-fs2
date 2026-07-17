@@ -7,62 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Sound/rtvoice.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:02 $
- * $Author: penguin $
- *
- * Header file for real-time voice code
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:13  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 2     10/07/98 10:54a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:51a Dave
- * 
- * 12    4/21/98 4:44p Dave
- * Implement Vasudan ships in multiplayer. Added a debug function to bash
- * player rank. Fixed a few rtvoice buffer overrun problems. Fixed ui
- * problem in options screen. 
- * 
- * 11    4/17/98 5:27p Dave
- * More work on the multi options screen. Fixed many minor ui todo bugs.
- * 
- * 10    3/25/98 9:56a Dave
- * Increase buffer size to handle 8 seconds of voice data.
- * 
- * 9     3/22/98 7:13p Lawrance
- * Get streaming of recording voice working
- * 
- * 8     2/24/98 11:56p Lawrance
- * Change real-time voice code to provide the uncompressed size on decode.
- * 
- * 7     2/24/98 10:13p Dave
- * Put in initial support for multiplayer voice streaming.
- * 
- * 6     2/23/98 6:54p Lawrance
- * Make interface to real-time voice more generic and useful.
- * 
- * 5     2/16/98 7:31p Lawrance
- * get compression/decompression of voice working
- * 
- * 4     2/15/98 4:43p Lawrance
- * work on real-time voice
- * 
- * 3     2/03/98 11:53p Lawrance
- * Adding support for DirectSoundCapture
- * 
- * 2     1/31/98 5:48p Lawrance
- * Start on real-time voice recording
- *
- * $NoKeywords: $
- */
-
 #ifndef __RTVOICE_H__
 #define __RTVOICE_H__
 

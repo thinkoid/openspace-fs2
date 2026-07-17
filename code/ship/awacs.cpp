@@ -7,63 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Ship/AWACS.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:02 $
- * $Author: penguin $
- *
- * all sorts of cool stuff about ships
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:12  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 13    8/25/99 10:50a Dave
- * Added music to the mainhall.tbl
- * 
- * 12    7/19/99 12:02p Andsager
- * Allow AWACS on any ship subsystem. Fix sexp_set_subsystem_strength to
- * only blow up subsystem if its strength is > 0
- * 
- * 11    7/06/99 10:45a Andsager
- * Modify engine wash to work on any ship that is not small.  Add AWACS
- * ask for help.
- * 
- * 10    6/17/99 1:41p Andsager
- * Added comments to team_visibility_update
- * 
- * 9     6/15/99 4:01p Jamesa
- * Don't count navbuoys and cargo containers towards team visibilitiy.
- * 
- * 8     6/02/99 12:52p Andsager
- * Added team-wide ship visibility.  Implemented for player.
- * 
- * 7     5/28/99 3:14p Andsager
- * Modify nebula scan range by species.
- * 
- * 6     5/28/99 9:39a Andsager
- * Modify awacs to take account for huge ships.
- * 
- * 5     5/12/99 2:55p Andsager
- * Implemented level 2 tag as priority in turret object selection
- * 
- * 4     1/25/99 2:49p Anoop
- * Put in more sanity checks when checking for AWACS sources.
- * 
- * 3     1/25/99 5:03a Dave
- * First run of stealth, AWACS and TAG missile support. New mission type
- * :)
- * 
- * 2     1/08/99 2:08p Dave
- * Fixed software rendering for pofview. Super early support for AWACS and
- * beam weapons.
- * 
- * 
- * $NoKeywords: $
- */
-
 #include "timer.h"
 #include "ship.h"
 #include "linklist.h"

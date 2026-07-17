@@ -7,36 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Network/multi_pinfo.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:00 $
- * $Author: penguin $
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:11  mharris
- * Initial checkin - converted filenames and includes to lower case
- *  
- * 
- * 3     1/30/99 1:29a Dave
- * Fixed nebula thumbnail problem. Full support for 1024x768 choose pilot
- * screen.  Fixed beam weapon death messages.
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:50a Dave
- * 
- * 2     4/20/98 6:04p Dave
- * Implement multidata cache flushing and xferring mission files to
- * multidata. Make sure observers can't change hud config. Fix pilot image
- * viewing in popup. Put in game status field. Tweaked multi options. 
- * 
- * 1     3/05/98 8:20p Dave
- * 
- * $NoKeywords: $
- */
-
 #ifndef _MULTI_PLAYER_INFO_HEADER_FILE
 #define _MULTI_PLAYER_INFO_HEADER_FILE
 

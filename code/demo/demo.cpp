@@ -7,40 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Demo/Demo.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:56 $
- * $Author: penguin $
- *
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:04  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 6     8/26/99 8:51p Dave
- * Gave multiplayer TvT messaging a heavy dose of sanity. Cheat codes.
- * 
- * 5     6/16/99 10:20a Dave
- * Added send-message-list sexpression.
- * 
- * 4     4/16/99 5:54p Dave
- * Support for on/off style "stream" weapons. Real early support for
- * target-painting lasers.
- * 
- * 3     3/29/99 6:17p Dave
- * More work on demo system. Got just about everything in except for
- * blowing ships up, secondary weapons and player death/warpout.
- * 
- * 2     3/28/99 5:58p Dave
- * Added early demo code. Make objects move. Nice and framerate
- * independant, but not much else. Don't use yet unless you're me :)
- *  
- *  
- * $NoKeywords: $
- */
-
 #include "demo.h"
 #include "missionload.h"
 #include "ship.h"

@@ -7,45 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/Mission/MissionGrid.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:59 $
- * $Author: penguin $
- *
- * Type and defines for grids
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:10  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:49a Dave
- * 
- * 6     10/03/97 8:55a John
- * moved Fred's grid_render code out of MissionGrid and into Fred.   Added
- * code to turn background under overlays grey.
- * 
- * 5     7/14/97 12:04a Lawrance
- * added function that navmap calls to draw elevation lines
- * 
- * 4     6/18/97 11:36p Lawrance
- * move grid rendering code to MissionGrid.cpp
- * 
- * 3     6/12/97 11:25a Lawrance
- * added grid_read_camera_controls()
- * 
- * 2     6/12/97 9:58a Lawrance
- * holds grid specific types and #defines
- * 
- * 1     6/12/97 9:51a Lawrance
- *
- * $NoKeywords: $
- */
-
 
 #ifndef __MISSIONGRID_H__
 #define __MISSIONGRID_H__

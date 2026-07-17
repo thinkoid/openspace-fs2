@@ -7,24 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/Cfilearchiver/CfileArchiver.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:56 $
- * $Author: penguin $
- *
- * Program to create an archive file for use with cfile stuff
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:04  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 2     10/23/98 6:15p Dave
- *
- * $NoKeywords: $
- */
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <direct.h>

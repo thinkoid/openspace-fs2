@@ -7,39 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Network/multi_kick.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:00 $
- * $Author: penguin $
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:11  mharris
- * Initial checkin - converted filenames and includes to lower case
- *  
- * 
- * 3     11/05/98 5:55p Dave
- * Big pass at reducing #includes
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:50a Dave
- * 
- * 3     9/11/98 4:14p Dave
- * Fixed file checksumming of < file_size. Put in more verbose kicking and
- * PXO stats store reporting.
- * 
- * 2     3/24/98 5:00p Dave
- * Fixed several ui bugs. Put in pre and post voice stream playback sound
- * fx. Put in error specific popups for clients getting dropped from games
- * through actions other than their own.
- * 
- * 1     2/12/98 4:38p Dave
- * Multiplayer kick functionality
- * 
- * $NoKeywords: $
- */
 #ifndef _MULTIPLAYER_KICK_HEADER_FILE
 #define _MULTIPLAYER_KICK_HEADER_FILE
 

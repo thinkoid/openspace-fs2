@@ -7,46 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Network/Psnet2.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:01 $
- * $Author: penguin $
- *
- * Header file for the application level network-interface.
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:11  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 9     8/16/99 4:06p Dave
- * Big honking checkin.
- * 
- * 8     7/28/99 11:46a Dave
- * Put in FS2_DEMO defines for port stuff.
- * 
- * 7     6/25/99 11:59a Dave
- * Multi options screen.
- * 
- * 6     6/07/99 9:51p Dave
- * Consolidated all multiplayer ports into one.
- * 
- * 5     3/09/99 6:24p Dave
- * More work on object update revamping. Identified several sources of
- * unnecessary bandwidth.
- * 
- * 4     11/19/98 4:19p Dave
- * Put IPX sockets back in psnet. Consolidated all multiplayer config
- * files into one.
- * 
- * 3     11/19/98 8:04a Dave
- * Full support for D3-style reliable sockets. Revamped packet lag/loss
- * system, made it receiver side and at the lowest possible level.
- * 
- * $NoKeywords: $
- */
-
 
 #ifndef _PSNET2_H
 #define _PSNET2_H

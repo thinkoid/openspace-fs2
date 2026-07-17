@@ -7,32 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/MissionUI/MissionLoopBrief.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:59 $
- * $Author: penguin $
- *
- * Campaign Loop briefing screen
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:10  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 4     9/06/99 9:44p Jefff
- * break out of loop support
- * 
- * 3     9/06/99 6:38p Dave
- * Improved CD detection code.
- * 
- * 2     8/27/99 12:04a Dave
- * Campaign loop screen.
- *  
- *
- * $NoKeywords: $
- */
-
 #include "missionloopbrief.h"
 #include "missionscreencommon.h"
 #include "2d.h"

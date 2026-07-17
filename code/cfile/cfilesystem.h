@@ -7,42 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/CFile/CfileSystem.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:56 $
- * $Author: penguin $
- *
- * Functions to keep track of and find files that can exist
- * on the harddrive, cd-rom, or in a pack file on either of those.
- * This keeps a list of all the files in packfiles or on CD-rom
- * and when you need a file you call one function which then searches
- * all those locations, inherently enforcing precedence orders.
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:04  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 3     10/13/98 9:19a Andsager
- * Add localization support to cfile.  Optional parameter with cfopen that
- * looks for localized files.
- * 
- * 2     10/07/98 10:52a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:48a Dave
- * 
- * 5     5/01/98 10:21a John
- * Added code to find all pack files in all trees.   Added code to create
- * any directories that we write to.
- * 
- * 4     4/30/98 10:21p John
- * Added code to cleanup cfilesystem
- *
- * $NoKeywords: $
- */
-
 #ifndef _CFILESYSTEM_H
 #define _CFILESYSTEM_H
 

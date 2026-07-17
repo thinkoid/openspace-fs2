@@ -7,44 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Weapon/MuzzleFlash.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:03 $
- * $Author: penguin $
- *
- * all sorts of cool stuff about ships
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:13  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 7     7/08/99 10:53a Dave
- * New multiplayer interpolation scheme. Not 100% done yet, but still
- * better than the old way.
- * 
- * 6     5/18/99 1:30p Dave
- * Added muzzle flash table stuff.
- * 
- * 5     4/25/99 3:02p Dave
- * Build defines for the E3 build.
- * 
- * 4     4/12/99 11:03p Dave
- * Removed contrails and muzzle flashes from MULTIPLAYER_BETA builds.
- * 
- * 3     3/19/99 9:52a Dave
- * Checkin to repair massive source safe crash. Also added support for
- * pof-style nebulae, and some new weapons code.
- * 
- * 2     1/08/99 2:08p Dave
- * Fixed software rendering for pofview. Super early support for AWACS and
- * beam weapons.
- * 
- * 
- * $NoKeywords: $
- */
-
 #include "object.h"
 #include "timer.h"
 #include "systemvars.h"

@@ -7,48 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Localization/localize.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:58 $
- * $Author: penguin $
- *
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:09  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 18    11/02/99 3:24p Jefff
- * added translation functions for a few key instances where english was
- * showing up
- * 
- * 17    10/25/99 5:46p Jefff
- * Many localization fixes/changes for German builds
- * 
- * 16    10/14/99 2:52p Jefff
- * localization fixes.  added support for hi-res specific xstr offsets
- * 
- * 15    7/13/99 6:07p Jefff
- * Added support for localization string offsets.
- * 
- * 14    5/26/99 11:46a Dave
- * Added ship-blasting lighting and made the randomization of lighting
- * much more customizable.
- * 
- * 13    2/23/99 11:18a Andsager
- * Localize launcher using strings.tbl
- * 
- * 12    2/22/99 9:35p Andsager
- * Add lcl_get_language_name() returns string with current lang.  Added
- * localization for launcher.
- * 
- * 11    12/01/98 4:46p Dave
- * Put in targa bitmap support (16 bit).
- *  
- * $NoKeywords: $
- */
-
 
 #ifndef __FREESPACE2_LOCALIZATION_UTILITIES_HEADER_FILE
 #define __FREESPACE2_LOCALIZATION_UTILITIES_HEADER_FILE

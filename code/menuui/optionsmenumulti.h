@@ -7,36 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/MenuUI/OptionsMenuMulti.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:59 $
- * $Author: penguin $
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:09  mharris
- * Initial checkin - converted filenames and includes to lower case
- *  
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:49a Dave
- * 
- * 3     5/06/98 8:06p Dave
- * Made standalone reset properly under weird conditions. Tweak
- * optionsmulti screen. Upped MAX_WEAPONS to 350. Put in new launch
- * countdown anim. Minro ui fixes/tweaks.
- * 
- * 2     4/17/98 5:27p Dave
- * More work on the multi options screen. Fixed many minor ui todo bugs.
- * 
- * 1     4/16/98 11:39p Dave
- *  
- * 
- * $NoKeywords: $
- */
-
 #ifndef _OPTIONS_MENU_MULTI_HEADER_FILE
 #define _OPTIONS_MENU_MULTI_HEADER_FILE
 

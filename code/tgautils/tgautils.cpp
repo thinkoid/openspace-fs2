@@ -7,41 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/TgaUtils/TgaUtils.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:02 $
- * $Author: penguin $
- *
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:13  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 7     7/13/99 1:16p Dave
- * 32 bit support. Whee!
- * 
- * 6     3/20/99 3:46p Dave
- * Added support for model-based background nebulae. Added 3 new
- * sexpressions.
- * 
- * 5     12/03/98 9:39a Dave
- * Removed bogus tga code assert?
- * 
- * 4     12/02/98 5:47p Dave
- * Put in interface xstr code. Converted barracks screen to new format.
- * 
- * 3     12/01/98 5:54p Dave
- * Simplified the way pixel data is swizzled. Fixed tga bitmaps to work
- * properly in D3D and Glide.
- * 
- * 2     12/01/98 4:46p Dave
- * Put in targa bitmap support (16 bit).
- *  
- * $NoKeywords: $
- */
-
 #include <stdio.h>
 #include <string.h>
 

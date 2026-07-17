@@ -7,68 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Particle/Particle.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:01 $
- * $Author: penguin $
- *
- * Includes for particle system
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:12  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 7     7/21/99 8:10p Dave
- * First run of supernova effect.
- * 
- * 6     1/29/99 12:47a Dave
- * Put in sounds for beam weapon. A bunch of interface screens (tech
- * database stuff).
- * 
- * 5     1/27/99 9:56a Dave
- * Temporary checkin of beam weapons for Dan to make cool sounds.
- * 
- * 4     1/24/99 11:37p Dave
- * First full rev of beam weapons. Very customizable. Removed some bogus
- * Int3()'s in low level net code.
- * 
- * 3     1/21/99 2:06p Dave
- * Final checkin for multiplayer testing.
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:50a Dave
- * 
- * 6     5/13/98 3:25p John
- * Added code to make explosion impacts not get removed by other
- * particles.
- * 
- * 5     5/11/98 10:06a John
- * Added new particle for Adam
- * 
- * 4     4/30/98 11:31a Andsager
- * Added particles to big ship explosions.  Modified particle_emit() to
- * take optional range to increase range at which pariticles are created.
- * 
- * 3     1/29/98 11:48a John
- * Added new counter measure rendering as model code.   Made weapons be
- * able to have impact explosion.
- * 
- * 2     1/02/98 5:04p John
- * Several explosion related changes.  Made fireballs not be used as
- * ani's.  Made ship spark system expell particles.  Took away impact
- * explosion for weapon hitting ship... this needs to get added to weapon
- * info and makes shield hit more obvious.  Only make sparks when hit
- * hull, not shields.
- * 
- * 1     12/23/97 8:26a John
- *
- * $NoKeywords: $
- */
-
 #ifndef _PARTICLE_H
 #define _PARTICLE_H
 

@@ -7,33 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/GlobalIncs/version.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:57 $
- * $Author: penguin $
- *
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:07  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 4     8/09/99 2:21p Andsager
- * Fix patching from multiplayer direct to launcher update tab.
- * 
- * 3     8/06/99 3:32p Andsager
- * Handle update when no registry is set
- * 
- * 2     5/19/99 4:07p Dave
- * Moved versioning code into a nice isolated common place. Fixed up
- * updating code on the pxo screen. Fixed several stub problems.
- * 
- * 1     5/18/99 4:28p Dave
- * 
- * $NoKeywords: $
- */
-
 #include <stdio.h>
 #include <string.h>
 #include "version.h"

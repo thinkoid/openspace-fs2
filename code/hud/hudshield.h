@@ -7,54 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/Hud/HUDshield.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:58 $
- * $Author: penguin $
- *
- * Header file for the display and management of the HUD shield
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:08  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 4     8/27/99 10:36a Dave
- * Impose a 2% penalty for hitting the shield balance key.
- * 
- * 3     7/22/99 4:00p Dave
- * Fixed beam weapon muzzle glow rendering. Externalized hud shield info.
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:49a Dave
- * 
- * 7     4/25/98 2:00p Dave
- * Installed a bunch of multiplayer context help screens. Reworked ingame
- * join ship select screen. Fix places where network timestamps get hosed.
- * 
- * 6     2/12/98 4:58p Lawrance
- * Change to new flashing method.
- * 
- * 5     11/18/97 5:58p Lawrance
- * flash escort view info when that ship is taking hits
- * 
- * 4     11/08/97 11:08p Lawrance
- * implement new "mini-shield" view that sits near bottom of reticle
- * 
- * 3     11/04/97 7:49p Lawrance
- * integrating new HUD reticle and shield icons
- * 
- * 2     8/25/97 12:24a Lawrance
- * implemented HUD shield management
- * 
- * 1     8/24/97 10:31p Lawrance
- *
- * $NoKeywords: $
- */
-
 #ifndef __FREESPACE_HUDSHIELD_H__
 #define __FREESPACE_HUDSHIELD_H__
 

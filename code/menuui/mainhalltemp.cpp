@@ -7,29 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/MenuUI/MainHallTemp.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:59 $
- * $Author: penguin $
- *
- * Header file for main-hall menu code
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:09  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 3     6/04/99 9:52a Dave
- * Fixed some rendering problems.
- * 
- * 2     6/03/99 10:15p Dave
- * Put in temporary main hall screen.
- * 
- * $NoKeywords: $
- *
- */
-
 #include "mainhallmenu.h"
 #include "mainhalltemp.h"
 #include "2d.h"

@@ -2286,7 +2286,7 @@ HRESULT SWFF_CreateWallEffect(
 //
 //				To see if button 1 is pressed: 
 //				   (jix.dwButtons & JOY_BUTTON1) ? PRESSED : NOT_PRESSED;
-//				likewise for the other buttons JOY_BUTTON2, JOY_BUTTON3 … 
+//				likewise for the other buttons JOY_BUTTON2, JOY_BUTTON3 ... 
 //				JOY_BUTTON8
 //
 //				Hat Switch (POV) is in jix.dwPOV

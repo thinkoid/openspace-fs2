@@ -7,60 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/Graphics/TmapScanTiled16x16.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:58 $
- * $Author: penguin $
- *
- * Routines for drawing tiled 16x16 textues
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:07  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 4     11/30/98 5:31p Dave
- * Fixed up Fred support for software mode.
- * 
- * 3     11/30/98 1:07p Dave
- * 16 bit conversion, first run.
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:49a Dave
- * 
- * 6     4/23/98 9:55a John
- * Fixed some bugs in the tiled tmapper causing bright dots to appear all
- * over models.
- * 
- * 5     3/10/98 4:19p John
- * Cleaned up graphics lib.  Took out most unused gr functions.   Made D3D
- * & Glide have popups and print screen.  Took out all >8bpp software
- * support.  Made Fred zbuffer.  Made zbuffer allocate dynamically to
- * support Fred.  Made zbuffering key off of functions rather than one
- * global variable.
- * 
- * 4     1/23/98 5:08p John
- * Took L out of vertex structure used B (blue) instead.   Took all small
- * fireballs out of fireball types and used particles instead.  Fixed some
- * debris explosion things.  Restructured fireball code.   Restructured
- * some lighting code.   Made dynamic lighting on by default. Made groups
- * of lasers only cast one light.  Made fireballs not cast light.
- * 
- * 3     12/04/97 10:38a John
- * Fixed tiled texture mappers that were swapping uvs.
- * 
- * 2     10/14/97 9:19a John
- * removed fdiv warnings.
- * 
- * 1     6/18/97 4:02p John
- * added new code for 16x16 and 32x32 tiled tmaps.
- *
- * $NoKeywords: $
- */
-
 
 #include "3d.h"
 #include "2d.h"

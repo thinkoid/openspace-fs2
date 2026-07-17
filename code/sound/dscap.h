@@ -7,38 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Sound/dscap.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:02 $
- * $Author: penguin $
- *
- * Header file for DirectSoundCapture code
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:13  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 2     10/07/98 10:54a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:51a Dave
- * 
- * 4     2/15/98 11:10p Lawrance
- * more work on real-time voice system
- * 
- * 3     2/15/98 4:43p Lawrance
- * work on real-time voice
- * 
- * 2     2/03/98 11:53p Lawrance
- * Adding support for DirectSoundCapture
- * 
- * 1     2/03/98 4:48p Lawrance
- *
- * $NoKeywords: $
- */
-
 #ifndef __DSCAP_H__
 #define __DSCAP_H__
 

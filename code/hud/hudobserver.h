@@ -7,16 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/Hud/HUDObserver.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:58 $
- * $Author: penguin $
- *
- * $NoKeywords: $
- *
- */
-
 #ifndef _HUD_OBSERVER_FILE
 #define _HUD_OBSERVER_FILE
 

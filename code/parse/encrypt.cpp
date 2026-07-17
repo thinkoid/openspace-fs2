@@ -7,51 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/parse/Encrypt.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:01 $
- * $Author: penguin $
- *
- * Module for encryption code common to FreeSpace and related tools
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:12  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 5     4/07/99 5:41p Anoop
- * Fixed encryption in the launcher.
- * 
- * 4     3/25/99 11:55a Dave
- * Fixed up encrypt a bit.
- * 
- * 3     3/25/99 11:26a Dave
- * Beefed up encryption scheme so that even someone viewing the
- * disassembly would have a hard time cracking it.
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:50a Dave
- * 
- * 5     8/09/98 4:44p Lawrance
- * support alternate encryption scheme (doesn't pack chars into 7 bits)
- * 
- * 4     4/01/98 2:21p Lawrance
- * check for wacky apostrophe char
- * 
- * 3     3/31/98 4:57p Lawrance
- * Add signature at the beginning of encrypted files
- * 
- * 2     3/31/98 1:14a Lawrance
- * Get .tbl and mission file encryption working.
- * 
- * 1     3/30/98 11:02p Lawrance
- *
- * $NoKeywords: $
- */
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

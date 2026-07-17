@@ -7,53 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Network/multi_dogfight.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:00 $
- * $Author: penguin $
- * 
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:11  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 11    8/18/99 11:31a Jefff
- * mission title on kill matrix
- * 
- * 10    8/17/99 9:55a Dave
- * Fixed dogfight scoring problem.
- * 
- * 9     8/06/99 12:29a Dave
- * Multiple bug fixes.
- * 
- * 8     5/03/99 8:32p Dave
- * New version of multi host options screen.
- * 
- * 7     4/12/99 10:07p Dave
- * Made network startup more forgiving. Added checkmarks to dogfight
- * screen for players who hit commit.
- * 
- * 6     4/12/99 2:22p Dave
- * More checks for dogfight stats.
- * 
- * 5     2/24/99 3:40p Dave
- * Fixed problem where ships were becoming traitor all the time.
- * 
- * 4     2/24/99 2:25p Dave
- * Fixed up chatbox bugs. Made squad war reporting better. Fixed a respawn
- * bug for dogfight more.
- * 
- * 3     2/23/99 8:11p Dave
- * Tidied up dogfight mode. Fixed TvT ship type problems for alpha wing.
- * Small pass over todolist items.
- * 
- * 2     2/23/99 2:29p Dave
- * First run of oldschool dogfight mode. 
- *   
- * $NoKeywords: $
- */
-
 #include "multi.h"
 #include "multiutil.h"
 #include "multi_log.h"

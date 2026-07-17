@@ -7,40 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Ship/ShipContrails.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:02 $
- * $Author: penguin $
- *
- * all sorts of cool stuff about ships
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:12  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 5     4/25/99 3:02p Dave
- * Build defines for the E3 build.
- * 
- * 4     4/20/99 6:39p Dave
- * Almost done with artillery targeting. Added support for downloading
- * images on the PXO screen.
- * 
- * 3     4/12/99 11:03p Dave
- * Removed contrails and muzzle flashes from MULTIPLAYER_BETA builds.
- * 
- * 2     11/14/98 5:33p Dave
- * Lots of nebula work. Put in ship contrails.
- * 
- * 1     11/14/98 3:40p Dave
- * 
- * 1     11/13/98 3:28p Dave
- * 
- * 
- * $NoKeywords: $
- */
-
 #include "shipcontrails.h"
 #include "object.h"
 #include "ship.h"

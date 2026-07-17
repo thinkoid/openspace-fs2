@@ -7,55 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/Math/Floating.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:58 $
- * $Author: penguin $
- *
- * Low-level floating point math routines
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:09  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:49a Dave
- * 
- * 13    2/26/98 3:28p John
- * Changed all sqrt's to use fl_sqrt.  Took out isqrt function
- * 
- * 12    1/30/98 12:25p Mike
- * Make frand() not return 1.0, which can cause overflow when indexing
- * into arrays.
- * 
- * 11    1/26/98 10:43p Mike
- * Make ships not all zoom away from an impending shockwave at the same
- * time.  Based on ai class and randomness
- * 
- * 10    1/20/98 9:47a Mike
- * Suppress optimized compiler warnings.
- * Some secondary weapon work.
- * 
- * 9     1/17/98 3:32p Mike
- * Add rand_range(), returns random float in min..max.
- * 
- * 8     9/09/97 11:07a Sandeep
- * fixed warning level 4
- * 
- * 7     8/05/97 10:18a Lawrance
- * my_rand() being used temporarily instead of rand()
- * 
- * 6     2/17/97 5:18p John
- * Added a bunch of RCS headers to a bunch of old files that don't have
- * them.
- *
- * $NoKeywords: $
- */
-
 #include <stdlib.h>
 #include <math.h>
 

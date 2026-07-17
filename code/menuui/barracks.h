@@ -7,25 +7,6 @@
  *
 */ 
 
-/*
- * $Logfile: /Freespace2/code/MenuUI/Barracks.h $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:25:58 $
- * $Author: penguin $
- *
- * C source file for implementing barracks
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:09  mharris
- * Initial checkin - converted filenames and includes to lower case
- *
- * 
- * 3     2/02/99 11:58a Neilk
- * added vss revision/log comments
- *
- * $NoKeywords: $
- */
-
 #ifndef _BARRACKS_H
 #define _BARRACKS_H
 

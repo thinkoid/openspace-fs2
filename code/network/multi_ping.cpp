@@ -7,47 +7,6 @@
  *
 */
 
-/*
- * $Logfile: /Freespace2/code/Network/multi_ping.cpp $
- * $Revision: 1.1 $
- * $Date: 2002-06-03 03:26:00 $
- * $Author: penguin $
- *
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2002/05/02 18:03:11  mharris
- * Initial checkin - converted filenames and includes to lower case
- *  
- * 
- * 5     8/19/99 10:59a Dave
- * Packet loss detection.
- * 
- * 4     11/17/98 11:12a Dave
- * Removed player identification by address. Now assign explicit id #'s.
- * 
- * 3     11/05/98 5:55p Dave
- * Big pass at reducing #includes
- * 
- * 2     10/07/98 10:53a Dave
- * Initial checkin.
- * 
- * 1     10/07/98 10:50a Dave
- * 
- * 4     6/30/98 2:17p Dave
- * Revised object update system. Removed updates for all weapons. Put
- * button info back into control info packet.
- * 
- * 3     6/12/98 2:49p Dave
- * Patch 1.02 changes.
- * 
- * 2     3/15/98 4:17p Dave
- * Fixed oberver hud problems. Put in handy netplayer macros. Reduced size
- * of network orientation matrices.
- * 
- * 1     3/03/98 5:09p Dave
- *  
- * $NoKeywords: $
- */
-
 #include "multi.h"
 #include "multi_ping.h"
 #include "multimsgs.h"
