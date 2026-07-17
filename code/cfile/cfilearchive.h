@@ -25,12 +25,12 @@ typedef struct Cfile_block {
 	int		dir_type;		// directory location
 	FILE		*fp;				// File pointer if opening an individual file
 	void		*data;			// Pointer for memory-mapped file access.  NULL if not mem-mapped.
-	HANDLE	hInFile;			// Handle from CreateFile()
-	HANDLE	hMapFile;		// Handle from CreateFileMapping()
+	int		fd;				// POSIX fd backing the mapping (-1 if not mem-mapped)
+	size_t	map_len;			// length of the mapping, for munmap
 	int		lib_offset;
 	int		raw_position;
 	int		size;				// for packed files
-	
+
 } Cfile_block;
 
 #define MAX_CFILE_BLOCKS	64

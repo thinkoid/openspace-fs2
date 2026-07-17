@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct CFILE;
 struct ai_info;
 struct beam_fire_info;
 struct object;
@@ -79,16 +78,6 @@ void awacs_get_level(object*, ship*, int)
 void beam_fire(beam_fire_info*)
 {
 	oracle_trap("beam_fire");
-}
-
-void cfgets(char*, int, CFILE*)
-{
-	oracle_trap("cfgets");
-}
-
-void cftell(CFILE*)
-{
-	oracle_trap("cftell");
 }
 
 void do_subobj_destroyed_stuff(ship*, ship_subsys*, vector*)

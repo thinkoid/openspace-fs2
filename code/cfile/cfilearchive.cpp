@@ -12,10 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <io.h>
-#include <direct.h>
-#include <windows.h>
-#include <winbase.h>		/* needed for memory mapping of file functions */
+#include <unistd.h>
 
 #include "pstypes.h"
 #include "cfile.h"

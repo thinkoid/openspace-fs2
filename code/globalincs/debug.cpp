@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include "pstypes.h"
 
@@ -90,6 +91,14 @@ void outwnd_printf2(const char *format, ...)
 int vm_init(int /*min_heap_size*/)
 {
 	return 1;
+}
+
+long filelength(int fd)
+{
+	struct stat st;
+	if (fstat(fd, &st) != 0)
+		return -1;
+	return (long)st.st_size;
 }
 
 void *vm_malloc(int size)

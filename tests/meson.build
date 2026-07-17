@@ -5,7 +5,12 @@
 # sexp.cpp's evaluator half references gameplay code that is not ported yet;
 # gamestubs_gen.cpp fills those symbols with traps (see its header comment).
 sexp_dump = executable('sexp_dump',
-    ['sexp_dump.cpp', 'cfile_stub.cpp', 'stubs.cpp', 'gamestubs_gen.cpp'],
+    ['sexp_dump.cpp', 'stubs.cpp', 'gamestubs_gen.cpp'],
+    include_directories: inc,
+    link_with: foundation)
+
+vp_ls = executable('vp_ls',
+    ['vp_ls.cpp', 'stubs.cpp', 'gamestubs_gen.cpp'],
     include_directories: inc,
     link_with: foundation)
 

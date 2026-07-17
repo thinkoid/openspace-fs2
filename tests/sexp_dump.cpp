@@ -1,10 +1,14 @@
-// Point-1 oracle: parse the sexps out of retail mission/campaign files and
-// dump the operator vocabulary they use, one operator per line, sorted.
+// Point-1/2 oracle: enumerate the mission and campaign files cfile can see
+// under a game root (VP archives + loose data tree), parse every sexp tree
+// with the retail parser, and dump the aggregate operator vocabulary, one
+// operator per line, sorted, to stdout.
 //
-//   sexp_dump file.fs2 [more files...]
+//   sexp_dump <game-root>
 //
-// Per-file tree counts go to stderr; the aggregate operator list to stdout.
-// Compared against missions/sexp-used.txt (the 2018 inventory).
+// Per-file tree counts go to stderr.  The output must be identical whether
+// the missions come from the pristine VPs (gog/) or a loose data tree, and
+// must match missions/sexp-used.txt (+ has-time-elapsed, which the 2018
+// inventory missed).
 
 #include <stdio.h>
 #include <string.h>
@@ -13,6 +17,7 @@
 #include <string>
 
 #include "pstypes.h"
+#include "cfile.h"
 #include "parselo.h"
 #include "sexp.h"
 
@@ -35,7 +40,7 @@ static void collect_operators(int n)
 
 static int dump_file(char *filename)
 {
-	read_file_text(filename);
+	read_file_text(filename, CF_TYPE_MISSIONS);
 	reset_parse();
 	init_sexp();
 
@@ -80,16 +85,36 @@ static int dump_file(char *filename)
 	return trees;
 }
 
+#define MAX_ORACLE_MISSIONS 512
+
+static char mission_arr[MAX_ORACLE_MISSIONS][MAX_FILENAME_LEN];
+static char *mission_list[MAX_ORACLE_MISSIONS];
+
 int main(int argc, char *argv[])
 {
-	if (argc < 2) {
-		fprintf(stderr, "usage: sexp_dump <mission files>\n");
+	if (argc != 2) {
+		fprintf(stderr, "usage: sexp_dump <game-root>\n");
 		return 2;
 	}
 
+	char exe_path[CF_MAX_PATHNAME_LENGTH];
+	snprintf(exe_path, sizeof(exe_path), "%s/x", argv[1]);
+	if (cfile_init(exe_path)) {
+		fprintf(stderr, "cfile_init failed for %s\n", argv[1]);
+		return 1;
+	}
+
 	int total = 0;
-	for (int i = 1; i < argc; i++)
-		total += dump_file(argv[i]);
+	for (auto pattern : { "*.fs2", "*.fc2" }) {
+		int n = cf_get_file_list_preallocated(MAX_ORACLE_MISSIONS, mission_arr,
+			mission_list, CF_TYPE_MISSIONS, (char *)pattern, CF_SORT_NAME);
+		for (int i = 0; i < n; i++) {
+			// listings come back without extensions; read_file_text wants them
+			char name[MAX_FILENAME_LEN + 8];
+			snprintf(name, sizeof(name), "%s%s", mission_list[i], pattern + 1);
+			total += dump_file(name);
+		}
+	}
 
 	for (const std::string &op : used_operators)
 		printf("%s\n", op.c_str());

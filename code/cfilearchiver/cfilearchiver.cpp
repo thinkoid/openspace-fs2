@@ -9,10 +9,12 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <direct.h>
-#include <io.h>
 #include <string.h>
-#include <conio.h>
+#include <time.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <filesystem>
+#include <string>
 
 unsigned int Total_size=16; // Start with size of header
 unsigned int Num_files =0;
@@ -89,13 +91,14 @@ void pack_file( char *filespec, char *filename, int filesize, time_t time_write 
 	fwrite( &Total_size, 1, 4, fp_out_hdr );
 	fwrite( &filesize, 1, 4, fp_out_hdr );
 	fwrite( &path, 1, 32, fp_out_hdr );
-	fwrite( &time_write, 1, sizeof(time_t), fp_out_hdr);
+	int time32 = (int)time_write;		// VP direntry timestamp is 32-bit on disk
+	fwrite( &time32, 1, 4, fp_out_hdr);
 
 	Total_size += filesize;
 	Num_files++;
-	printf( "Packing %s\\%s...", filespec, filename );
+	printf( "Packing %s/%s...", filespec, filename );
 
-	sprintf( path, "%s\\%s", filespec, filename );
+	sprintf( path, "%s/%s", filespec, filename );
 
 	FILE *fp = fopen( path, "rb" );
 	
@@ -132,7 +135,7 @@ void add_directory( char * dirname)
 	int i = 0;
 	fwrite(&i, 1, 4, fp_out_hdr);
 	// strip out any directories that this dir is a subdir of
-	while ((tmpptr = strchr(pathptr, '\\')) != NULL) {
+	while ((tmpptr = strchr(pathptr, '/')) != NULL) {
 		pathptr = tmpptr+1;
 	}
 	fwrite(pathptr, 1, 32, fp_out_hdr);
@@ -142,16 +145,13 @@ void add_directory( char * dirname)
 
 void pack_directory( char * filespec)
 {
-	int find_handle;
-	_finddata_t find;
 	char tmp[512];
-	char tmp1[512];
 
 /*
 	char dir_name[512];
 	char *last_slash;
 
-	last_slash = strrchr(filespec, '\\');
+	last_slash = strrchr(filespec, '/');
 	if ( last_slash ) {
 		strcpy(dir_name, last_slash+1);
 	} else {
@@ -163,37 +163,27 @@ void pack_directory( char * filespec)
 	}
 */
 
-	strcpy( tmp1, filespec );
 	add_directory(filespec);
-	strcat( tmp1, "\\*.*" );
-	
-	printf( "In dir '%s'\n", tmp1 );
 
-	find_handle = _findfirst( tmp1, &find );
-	if( find_handle != -1 )	{
-		if ( find.attrib & _A_SUBDIR )	{
-			if (strcmp( "..", find.name) && strcmp( ".", find.name))	{
-				strcpy( tmp, filespec );
-				strcat( tmp, "\\" );
-				strcat( tmp, find.name );
-				pack_directory(tmp);
-			}
-		} else {
-			pack_file( filespec, find.name, find.size, find.time_write );
+	printf( "In dir '%s'\n", filespec );
+
+	for ( const auto &entry : std::filesystem::directory_iterator(filespec) )	{
+		std::string name = entry.path().filename().string();
+
+		strcpy( tmp, filespec );
+		strcat( tmp, "/" );
+		strcat( tmp, name.c_str() );
+
+		struct stat sb;
+		if ( stat( tmp, &sb ) != 0 )	{
+			printf( "Error stat'ing '%s'\n", tmp );
+			exit(1);
 		}
 
-		while( !_findnext( find_handle, &find ) )	{
-			if ( find.attrib & _A_SUBDIR )	{
-				if (strcmp( "..", find.name) && strcmp( ".", find.name))	{
-					strcpy( tmp, filespec );
-					strcat( tmp, "\\" );
-					strcat( tmp, find.name );
-					pack_directory(tmp);
-
-				}
-			} else {
-				pack_file( filespec, find.name, find.size, find.time_write );
-			}
+		if ( S_ISDIR(sb.st_mode) )	{
+			pack_directory(tmp);
+		} else {
+			pack_file( filespec, (char *)name.c_str(), (int)sb.st_size, sb.st_mtime );
 		}
 	}
 	add_directory("..");
@@ -208,10 +198,10 @@ int main(int argc, char *argv[] )
 
 	if ( argc < 3 )	{
 		printf( "Usage: %s archive_name src_dir\n", argv[0] );
-		printf( "Example: %s freespace c:\\freespace\\data\n", argv[0] );
+		printf( "Example: %s freespace /usr/local/freespace/data\n", argv[0] );
 		printf( "Creates an archive named freespace out of the\nfreespace data tree\n" );
 		printf( "Press any key to exit...\n" );
-		getch();
+		getchar();
 		return 1;
 	}
 
@@ -229,7 +219,7 @@ int main(int argc, char *argv[] )
 	if ( !fp_out )	{
 		printf( "Couldn't open '%s'!\n", archive_dat );
 		printf( "Press any key to exit...\n" );
-		getch();
+		getchar();
 		return 1;
 	}
 
@@ -237,7 +227,7 @@ int main(int argc, char *argv[] )
 	if ( !fp_out_hdr )	{
 		printf( "Couldn't open '%s'!\n", archive_hdr );
 		printf( "Press any key to exit...\n" );
-		getch();
+		getchar();
 		return 1;
 	}
 
@@ -255,7 +245,7 @@ int main(int argc, char *argv[] )
 	if (!write_index(archive_hdr, archive_dat)) {
 		printf("Error appending index!\n");
 		printf("Press any key to exit...\n");
-		getch();
+		getchar();
 		return 1;
 	}
 	

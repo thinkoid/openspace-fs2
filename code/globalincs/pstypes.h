@@ -30,6 +30,7 @@
 	#define GAME_CD_CHECK
 #endif
 
+#include <ctype.h>
 #include <math.h>
 #include <stdio.h>	// For NULL, etc
 #include <stdlib.h>
@@ -42,6 +43,18 @@
 #define _isnan isnan
 #define _cdecl
 #define __cdecl
+#define _MAX_PATH 260
+
+inline char *strlwr(char *str)
+{
+	for (char *p = str; *p; p++)
+		*p = (char)tolower((unsigned char)*p);
+	return str;
+}
+#define _strlwr strlwr
+
+// _filelength(fileno(fp)) idiom from the MSVC runtime
+long filelength(int fd);
 
 // value to represent an uninitialized state in any int or uint
 #define UNINITIALIZED 0x7f8e6d9c

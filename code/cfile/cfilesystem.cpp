@@ -10,10 +10,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <io.h>
-#include <direct.h>
-#include <windows.h>
-#include <winbase.h>		/* needed for memory mapping of file functions */
+#include <errno.h>
+#include <unistd.h>
+#include <fnmatch.h>
+#include <sys/stat.h>
+
+#include <filesystem>
 
 #include "pstypes.h"
 //#include "outwnd.h"
@@ -22,6 +24,8 @@
 #include "cfile.h"
 #include "cfilesystem.h"
 #include "localize.h"
+
+namespace fs = std::filesystem;
 
 
 #define CF_ROOTTYPE_PATH 0
@@ -147,27 +151,21 @@ int cf_get_packfile_count(cf_root *root)
 
 		if(strlen(Pathtypes[i].path)){
 			strcat( filespec, Pathtypes[i].path );
-			strcat( filespec, "\\" );
+			strcat( filespec, "/" );
 		}
 
-		strcat( filespec, "*.vp" );
+		std::error_code ec;		// a missing directory just means no files
+		for ( const auto &entry : fs::directory_iterator( filespec, ec ) )	{
+			std::error_code type_ec;
+			if (entry.is_directory(type_ec)) {
+				continue;
+			}
 
-		int find_handle;
-		_finddata_t find;
-		
-		find_handle = _findfirst( filespec, &find );
-
- 		if (find_handle != -1) {
-			do {
-				if (!(find.attrib & _A_SUBDIR)) {
-					packfile_count++;
-				}
-
-			} while (!_findnext(find_handle, &find));
-
-			_findclose( find_handle );
-		}	
-	}	
+			if (!fnmatch( "*.vp", entry.path().filename().c_str(), FNM_CASEFOLD )) {
+				packfile_count++;
+			}
+		}
+	}
 
 	return packfile_count;
 }
@@ -215,43 +213,41 @@ void cf_build_pack_list( cf_root *root )
 		strcpy( filespec, root->path );
 
 		if(strlen(Pathtypes[i].path)){
-			strcat( filespec, Pathtypes[i].path );		
-			strcat( filespec, "\\" );
+			strcat( filespec, Pathtypes[i].path );
+			strcat( filespec, "/" );
 		}
-		strcat( filespec, "*.vp" );
 
-		int find_handle;
-		_finddata_t find;
-		
-		find_handle = _findfirst( filespec, &find );
+		std::error_code ec;
+		for ( const auto &entry : fs::directory_iterator( filespec, ec ) )	{
+			std::error_code type_ec;
+			if (entry.is_directory(type_ec)) {
+				continue;
+			}
 
- 		if (find_handle != -1) {
-			do {
-				// add the new item
-				if (!(find.attrib & _A_SUBDIR)) {					
-					Assert(root_index < temp_root_count);
+			std::string find_name = entry.path().filename().string();
+			if (fnmatch( "*.vp", find_name.c_str(), FNM_CASEFOLD )) {
+				continue;
+			}
 
-					// get a temp pointer
-					rptr_sort = &temp_roots_sort[root_index++];
+			// add the new item
+			Assert(root_index < temp_root_count);
 
-					// fill in all the proper info
-					strcpy(rptr_sort->path, root->path);
+			// get a temp pointer
+			rptr_sort = &temp_roots_sort[root_index++];
 
-					if(strlen(Pathtypes[i].path)){
-						strcat(rptr_sort->path, Pathtypes[i].path );					
-						strcat(rptr_sort->path, "\\");
-					}
+			// fill in all the proper info
+			strcpy(rptr_sort->path, root->path);
 
-					strcat(rptr_sort->path, find.name );
-					rptr_sort->roottype = CF_ROOTTYPE_PACK;
-					rptr_sort->cf_type = i;
-				}
+			if(strlen(Pathtypes[i].path)){
+				strcat(rptr_sort->path, Pathtypes[i].path );
+				strcat(rptr_sort->path, "/");
+			}
 
-			} while (!_findnext(find_handle, &find));
-
-			_findclose( find_handle );
-		}	
-	}	
+			strcat(rptr_sort->path, find_name.c_str() );
+			rptr_sort->roottype = CF_ROOTTYPE_PACK;
+			rptr_sort->cf_type = i;
+		}
+	}
 
 	// these should always be the same
 	Assert(root_index == temp_root_count);
@@ -288,13 +284,13 @@ void cf_build_root_list(char *cdrom_dir)
 
 	root = cf_create_root();
 
-	if ( !_getcwd(root->path, CF_MAX_PATHNAME_LENGTH ) ) {
+	if ( !getcwd(root->path, CF_MAX_PATHNAME_LENGTH ) ) {
 		Error(LOCATION, "Can't get current working directory -- %d", errno );
 	}
 
 	// do we already have a slash? as in the case of a root directory install
-	if(strlen(root->path) && (root->path[strlen(root->path)-1] != '\\')){
-		strcat(root->path, "\\");		// put trailing backslash on for easier path construction
+	if(strlen(root->path) && (root->path[strlen(root->path)-1] != '/')){
+		strcat(root->path, "/");		// put trailing slash on for easier path construction
 	}
 	root->roottype = CF_ROOTTYPE_PATH;
 
@@ -350,43 +346,42 @@ void cf_search_root_path(int root_index)
 
 		if(strlen(Pathtypes[i].path)){
 			strcat( search_path, Pathtypes[i].path );
-			strcat( search_path, "\\" );
-		} 
+			strcat( search_path, "/" );
+		}
 
-		strcat( search_path, "*.*" );
+		std::error_code ec;
+		for ( const auto &entry : fs::directory_iterator( search_path, ec ) )	{
+			std::error_code type_ec;
+			if (entry.is_directory(type_ec)) {
+				continue;
+			}
 
-		int find_handle;
-		_finddata_t find;
-		
-		find_handle = _findfirst( search_path, &find );
+			char find_name[_MAX_PATH];
+			strncpy( find_name, entry.path().filename().c_str(), _MAX_PATH - 1 );
+			find_name[_MAX_PATH - 1] = 0;
 
- 		if (find_handle != -1) {
-			do {
-				if (!(find.attrib & _A_SUBDIR)) {
-
-					char *ext = strchr( find.name, '.' );
-					if ( ext )	{
-						if ( is_ext_in_list( Pathtypes[i].extensions, ext ) )	{
-							// Found a file!!!!
-							cf_file *file = cf_create_file();
-
-							strcpy( file->name_ext, find.name );
-							file->root_index = root_index;
-							file->pathtype_index = i;
-							file->write_time = find.time_write;
-							file->size = find.size;
-							file->pack_offset = 0;			// Mark as a non-packed file
-
-							//mprintf(( "Found file '%s'\n", file->name_ext ));
-
-						}
+			char *ext = strchr( find_name, '.' );
+			if ( ext )	{
+				if ( is_ext_in_list( Pathtypes[i].extensions, ext ) )	{
+					struct stat sb;
+					if ( stat( entry.path().c_str(), &sb ) != 0 )	{
+						continue;
 					}
 
+					// Found a file!!!!
+					cf_file *file = cf_create_file();
+
+					strcpy( file->name_ext, find_name );
+					file->root_index = root_index;
+					file->pathtype_index = i;
+					file->write_time = sb.st_mtime;
+					file->size = (int)sb.st_size;
+					file->pack_offset = 0;			// Mark as a non-packed file
+
+					//mprintf(( "Found file '%s'\n", file->name_ext ));
+
 				}
-
-			} while (!_findnext(find_handle, &find));
-
-			_findclose( find_handle );
+			}
 		}
 
 	}
@@ -404,7 +399,7 @@ typedef struct VP_FILE {
 	int	offset;
 	int	size;
 	char	filename[32];
-	time_t write_time;
+	int	write_time;			// 32-bit time_t as stored on disk
 } VP_FILE;
 
 void cf_search_root_pack(int root_index)
@@ -426,6 +421,7 @@ void cf_search_root_pack(int root_index)
 	VP_FILE_HEADER VP_header;
 
 	Assert( sizeof(VP_header) == 16 );
+	Assert( sizeof(VP_FILE) == 44 );
 	fread(&VP_header, 1, sizeof(VP_header), fp);
 
 	// Read index info
@@ -445,13 +441,13 @@ void cf_search_root_pack(int root_index)
 			if ( !stricmp( find.filename, ".." ))	{
 				int l = strlen(search_path);
 				char *p = &search_path[l-1];
-				while( (p > search_path) && (*p != '\\') )	{
+				while( (p > search_path) && (*p != '/') )	{
 					p--;
 				}
 				*p = 0;
 			} else {
 				if ( strlen(search_path)	)	{
-					strcat( search_path,	"\\" );
+					strcat( search_path,	"/" );
 				}
 				strcat( search_path, find.filename );
 			}
@@ -518,12 +514,11 @@ void cf_build_secondary_filelist(char *cdrom_dir)
 	Num_roots = 0;
 	Num_files = 0;
 
-	// Init the path types
+	// Init the path types.  Retail lowercased the extension lists in place
+	// here; they are string literals (read-only), and already lowercase in
+	// the table, so only check the index invariant.
 	for (i=0; i<CF_MAX_PATH_TYPES; i++ )	{
 		Assert( Pathtypes[i].index == i );
-		if ( Pathtypes[i].extensions )	{
-			strlwr(Pathtypes[i].extensions);
-		}
 	}
 	
 	// Init the root blocks
@@ -662,7 +657,7 @@ int cf_find_file_location( char *filespec, int pathtype, char *pack_filename, in
 						strcpy( pack_filename, r->path );
 						if ( f->pack_offset < 1 )	{
 							strcat( pack_filename, Pathtypes[f->pathtype_index].path );
-							strcat( pack_filename, "\\" );
+							strcat( pack_filename, "/" );
 							strcat( pack_filename, f->name_ext );
 						}
 					}				
@@ -684,7 +679,7 @@ int cf_find_file_location( char *filespec, int pathtype, char *pack_filename, in
 
 						if(strlen(Pathtypes[f->pathtype_index].path)){
 							strcat( pack_filename, Pathtypes[f->pathtype_index].path );
-							strcat( pack_filename, "\\" );
+							strcat( pack_filename, "/" );
 						}
 
 						strcat( pack_filename, f->name_ext );
@@ -746,8 +741,7 @@ int cf_file_already_in_list( int num_files, char **list, char *filename )
 int cf_get_file_list( int max, char **list, int pathtype, char *filter, int sort, file_list_info *info )
 {
 	char *ptr;
-	int i, l, find_handle, num_files = 0, own_flag = 0;
-	_finddata_t find;
+	int i, l, num_files = 0, own_flag = 0;
 
 	if (max < 1) {
 		Get_file_list_filter = NULL;
@@ -763,35 +757,48 @@ int cf_get_file_list( int max, char **list, int pathtype, char *filter, int sort
 
 	char filespec[MAX_PATH_LEN];
 
-	cf_create_default_path_string( filespec, pathtype, filter );
+	cf_create_default_path_string( filespec, pathtype );
 
-	find_handle = _findfirst( filespec, &find );
-	if (find_handle != -1) {
-		do {
-			if (num_files >= max)
-				break;
+	const char *pattern = filter;
+	if ( !strcmp( pattern, "*.*" ) )	{
+		pattern = "*";
+	}
 
-			if (!(find.attrib & _A_SUBDIR)) {
-				if ( !Get_file_list_filter || (*Get_file_list_filter)(find.name) ) {
-					ptr = strrchr(find.name, '.');
-					if (ptr)
-						l = ptr - find.name;
-					else
-						l = strlen(find.name);
+	std::error_code ec;
+	for ( const auto &entry : fs::directory_iterator( filespec, ec ) )	{
+		if (num_files >= max)
+			break;
 
-					list[num_files] = (char *)malloc(l + 1);
-					strncpy(list[num_files], find.name, l);
-					list[num_files][l] = 0;
-					if (info)
-						info[num_files].write_time = find.time_write;
+		std::error_code type_ec;
+		if (entry.is_directory(type_ec)) {
+			continue;
+		}
 
-					num_files++;
-				}
+		char find_name[_MAX_PATH];
+		strncpy( find_name, entry.path().filename().c_str(), _MAX_PATH - 1 );
+		find_name[_MAX_PATH - 1] = 0;
+
+		if (fnmatch( pattern, find_name, FNM_CASEFOLD )) {
+			continue;
+		}
+
+		if ( !Get_file_list_filter || (*Get_file_list_filter)(find_name) ) {
+			ptr = strrchr(find_name, '.');
+			if (ptr)
+				l = ptr - find_name;
+			else
+				l = strlen(find_name);
+
+			list[num_files] = (char *)malloc(l + 1);
+			strncpy(list[num_files], find_name, l);
+			list[num_files][l] = 0;
+			if (info) {
+				struct stat sb;
+				info[num_files].write_time = (stat( entry.path().c_str(), &sb ) == 0) ? sb.st_mtime : 0;
 			}
 
-		} while (!_findnext(find_handle, &find));
-
-		_findclose( find_handle );
+			num_files++;
+		}
 	}
 
 
@@ -901,41 +908,49 @@ int cf_get_file_list_preallocated( int max, char arr[][MAX_FILENAME_LEN], char *
 
 	char filespec[MAX_PATH_LEN];
 
-	cf_create_default_path_string( filespec, pathtype, filter );
+	cf_create_default_path_string( filespec, pathtype );
+
+	const char *pattern = filter;
+	if ( !strcmp( pattern, "*.*" ) )	{
+		pattern = "*";
+	}
 
 	// Search the default directories
-	int find_handle;
-	_finddata_t find;
-	
-	find_handle = _findfirst( filespec, &find );
-	if (find_handle != -1) {
-		do {
-			if (num_files >= max)
-				break;
+	std::error_code ec;
+	for ( const auto &entry : fs::directory_iterator( filespec, ec ) )	{
+		if (num_files >= max)
+			break;
 
-			if (!(find.attrib & _A_SUBDIR)) {
+		std::error_code type_ec;
+		if (entry.is_directory(type_ec)) {
+			continue;
+		}
 
-				if ( !Get_file_list_filter || (*Get_file_list_filter)(find.name) ) {
+		char find_name[_MAX_PATH];
+		strncpy( find_name, entry.path().filename().c_str(), _MAX_PATH - 1 );
+		find_name[_MAX_PATH - 1] = 0;
 
-					strncpy(arr[num_files], find.name, MAX_FILENAME_LEN - 1 );
-					char *ptr = strrchr(arr[num_files], '.');
-					if ( ptr ) {
-						*ptr = 0;
-					}
+		if (fnmatch( pattern, find_name, FNM_CASEFOLD )) {
+			continue;
+		}
 
-					if (info)	{
-						info[num_files].write_time = find.time_write;
-					}
+		if ( !Get_file_list_filter || (*Get_file_list_filter)(find_name) ) {
 
-					num_files++;
-				}
+			strncpy(arr[num_files], find_name, MAX_FILENAME_LEN - 1 );
+			char *ptr = strrchr(arr[num_files], '.');
+			if ( ptr ) {
+				*ptr = 0;
 			}
 
-		} while (!_findnext(find_handle, &find));
+			if (info)	{
+				struct stat sb;
+				info[num_files].write_time = (stat( entry.path().c_str(), &sb ) == 0) ? sb.st_mtime : 0;
+			}
 
-		_findclose( find_handle );
+			num_files++;
+		}
 	}
-		
+
 
 	// Search all the packfiles and CD.
 	if ( !Skip_packfile_search )	{
@@ -1020,7 +1035,7 @@ void cf_create_default_path_string( char *path, int pathtype, char *filename, bo
 
 		// Don't add slash for root directory
 		if (Pathtypes[pathtype].path[0] != '\0') {
-			strcat(path, "\\");
+			strcat(path, "/");
 		}
 
 		// add filename

@@ -24,6 +24,10 @@ inc = include_directories(
     'code/weapon')
 
 foundation_src = files(
+    'code/cfile/cfile.cpp',
+    'code/cfile/cfilearchive.cpp',
+    'code/cfile/cfilelist.cpp',
+    'code/cfile/cfilesystem.cpp',
     'code/globalincs/alphacolors.cpp',
     'code/globalincs/crypt.cpp',
     'code/globalincs/debug.cpp',
@@ -42,6 +46,10 @@ foundation_src = files(
     'code/parse/sexp.cpp')
 
 foundation = static_library('foundation', foundation_src,
+    include_directories: inc)
+
+cfilearchiver = executable('cfilearchiver',
+    'code/cfilearchiver/cfilearchiver.cpp',
     include_directories: inc)
 
 subdir('tests')
