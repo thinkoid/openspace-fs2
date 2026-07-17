@@ -10,7 +10,6 @@
 #include <math.h>
 #include <limits.h>
 #include <stdio.h>
-#include <conio.h>
 #include <stdlib.h>
 
 #include "scaler.h"
@@ -34,11 +33,14 @@
 
 #define FIND_SCALED_NUM(x,x0,x1,y0,y1) (((((x)-(x0))*((y1)-(y0)))/((x1)-(x0)))+(y0))
 
-#define MAX_CODE_SIZE 32768		//65536 JAS: Determed to be 8208 on April1,98, 16K seems safe
+// The original renderer generated x86 machine code on the fly into a
+// compiled_code[] buffer (one routine per span shape, with w/u/du baked
+// into the instruction stream) and called it with esi=sbits, edi=dbits,
+// ecx=lookup, edx=zbuf, ebp=Gr_global_z.  The scaler_span8* functions
+// below are straight C equivalents of the generated code; the register
+// roles survive as parameter names.
 
-ubyte compiled_code[MAX_CODE_SIZE];
-
-static int Max_size = 0;
+typedef void (*scaler_span_fn)( ubyte *sbits, ubyte *dbits, ubyte *lookup, uint *zbuf, uint gz, int w, fix u, fix du );
 
 /*
 void test_code()
@@ -54,9 +56,9 @@ void test_code()
 
 
 //----------------------------------------------------
-// scaler_create_compiled_code8
+// scaler_span8  (was scaler_create_compiled_code8)
 //
-// Creates code that looks like:
+// Created code that looked like:
 //
 // @@: mov al, [esi+????]
 //     cmp al, TRANSPARENCY_COLOR_8
@@ -66,121 +68,40 @@ void test_code()
 //     ...
 // @@: mov al, [esi+????]
 //
+// The generated code read the texel and tested transparency once per
+// run of identical f2i(u), skipping all the writes of a transparent
+// run; re-reading per pixel below gives identical results.
 
-ubyte *scaler_create_compiled_code8( int w, fix u, fix du )
+static void scaler_span8( ubyte *sbits, ubyte *dbits, ubyte *lookup, uint *zbuf, uint gz, int w, fix u, fix du )
 {
-	int last_u, x;
-	ubyte * cc;
-	uint * last_jmp_pos;
-
-	cc = compiled_code;
-
-	//if ( abs(du) < F1_0 / 4 ) *cc++ = 0xCC;
-
-//	*cc++ = 0xCC;	// Int3
-//	*cc++ = 0xc3;	// RET
-
-	last_u = -1;
-
-	last_jmp_pos=NULL;
+	int x;
 
 	for (x=0; x<w; x++ )			{
-		if ( last_u != f2i(u) )	{
-			if ( last_jmp_pos )	{
-				*last_jmp_pos = (uint)cc - (uint)last_jmp_pos - 4;
-			}
-			*cc++ = 0x8a;	*cc++ = 0x86; // mov al, [esi+imm]
-			*(uint *)cc = f2i(u); cc += 4;
-			last_u = f2i(u);
-
-			*cc++ = 0x3c; *cc++ = TRANSPARENCY_COLOR_8;	// cmp al, 255
-			*cc++ = 0x0f; *cc++ = 0x84;   // je rel32
-			last_jmp_pos = (uint *)cc;
-			cc += 4;		
+		ubyte al = sbits[ f2i(u) ];				// mov al, [esi+f2i(u)]
+		if ( al != TRANSPARENCY_COLOR_8 )	{	// cmp al, 255 / je @f
+			dbits[x] = al;						// mov [edi+x], al
 		}
-		
-	
-		*cc++ = 0x88;	*cc++ = 0x87; // mov [edi+imm], al
-		*(uint *)cc = x; cc += 4;
-
 		u += du;
 	}
-	if ( last_jmp_pos )	{
-		*last_jmp_pos = (uint)cc - (uint)last_jmp_pos - 4;
-	}
-	*cc++ = 0xc3;	// RET
-
-	if ( cc >= &compiled_code[MAX_CODE_SIZE] )
-		Int3();		// GET JOHN NOW!
-
-#ifdef FIND_MAX_SIZE
-	int size = cc - compiled_code;
-	if ( size > Max_size )	{
-		Max_size = size;
-		mprintf(( "Max size = %d\n", size ));
-	}
-#endif
-
-	return compiled_code;
 }
 
-ubyte *scaler_create_compiled_code8_stippled( int w, fix u, fix du )
+// scaler_span8_stippled  (was scaler_create_compiled_code8_stippled)
+// Same as scaler_span8 but writes every other pixel, stepping u twice.
+
+static void scaler_span8_stippled( ubyte *sbits, ubyte *dbits, ubyte *lookup, uint *zbuf, uint gz, int w, fix u, fix du )
 {
-	int last_u, x;
-	ubyte * cc;
-	uint * last_jmp_pos;
-
-	cc = compiled_code;
-
-	//if ( abs(du) < F1_0 / 4 ) *cc++ = 0xCC;
-
-//	*cc++ = 0xCC;	// Int3
-//	*cc++ = 0xc3;	// RET
-
-	last_u = -1;
-
-	last_jmp_pos=NULL;
+	int x;
 
 	for (x=0; x<w-1; x+=2 )			{
-		if ( last_u != f2i(u) )	{
-			if ( last_jmp_pos )	{
-				*last_jmp_pos = (uint)cc - (uint)last_jmp_pos - 4;
-			}
-			*cc++ = 0x8a;	*cc++ = 0x86; // mov al, [esi+imm]
-			*(uint *)cc = f2i(u); cc += 4;
-			last_u = f2i(u);
-
-			*cc++ = 0x3c; *cc++ = TRANSPARENCY_COLOR_8;	// cmp al, 255
-			*cc++ = 0x0f; *cc++ = 0x84;   // je rel32
-			last_jmp_pos = (uint *)cc;
-			cc += 4;		
+		ubyte al = sbits[ f2i(u) ];				// mov al, [esi+f2i(u)]
+		if ( al != TRANSPARENCY_COLOR_8 )	{	// cmp al, 255 / je @f
+			dbits[x] = al;						// mov [edi+x], al
 		}
-		
-	
-		*cc++ = 0x88;	*cc++ = 0x87; // mov [edi+imm], al
-		*(uint *)cc = x; cc += 4;
-
 		u += du*2;
 	}
-	if ( last_jmp_pos )	{
-		*last_jmp_pos = (uint)cc - (uint)last_jmp_pos - 4;
-	}
-	*cc++ = 0xc3;	// RET
-
-	if ( cc >= &compiled_code[MAX_CODE_SIZE] )
-		Int3();		// GET JOHN NOW!
-
-#ifdef FIND_MAX_SIZE
-	int size = cc - compiled_code;
-	if ( size > Max_size )	{
-		Max_size = size;
-		mprintf(( "Max size = %d\n", size ));
-	}
-#endif
-
-	return compiled_code;
 }
 
+/*
 void test_code1()
 {
 	_asm mov ebx, -1
@@ -192,7 +113,7 @@ void test_code1()
 	_asm cmp ebp, [edx]
 	_asm add edx, 4
 	_asm jl [0xABCDEF12]
-	
+
 //     xor eax, eax			; avoid ppro partial register stall
 //     mov ah, [esi+????]   ; get the foreground pixel
 //     ; the following lines might be repeated
@@ -201,6 +122,7 @@ void test_code1()
 //     mov ebx, [ecx+ebx]	; blend it
 //     mov [edi+????], bl   ; write it
 }
+*/
 
 /*
   00130	b8 00 00 00 00	mov	eax, 0
@@ -224,9 +146,9 @@ void test_code1()
 */
 
 //----------------------------------------------------
-// scaler_create_compiled_code8_alpha
+// scaler_span8_alpha  (was scaler_create_compiled_code8_alpha)
 //
-// Creates code that looks like:
+// Created code that looked like:
 
 //=============== Pentium ======================
 // mov eax, 0
@@ -247,84 +169,23 @@ void test_code1()
 //     mov [edi+????], bl   ; write it
 
 
-ubyte *scaler_create_compiled_code8_alpha( int w, fix u, fix du )
+// Both CPU variants blended through the same table:
+//   Pentium:     eax = (texel<<8) | background, bl = byte [ecx+eax]
+//   Pentium Pro: ebx = background + (texel<<8), ebx = dword [ecx+ebx]
+// then wrote bl, so both come down to
+//   dbits[x] = lookup[ (sbits[f2i(u)]<<8) + dbits[x] ]
+// (the PPro variant's dword load only ever had its low byte used).
+// No transparency test: index 255 goes through the blend table too.
+
+static void scaler_span8_alpha( ubyte *sbits, ubyte *dbits, ubyte *lookup, uint *zbuf, uint gz, int w, fix u, fix du )
 {
-	int last_u, x;
-	ubyte * cc;
+	int x;
 
-	cc = compiled_code;
-
-	//if ( abs(du) < F1_0 / 4 ) *cc++ = 0xCC;
-
-	//*cc++ = 0xCC;	// Int3
-	//*cc++ = 0xc3;	// RET
-
-	last_u = -1;
-
-	if ( Gr_cpu	> 5 )	{
-		// Pentium Pro optimized code.
-
-		for (x=0; x<w; x++ )			{
-			if ( last_u != f2i(u) )	{
-				*cc++ = 0x33;	*cc++ = 0xc0; // xor eax, eax
-				*cc++ = 0x8a;	*cc++ = 0xa6; // mov ah, [esi+imm]
-				//*cc++ = 0x8a;	*cc++ = 0x86; // mov al, [esi+imm]
-				*(uint *)cc = f2i(u); cc += 4;
-				last_u = f2i(u);
-			}
-			
-  			*cc++ = 0x33;	*cc++ = 0xdb;		// xor ebx, ebx
-			
-  			*cc++ = 0x8a;	*cc++ = 0x9f; 
-			*(uint *)cc = x; cc += 4;		// mov bl, [edi+imm]
-
-  			*cc++ = 0x03;	*cc++ = 0xd8;		// add ebx, eax
-
-			*cc++ = 0x8b; *cc++ = 0x1c; *cc++ = 0x19;	// mov	ebx, BYTE PTR [ecx+ebx]
-
-			*cc++ = 0x88;	*cc++ = 0x9f; 
-			*(uint *)cc = x; cc += 4;		// mov [edi+imm], bl
-
-			u += du;
-		}
-	} else {
-		// Pentium optimized code.
-
-		*cc++ = 0xb8; *(uint *)cc = 0; cc += 4;		// mov eax, 0
-
-		for (x=0; x<w; x++ )			{
-			if ( last_u != f2i(u) )	{
-				*cc++ = 0x8a;	*cc++ = 0xa6; // mov ah, [esi+imm]
-				*(uint *)cc = f2i(u); cc += 4;
-				last_u = f2i(u);
-			}
-			
-  			*cc++ = 0x8a;	*cc++ = 0x87; 
-			*(uint *)cc = x; cc += 4;		// mov al, [edi+imm]
-
-			*cc++ = 0x8a; *cc++ = 0x1c; *cc++ = 0x01;	// mov	bl, BYTE PTR [ecx+eax]
-
-			*cc++ = 0x88;	*cc++ = 0x9f; 
-			*(uint *)cc = x; cc += 4;		// mov [edi+imm], bl
-
-			u += du;
-		}
+	for (x=0; x<w; x++ )			{
+		uint eax = ((uint)sbits[ f2i(u) ]) << 8;	// mov ah, [esi+f2i(u)]
+		dbits[x] = lookup[ eax + dbits[x] ];		// mov bl, [ecx+eax+bg] / mov [edi+x], bl
+		u += du;
 	}
-
-	*cc++ = 0xc3;	// RET
-
-	if ( cc >= &compiled_code[MAX_CODE_SIZE] )
-		Int3();		// GET JOHN NOW!
-
-#ifdef FIND_MAX_SIZE
-	int size = cc - compiled_code;
-	if ( size > Max_size )	{
-		Max_size = size;
-		mprintf(( "Max size = %d\n", size ));
-	}
-#endif
-
-	return compiled_code;
 }
 
 /*
@@ -340,9 +201,9 @@ ubyte *scaler_create_compiled_code8_alpha( int w, fix u, fix du )
 */
 
 //----------------------------------------------------
-// scaler_create_compiled_code8_alpha_zbuffered
+// scaler_span8_alpha_zbuffered  (was scaler_create_compiled_code8_alpha_zbuffered)
 //
-// Creates code that looks like:
+// Created code that looked like:
 // mov eax, 0
 //     mov ah, [esi+????]   ; get the foreground pixel
 //     ; the following lines might be repeated
@@ -368,119 +229,21 @@ ubyte *scaler_create_compiled_code8_alpha( int w, fix u, fix du )
 //; 303  : 	_asm jle	0xabcdef12
 //  0024a	0f 8e 12 ef cd ab		jle	-1412567278		; abcdef12H
 
-ubyte *scaler_create_compiled_code8_alpha_zbuffered( int w, fix u, fix du )
+// Same blend as scaler_span8_alpha, gated per pixel on the z test
+// "cmp ebp, [edx+x*4] / jle skip":  draw when gz > zbuf[x], as a
+// SIGNED 32-bit compare (jle), even though both values are uints.
+
+static void scaler_span8_alpha_zbuffered( ubyte *sbits, ubyte *dbits, ubyte *lookup, uint *zbuf, uint gz, int w, fix u, fix du )
 {
-	int last_u, x;
-	ubyte * cc;
-	uint *last_jmp_pos=NULL;
+	int x;
 
-	cc = compiled_code;
-
-	//     xor eax, eax			; avoid ppro partial register stall
-//     mov ah, [esi+????]   ; get the foreground pixel
-//     ; the following lines might be repeated
-//     xor ebx, ebx			; avoid ppro partial register stall
-//     mov bl, [edi+????]   ; get the background pixel
-//     mov ebx, [ecx+ebx]	; blend it
-//     mov [edi+????], bl   ; write it
-
-	//if ( abs(du) < F1_0 / 4 ) *cc++ = 0xCC;
-
-	//*cc++ = 0xCC;	// Int3
-	//*cc++ = 0xc3;	// RET
-	last_u = -1;
-
-	if ( Gr_cpu	> 5 )	{
-		// Pentium Pro optimized code.
-
-		for (x=0; x<w; x++ )			{
-			if ( last_u != f2i(u) )	{
-				*cc++ = 0x33;	*cc++ = 0xc0; // xor eax, eax
-				*cc++ = 0x8a;	*cc++ = 0xa6; // mov ah, [esi+imm]
-				*(uint *)cc = f2i(u); cc += 4;
-				last_u = f2i(u);
-			}
-
-			*cc++ = 0x3b;  *cc++ = 0xaa;	
-			*(uint *)cc = x*4; cc += 4;		// cmp ebp, [edx+imm]
-
-//			*cc++ = 0x3b;  *cc++ = 0x2a;						// cmp ebp, [edx]
-//			*cc++ = 0x83;  *cc++ = 0xc2;  *cc++ = 0x4;	// add edx, 4
-
-			*cc++ = 0x0f;  *cc++ = 0x8e;		// jle (8e) imm
-			last_jmp_pos = (uint *)cc;
-			*(uint *)cc = 0; cc += 4;
-		
-  			*cc++ = 0x33;	*cc++ = 0xdb;		// xor ebx, ebx
-			
-  			*cc++ = 0x8a;	*cc++ = 0x9f; 
-			*(uint *)cc = x; cc += 4;		// mov bl, [edi+imm]
-
-  			*cc++ = 0x03;	*cc++ = 0xd8;		// add ebx, eax
-
-			*cc++ = 0x8b; *cc++ = 0x1c; *cc++ = 0x19;	// mov	ebx, BYTE PTR [ecx+ebx]
-
-			*cc++ = 0x88;	*cc++ = 0x9f; 
-			*(uint *)cc = x; cc += 4;		// mov [edi+imm], bl
-
-			if ( last_jmp_pos )	{
-				*last_jmp_pos = (uint)cc - (uint)last_jmp_pos - 4;
-				last_jmp_pos  = NULL;
-			}
-
-			u += du;
+	for (x=0; x<w; x++ )			{
+		if ( (int)gz > (int)zbuf[x] )	{				// cmp ebp, [edx+x*4] / jle @f
+			uint eax = ((uint)sbits[ f2i(u) ]) << 8;	// mov ah, [esi+f2i(u)]
+			dbits[x] = lookup[ eax + dbits[x] ];		// mov bl, [ecx+eax+bg] / mov [edi+x], bl
 		}
-
-
-	} else {
-		// Pentium optimized code.
-
-		*cc++ = 0xb8; *(uint *)cc = 0; cc += 4;		// mov eax, 0
-
-		for (x=0; x<w; x++ )			{
-			if ( last_u != f2i(u) )	{
-				*cc++ = 0x8a;	*cc++ = 0xa6; // mov ah, [esi+imm]
-				*(uint *)cc = f2i(u); cc += 4;
-				last_u = f2i(u);
-			}
-
-			*cc++ = 0x3b;  *cc++ = 0xaa;	
-			*(uint *)cc = x*4; cc += 4;		// cmp ebp, [edx+imm]
-
-			*cc++ = 0x0f;  *cc++ = 0x8e;		// jle imm
-			last_jmp_pos = (uint *)cc;
-			*(uint *)cc = 0; cc += 4;		
-			
-  			*cc++ = 0x8a;	*cc++ = 0x87; 
-			*(uint *)cc = x; cc += 4;		// mov al, [edi+imm]
-
-			*cc++ = 0x8a; *cc++ = 0x1c; *cc++ = 0x01;	// mov	bl, BYTE PTR [ecx+eax]
-
-			*cc++ = 0x88;	*cc++ = 0x9f; 
-			*(uint *)cc = x; cc += 4;		// mov [edi+imm], bl
-
-			if ( last_jmp_pos )	{
-				*last_jmp_pos = (uint)cc - (uint)last_jmp_pos - 4;
-				last_jmp_pos = NULL;
-			}
-
-			u += du;
-		}
+		u += du;
 	}
-	*cc++ = 0xc3;	// RET
-
-	if ( cc >= &compiled_code[MAX_CODE_SIZE] )
-		Int3();		// GET JOHN NOW!
-
-#ifdef FIND_MAX_SIZE
-	int size = cc - compiled_code;
-	if ( size > Max_size )	{
-		Max_size = size;
-		mprintf(( "Max sizeZ = %d\n", size ));
-	}
-#endif
-
-	return compiled_code;
 }
 
 
@@ -612,32 +375,31 @@ void gr8_scaler(vertex *va, vertex *vb )
 	}
 
 #ifdef USE_COMPILED_CODE
-	ubyte *cc=NULL;
+	scaler_span_fn cc=NULL;
 
 	if ( Gr_scaler_zbuffering && gr_zbuffering )	{
 		if ( gr_screen.current_alphablend_mode == GR_ALPHABLEND_FILTER )	{
-			cc = scaler_create_compiled_code8_alpha_zbuffered( w, u, du );	
+			cc = scaler_span8_alpha_zbuffered;
 		}
 	} else {
 		if ( gr_screen.current_alphablend_mode == GR_ALPHABLEND_FILTER )	{
 			if ( is_stippled )	{
-				cc = scaler_create_compiled_code8_stippled( w, u, du );
+				cc = scaler_span8_stippled;
 			} else {
-				cc = scaler_create_compiled_code8_alpha( w, u, du );	
+				cc = scaler_span8_alpha;
 			}
 		} else	{
-			cc = scaler_create_compiled_code8( w, u, du );
+			cc = scaler_span8;
 		}
 	}
-	
+
 #endif
 
 	spixels = (ubyte *)bp->data;
 
 	gr_lock();
-	Tmap.pScreenBits = (uint)gr_screen.offscreen_buffer_base;
 
-	uint *zbuf;
+	uint *zbuf = NULL;
 
 	for (y=dy0; y<=dy1; v += dv, y++ )			{
 		if ( is_stippled && (y&1) )	{
@@ -647,14 +409,14 @@ void gr8_scaler(vertex *va, vertex *vb )
 			sbits = &spixels[bp->rowsize*(v>>16)];
 			dbits = GR_SCREEN_PTR(ubyte,dx0,y);
 		}
-		uint lookup = 0;
+		ubyte *lookup = NULL;
 
 		if ( gr_screen.current_alphablend_mode == GR_ALPHABLEND_FILTER )	{
-			lookup = (uint)palette_get_blend_table(gr_screen.current_alpha);
+			lookup = palette_get_blend_table(gr_screen.current_alpha);
 		}
 
 		if ( Gr_scaler_zbuffering && gr_zbuffering )	{
-			zbuf = (uint *)&gr_zbuffer[(uint)dbits-(uint)Tmap.pScreenBits];
+			zbuf = &gr_zbuffer[dbits-(ubyte *)gr_screen.offscreen_buffer_base];
 		}
 	
 #ifdef USE_COMPILED_CODE
@@ -693,27 +455,9 @@ void gr8_scaler(vertex *va, vertex *vb )
 				}
 			} 
 */
-			_asm push esi
-			_asm push edi
-			_asm push edx
-			_asm push ecx
-			_asm push ebx
-			_asm push eax
-			_asm mov ecx, lookup
-			_asm mov esi, sbits
-			_asm mov edi, dbits
-			_asm mov eax, cc
-			_asm mov edx, zbuf
-			_asm push ebp
-			_asm mov ebp, Gr_global_z
-			_asm call eax
-			_asm pop ebp
-			_asm pop eax
-			_asm pop ebx
-			_asm pop ecx
-			_asm pop edx
-			_asm pop edi
-			_asm pop esi
+			// was: ecx=lookup, esi=sbits, edi=dbits, edx=zbuf,
+			// ebp=Gr_global_z, call the compiled span
+			(*cc)( sbits, dbits, lookup, zbuf, Gr_global_z, w, u, du );
 		}
 #else	
 		if ( gr_screen.current_alphablend_mode == GR_ALPHABLEND_FILTER )	{
@@ -882,12 +626,12 @@ void gr8_aascaler(vertex *va, vertex *vb )
 	w = dx1 - dx0 + 1;
 
 #ifdef USE_COMPILED_CODE
-	ubyte *cc;
+	scaler_span_fn cc = NULL;
 
 	if ( Gr_scaler_zbuffering && gr_zbuffering )	{
-		//cc = scaler_create_compiled_code8_alpha_zbuffered( w, u, du );
+		//cc = scaler_span8_alpha_zbuffered;
 	} else {
-		cc = scaler_create_compiled_code8_alpha( w, u, du );
+		cc = scaler_span8_alpha;
 	}
 
 #endif
@@ -904,8 +648,8 @@ void gr8_aascaler(vertex *va, vertex *vb )
 	for (y=dy0; y<=dy1; y++ )			{
 		sbits = &spixels[bp->rowsize*(v>>16)];
 		dbits = GR_SCREEN_PTR(ubyte,dx0,y);
-		// uint lookup = (uint)&Current_alphacolor->table.lookup[0][0];
-		uint lookup = (uint)&old_alphac.table.lookup[0][0];
+		// ubyte *lookup = &Current_alphacolor->table.lookup[0][0];
+		ubyte *lookup = &old_alphac.table.lookup[0][0];
 		
 #ifdef USE_COMPILED_CODE
 		// Call the compiled code to draw one scanline
@@ -913,8 +657,8 @@ void gr8_aascaler(vertex *va, vertex *vb )
 			int x, tmp_u;
 			tmp_u = u;
 
-			uint *zbuf = (uint *)&gr_zbuffer[(uint)dbits-(uint)Tmap.pScreenBits];
-	
+			uint *zbuf = &gr_zbuffer[dbits-(ubyte *)gr_screen.offscreen_buffer_base];
+
 			for (x=0; x<w; x++ )			{
 				if ( fx_w > *zbuf )	{
 					// uint c = sbits[ tmp_u >> 16 ];
@@ -926,21 +670,9 @@ void gr8_aascaler(vertex *va, vertex *vb )
 				tmp_u += du;
 			}
 		} else {
-			_asm push esi
-			_asm push edi
-			_asm push ecx
-			_asm push ebx
-			_asm push eax
-			_asm mov ecx, lookup
-			_asm mov esi, sbits
-			_asm mov edi, dbits
-			_asm mov eax, cc
-			_asm call eax
-			_asm pop eax
-			_asm pop ebx
-			_asm pop ecx
-			_asm pop edi
-			_asm pop esi
+			// was: ecx=lookup, esi=sbits, edi=dbits, call the
+			// compiled span (edx/ebp were not loaded here)
+			(*cc)( sbits, dbits, lookup, NULL, 0, w, u, du );
 		}
 #else	
 		if ( Gr_scaler_zbuffering && gr_zbuffering )	{

@@ -6,6 +6,8 @@ project('fs2', 'cpp',
 # happen when each subsystem is ported, not wholesale.
 add_project_arguments('-Wno-changes-meaning', language: 'cpp')
 
+sdl2_dep = dependency('sdl2')
+
 # Retail sources use flat includes (#include "parselo.h"); the include path
 # supplies the directories, as the original MSVC project files did.
 inc = include_directories(
@@ -24,6 +26,34 @@ inc = include_directories(
     'code/weapon')
 
 foundation_src = files(
+    'code/graphics/2d.cpp',
+    'code/graphics/aaline.cpp',
+    'code/graphics/bitblt.cpp',
+    'code/graphics/circle.cpp',
+    'code/graphics/colors.cpp',
+    'code/graphics/font.cpp',
+    'code/graphics/gradient.cpp',
+    'code/graphics/grsoft.cpp',
+    'code/graphics/grzbuffer.cpp',
+    'code/graphics/line.cpp',
+    'code/graphics/pixel.cpp',
+    'code/graphics/rect.cpp',
+    'code/graphics/scaler.cpp',
+    'code/graphics/shade.cpp',
+    'code/graphics/tmapper.cpp',
+    'code/graphics/tmapscanline.cpp',
+    'code/graphics/tmapscantiled16x16.cpp',
+    'code/graphics/tmapscantiled32x32.cpp',
+    'code/graphics/tmapscantiled64x64.cpp',
+    'code/graphics/tmapscantiled128x128.cpp',
+    'code/graphics/tmapscantiled256x256.cpp',
+    'code/io/joy.cpp',
+    'code/io/key.cpp',
+    'code/io/mouse.cpp',
+    'code/io/timer.cpp',
+    'code/osapi/osapi.cpp',
+    'code/osapi/osregistry.cpp',
+    'code/anim/animplay.cpp',
     'code/anim/packunpack.cpp',
     'code/bmpman/bmpman.cpp',
     'code/model/modelcollide.cpp',
@@ -55,7 +85,8 @@ foundation_src = files(
     'code/parse/sexp.cpp')
 
 foundation = static_library('foundation', foundation_src,
-    include_directories: inc)
+    include_directories: inc,
+    dependencies: sdl2_dep)
 
 cfilearchiver = executable('cfilearchiver',
     'code/cfilearchiver/cfilearchiver.cpp',

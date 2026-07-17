@@ -7,11 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct CFILE;
 struct ai_info;
 struct angles;
-struct anim;
-struct anim_instance;
 struct beam_fire_info;
 struct matrix;
 struct object;
@@ -71,31 +68,6 @@ void ai_set_rearm_status(int, int)
 	oracle_trap("ai_set_rearm_status");
 }
 
-void anim_free(anim*)
-{
-	oracle_trap("anim_free");
-}
-
-void anim_instance_get_byte(anim_instance*, int)
-{
-	oracle_trap("anim_instance_get_byte");
-}
-
-void anim_instance_is_streamed(anim_instance*)
-{
-	oracle_trap("anim_instance_is_streamed");
-}
-
-void anim_load(char*, int)
-{
-	oracle_trap("anim_load");
-}
-
-void anim_read_header(anim*, CFILE*)
-{
-	oracle_trap("anim_read_header");
-}
-
 void apply_damage_to_shield(object*, int, float)
 {
 	oracle_trap("apply_damage_to_shield");
@@ -136,6 +108,11 @@ void g3_done_instance()
 	oracle_trap("g3_done_instance");
 }
 
+void g3_draw_2d_poly_bitmap(int, int, int, int, unsigned int)
+{
+	oracle_trap("g3_draw_2d_poly_bitmap");
+}
+
 void g3_draw_bitmap(vertex*, int, float, unsigned int)
 {
 	oracle_trap("g3_draw_bitmap");
@@ -144,6 +121,11 @@ void g3_draw_bitmap(vertex*, int, float, unsigned int)
 void g3_draw_line(vertex*, vertex*)
 {
 	oracle_trap("g3_draw_line");
+}
+
+void g3_draw_poly_constant_sw(int, vertex**, unsigned int, float)
+{
+	oracle_trap("g3_draw_poly_constant_sw");
 }
 
 void g3_draw_poly(int, vertex**, unsigned int)
@@ -161,6 +143,11 @@ void g3_draw_sphere(vertex*, float)
 	oracle_trap("g3_draw_sphere");
 }
 
+void g3_end_frame()
+{
+	oracle_trap("g3_end_frame");
+}
+
 void g3_project_vertex(vertex*)
 {
 	oracle_trap("g3_project_vertex");
@@ -169,6 +156,11 @@ void g3_project_vertex(vertex*)
 void g3_rotate_vertex(vertex*, vector*)
 {
 	oracle_trap("g3_rotate_vertex");
+}
+
+void g3_start_frame_func(int, char*, int)
+{
+	oracle_trap("g3_start_frame_func");
 }
 
 void g3_start_instance_angles(vector*, angles*)
@@ -181,9 +173,39 @@ void g3_start_instance_matrix(vector*, matrix*)
 	oracle_trap("g3_start_instance_matrix");
 }
 
+void gameseq_post_event(int)
+{
+	oracle_trap("gameseq_post_event");
+}
+
 void get_shield_strength(object*)
 {
 	oracle_trap("get_shield_strength");
+}
+
+void gr_d3d_activate(int)
+{
+	oracle_trap("gr_d3d_activate");
+}
+
+void gr_d3d_bitmap_ex(int, int, int, int, int, int)
+{
+	oracle_trap("gr_d3d_bitmap_ex");
+}
+
+void gr_d3d_bitmap(int, int)
+{
+	oracle_trap("gr_d3d_bitmap");
+}
+
+void gr_d3d_cleanup()
+{
+	oracle_trap("gr_d3d_cleanup");
+}
+
+void gr_d3d_init()
+{
+	oracle_trap("gr_d3d_init");
 }
 
 void gr_d3d_preload_init()
@@ -196,14 +218,74 @@ void gr_d3d_preload(int, int)
 	oracle_trap("gr_d3d_preload");
 }
 
-void gr_get_string_size(int*, int*, char*, int)
+void gr_dd_activate(int)
 {
-	oracle_trap("gr_get_string_size");
+	oracle_trap("gr_dd_activate");
 }
 
-void gr_set_palette(char*, unsigned char*, int)
+void gr_directdraw_cleanup()
 {
-	oracle_trap("gr_set_palette");
+	oracle_trap("gr_directdraw_cleanup");
+}
+
+void gr_directdraw_force_windowed()
+{
+	oracle_trap("gr_directdraw_force_windowed");
+}
+
+void gr_directdraw_init()
+{
+	oracle_trap("gr_directdraw_init");
+}
+
+void gr_glide_activate(int)
+{
+	oracle_trap("gr_glide_activate");
+}
+
+void gr_glide_bitmap_ex(int, int, int, int, int, int)
+{
+	oracle_trap("gr_glide_bitmap_ex");
+}
+
+void gr_glide_bitmap(int, int)
+{
+	oracle_trap("gr_glide_bitmap");
+}
+
+void gr_glide_cleanup()
+{
+	oracle_trap("gr_glide_cleanup");
+}
+
+void gr_glide_force_windowed()
+{
+	oracle_trap("gr_glide_force_windowed");
+}
+
+void gr_glide_init()
+{
+	oracle_trap("gr_glide_init");
+}
+
+void gr_opengl_bitmap_ex(int, int, int, int, int, int)
+{
+	oracle_trap("gr_opengl_bitmap_ex");
+}
+
+void gr_opengl_bitmap(int, int)
+{
+	oracle_trap("gr_opengl_bitmap");
+}
+
+void gr_opengl_cleanup()
+{
+	oracle_trap("gr_opengl_cleanup");
+}
+
+void gr_opengl_init()
+{
+	oracle_trap("gr_opengl_init");
 }
 
 void hud_add_ship_to_escort(int, int)
@@ -229,11 +311,6 @@ void hud_remove_ship_from_escort(int)
 void hud_shield_quadrant_hit(object*, int)
 {
 	oracle_trap("hud_shield_quadrant_hit");
-}
-
-void key_getch()
-{
-	oracle_trap("key_getch");
 }
 
 void light_apply_rgb(unsigned char*, unsigned char*, unsigned char*, vector*, vector*, float)
@@ -324,11 +401,6 @@ void multi_find_player_by_object(object*)
 void neb2_get_lod_scale(int)
 {
 	oracle_trap("neb2_get_lod_scale");
-}
-
-void os_config_read_string(char*, char*, char*)
-{
-	oracle_trap("os_config_read_string");
 }
 
 void read_mission_goal_list(int)
@@ -446,21 +518,6 @@ void supernova_start(int)
 	oracle_trap("supernova_start");
 }
 
-void timestamp()
-{
-	oracle_trap("timestamp");
-}
-
-void timestamp_has_time_elapsed(int, int)
-{
-	oracle_trap("timestamp_has_time_elapsed");
-}
-
-void timestamp(int)
-{
-	oracle_trap("timestamp");
-}
-
 void translate_key_to_index(char*)
 {
 	oracle_trap("translate_key_to_index");
@@ -485,8 +542,10 @@ unsigned char Canv_h2[1 << 20];
 unsigned char Canv_w2[1 << 20];
 unsigned char Cargo_names[1 << 20];
 unsigned char Cargo_names_buf[1 << 20];
+unsigned char Cmdline_force_32bit[1 << 20];
 unsigned char Control_config[1 << 20];
 unsigned char D3D_32bit[1 << 20];
+unsigned char D3D_inited[1 << 20];
 unsigned char Debriefings[1 << 20];
 unsigned char Energy_levels[1 << 20];
 unsigned char Event_index[1 << 20];
@@ -494,30 +553,7 @@ unsigned char Eye_position[1 << 20];
 unsigned char flFrametime[1 << 20];
 unsigned char G3_count[1 << 20];
 unsigned char Game_skill_level[1 << 20];
-unsigned char Gr_alpha[1 << 20];
-unsigned char Gr_bitmap_poly[1 << 20];
-unsigned char Gr_blue[1 << 20];
-unsigned char Gr_current_alpha[1 << 20];
-unsigned char Gr_current_blue[1 << 20];
-unsigned char Gr_current_green[1 << 20];
-unsigned char Gr_current_red[1 << 20];
-unsigned char Gr_gamma[1 << 20];
-unsigned char Gr_gamma_int[1 << 20];
-unsigned char Gr_green[1 << 20];
-unsigned char Gr_red[1 << 20];
-unsigned char Gr_scaler_zbuffering[1 << 20];
-unsigned char gr_screen[1 << 20];
-unsigned char Gr_ta_alpha[1 << 20];
-unsigned char Gr_ta_blue[1 << 20];
-unsigned char Gr_ta_green[1 << 20];
-unsigned char Gr_t_alpha[1 << 20];
-unsigned char Gr_ta_red[1 << 20];
-unsigned char Gr_t_blue[1 << 20];
-unsigned char Gr_t_green[1 << 20];
-unsigned char Gr_t_red[1 << 20];
-unsigned char gr_zbuffering_mode[1 << 20];
 unsigned char Jump_nodes[1 << 20];
-unsigned char keyd_pressed[1 << 20];
 unsigned char Matrix_scale[1 << 20];
 unsigned char Medals[1 << 20];
 unsigned char Messages[1 << 20];

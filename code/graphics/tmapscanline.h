@@ -40,14 +40,14 @@ typedef struct tmapper_data {
 	float		fl_dudx_wide;
 	float		fl_dvdx_wide;
 	float		fl_dwdx_wide;
-	uint		dest_row_data;
+	uintptr_t	dest_row_data;			// was uint; holds a pointer
 	int		num_big_steps;
 	uint		uv_delta[2];
 	float		FloatTemp;
 	uint		Subdivisions;
-	uint		WidthModLength;
-	uint		BlendLookup;
-	uint		FadeLookup;
+	int		WidthModLength;
+	uintptr_t	BlendLookup;			// was uint; holds a pointer
+	uintptr_t	FadeLookup;				// was uint; holds a pointer
 	uint		DeltaU;
 	uint		DeltaV;
 	uint		DeltaUFrac, DeltaVFrac;
@@ -56,12 +56,12 @@ typedef struct tmapper_data {
    ushort	FPUCW;
 	ushort	OldFPUCW;
 	int		InnerLooper;
-	uint		pScreenBits;
+	uintptr_t	pScreenBits;			// was uint; holds a pointer
 	int		fx_w;
 	int		fx_dwdx;
 
 	uint		saved_esp;
-	uint		lookup;
+	uintptr_t	lookup;					// was uint; holds a pointer
 
 } tmapper_data;
 
@@ -89,6 +89,13 @@ extern void tmapscan_plt8();
 extern void tmapscan_lnaa8();
 
 extern void tmapscan_pln8_tiled();
+
+// Generic tiled perspective mapper; the five tmapscantiled*.cpp files are
+// thin forwarders into these.  'shift' is log2 of the tile size (4..8);
+// 'do_setup' recomputes fx_l/fl_*_wide/fx_w from Tmap.l/r/deltas first,
+// matching the per-size originals (16/32/64 did, 128/256 did not).
+extern void tmapscan_pln8_tiled_g( int shift, int do_setup );
+extern void tmapscan_pln8_zbuffered_tiled_g( int shift, int do_setup );
 
 extern void tmapscan_lnn8_tiled_256x256();
 extern void tmapscan_pnn8_tiled_256x256_subspace();

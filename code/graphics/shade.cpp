@@ -88,87 +88,11 @@ void gr8_shade(int x,int y,int w,int h)
 
 	for (i=0; i<h; i++ )	{
 		ubyte * dp = GR_SCREEN_PTR(ubyte,x1,y1+i);
-				#ifdef USE_INLINE_ASM
-
-					int w1=w;
-
-					// 4 byte align
-					while ( (uint)dp & 3 )	{
-						*dp = xlat_table[*dp];
-						dp++;
-						w1--;
-						if ( w1 < 1 ) break;
-					}
-
-					if ( w1 < 1 ) continue;
-				
-					int wd4 = w1 / 4;
-					int left_over = w1 % 4;
-			
-					if ( wd4 > 0 )	{
-						_asm push eax
-						_asm push ebx
-						_asm push ecx
-						_asm push edx
-						_asm push edi		
-						_asm push esi
-						_asm mov esi, xlat_table
-						_asm mov edi, dp
-						_asm mov edi, dp
-						_asm mov ecx, wd4
-						_asm mov eax, 0
-						_asm mov ebx, 0
-						_asm mov edx, 0
-
-	NextPixel:
-						_asm mov eax, [edi]
-
-						_asm mov dl, al
-						_asm mov bl, ah
-
-						_asm add edi, 4
-
-						_asm mov al, [edx+esi]
-						_asm mov ah, [ebx+esi]
-
-						_asm ror eax, 16
-						
-						_asm mov dl, al
-						_asm mov bl, ah
-
-						_asm mov al, [edx+esi]
-						_asm mov ah, [ebx+esi]
-
-						_asm ror eax, 16
-
-						_asm mov [edi-4], eax
-
-						_asm dec ecx
-						_asm jnz NextPixel
-
-
-						_asm mov dp, edi
-
-						_asm pop esi
-						_asm pop edi
-						_asm pop edx
-						_asm pop ecx
-						_asm pop ebx
-						_asm pop eax
-					}
-
-					for (int j=0; j<left_over; j++ )	{
-						*dp = xlat_table[*dp];
-						dp++;
-					}
-
-			
-				#else
-					for (int j=0; j<w; j++ )	{
-						*dp = xlat_table[*dp];
-						dp++;
-					}
-				#endif
+		// (retail also had a dword-aligned, 4-pixels-at-a-time asm unroll of this loop)
+		for (int j=0; j<w; j++ )	{
+			*dp = xlat_table[*dp];
+			dp++;
+		}
 	}
 
 	gr_unlock();

@@ -7,21 +7,31 @@
 sexp_dump = executable('sexp_dump',
     ['sexp_dump.cpp', 'stubs.cpp', 'gamestubs_gen.cpp'],
     include_directories: inc,
-    link_with: foundation)
+    link_with: foundation,
+    dependencies: sdl2_dep)
 
 vp_ls = executable('vp_ls',
     ['vp_ls.cpp', 'stubs.cpp', 'gamestubs_gen.cpp'],
     include_directories: inc,
-    link_with: foundation)
+    link_with: foundation,
+    dependencies: sdl2_dep)
 
 pof_dump = executable('pof_dump',
     ['pof_dump.cpp', 'stubs.cpp', 'gamestubs_gen.cpp'],
     include_directories: inc,
-    link_with: foundation)
+    link_with: foundation,
+    dependencies: sdl2_dep)
 
 math_test = executable('math_test',
-    ['math_test.cpp', 'stubs.cpp'],
+    ['math_test.cpp', 'stubs.cpp', 'gamestubs_gen.cpp'],
     include_directories: inc,
-    link_with: foundation)
+    link_with: foundation,
+    dependencies: sdl2_dep)
+
+first_pixels = executable('first_pixels',
+    ['first_pixels.cpp', 'stubs.cpp', 'gamestubs_gen.cpp'],
+    include_directories: inc,
+    link_with: foundation,
+    dependencies: sdl2_dep)
 
 test('math', math_test)

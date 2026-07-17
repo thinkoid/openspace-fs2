@@ -7,9 +7,11 @@
  *
 */ 
 
-#include <windows.h>
-#include <windowsx.h>
+#if defined(__i386__) || defined(__x86_64__)
+#include <cpuid.h>
+#endif
 
+#include "pstypes.h"
 #include "osapi.h"
 #include "2d.h"
 #include "3d.h"
@@ -245,14 +247,12 @@ void gr_set_palette( char *name, ubyte * palette, int restrict_font_to_128 )
 
 //void gr_test();
 
-#define CPUID _asm _emit 0fh _asm _emit 0a2h
-
 // -----------------------------------------------------------------------
 // Returns cpu type.
 void gr_detect_cpu(int *cpu, int *mmx, int *amd3d, int *katmai )
 {
-	DWORD RegEDX;
-	DWORD RegEAX;
+	uint RegEDX;
+	uint RegEAX;
 
 	// Set defaults
 	*cpu = 0;
@@ -262,54 +262,28 @@ void gr_detect_cpu(int *cpu, int *mmx, int *amd3d, int *katmai )
 
 	char cpu_vender[16];
 	memset( cpu_vender, 0, sizeof(cpu_vender) );
-		
-  _asm {
 
-		// Check for prescence of 
-		push	eax
-		push	ebx
-		push	ecx
-		push	edx
+#if defined(__i386__) || defined(__x86_64__)
+	// was pushfd/popfd bit-21 probing plus emitted CPUID opcode bytes
+	uint a, b, c, d;
+	if ( __get_cpuid( 0, &a, &b, &c, &d ) )	{
+		memcpy( cpu_vender+0, &b, 4 );
+		memcpy( cpu_vender+4, &d, 4 );
+		memcpy( cpu_vender+8, &c, 4 );
 
-		pushfd			// get extended flags
-		pop	eax
-		mov	ebx, eax		// save current flags
-		xor	eax, 200000h	// toggle bit 21
-		push	eax			// push new flags on stack
-		popfd					// flags updated now in flags
-		pushfd			// get extended flags
-		pop	eax		// store extended flags in eax
-		xor	eax, ebx	// if bit 21 r/w then eax <> 0
-		je		no_cpuid		
-
-		mov	eax, 0		// setup CPUID to return vender id
-      CPUID           // code bytes = 0fh,  0a2h
-		mov	DWORD PTR cpu_vender[0], ebx
-		mov	DWORD PTR cpu_vender[4], edx
-		mov	DWORD PTR cpu_vender[8], ecx
-		
-      mov eax, 1      // setup CPUID to return features
-
-      CPUID           // code bytes = 0fh,  0a2h
-
-		mov RegEAX, eax	// family, etc returned in eax
-      mov RegEDX, edx	// features returned in edx
-		jmp	done_checking_cpuid
-
-
-no_cpuid:
-		mov RegEAX, 4<<8	// family, etc returned in eax
-      mov RegEDX, 0		// features returned in edx
-
-done_checking_cpuid:								
-		pop	edx
-		pop	ecx
-		pop	ebx
-		pop	eax
-
+		__get_cpuid( 1, &a, &b, &c, &d );
+		RegEAX = a;			// family, etc returned in eax
+		RegEDX = d;			// features returned in edx
+	} else {
+		RegEAX = 4<<8;		// no CPUID: treat as a 486
+		RegEDX = 0;
 	}
-	
+#else
+	RegEAX = 4<<8;
+	RegEDX = 0;
+#endif
 
+	(void)cpu_vender;		// only the commented-out AMD 3Dnow check read it
 
 	//RegEAX	.  Bits 11:8 is family
 	*cpu = (RegEAX >>8) & 0xF;
@@ -322,20 +296,11 @@ done_checking_cpuid:
 	//RegEAX	.  Bits 11:8 is family
 	*cpu = (RegEAX >>8) & 0xF;
 
-	// Check for MMX
-	BOOL retval = TRUE;
-   if (RegEDX & 0x800000)               // bit 23 is set for MMX technology
-   {
-
-           __try { _asm emms }          // try executing an MMX instruction "emms"
-
-           __except(EXCEPTION_EXECUTE_HANDLER) { retval = FALSE; }
-
-   } else {
-		retval = FALSE;
-	}
-	if ( retval )	{
-		*mmx = 1;			// processor supports CPUID but does not support MMX technology
+	// Check for MMX.  Retail confirmed the CPUID bit by executing an "emms"
+	// under SEH; the bit alone is trustworthy.
+	if (RegEDX & 0x800000)               // bit 23 is set for MMX technology
+	{
+		*mmx = 1;
 	}
 
 	// Check for Katmai
@@ -444,14 +409,8 @@ int gr_init(int res, int mode, int depth, int fred_x, int fred_y)
 		first_time = 1;
 	}
 
-#if defined(HARDWARE_ONLY)
-	if(!Fred_running && !Pofview_running && !Nebedit_running && !Is_standalone){
-		if((mode != GR_GLIDE) && (mode != GR_DIRECT3D)){
-			mprintf(("Forcing glide startup!\n"));
-			mode = GR_GLIDE;
-		}	
-	}
-#endif
+	// Retail (HARDWARE_ONLY) forced Glide here when a non-hardware mode was
+	// requested; the hardware backends are gone, software is the mode.
 
 	D3D_enabled = 0;
 	Gr_inited = 1;
@@ -503,7 +462,8 @@ int gr_init(int res, int mode, int depth, int fred_x, int fred_y)
 
 	switch( gr_screen.mode )	{
 		case GR_SOFTWARE:
-			Assert(Fred_running || Pofview_running || Is_standalone || Nebedit_running);
+			// retail allowed software only for the tools (FRED/pofview);
+			// here it is the game renderer
 			gr_soft_init();
 			break;
 		case GR_DIRECTDRAW:
@@ -603,7 +563,7 @@ void gr_force_windowed()
 	}
 
 	if ( Os_debugger_running )
-		Sleep(1000);		
+		os_sleep(1000);
 
 }
 

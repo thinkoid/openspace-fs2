@@ -171,13 +171,9 @@ long int fix_xy_mult(long int oa, fix_xy ob)
 {
 	int retval;
 
-	_asm {
-		mov	edx, oa
-		mov	eax, ob
-		imul	edx
-		shrd	eax,edx,20
-		mov	retval, eax
-	}
+	// imul/shrd: full 64-bit signed product, keep bits 20..51 (drop the
+	// S11.20 multiplier's fraction), truncated to 32 bits as eax was.
+	retval = (int)(((longlong)oa * ob) >> 20);
 	return retval;
 }
 

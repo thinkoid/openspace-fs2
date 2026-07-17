@@ -12,11 +12,6 @@ int Fred_running = 0;
 int Pofview_running = 0;
 int Nebedit_running = 0;
 
-// graphics/2d.cpp
-void gr_activate(int /*active*/)
-{
-}
-
 // debugconsole/console.cpp
 int Dc_command;
 int Dc_help;
@@ -46,35 +41,6 @@ debug_command::debug_command(const char *_name, const char *_help, void (*_func)
 	name = _name;
 	help = _help;
 	func = _func;
-}
-
-// io/timer.cpp — real values so time-dependent code behaves; replaced by the
-// ported timer in the platform phase
-#include <time.h>
-
-static longlong nanotime()
-{
-	struct timespec ts;
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	return (longlong)ts.tv_sec * 1000000000 + ts.tv_nsec;
-}
-
-int timer_get_milliseconds()
-{
-	return (int)(nanotime() / 1000000);
-}
-
-int timer_get_microseconds()
-{
-	return (int)(nanotime() / 1000);
-}
-
-fix timer_get_fixed_seconds()
-{
-	// 16.16 fixed-point seconds, rebased to first call so the *65536 can't
-	// overflow on long uptimes
-	static longlong base = nanotime();
-	return (fix)((nanotime() - base) * 65536 / 1000000000);
 }
 
 // nebula/neb.cpp

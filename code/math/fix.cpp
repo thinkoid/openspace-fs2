@@ -20,10 +20,10 @@ fix fixmul(fix a, fix b)
 
 fix fixdiv(fix a, fix b)
 {
-	return (fix)(((longlong)a * 65536) / b);
+	return MulDiv(a, 65536, b);
 }
 
 fix fixmuldiv(fix a, fix b, fix c)
 {
-	return (fix)(((longlong)a * b) / c);
+	return MulDiv(a, b, c);
 }

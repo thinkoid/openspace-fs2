@@ -1,11 +1,11 @@
 /*
  * Copyright (C) Volition, Inc. 1999.  All rights reserved.
  *
- * All source code herein is the property of Volition, Inc. You may not sell 
- * or otherwise commercially exploit the source or things you created based on the 
+ * All source code herein is the property of Volition, Inc. You may not sell
+ * or otherwise commercially exploit the source or things you created based on the
  * source.
  *
-*/ 
+*/
 
 
 #include "3d.h"
@@ -16,1169 +16,29 @@
 #include "floating.h"
 #include "palman.h"
 #include "fix.h"
-#include "key.h"
 
 // Needed to keep warning 4725 to stay away.  See PsTypes.h for details why.
 void disable_warning_4725_stub_tst256()
 {
 }
 
+// 256x256 tiles: 8 integer bits per coordinate.  The asm that lived
+// here was the tile-size specialization of the generic C mapper in
+// tmapscanline.cpp.  Like the 128x128 file (and unlike 16/32/64), this
+// file's asm did not recompute the per-scanline setup (fx_l,
+// fl_*_wide, fx_w); it used whatever the outer loop or a previous call
+// left in Tmap, hence do_setup = 0.
+
 void tmapscan_pln8_zbuffered_tiled_256x256()
 {
-	_asm {
-	
-	push	eax
-	push	ecx
-	push	edx
-	push	ebx
-	push	ebp
-	push	esi
-	push	edi
-
-	// Put the FPU in low precision mode
-	fstcw		Tmap.OldFPUCW					// store copy of CW
-	mov		ax,Tmap.OldFPUCW				// get it in ax
-	and		eax, ~0x300L
-	mov		Tmap.FPUCW,ax					// store it
-	fldcw		Tmap.FPUCW						// load the FPU
-
-
-	mov		ecx, Tmap.loop_count		// ecx = width
-	mov		edi, Tmap.dest_row_data	// edi = dest pointer
-
-	// edi = pointer to start pixel in dest dib
-	// ecx = spanwidth
-
-	mov		eax,ecx							// eax and ecx = width
-	shr		ecx,5								// ecx = width / subdivision length
-	and		eax,31								// eax = width mod subdivision length
-	jnz		some_left_over					// any leftover?
-	dec		ecx								// no, so special case last span
-	mov		eax,32								// it's 8 pixels long
-some_left_over:
-	mov		Tmap.Subdivisions,ecx		// store widths
-	mov		Tmap.WidthModLength,eax
-
-	// calculate ULeft and VLeft			// FPU Stack (ZL = ZLeft)
-													// st0  st1  st2  st3  st4  st5  st6  st7
-	fld		Tmap.l.v					// V/ZL 
-	fld		Tmap.l.u					// U/ZL V/ZL 
-	fld		Tmap.l.sw					// 1/ZL U/ZL V/ZL 
-	fld1											// 1    1/ZL U/ZL V/ZL 
-	fdiv		st,st(1)							// ZL   1/ZL U/ZL V/ZL 
-	fld		st									// ZL   ZL   1/ZL U/ZL V/ZL 
-	fmul		st,st(4)							// VL   ZL   1/ZL U/ZL V/ZL 
-	fxch		st(1)								// ZL   VL   1/ZL U/ZL V/ZL 
-	fmul		st,st(3)							// UL   VL   1/ZL U/ZL V/ZL 
-
-	fstp		st(5)								// VL   1/ZL U/ZL V/ZL UL
-	fstp		st(5)								// 1/ZL U/ZL V/ZL UL   VL
-
-	// calculate right side OverZ terms  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-	fadd		Tmap.fl_dwdx_wide			// 1/ZR U/ZL V/ZL UL   VL
-	fxch		st(1)								// U/ZL 1/ZR V/ZL UL   VL
-	fadd		Tmap.fl_dudx_wide				// U/ZR 1/ZR V/ZL UL   VL
-	fxch		st(2)								// V/ZL 1/ZR U/ZR UL   VL
-	fadd		Tmap.fl_dvdx_wide				// V/ZR 1/ZR U/ZR UL   VL
-
-	// calculate right side coords		// st0  st1  st2  st3  st4  st5  st6  st7
-
-	fld1											// 1    V/ZR 1/ZR U/ZR UL   VL
-	// @todo overlap this guy
-	fdiv		st,st(2)							// ZR   V/ZR 1/ZR U/ZR UL   VL
-	fld		st									// ZR   ZR   V/ZR 1/ZR U/ZR UL   VL
-	fmul		st,st(2)							// VR   ZR   V/ZR 1/ZR U/ZR UL   VL
-	fxch		st(1)								// ZR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul		st,st(4)							// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	cmp		ecx,0							// check for any full spans
-	jle      HandleLeftoverPixels
-    
-SpanLoop:
-
-	// at this point the FPU contains	// st0  st1  st2  st3  st4  st5  st6  st7
-													// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	// convert left side coords
-
-	fld     st(5)                       ; UL   UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul    Tmap.FixedScale            ; UL16 UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fistp   Tmap.UFixed                ; UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	fld     st(6)                       ; VL   UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul    Tmap.FixedScale            ; VL16 UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fistp   Tmap.VFixed                ; UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	// calculate deltas                  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-	fsubr   st(5),st                    ; UR   VR   V/ZR 1/ZR U/ZR dU   VL
-	fxch    st(1)                       ; VR   UR   V/ZR 1/ZR U/ZR dU   VL
-	fsubr   st(6),st                    ; VR   UR   V/ZR 1/ZR U/ZR dU   dV
-	fxch    st(6)                       ; dV   UR   V/ZR 1/ZR U/ZR dU   VR
-
-	fmul    Tmap.FixedScale8           ; dV8  UR   V/ZR 1/ZR U/ZR dU   VR
-	fistp   Tmap.DeltaV                ; UR   V/ZR 1/ZR U/ZR dU   VR
-
-	fxch    st(4)                       ; dU   V/ZR 1/ZR U/ZR UR   VR
-	fmul    Tmap.FixedScale8           ; dU8  V/ZR 1/ZR U/ZR UR   VR
-	fistp   Tmap.DeltaU                ; V/ZR 1/ZR U/ZR UR   VR
-
-	// increment terms for next span    // st0  st1  st2  st3  st4  st5  st6  st7
-	// Right terms become Left terms--->// V/ZL 1/ZL U/ZL UL   VL
-
-	fadd    Tmap.fl_dvdx_wide				// V/ZR 1/ZL U/ZL UL   VL
-	fxch    st(1)								// 1/ZL V/ZR U/ZL UL   VL
-	fadd    Tmap.fl_dwdx_wide				// 1/ZR V/ZR U/ZL UL   VL
-	fxch    st(2)								// U/ZL V/ZR 1/ZR UL   VL
-	fadd    Tmap.fl_dudx_wide				// U/ZR V/ZR 1/ZR UL   VL
-	fxch    st(2)								// 1/ZR V/ZR U/ZR UL   VL
-	fxch    st(1)								// V/ZR 1/ZR U/ZR UL   VL
-
-
-	// setup delta values
-    
-	mov     eax,Tmap.DeltaV				// get v 16.16 step
-	mov     ebx,eax							// copy it
-	sar     eax,16								// get v int step
-	shl     ebx,16								// get v frac step
-	mov     Tmap.DeltaVFrac,ebx			// store it
-	imul    eax,Tmap.src_offset			// calculate texture step for v int step
-
-	mov     ebx,Tmap.DeltaU				// get u 16.16 step
-	mov     ecx,ebx							// copy it
-	sar     ebx,16								// get u int step
-	shl     ecx,16								// get u frac step
-	mov     Tmap.DeltaUFrac,ecx			// store it
-	add     eax,ebx							// calculate uint + vint step
-	mov     Tmap.uv_delta[4],eax			// save whole step in non-v-carry slot
-	add     eax,Tmap.src_offset			// calculate whole step + v carry
-	mov     Tmap.uv_delta[0],eax			// save in v-carry slot
-
-	// setup initial coordinates
-	mov     esi,Tmap.UFixed				// get u 16.16 fixedpoint coordinate
-
-	mov     ebx,esi							// copy it
-	sar     esi,16								// get integer part
-	shl     ebx,16								// get fractional part
-
-	mov     ecx,Tmap.VFixed				// get v 16.16 fixedpoint coordinate
-   
-	mov     edx,ecx							// copy it
-	sar     edx,16								// get integer part
-	shl     ecx,16								// get fractional part
-	imul    edx,Tmap.src_offset			// calc texture scanline address
-	add     esi,edx							// calc texture offset
-	add     esi,Tmap.pixptr				// calc address
-
-	// set up affine registers
-
- 	mov	eax, Tmap.fx_l
-	shr	eax, 8
-	mov	bx, ax
-
-	mov	ebp, Tmap.fx_dl_dx
-	shl	ebp, 5	//*32
-	add	Tmap.fx_l, ebp
-
-	mov	ebp, Tmap.fx_l
-	shr	ebp, 8
-	sub	bp, ax
-	shr	bp, 5
-
-	mov	dx, bp
-
-	// calculate right side coords		st0  st1  st2  st3  st4  st5  st6  st7
-	fld1										// 1    V/ZR 1/ZR U/ZR UL   VL
-	// This divide should happen while the pixel span is drawn.
-	fdiv	st,st(2)							// ZR   V/ZR 1/ZR U/ZR UL   VL
-
-
-	// 8 pixel span code
-	// edi = dest dib bits at current pixel
-	// esi = texture pointer at current u,v
-	// eax = scratch
-	// ebx = u fraction 0.32
-	// ecx = v fraction 0.32
-	// edx = u frac step
-	// ebp = v carry scratch
-
-	mov	al,[edi]								// preread the destination cache line
-
-	mov	Tmap.InnerLooper, 32/4			// Set up loop counter
-
-	mov	eax, edi
-	sub	eax, Tmap.pScreenBits
-	mov	edx, gr_zbuffer
-	shl	eax, 2
-	add	edx, eax
-
-// Make ESI =  DV:DU in 8:8,8:8 format
-	mov	eax, Tmap.DeltaV
-	shr	eax, 8
-	mov	esi, Tmap.DeltaU
-	shl	esi, 8
-	mov	si, ax
-	mov	Tmap.DeltaUFrac, esi
-		
-// Make ECX = V:U in 8:8,8:8 format
-	mov	eax, Tmap.VFixed
-	shr	eax, 8
-	mov	ecx, Tmap.UFixed
-	shl	ecx, 8
-	mov	cx, ax
-
-	mov	esi, Tmap.fx_w
-
-	// eax = tmp
-	// ebx = light
-	// ecx = V:U in 8.8:8.8
-	// edx = zbuffer pointer
-	// esi = z
-	// edi = screen data
-	// ebp = dl_dx
-
-
-InnerInnerLoop:
-
-		// pixel 0
-		cmp	esi, [edx+0]					// Compare the Z depth of this pixel with zbuffer
-		jle	Skip0								// If pixel is covered, skip drawing
-
-		mov	[edx+0], esi					// Write z
-
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-		add	eax, Tmap.pixptr		// EAX = (V*256)+U + Pixptr
-
-		mov	al, [eax]			
-		mov	ah, bh	
-		and	eax, 0ffffh						// clear upper bits
-		mov	al, gr_fade_table[eax]
-		mov	[edi+0], al
-Skip0:
-		add	ecx, Tmap.DeltaUFrac
-		add	esi, Tmap.fx_dwdx
-		add	ebx, ebp 
-
-		// pixel 1
-		cmp	esi, [edx+4]					// Compare the Z depth of this pixel with zbuffer
-		jle	Skip1								// If pixel is covered, skip drawing
-
-		mov	[edx+4], esi					// Write z
-
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-		add	eax, Tmap.pixptr		// EAX = (V*256)+U + Pixptr
-
-		mov	al, [eax]			
-		mov	ah, bh	
-		and	eax, 0ffffh						// clear upper bits
-		mov	al, gr_fade_table[eax]
-		mov	[edi+1], al
-Skip1:
-		add	ecx, Tmap.DeltaUFrac
-		add	esi, Tmap.fx_dwdx
-		add	ebx, ebp 
-
-		// pixel 2
-		cmp	esi, [edx+8]					// Compare the Z depth of this pixel with zbuffer
-		jle	Skip2								// If pixel is covered, skip drawing
-
-		mov	[edx+8], esi					// Write z
-
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-		add	eax, Tmap.pixptr		// EAX = (V*256)+U + Pixptr
-
-		mov	al, [eax]			
-		mov	ah, bh	
-		and	eax, 0ffffh						// clear upper bits
-		mov	al, gr_fade_table[eax]
-		mov	[edi+2], al
-Skip2:
-		add	ecx, Tmap.DeltaUFrac
-		add	esi, Tmap.fx_dwdx
-		add	ebx, ebp 
-
-		// pixel 3
-		cmp	esi, [edx+12]					// Compare the Z depth of this pixel with zbuffer
-		jle	Skip3								// If pixel is covered, skip drawing
-
-		mov	[edx+12], esi					// Write z
-
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-		add	eax, Tmap.pixptr		// EAX = (V*256)+U + Pixptr
-
-		mov	al, [eax]			
-		mov	ah, bh	
-		and	eax, 0ffffh						// clear upper bits
-		mov	al, gr_fade_table[eax]
-		mov	[edi+3], al
-Skip3:
-		add	ecx, Tmap.DeltaUFrac
-		add	esi, Tmap.fx_dwdx
-		add	ebx, ebp 
-
-
-	add	edi, 4
-	add	edx, 16
-	dec	Tmap.InnerLooper
-	jnz	InnerInnerLoop
-
-	mov	Tmap.fx_w, esi
-
-	// the fdiv is done, finish right	// st0  st1  st2  st3  st4  st5  st6  st7
-	                                    // ZR   V/ZR 1/ZR U/ZR UL   VL
-
-    fld     st									// ZR   ZR   V/ZR 1/ZR U/ZR UL   VL
-    fmul    st,st(2)							// VR   ZR   V/ZR 1/ZR U/ZR UL   VL
-    fxch    st(1)								// ZR   VR   V/ZR 1/ZR U/ZR UL   VL
-    fmul    st,st(4)							// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-    dec     Tmap.Subdivisions			// decrement span count
-    jnz     SpanLoop							// loop back
-
-
-HandleLeftoverPixels:
-
-    mov     esi,Tmap.pixptr				// load texture pointer
-
-    // edi = dest dib bits
-    // esi = current texture dib bits
-    // at this point the FPU contains    ; st0  st1  st2  st3  st4  st5  st6  st7
-    // inv. means invalid numbers        ; inv. inv. inv. inv. inv. UL   VL
-
-    cmp     Tmap.WidthModLength,0          ; are there remaining pixels to draw?
-    jz      FPUReturn                   ; nope, pop the FPU and bail
-
-    // convert left side coords          ; st0  st1  st2  st3  st4  st5  st6  st7
-
-    fld     st(5)                       ; UL   inv. inv. inv. inv. inv. UL   VL
-    fmul    Tmap.FixedScale                ; UL16 inv. inv. inv. inv. inv. UL   VL
-    fistp   Tmap.UFixed                    ; inv. inv. inv. inv. inv. UL   VL
-
-    fld     st(6)                       ; VL   inv. inv. inv. inv. inv. UL   VL
-    fmul    Tmap.FixedScale                // VL16 inv. inv. inv. inv. inv. UL   VL
-    fistp   Tmap.VFixed                    ; inv. inv. inv. inv. inv. UL   VL
-
-    dec     Tmap.WidthModLength            ; calc how many steps to take
-    jz      OnePixelSpan                ; just one, don't do deltas
-
-    // calculate right edge coordinates  ; st0  st1  st2  st3  st4  st5  st6  st7
-    // r -> R+1
-
-    // @todo rearrange things so we don't need these two instructions
-    fstp    Tmap.FloatTemp                 ; inv. inv. inv. inv. UL   VL
-    fstp    Tmap.FloatTemp                 ; inv. inv. inv. UL   VL
-
-    fld     Tmap.r.v           ; V/Zr inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.v             ; V/ZR inv. inv. inv. UL   VL
-    fld     Tmap.r.u           ; U/Zr V/ZR inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.u             ; U/ZR V/ZR inv. inv. inv. UL   VL
-    fld     Tmap.r.sw              ; 1/Zr U/ZR V/ZR inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.sw           ; 1/ZR U/ZR V/ZR inv. inv. inv. UL   VL
-
-    fdivr   Tmap.One                       ; ZR   U/ZR V/ZR inv. inv. inv. UL   VL
-
-    fmul    st(1),st                    ; ZR   UR   V/ZR inv. inv. inv. UL   VL
-    fmulp   st(2),st                    ; UR   VR   inv. inv. inv. UL   VL
-
-    // calculate deltas                  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-    fsubr   st(5),st                    ; UR   VR   inv. inv. inv. dU   VL
-    fxch    st(1)                       ; VR   UR   inv. inv. inv. dU   VL
-    fsubr   st(6),st                    ; VR   UR   inv. inv. inv. dU   dV
-    fxch    st(6)                       ; dV   UR   inv. inv. inv. dU   VR
-
-    fidiv   Tmap.WidthModLength            ; dv   UR   inv. inv. inv. dU   VR
-    fmul    Tmap.FixedScale                ; dv16 UR   inv. inv. inv. dU   VR
-    fistp   Tmap.DeltaV                    ; UR   inv. inv. inv. dU   VR
-
-    fxch    st(4)                       ; dU   inv. inv. inv. UR   VR
-    fidiv   Tmap.WidthModLength            ; du   inv. inv. inv. UR   VR
-    fmul    Tmap.FixedScale                ; du16 inv. inv. inv. UR   VR
-    fistp   Tmap.DeltaU                    ; inv. inv. inv. UR   VR
-
-    // @todo gross!  these are to line up with the other loop
-    fld     st(1)                       ; inv. inv. inv. inv. UR   VR
-    fld     st(2)                       ; inv. inv. inv. inv. inv. UR   VR
-
-
-	// setup delta values
-	mov	eax, Tmap.DeltaV	// get v 16.16 step
-	mov	ebx, eax						// copy it
-	sar	eax, 16						// get v int step
-	shl	ebx, 16						// get v frac step
-	mov	Tmap.DeltaVFrac, ebx	// store it
-	imul	eax, Tmap.src_offset	// calc texture step for v int step
-	
-	mov	ebx, Tmap.DeltaU			// get u 16.16 step
-	mov	ecx, ebx						// copy it
-	sar	ebx, 16						// get the u int step
-	shl	ecx, 16						// get the u frac step
-	mov	Tmap.DeltaUFrac, ecx			// store it
-	add	eax, ebx						// calc uint + vint step
-	mov	Tmap.uv_delta[4], eax	// save whole step in non-v-carry slot
-	add	eax, Tmap.src_offset				// calc whole step + v carry
-	mov	Tmap.uv_delta[0], eax	// save in v-carry slot
-
-
-OnePixelSpan:
-
-	; setup initial coordinates
-	mov	esi, Tmap.UFixed			// get u 16.16
-	mov	ebx, esi						// copy it
-	sar	esi, 16						// get integer part
-	shl	ebx, 16						// get fractional part
-
-	mov	ecx, Tmap.VFixed			// get v 16.16 
-	mov	edx, ecx						// copy it
-	sar	edx, 16						// get integer part
-	shl	ecx, 16						// get fractional part
-	imul	edx, Tmap.src_offset		// calc texture scanline address
-	add	esi, edx							// calc texture offset
-	add	esi, Tmap.pixptr			// calc address
-
-
-	mov	eax, Tmap.fx_l
-	shr	eax, 8
-	mov	bx, ax
-
-//	mov	edx, Tmap.DeltaUFrac
-
-	push	ebx
-	
-	mov	ebx, Tmap.fx_l_right
-	shr	ebx, 8
-	
-	sub	ebx, eax
-	mov	eax, ebx
-	
-	mov	eax, Tmap.fx_dl_dx
-	shr	eax, 8
-
-	mov	bp, ax
-
-	pop	ebx
-
-
-	mov	eax, edi
-	sub	eax, Tmap.pScreenBits
-	mov	edx, gr_zbuffer
-	shl	eax, 2
-	add	edx, eax
-
-	inc	Tmap.WidthModLength
-	mov	eax,Tmap.WidthModLength
-	shr	eax, 1
-	jz		one_more_pix
-	pushf
-	mov	Tmap.WidthModLength, eax
-
-	xor	eax, eax
-
-	mov	al,[edi]                    // preread the destination cache line
-
-// Make ESI =  DV:DU in 8:8,8:8 format
-	mov	eax, Tmap.DeltaV
-	shr	eax, 8
-	mov	esi, Tmap.DeltaU
-	shl	esi, 8
-	mov	si, ax
-	mov	Tmap.DeltaUFrac, esi
-		
-// Make ECX = V:U in 8:8,8:8 format
-	mov	eax, Tmap.VFixed
-	shr	eax, 8
-	mov	ecx, Tmap.UFixed
-	shl	ecx, 8
-	mov	cx, ax
-
-	mov	esi, Tmap.fx_w
-
-	// eax = tmp
-	// ebx = light
-	// ecx = V:U in 8.8:8.8
-	// edx = zbuffer pointer
-	// esi = z
-	// edi = screen data
-	// ebp = dl_dx
-
-
-
-NextPixel:
-		// pixel 0
-		cmp	esi, [edx+0]					// Compare the Z depth of this pixel with zbuffer
-		jle	Skip0a								// If pixel is covered, skip drawing
-
-		mov	[edx+0], esi					// Write z
-
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-		add	eax, Tmap.pixptr		// EAX = (V*256)+U + Pixptr
-
-		mov	al, [eax]			
-		mov	ah, bh	
-		and	eax, 0ffffh						// clear upper bits
-		mov	al, gr_fade_table[eax]
-		mov	[edi+0], al
-Skip0a:
-		add	ecx, Tmap.DeltaUFrac
-		add	esi, Tmap.fx_dwdx
-		add	ebx, ebp 
-
-		// pixel 1
-		cmp	esi, [edx+4]					// Compare the Z depth of this pixel with zbuffer
-		jle	Skip1a								// If pixel is covered, skip drawing
-
-		mov	[edx+4], esi					// Write z
-
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-		add	eax, Tmap.pixptr		// EAX = (V*256)+U + Pixptr
-
-		mov	al, [eax]			
-		mov	ah, bh	
-		and	eax, 0ffffh						// clear upper bits
-		mov	al, gr_fade_table[eax]
-		mov	[edi+1], al
-Skip1a:
-		add	ecx, Tmap.DeltaUFrac
-		add	esi, Tmap.fx_dwdx
-		add	ebx, ebp 
-
-
-
-	add	edi, 2
-	add	edx, 8
-	dec	Tmap.WidthModLength
-	jg		NextPixel
-
-	popf
-	jnc	FPUReturn
-
-one_more_pix:	
-		// pixel 0
-		cmp	esi, [edx+0]					// Compare the Z depth of this pixel with zbuffer
-		jle	Skip0b								// If pixel is covered, skip drawing
-
-		mov	[edx+0], esi					// Write z
-
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-		add	eax, Tmap.pixptr		// EAX = (V*256)+U + Pixptr
-
-		mov	al, [eax]			
-		mov	ah, bh	
-		and	eax, 0ffffh						// clear upper bits
-		mov	al, gr_fade_table[eax]
-		mov	[edi+0], al
-Skip0b:
-		add	ecx, Tmap.DeltaUFrac
-		add	esi, Tmap.fx_dwdx
-		add	ebx, ebp 
-
-
-FPUReturn:
-
-	// busy FPU registers:	// st0  st1  st2  st3  st4  st5  st6  st7
-									// xxx  xxx  xxx  xxx  xxx  xxx  xxx
-	ffree	st(0)
-	ffree	st(1)
-	ffree	st(2)
-	ffree	st(3)
-	ffree	st(4)
-	ffree	st(5)
-	ffree	st(6)
-
-	fldcw	Tmap.OldFPUCW                  // restore the FPU
-
-	pop	edi
-	pop	esi
-	pop	ebp
-	pop	ebx
-	pop	edx
-	pop	ecx
-	pop	eax
-	}
+	tmapscan_pln8_zbuffered_tiled_g( 8, 0 );
 }
 
 void tmapscan_pln8_tiled_256x256()
 {
-	if (gr_zbuffering) {
-		switch(gr_zbuffering_mode)	{
-		case GR_ZBUFF_NONE:
-			break;
-		case GR_ZBUFF_FULL:		// both
-			tmapscan_pln8_zbuffered_tiled_256x256();
-			return;
-		case GR_ZBUFF_WRITE:		// write only
-			tmapscan_pln8_zbuffered_tiled_256x256();
-			break;
-		case GR_ZBUFF_READ:		// read only
-			tmapscan_pln8_zbuffered_tiled_256x256();
-			return;
-		}
-	}
-
-	_asm {
-	
-	push	eax
-	push	ecx
-	push	edx
-	push	ebx
-	push	ebp
-	push	esi
-	push	edi
-
-	// Put the FPU in low precision mode
-	fstcw		Tmap.OldFPUCW					// store copy of CW
-	mov		ax,Tmap.OldFPUCW				// get it in ax
-	and		eax, ~0x300L
-	mov		Tmap.FPUCW,ax					// store it
-	fldcw		Tmap.FPUCW						// load the FPU
-
-
-	mov		ecx, Tmap.loop_count		// ecx = width
-	mov		edi, Tmap.dest_row_data	// edi = dest pointer
-
-	// edi = pointer to start pixel in dest dib
-	// ecx = spanwidth
-
-	mov		eax,ecx							// eax and ecx = width
-	shr		ecx,5								// ecx = width / subdivision length
-	and		eax,31								// eax = width mod subdivision length
-	jnz		some_left_over					// any leftover?
-	dec		ecx								// no, so special case last span
-	mov		eax,32								// it's 8 pixels long
-some_left_over:
-	mov		Tmap.Subdivisions,ecx		// store widths
-	mov		Tmap.WidthModLength,eax
-
-	// calculate ULeft and VLeft			// FPU Stack (ZL = ZLeft)
-													// st0  st1  st2  st3  st4  st5  st6  st7
-	fld		Tmap.l.v					// V/ZL 
-	fld		Tmap.l.u					// U/ZL V/ZL 
-	fld		Tmap.l.sw					// 1/ZL U/ZL V/ZL 
-	fld1											// 1    1/ZL U/ZL V/ZL 
-	fdiv		st,st(1)							// ZL   1/ZL U/ZL V/ZL 
-	fld		st									// ZL   ZL   1/ZL U/ZL V/ZL 
-	fmul		st,st(4)							// VL   ZL   1/ZL U/ZL V/ZL 
-	fxch		st(1)								// ZL   VL   1/ZL U/ZL V/ZL 
-	fmul		st,st(3)							// UL   VL   1/ZL U/ZL V/ZL 
-
-	fstp		st(5)								// VL   1/ZL U/ZL V/ZL UL
-	fstp		st(5)								// 1/ZL U/ZL V/ZL UL   VL
-
-	// calculate right side OverZ terms  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-	fadd		Tmap.fl_dwdx_wide			// 1/ZR U/ZL V/ZL UL   VL
-	fxch		st(1)								// U/ZL 1/ZR V/ZL UL   VL
-	fadd		Tmap.fl_dudx_wide				// U/ZR 1/ZR V/ZL UL   VL
-	fxch		st(2)								// V/ZL 1/ZR U/ZR UL   VL
-	fadd		Tmap.fl_dvdx_wide				// V/ZR 1/ZR U/ZR UL   VL
-
-	// calculate right side coords		// st0  st1  st2  st3  st4  st5  st6  st7
-
-	fld1											// 1    V/ZR 1/ZR U/ZR UL   VL
-	// @todo overlap this guy
-	fdiv		st,st(2)							// ZR   V/ZR 1/ZR U/ZR UL   VL
-	fld		st									// ZR   ZR   V/ZR 1/ZR U/ZR UL   VL
-	fmul		st,st(2)							// VR   ZR   V/ZR 1/ZR U/ZR UL   VL
-	fxch		st(1)								// ZR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul		st,st(4)							// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	cmp		ecx,0							// check for any full spans
-	jle      HandleLeftoverPixels
-    
-SpanLoop:
-
-	// at this point the FPU contains	// st0  st1  st2  st3  st4  st5  st6  st7
-													// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	// convert left side coords
-
-	fld     st(5)                       ; UL   UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul    Tmap.FixedScale            ; UL16 UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fistp   Tmap.UFixed                ; UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	fld     st(6)                       ; VL   UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul    Tmap.FixedScale            ; VL16 UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fistp   Tmap.VFixed                ; UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	// calculate deltas                  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-	fsubr   st(5),st                    ; UR   VR   V/ZR 1/ZR U/ZR dU   VL
-	fxch    st(1)                       ; VR   UR   V/ZR 1/ZR U/ZR dU   VL
-	fsubr   st(6),st                    ; VR   UR   V/ZR 1/ZR U/ZR dU   dV
-	fxch    st(6)                       ; dV   UR   V/ZR 1/ZR U/ZR dU   VR
-
-	fmul    Tmap.FixedScale8           ; dV8  UR   V/ZR 1/ZR U/ZR dU   VR
-	fistp   Tmap.DeltaV                ; UR   V/ZR 1/ZR U/ZR dU   VR
-
-	fxch    st(4)                       ; dU   V/ZR 1/ZR U/ZR UR   VR
-	fmul    Tmap.FixedScale8           ; dU8  V/ZR 1/ZR U/ZR UR   VR
-	fistp   Tmap.DeltaU                ; V/ZR 1/ZR U/ZR UR   VR
-
-	// increment terms for next span    // st0  st1  st2  st3  st4  st5  st6  st7
-	// Right terms become Left terms--->// V/ZL 1/ZL U/ZL UL   VL
-
-	fadd    Tmap.fl_dvdx_wide				// V/ZR 1/ZL U/ZL UL   VL
-	fxch    st(1)								// 1/ZL V/ZR U/ZL UL   VL
-	fadd    Tmap.fl_dwdx_wide				// 1/ZR V/ZR U/ZL UL   VL
-	fxch    st(2)								// U/ZL V/ZR 1/ZR UL   VL
-	fadd    Tmap.fl_dudx_wide				// U/ZR V/ZR 1/ZR UL   VL
-	fxch    st(2)								// 1/ZR V/ZR U/ZR UL   VL
-	fxch    st(1)								// V/ZR 1/ZR U/ZR UL   VL
-
-
-	// setup delta values
-    
-	mov     eax,Tmap.DeltaV				// get v 16.16 step
-	mov     ebx,eax							// copy it
-	sar     eax,16								// get v int step
-	shl     ebx,16								// get v frac step
-	mov     Tmap.DeltaVFrac,ebx			// store it
-	imul    eax,Tmap.src_offset			// calculate texture step for v int step
-
-	mov     ebx,Tmap.DeltaU				// get u 16.16 step
-	mov     ecx,ebx							// copy it
-	sar     ebx,16								// get u int step
-	shl     ecx,16								// get u frac step
-	mov     Tmap.DeltaUFrac,ecx			// store it
-	add     eax,ebx							// calculate uint + vint step
-	mov     Tmap.uv_delta[4],eax			// save whole step in non-v-carry slot
-	add     eax,Tmap.src_offset			// calculate whole step + v carry
-	mov     Tmap.uv_delta[0],eax			// save in v-carry slot
-
-	// setup initial coordinates
-	mov     esi,Tmap.UFixed				// get u 16.16 fixedpoint coordinate
-
-	mov     ebx,esi							// copy it
-	sar     esi,16								// get integer part
-	shl     ebx,16								// get fractional part
-
-	mov     ecx,Tmap.VFixed				// get v 16.16 fixedpoint coordinate
-   
-	mov     edx,ecx							// copy it
-	sar     edx,16								// get integer part
-	shl     ecx,16								// get fractional part
-	imul    edx,Tmap.src_offset			// calc texture scanline address
-	add     esi,edx							// calc texture offset
-	add     esi,Tmap.pixptr				// calc address
-
-	// set up affine registers
-
- 	mov	eax, Tmap.fx_l
-	shr	eax, 8
-	mov	bx, ax
-
-	mov	ebp, Tmap.fx_dl_dx
-	shl	ebp, 5	//*32
-	add	Tmap.fx_l, ebp
-
-	mov	ebp, Tmap.fx_l
-	shr	ebp, 8
-	sub	bp, ax
-	shr	bp, 5
-
-	mov	dx, bp
-
-	// calculate right side coords		st0  st1  st2  st3  st4  st5  st6  st7
-	fld1										// 1    V/ZR 1/ZR U/ZR UL   VL
-	// This divide should happen while the pixel span is drawn.
-	fdiv	st,st(2)							// ZR   V/ZR 1/ZR U/ZR UL   VL
-
-
-	// 8 pixel span code
-	// edi = dest dib bits at current pixel
-	// esi = texture pointer at current u,v
-	// eax = scratch
-	// ebx = u fraction 0.32
-	// ecx = v fraction 0.32
-	// edx = u frac step
-	// ebp = v carry scratch
-
-	mov	al,[edi]								// preread the destination cache line
-
-	mov	Tmap.InnerLooper, 32/4			// Set up loop counter
-
-	mov	eax, edi
-	sub	eax, Tmap.pScreenBits
-	mov	edx, gr_zbuffer
-	shl	eax, 2
-	add	edx, eax
-
-// Make ESI =  DV:DU in 8:8,8:8 format
-	mov	eax, Tmap.DeltaV
-	shr	eax, 8
-	mov	esi, Tmap.DeltaU
-	shl	esi, 8
-	mov	si, ax
-	mov	Tmap.DeltaUFrac, esi
-		
-// Make ECX = V:U in 8:8,8:8 format
-	mov	eax, Tmap.VFixed
-	shr	eax, 8
-	mov	ecx, Tmap.UFixed
-	shl	ecx, 8
-	mov	cx, ax
-
-
-	// eax = tmp
-	// ebx = light
-	// ecx = V:U in 8.8:8.8
-	// edx = zbuffer pointer
-	// esi = z
-	// edi = screen data
-	// ebp = dl_dx
-
-
-InnerInnerLoop:
-
-		// pixel 0
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-		add	eax, Tmap.pixptr		// EAX = (V*256)+U + Pixptr
-
-		mov	al, [eax]			
-		mov	ah, bh	
-		and	eax, 0ffffh						// clear upper bits
-		mov	al, gr_fade_table[eax]
-		mov	[edi+0], al
-		add	ecx, Tmap.DeltaUFrac
-		add	ebx, ebp 
-
-		// pixel 1
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-		add	eax, Tmap.pixptr		// EAX = (V*256)+U + Pixptr
-
-		mov	al, [eax]			
-		mov	ah, bh	
-		and	eax, 0ffffh						// clear upper bits
-		mov	al, gr_fade_table[eax]
-		mov	[edi+1], al
-		add	ecx, Tmap.DeltaUFrac
-		add	ebx, ebp 
-
-		// pixel 2
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-		add	eax, Tmap.pixptr		// EAX = (V*256)+U + Pixptr
-
-		mov	al, [eax]			
-		mov	ah, bh	
-		and	eax, 0ffffh						// clear upper bits
-		mov	al, gr_fade_table[eax]
-		mov	[edi+2], al
-		add	ecx, Tmap.DeltaUFrac
-		add	ebx, ebp 
-
-		// pixel 3
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-		add	eax, Tmap.pixptr		// EAX = (V*256)+U + Pixptr
-
-		mov	al, [eax]			
-		mov	ah, bh	
-		and	eax, 0ffffh						// clear upper bits
-		mov	al, gr_fade_table[eax]
-		mov	[edi+3], al
-		add	ecx, Tmap.DeltaUFrac
-		add	ebx, ebp 
-
-
-	add	edi, 4
-	dec	Tmap.InnerLooper
-	jnz	InnerInnerLoop
-
-	mov	Tmap.fx_w, esi
-
-	// the fdiv is done, finish right	// st0  st1  st2  st3  st4  st5  st6  st7
-	                                    // ZR   V/ZR 1/ZR U/ZR UL   VL
-
-    fld     st									// ZR   ZR   V/ZR 1/ZR U/ZR UL   VL
-    fmul    st,st(2)							// VR   ZR   V/ZR 1/ZR U/ZR UL   VL
-    fxch    st(1)								// ZR   VR   V/ZR 1/ZR U/ZR UL   VL
-    fmul    st,st(4)							// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-    dec     Tmap.Subdivisions			// decrement span count
-    jnz     SpanLoop							// loop back
-
-
-HandleLeftoverPixels:
-
-    mov     esi,Tmap.pixptr				// load texture pointer
-
-    // edi = dest dib bits
-    // esi = current texture dib bits
-    // at this point the FPU contains    ; st0  st1  st2  st3  st4  st5  st6  st7
-    // inv. means invalid numbers        ; inv. inv. inv. inv. inv. UL   VL
-
-    cmp     Tmap.WidthModLength,0          ; are there remaining pixels to draw?
-    jz      FPUReturn                   ; nope, pop the FPU and bail
-
-    // convert left side coords          ; st0  st1  st2  st3  st4  st5  st6  st7
-
-    fld     st(5)                       ; UL   inv. inv. inv. inv. inv. UL   VL
-    fmul    Tmap.FixedScale                ; UL16 inv. inv. inv. inv. inv. UL   VL
-    fistp   Tmap.UFixed                    ; inv. inv. inv. inv. inv. UL   VL
-
-    fld     st(6)                       ; VL   inv. inv. inv. inv. inv. UL   VL
-    fmul    Tmap.FixedScale                // VL16 inv. inv. inv. inv. inv. UL   VL
-    fistp   Tmap.VFixed                    ; inv. inv. inv. inv. inv. UL   VL
-
-    dec     Tmap.WidthModLength            ; calc how many steps to take
-    jz      OnePixelSpan                ; just one, don't do deltas
-
-    // calculate right edge coordinates  ; st0  st1  st2  st3  st4  st5  st6  st7
-    // r -> R+1
-
-    // @todo rearrange things so we don't need these two instructions
-    fstp    Tmap.FloatTemp                 ; inv. inv. inv. inv. UL   VL
-    fstp    Tmap.FloatTemp                 ; inv. inv. inv. UL   VL
-
-    fld     Tmap.r.v           ; V/Zr inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.v             ; V/ZR inv. inv. inv. UL   VL
-    fld     Tmap.r.u           ; U/Zr V/ZR inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.u             ; U/ZR V/ZR inv. inv. inv. UL   VL
-    fld     Tmap.r.sw              ; 1/Zr U/ZR V/ZR inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.sw           ; 1/ZR U/ZR V/ZR inv. inv. inv. UL   VL
-
-    fdivr   Tmap.One                       ; ZR   U/ZR V/ZR inv. inv. inv. UL   VL
-
-    fmul    st(1),st                    ; ZR   UR   V/ZR inv. inv. inv. UL   VL
-    fmulp   st(2),st                    ; UR   VR   inv. inv. inv. UL   VL
-
-    // calculate deltas                  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-    fsubr   st(5),st                    ; UR   VR   inv. inv. inv. dU   VL
-    fxch    st(1)                       ; VR   UR   inv. inv. inv. dU   VL
-    fsubr   st(6),st                    ; VR   UR   inv. inv. inv. dU   dV
-    fxch    st(6)                       ; dV   UR   inv. inv. inv. dU   VR
-
-    fidiv   Tmap.WidthModLength            ; dv   UR   inv. inv. inv. dU   VR
-    fmul    Tmap.FixedScale                ; dv16 UR   inv. inv. inv. dU   VR
-    fistp   Tmap.DeltaV                    ; UR   inv. inv. inv. dU   VR
-
-    fxch    st(4)                       ; dU   inv. inv. inv. UR   VR
-    fidiv   Tmap.WidthModLength            ; du   inv. inv. inv. UR   VR
-    fmul    Tmap.FixedScale                ; du16 inv. inv. inv. UR   VR
-    fistp   Tmap.DeltaU                    ; inv. inv. inv. UR   VR
-
-    // @todo gross!  these are to line up with the other loop
-    fld     st(1)                       ; inv. inv. inv. inv. UR   VR
-    fld     st(2)                       ; inv. inv. inv. inv. inv. UR   VR
-
-
-	// setup delta values
-	mov	eax, Tmap.DeltaV	// get v 16.16 step
-	mov	ebx, eax						// copy it
-	sar	eax, 16						// get v int step
-	shl	ebx, 16						// get v frac step
-	mov	Tmap.DeltaVFrac, ebx	// store it
-	imul	eax, Tmap.src_offset	// calc texture step for v int step
-	
-	mov	ebx, Tmap.DeltaU			// get u 16.16 step
-	mov	ecx, ebx						// copy it
-	sar	ebx, 16						// get the u int step
-	shl	ecx, 16						// get the u frac step
-	mov	Tmap.DeltaUFrac, ecx			// store it
-	add	eax, ebx						// calc uint + vint step
-	mov	Tmap.uv_delta[4], eax	// save whole step in non-v-carry slot
-	add	eax, Tmap.src_offset				// calc whole step + v carry
-	mov	Tmap.uv_delta[0], eax	// save in v-carry slot
-
-
-OnePixelSpan:
-
-	; setup initial coordinates
-	mov	esi, Tmap.UFixed			// get u 16.16
-	mov	ebx, esi						// copy it
-	sar	esi, 16						// get integer part
-	shl	ebx, 16						// get fractional part
-
-	mov	ecx, Tmap.VFixed			// get v 16.16 
-	mov	edx, ecx						// copy it
-	sar	edx, 16						// get integer part
-	shl	ecx, 16						// get fractional part
-	imul	edx, Tmap.src_offset		// calc texture scanline address
-	add	esi, edx							// calc texture offset
-	add	esi, Tmap.pixptr			// calc address
-
-
-	mov	eax, Tmap.fx_l
-	shr	eax, 8
-	mov	bx, ax
-
-//	mov	edx, Tmap.DeltaUFrac
-
-	push	ebx
-	
-	mov	ebx, Tmap.fx_l_right
-	shr	ebx, 8
-	
-	sub	ebx, eax
-	mov	eax, ebx
-	
-	mov	eax, Tmap.fx_dl_dx
-	shr	eax, 8
-
-	mov	bp, ax
-
-	pop	ebx
-
-	mov	eax, edi
-	sub	eax, Tmap.pScreenBits
-	mov	edx, gr_zbuffer
-	shl	eax, 2
-	add	edx, eax
-
-	inc	Tmap.WidthModLength
-	mov	eax,Tmap.WidthModLength
-	shr	eax, 1
-	jz		one_more_pix
-	pushf
-	mov	Tmap.WidthModLength, eax
-
-	xor	eax, eax
-
-	mov	al,[edi]                    // preread the destination cache line
-
-// Make ESI =  DV:DU in 8:8,8:8 format
-	mov	eax, Tmap.DeltaV
-	shr	eax, 8
-	mov	esi, Tmap.DeltaU
-	shl	esi, 8
-	mov	si, ax
-	mov	Tmap.DeltaUFrac, esi
-		
-// Make ECX = V:U in 8:8,8:8 format
-	mov	eax, Tmap.UFixed
-	shr	eax, 8
-	mov	ecx, Tmap.VFixed
-	shl	ecx, 8
-	mov	cx, ax
-
-	// eax = tmp
-	// ebx = light
-	// ecx = V:U in 8.8:8.8
-	// edx = zbuffer pointer
-	// esi = z
-	// edi = screen data
-	// ebp = dl_dx
-
-
-
-NextPixel:
-		// pixel 0
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-		add	eax, Tmap.pixptr		// EAX = (V*256)+U + Pixptr
-
-		mov	al, [eax]			
-		mov	ah, bh	
-		and	eax, 0ffffh						// clear upper bits
-		mov	al, gr_fade_table[eax]
-		mov	[edi+0], al
-		add	ecx, Tmap.DeltaUFrac
-		add	ebx, ebp 
-
-		// pixel 1
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-		add	eax, Tmap.pixptr		// EAX = (V*256)+U + Pixptr
-
-		mov	al, [eax]			
-		mov	ah, bh	
-		and	eax, 0ffffh						// clear upper bits
-		mov	al, gr_fade_table[eax]
-		mov	[edi+1], al
-		add	ecx, Tmap.DeltaUFrac
-		add	ebx, ebp 
-
-
-
-	add	edi, 2
-	add	edx, 8
-	dec	Tmap.WidthModLength
-	jg		NextPixel
-
-	popf
-	jnc	FPUReturn
-
-one_more_pix:	
-		// pixel 0
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-		add	eax, Tmap.pixptr		// EAX = (V*256)+U + Pixptr
-
-		mov	al, [eax]			
-		mov	ah, bh	
-		and	eax, 0ffffh						// clear upper bits
-		mov	al, gr_fade_table[eax]
-		mov	[edi+0], al
-		add	ecx, Tmap.DeltaUFrac
-		add	ebx, ebp 
-
-
-FPUReturn:
-
-	// busy FPU registers:	// st0  st1  st2  st3  st4  st5  st6  st7
-									// xxx  xxx  xxx  xxx  xxx  xxx  xxx
-	ffree	st(0)
-	ffree	st(1)
-	ffree	st(2)
-	ffree	st(3)
-	ffree	st(4)
-	ffree	st(5)
-	ffree	st(6)
-
-	fldcw	Tmap.OldFPUCW                  // restore the FPU
-
-	pop	edi
-	pop	esi
-	pop	ebp
-	pop	ebx
-	pop	edx
-	pop	ecx
-	pop	eax
-	}
+	tmapscan_pln8_tiled_g( 8, 0 );
 }
 
-
-// Totally non-general function specifically made for the subpsace effect
 void tmapscan_lnn8_tiled_256x256()
 {
 	if ( Tmap.src_offset != 256 )	{
@@ -1186,16 +46,11 @@ void tmapscan_lnn8_tiled_256x256()
 		return;
 	}
 
-//	Tmap.fx_u = fl2f(Tmap.l.u);
-//	Tmap.fx_v = fl2f(Tmap.l.v);
-//	Tmap.fx_du_dx = fl2f(Tmap.deltas.u);
-//	Tmap.fx_dv_dx = fl2f(Tmap.deltas.v);
-
 	int i;
 
 	ubyte * src = (ubyte *)Tmap.pixptr;
 	ubyte * dst = (ubyte *)Tmap.dest_row_data;
-	
+
 	for (i=0; i<Tmap.loop_count; i++ )	{
 		int u,v;
 		u = f2i(Tmap.fx_u) & 255;
@@ -1204,130 +59,9 @@ void tmapscan_lnn8_tiled_256x256()
 		ubyte c = src[u+v*Tmap.src_offset];
 		*dst = c;
 		dst++;
-					
+
 		Tmap.fx_u += Tmap.fx_du_dx;
 		Tmap.fx_v += Tmap.fx_dv_dx;
-	}
-	return;
-
-
-	_asm {
-	push	eax
-	push	ecx
-	push	edx
-	push	ebx
-	push	ebp
-	push	esi
-	push	edi
-
-	// Need ECX = V.VF:U.UF in 8.8:8.8
-	mov	eax, Tmap.fx_u
-	shr	eax, 8
-	mov	ecx, Tmap.fx_v
-	shl	ecx, 8
-	mov	cx, ax
-		
-	// Need EDX = delta V:U in 8.8:8.8
-	mov	eax, Tmap.fx_dv_dx
-	shr	eax, 8
-	mov	edx, Tmap.fx_du_dx
-	shl	edx, 8
-	mov	dx, ax
-
-	// Need EDI = pointer to dest row
-	mov	edi, Tmap.dest_row_data
-
-	// Need ESI = pointer to texture
-	mov	esi, Tmap.pixptr	
-
-	// Set up loop counter
-	mov	ebp, Tmap.loop_count
-
-	shr	ebp, 2
-	je		DoLeftOverPixels
-
-	mov	Tmap.num_big_steps, ebp
-	and	Tmap.loop_count, 3
-
-	// EAX = anything (used as tmp in loop)
-	// EBX = 
-	// ECX = V.VF:U.UF in 8.8:8.8
-	// EDX = delta V:U in 8.8:8.8
-	// ESP = stack pointer (could be saved to Tmap.saved_esp and then used if needed)
-	// EBP = loop counter
-	// EDI = pointer to dest row
-	// ESI = pointer to texture
-
-NextPixelBlock:
-
-		// Draw 4 pixels
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		add	ecx, edx							// Increment u&v
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-		mov	al, [eax+esi]					// Get pixel from texture
-		mov	[edi+0], al						// Write pixel to screen
-
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		add	ecx, edx							// Increment u&v
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-		mov	al, [eax+esi]					// Get pixel from texture
-		mov	[edi+1], al						// Write pixel to screen
-
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		add	ecx, edx							// Increment u&v
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-		mov	al, [eax+esi]					// Get pixel from texture
-		mov	[edi+2], al						// Write pixel to screen
-
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		add	ecx, edx							// Increment u&v
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-		mov	al, [eax+esi]					// Get pixel from texture
-		mov	[edi+3], al						// Write pixel to screen
-
-
-	add	edi, 4
-	dec	Tmap.num_big_steps
-	jne	NextPixelBlock
-	
-
-DoLeftOverPixels:
-
-	mov	ebp,Tmap.loop_count
-	test	ebp, -1
-	jz		_none_to_do
-	mov	Tmap.loop_count, ebp
-
-NextPixel:
-	// Draw one pixel
-	mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-	add	ecx, edx							// Increment u&v
-	shr	ax, 8								// EAX = V:U in 8.8:8.0
-	rol	eax, 8							// EAX = V:U in 0.0:8:8
-	and	eax, 0ffffh						// clear upper bits
-	mov	al, [eax+esi]					// Get pixel from texture
-	mov	[edi], al						// Write pixel to screen
-
-	add	edi, 1
-	dec	Tmap.loop_count
-	jne	NextPixel
-
-_none_to_do:	
-	pop	edi
-	pop	esi
-	pop	ebp
-	pop	ebx
-	pop	edx
-	pop	ecx
-	pop	eax
 	}
 }
 
@@ -1339,7 +73,20 @@ int Rand_value = 1;
 #define MASK 0x00ff00ff
 //#define MASK 0x0
 
+// The subspace mappers are perspective-correct, unlit, always-write
+// walkers over a 256x256 tile.  Inside a span u and v travel packed
+// [ u 8.8 | v 8.8 ] in one 32-bit register (see the generic tiled
+// mapper in tmapscanline.cpp for the scheme); the texel index is
+// (v_int << 8) | u_int.
+
 // not used, but cool
+//
+// Same as tmapscan_pnn8_tiled_256x256_subspace but each pixel jitters
+// the packed u/v with an LFSR ('r' repeats every 2^32 steps): the
+// random word is masked to the two 8-bit fraction fields and added to
+// the packed coordinate before the texel index is extracted.  Carries
+// from the jittered fractions ripple into the integer fields exactly
+// like the asm's 32-bit add.
 void tmapscan_pnn8_tiled_256x256_subspace_dithered()
 {
 	if ( Tmap.src_offset != 256 )	{
@@ -1347,438 +94,138 @@ void tmapscan_pnn8_tiled_256x256_subspace_dithered()
 		return;
 	}
 
-	_asm {
-	
-	push	eax
-	push	ecx
-	push	edx
-	push	ebx
-	push	ebp
-	push	esi
-	push	edi
-
-	mov	ebx, Rand_value
-
-	// Need EDI = pointer to dest row
-	mov	edi, Tmap.dest_row_data
-
-	// Need ESI = pointer to texture
-	mov	esi, Tmap.pixptr	
-
-
-	// Put the FPU in low precision mode
-	fstcw		Tmap.OldFPUCW					// store copy of CW
-	mov		ax,Tmap.OldFPUCW				// get it in ax
-	and		eax, ~0x300L
-	mov		Tmap.FPUCW,ax					// store it
-	fldcw		Tmap.FPUCW						// load the FPU
-
-	mov		ecx, Tmap.loop_count		// ecx = width
-
-	// edi = pointer to start pixel in dest dib
-	// ecx = spanwidth
-
-	mov		eax,ecx							// eax and ecx = width
-	shr		ecx,5								// ecx = width / subdivision length
-	and		eax,31								// eax = width mod subdivision length
-	jnz		some_left_over					// any leftover?
-	dec		ecx								// no, so special case last span
-	mov		eax,32								// it's 8 pixels long
-some_left_over:
-	mov		Tmap.Subdivisions,ecx		// store widths
-	mov		Tmap.WidthModLength,eax
-
-	// calculate ULeft and VLeft			// FPU Stack (ZL = ZLeft)
-													// st0  st1  st2  st3  st4  st5  st6  st7
-	fld		Tmap.l.v					// V/ZL 
-	fld		Tmap.l.u					// U/ZL V/ZL 
-	fld		Tmap.l.sw					// 1/ZL U/ZL V/ZL 
-	fld1											// 1    1/ZL U/ZL V/ZL 
-	fdiv		st,st(1)							// ZL   1/ZL U/ZL V/ZL 
-	fld		st									// ZL   ZL   1/ZL U/ZL V/ZL 
-	fmul		st,st(4)							// VL   ZL   1/ZL U/ZL V/ZL 
-	fxch		st(1)								// ZL   VL   1/ZL U/ZL V/ZL 
-	fmul		st,st(3)							// UL   VL   1/ZL U/ZL V/ZL 
-
-	fstp		st(5)								// VL   1/ZL U/ZL V/ZL UL
-	fstp		st(5)								// 1/ZL U/ZL V/ZL UL   VL
-
-	// calculate right side OverZ terms  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-	fadd		Tmap.fl_dwdx_wide			// 1/ZR U/ZL V/ZL UL   VL
-	fxch		st(1)								// U/ZL 1/ZR V/ZL UL   VL
-	fadd		Tmap.fl_dudx_wide				// U/ZR 1/ZR V/ZL UL   VL
-	fxch		st(2)								// V/ZL 1/ZR U/ZR UL   VL
-	fadd		Tmap.fl_dvdx_wide				// V/ZR 1/ZR U/ZR UL   VL
-
-	// calculate right side coords		// st0  st1  st2  st3  st4  st5  st6  st7
-
-	fld1											// 1    V/ZR 1/ZR U/ZR UL   VL
-	// @todo overlap this guy
-	fdiv		st,st(2)							// ZR   V/ZR 1/ZR U/ZR UL   VL
-	fld		st									// ZR   ZR   V/ZR 1/ZR U/ZR UL   VL
-	fmul		st,st(2)							// VR   ZR   V/ZR 1/ZR U/ZR UL   VL
-	fxch		st(1)								// ZR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul		st,st(4)							// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	cmp		ecx,0							// check for any full spans
-	jle      HandleLeftoverPixels
-    
-SpanLoop:
-
-	// at this point the FPU contains	// st0  st1  st2  st3  st4  st5  st6  st7
-													// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	// convert left side coords
-
-	fld     st(5)                       ; UL   UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul    Tmap.FixedScale            ; UL16 UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fistp   Tmap.UFixed                ; UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	fld     st(6)                       ; VL   UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul    Tmap.FixedScale            ; VL16 UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fistp   Tmap.VFixed                ; UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	// calculate deltas                  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-	fsubr   st(5),st                    ; UR   VR   V/ZR 1/ZR U/ZR dU   VL
-	fxch    st(1)                       ; VR   UR   V/ZR 1/ZR U/ZR dU   VL
-	fsubr   st(6),st                    ; VR   UR   V/ZR 1/ZR U/ZR dU   dV
-	fxch    st(6)                       ; dV   UR   V/ZR 1/ZR U/ZR dU   VR
-
-	fmul    Tmap.FixedScale8           ; dV8  UR   V/ZR 1/ZR U/ZR dU   VR
-	fistp   Tmap.DeltaV                ; UR   V/ZR 1/ZR U/ZR dU   VR
-
-	fxch    st(4)                       ; dU   V/ZR 1/ZR U/ZR UR   VR
-	fmul    Tmap.FixedScale8           ; dU8  V/ZR 1/ZR U/ZR UR   VR
-	fistp   Tmap.DeltaU                ; V/ZR 1/ZR U/ZR UR   VR
-
-	// increment terms for next span    // st0  st1  st2  st3  st4  st5  st6  st7
-	// Right terms become Left terms--->// V/ZL 1/ZL U/ZL UL   VL
-
-	fadd    Tmap.fl_dvdx_wide				// V/ZR 1/ZL U/ZL UL   VL
-	fxch    st(1)								// 1/ZL V/ZR U/ZL UL   VL
-	fadd    Tmap.fl_dwdx_wide				// 1/ZR V/ZR U/ZL UL   VL
-	fxch    st(2)								// U/ZL V/ZR 1/ZR UL   VL
-	fadd    Tmap.fl_dudx_wide				// U/ZR V/ZR 1/ZR UL   VL
-	fxch    st(2)								// 1/ZR V/ZR U/ZR UL   VL
-	fxch    st(1)								// V/ZR 1/ZR U/ZR UL   VL
-
-
-	// setup delta values
-	// set up affine registers
-
-	// calculate right side coords		st0  st1  st2  st3  st4  st5  st6  st7
-	fld1										// 1    V/ZR 1/ZR U/ZR UL   VL
-	// This divide should happen while the pixel span is drawn.
-	fdiv	st,st(2)							// ZR   V/ZR 1/ZR U/ZR UL   VL
-
-
-	// 8 pixel span code
-	// edi = dest dib bits at current pixel
-	// esi = texture pointer at current u,v
-	// eax = scratch
-	// ebx = u fraction 0.32
-	// ecx = v fraction 0.32
-	// edx = u frac step
-	// ebp = v carry scratch
-
-	mov	al,[edi]								// preread the destination cache line
-
-	mov	Tmap.InnerLooper, 32/4			// Set up loop counter
-
-// Make EDX =  DV:DU in 8:8,8:8 format
-	mov	eax, Tmap.DeltaV
-	shr	eax, 8
-	mov	edx, Tmap.DeltaU
-	shl	edx, 8
-	mov	dx, ax
-		
-// Make ECX = V:U in 8:8,8:8 format
-	mov	eax, Tmap.VFixed
-	shr	eax, 8
-	mov	ecx, Tmap.UFixed
-	shl	ecx, 8
-	mov	cx, ax
-
-	// eax = tmp
-	// ebx = 
-	// ecx = V:U in 8.8:8.8
-	// edx = zbuffer pointer
-	// esi = 
-	// edi = screen data
-	// ebp = dl_dx
-
-
-InnerInnerLoop:
-
-		// pixel 0
-//		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		mov eax, ebx
-		shr eax, 1
-		jnc L1
-		xor eax, 0xA3000000 ; This makes 'r' take 2^32 iterations to repeat
-L1:	mov ebx, eax
-		and eax, MASK ; mask out all bits except 8.8:8.8 fraction
-		add eax, ecx
-		add	ecx, edx
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-
-		mov	al, [esi+eax]			
-		mov	[edi+0], al
-
-		// pixel 1
-//		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		mov eax, ebx
-		shr eax, 1
-		jnc L2
-		xor eax, 0xA3000000 ; This makes 'r' take 2^32 iterations to repeat
-L2:	mov ebx, eax
-		and eax, MASK ; mask out all bits except 8.8:8.8 fraction
-		add eax, ecx
-		add	ecx, edx
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-
-		mov	al, [esi+eax]			
-		mov	[edi+1], al
-
-		// pixel 2
-//		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		mov eax, ebx
-		shr eax, 1
-		jnc L3
-		xor eax, 0xA3000000 ; This makes 'r' take 2^32 iterations to repeat
-L3:	mov ebx, eax
-		and eax, MASK ; mask out all bits except 8.8:8.8 fraction
-		add eax, ecx
-		add	ecx, edx
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-
-		mov	al, [esi+eax]			
-		mov	[edi+2], al
-
-		// pixel 3
-//		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		mov eax, ebx
-		shr eax, 1
-		jnc L4
-		xor eax, 0xA3000000 ; This makes 'r' take 2^32 iterations to repeat
-L4:	mov ebx, eax
-		and eax, MASK ; mask out all bits except 8.8:8.8 fraction
-		add eax, ecx
-		add	ecx, edx
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-
-		mov	al, [esi+eax]			
-		mov	[edi+3], al
-
-
-	add	edi, 4
-	dec	Tmap.InnerLooper
-	jnz	InnerInnerLoop
-
-	mov	Tmap.fx_w, esi
-
-	// the fdiv is done, finish right	// st0  st1  st2  st3  st4  st5  st6  st7
-	                                    // ZR   V/ZR 1/ZR U/ZR UL   VL
-
-    fld     st									// ZR   ZR   V/ZR 1/ZR U/ZR UL   VL
-    fmul    st,st(2)							// VR   ZR   V/ZR 1/ZR U/ZR UL   VL
-    fxch    st(1)								// ZR   VR   V/ZR 1/ZR U/ZR UL   VL
-    fmul    st,st(4)							// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-    dec     Tmap.Subdivisions			// decrement span count
-    jnz     SpanLoop							// loop back
-
-
-HandleLeftoverPixels:
-
-    // edi = dest dib bits
-    // esi = current texture dib bits
-    // at this point the FPU contains    ; st0  st1  st2  st3  st4  st5  st6  st7
-    // inv. means invalid numbers        ; inv. inv. inv. inv. inv. UL   VL
-
-    cmp     Tmap.WidthModLength,0          ; are there remaining pixels to draw?
-    jz      FPUReturn                   ; nope, pop the FPU and bail
-
-    // convert left side coords          ; st0  st1  st2  st3  st4  st5  st6  st7
-
-    fld     st(5)                       ; UL   inv. inv. inv. inv. inv. UL   VL
-    fmul    Tmap.FixedScale                ; UL16 inv. inv. inv. inv. inv. UL   VL
-    fistp   Tmap.UFixed                    ; inv. inv. inv. inv. inv. UL   VL
-
-    fld     st(6)                       ; VL   inv. inv. inv. inv. inv. UL   VL
-    fmul    Tmap.FixedScale                // VL16 inv. inv. inv. inv. inv. UL   VL
-    fistp   Tmap.VFixed                    ; inv. inv. inv. inv. inv. UL   VL
-
-    dec     Tmap.WidthModLength            ; calc how many steps to take
-    jz      OnePixelSpan                ; just one, don't do deltas
-
-    // calculate right edge coordinates  ; st0  st1  st2  st3  st4  st5  st6  st7
-    // r -> R+1
-
-    // @todo rearrange things so we don't need these two instructions
-    fstp    Tmap.FloatTemp                 ; inv. inv. inv. inv. UL   VL
-    fstp    Tmap.FloatTemp                 ; inv. inv. inv. UL   VL
-
-    fld     Tmap.r.v           ; V/Zr inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.v             ; V/ZR inv. inv. inv. UL   VL
-    fld     Tmap.r.u           ; U/Zr V/ZR inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.u             ; U/ZR V/ZR inv. inv. inv. UL   VL
-    fld     Tmap.r.sw              ; 1/Zr U/ZR V/ZR inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.sw           ; 1/ZR U/ZR V/ZR inv. inv. inv. UL   VL
-
-    fdivr   Tmap.One                       ; ZR   U/ZR V/ZR inv. inv. inv. UL   VL
-
-    fmul    st(1),st                    ; ZR   UR   V/ZR inv. inv. inv. UL   VL
-    fmulp   st(2),st                    ; UR   VR   inv. inv. inv. UL   VL
-
-    // calculate deltas                  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-    fsubr   st(5),st                    ; UR   VR   inv. inv. inv. dU   VL
-    fxch    st(1)                       ; VR   UR   inv. inv. inv. dU   VL
-    fsubr   st(6),st                    ; VR   UR   inv. inv. inv. dU   dV
-    fxch    st(6)                       ; dV   UR   inv. inv. inv. dU   VR
-
-    fidiv   Tmap.WidthModLength            ; dv   UR   inv. inv. inv. dU   VR
-    fmul    Tmap.FixedScale                ; dv16 UR   inv. inv. inv. dU   VR
-    fistp   Tmap.DeltaV                    ; UR   inv. inv. inv. dU   VR
-
-    fxch    st(4)                       ; dU   inv. inv. inv. UR   VR
-    fidiv   Tmap.WidthModLength            ; du   inv. inv. inv. UR   VR
-    fmul    Tmap.FixedScale                ; du16 inv. inv. inv. UR   VR
-    fistp   Tmap.DeltaU                    ; inv. inv. inv. UR   VR
-
-    // @todo gross!  these are to line up with the other loop
-    fld     st(1)                       ; inv. inv. inv. inv. UR   VR
-    fld     st(2)                       ; inv. inv. inv. inv. inv. UR   VR
-
-
-OnePixelSpan:
-
-// Make EDX =  DV:DU in 8:8,8:8 format
-	mov	eax, Tmap.DeltaV
-	shr	eax, 8
-	mov	edx, Tmap.DeltaU
-	shl	edx, 8
-	mov	dx, ax
-		
-// Make ECX = V:U in 8:8,8:8 format
-	mov	eax, Tmap.VFixed
-	shr	eax, 8
-	mov	ecx, Tmap.UFixed
-	shl	ecx, 8
-	mov	cx, ax
-
-	inc	Tmap.WidthModLength
-	mov	eax,Tmap.WidthModLength
-	shr	eax, 1
-	jz		one_more_pix
-	pushf
-	mov	Tmap.WidthModLength, eax
-
-	// eax = tmp
-	// ebx = light
-	// ecx = V:U in 8.8:8.8
-	// edx = zbuffer pointer
-	// esi = z
-	// edi = screen data
-	// ebp = dl_dx
-
-
-NextPixel:
-		// pixel 0
-//		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		mov eax, ebx
-		shr eax, 1
-		jnc L5
-		xor eax, 0xA3000000 ; This makes 'r' take 2^32 iterations to repeat
-L5:	mov ebx, eax
-		and eax, MASK ; mask out all bits except 8.8:8.8 fraction
-		add eax, ecx
-		add	ecx, edx
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-
-		mov	al, [esi+eax]			
-		mov	[edi+0], al
-
-		// pixel 1
-//		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		mov eax, ebx
-		shr eax, 1
-		jnc L6
-		xor eax, 0xA3000000 ; This makes 'r' take 2^32 iterations to repeat
-L6:	mov ebx, eax
-		and eax, MASK ; mask out all bits except 8.8:8.8 fraction
-		add eax, ecx
-		add	ecx, edx
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-
-		mov	al, [esi+eax]			
-		mov	[edi+1], al
-
-
-	add	edi, 2
-	dec	Tmap.WidthModLength
-	jg		NextPixel
-
-	popf
-	jnc	FPUReturn
-
-one_more_pix:	
-		// pixel 0
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		mov eax, ebx
-		shr eax, 1
-		jnc L7
-		xor eax, 0xA3000000 ; This makes 'r' take 2^32 iterations to repeat
-L7:	mov ebx, eax
-		and eax, MASK ; mask out all bits except 8.8:8.8 fraction
-		add eax, ecx
-		add	ecx, edx
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-
-		mov	al, [esi+eax]			
-		mov	[edi+0], al
-
-FPUReturn:
-
-	mov	Rand_value, ebx
-
-	// busy FPU registers:	// st0  st1  st2  st3  st4  st5  st6  st7
-									// xxx  xxx  xxx  xxx  xxx  xxx  xxx
-	ffree	st(0)
-	ffree	st(1)
-	ffree	st(2)
-	ffree	st(3)
-	ffree	st(4)
-	ffree	st(5)
-	ffree	st(6)
-
-	fldcw	Tmap.OldFPUCW                  // restore the FPU
-
-	pop	edi
-	pop	esi
-	pop	ebp
-	pop	ebx
-	pop	edx
-	pop	ecx
-	pop	eax
+	uint r = (uint)Rand_value;						// ebx
+
+	ubyte *dptr = (ubyte *)Tmap.dest_row_data;	// edi
+	ubyte *src = (ubyte *)Tmap.pixptr;			// esi
+	int width = Tmap.loop_count;					// ecx
+
+	int subdivisions = width >> 5;				// width / subdivision length
+	int leftover = width & 31;						// width mod subdivision length
+	if ( leftover == 0 )	{						// no leftover? special case last span
+		subdivisions--;
+		leftover = 32;
 	}
+	Tmap.Subdivisions = (uint)subdivisions;
+	Tmap.WidthModLength = leftover;
+
+	// calculate ULeft and VLeft
+	float v_over_z = Tmap.l.v;
+	float u_over_z = Tmap.l.u;
+	float one_over_z = Tmap.l.sw;
+	float z_left = 1.0f / one_over_z;
+	float v_left = z_left * v_over_z;
+	float u_left = z_left * u_over_z;
+
+	// calculate right side OverZ terms and coords
+	one_over_z += Tmap.fl_dwdx_wide;
+	u_over_z += Tmap.fl_dudx_wide;
+	v_over_z += Tmap.fl_dvdx_wide;
+
+	float z_right = 1.0f / one_over_z;
+	float v_right = z_right * v_over_z;
+	float u_right = z_right * u_over_z;
+
+	uint uv = 0, duv = 0;			// ecx, edx: [ u 8.8 | v 8.8 ]
+
+	if ( subdivisions > 0 )	{
+		do	{	// SpanLoop
+			// convert left side coords to 16.16
+			Tmap.UFixed = (uint)lrintf( u_left * Tmap.FixedScale );
+			Tmap.VFixed = (uint)lrintf( v_left * Tmap.FixedScale );
+
+			// calculate deltas; FixedScale8 is 2^16/32
+			Tmap.DeltaV = (uint)lrintf( (v_right - v_left) * Tmap.FixedScale8 );
+			Tmap.DeltaU = (uint)lrintf( (u_right - u_left) * Tmap.FixedScale8 );
+
+			// increment terms for next span; right terms become left terms
+			v_over_z += Tmap.fl_dvdx_wide;
+			one_over_z += Tmap.fl_dwdx_wide;
+			u_over_z += Tmap.fl_dudx_wide;
+
+			// This divide happened while the pixel span was drawn.
+			z_right = 1.0f / one_over_z;
+
+			// make EDX = DV:DU and ECX = V:U in 8.8:8.8
+			duv = ( ((uint)Tmap.DeltaU << 8) & 0xffff0000u ) | ( ((uint)Tmap.DeltaV >> 8) & 0xffffu );
+			uv  = ( ((uint)Tmap.UFixed << 8) & 0xffff0000u ) | ( ((uint)Tmap.VFixed >> 8) & 0xffffu );
+
+			for ( Tmap.InnerLooper = 32; Tmap.InnerLooper > 0; Tmap.InnerLooper-- )	{
+				uint t = r >> 1;						// shr eax,1
+				if ( r & 1 )							// jnc L*
+					t ^= 0xA3000000u;					// makes 'r' take 2^32 iterations to repeat
+				r = t;
+				uint jittered = ( t & MASK ) + uv;	// jitter the fraction fields
+				uv += duv;
+				uint u_int = jittered >> 24;
+				uint v_int = ( jittered & 0xffffu ) >> 8;
+				*dptr++ = src[ (v_int << 8) + u_int ];	// (V*256)+U
+			}
+
+			// the fdiv is done, finish right
+			v_left = v_right;
+			u_left = u_right;
+			v_right = z_right * v_over_z;
+			u_right = z_right * u_over_z;
+		} while ( --Tmap.Subdivisions > 0 );
+	}
+
+	// HandleLeftoverPixels
+	if ( Tmap.WidthModLength != 0 )	{
+		// convert left side coords
+		Tmap.UFixed = (uint)lrintf( u_left * Tmap.FixedScale );
+		Tmap.VFixed = (uint)lrintf( v_left * Tmap.FixedScale );
+
+		if ( --Tmap.WidthModLength > 0 )	{
+			// calculate right edge coordinates: r -> R+1
+			v_over_z = Tmap.r.v - Tmap.deltas.v;
+			u_over_z = Tmap.r.u - Tmap.deltas.u;
+			one_over_z = Tmap.r.sw - Tmap.deltas.sw;
+
+			z_right = Tmap.One / one_over_z;
+			u_right = u_over_z * z_right;
+			v_right = v_over_z * z_right;
+
+			Tmap.DeltaV = (uint)lrintf( (v_right - v_left) / (float)Tmap.WidthModLength * Tmap.FixedScale );
+			Tmap.DeltaU = (uint)lrintf( (u_right - u_left) / (float)Tmap.WidthModLength * Tmap.FixedScale );
+		}
+
+		// OnePixelSpan
+		duv = ( ((uint)Tmap.DeltaU << 8) & 0xffff0000u ) | ( ((uint)Tmap.DeltaV >> 8) & 0xffffu );
+		uv  = ( ((uint)Tmap.UFixed << 8) & 0xffff0000u ) | ( ((uint)Tmap.VFixed >> 8) & 0xffffu );
+
+		int n = ++Tmap.WidthModLength;
+		int pairs = n >> 1;
+		if ( pairs != 0 )	{
+			Tmap.WidthModLength = pairs;
+			do	{	// NextPixel drew pixel pairs
+				for ( int i = 0; i < 2; i++ )	{
+					uint t = r >> 1;
+					if ( r & 1 )
+						t ^= 0xA3000000u;
+					r = t;
+					uint jittered = ( t & MASK ) + uv;
+					uv += duv;
+					uint u_int = jittered >> 24;
+					uint v_int = ( jittered & 0xffffu ) >> 8;
+					*dptr++ = src[ (v_int << 8) + u_int ];
+				}
+			} while ( --Tmap.WidthModLength > 0 );
+		}
+		if ( n & 1 )	{
+			// one_more_pix
+			uint t = r >> 1;
+			if ( r & 1 )
+				t ^= 0xA3000000u;
+			r = t;
+			uint jittered = ( t & MASK ) + uv;
+			uint u_int = jittered >> 24;
+			uint v_int = ( jittered & 0xffffu ) >> 8;
+			*dptr = src[ (v_int << 8) + u_int ];
+		}
+	}
+
+	Rand_value = (int)r;
 }
 
 
@@ -1789,385 +236,118 @@ void tmapscan_pnn8_tiled_256x256_subspace()
 		return;
 	}
 
-	_asm {
-	
-	push	eax
-	push	ecx
-	push	edx
-	push	ebx
-	push	ebp
-	push	esi
-	push	edi
+	ubyte *dptr = (ubyte *)Tmap.dest_row_data;	// edi
+	ubyte *src = (ubyte *)Tmap.pixptr;			// esi
+	int width = Tmap.loop_count;					// ecx
 
-	// Need EDI = pointer to dest row
-	mov	edi, Tmap.dest_row_data
+	int subdivisions = width >> 5;				// width / subdivision length
+	int leftover = width & 31;						// width mod subdivision length
+	if ( leftover == 0 )	{						// no leftover? special case last span
+		subdivisions--;
+		leftover = 32;
+	}
+	Tmap.Subdivisions = (uint)subdivisions;
+	Tmap.WidthModLength = leftover;
 
-	// Need ESI = pointer to texture
-	mov	esi, Tmap.pixptr	
+	// calculate ULeft and VLeft
+	float v_over_z = Tmap.l.v;
+	float u_over_z = Tmap.l.u;
+	float one_over_z = Tmap.l.sw;
+	float z_left = 1.0f / one_over_z;
+	float v_left = z_left * v_over_z;
+	float u_left = z_left * u_over_z;
 
+	// calculate right side OverZ terms and coords
+	one_over_z += Tmap.fl_dwdx_wide;
+	u_over_z += Tmap.fl_dudx_wide;
+	v_over_z += Tmap.fl_dvdx_wide;
 
-	// Put the FPU in low precision mode
-	fstcw		Tmap.OldFPUCW					// store copy of CW
-	mov		ax,Tmap.OldFPUCW				// get it in ax
-	and		eax, ~0x300L
-	mov		Tmap.FPUCW,ax					// store it
-	fldcw		Tmap.FPUCW						// load the FPU
+	float z_right = 1.0f / one_over_z;
+	float v_right = z_right * v_over_z;
+	float u_right = z_right * u_over_z;
 
-	mov		ecx, Tmap.loop_count		// ecx = width
+	uint uv = 0, duv = 0;			// ecx, edx: [ u 8.8 | v 8.8 ]
 
-	// edi = pointer to start pixel in dest dib
-	// ecx = spanwidth
+	if ( subdivisions > 0 )	{
+		do	{	// SpanLoop
+			// convert left side coords to 16.16
+			Tmap.UFixed = (uint)lrintf( u_left * Tmap.FixedScale );
+			Tmap.VFixed = (uint)lrintf( v_left * Tmap.FixedScale );
 
-	mov		eax,ecx							// eax and ecx = width
-	shr		ecx,5								// ecx = width / subdivision length
-	and		eax,31								// eax = width mod subdivision length
-	jnz		some_left_over					// any leftover?
-	dec		ecx								// no, so special case last span
-	mov		eax,32								// it's 8 pixels long
-some_left_over:
-	mov		Tmap.Subdivisions,ecx		// store widths
-	mov		Tmap.WidthModLength,eax
+			// calculate deltas; FixedScale8 is 2^16/32
+			Tmap.DeltaV = (uint)lrintf( (v_right - v_left) * Tmap.FixedScale8 );
+			Tmap.DeltaU = (uint)lrintf( (u_right - u_left) * Tmap.FixedScale8 );
 
-	// calculate ULeft and VLeft			// FPU Stack (ZL = ZLeft)
-													// st0  st1  st2  st3  st4  st5  st6  st7
-	fld		Tmap.l.v					// V/ZL 
-	fld		Tmap.l.u					// U/ZL V/ZL 
-	fld		Tmap.l.sw					// 1/ZL U/ZL V/ZL 
-	fld1											// 1    1/ZL U/ZL V/ZL 
-	fdiv		st,st(1)							// ZL   1/ZL U/ZL V/ZL 
-	fld		st									// ZL   ZL   1/ZL U/ZL V/ZL 
-	fmul		st,st(4)							// VL   ZL   1/ZL U/ZL V/ZL 
-	fxch		st(1)								// ZL   VL   1/ZL U/ZL V/ZL 
-	fmul		st,st(3)							// UL   VL   1/ZL U/ZL V/ZL 
+			// increment terms for next span; right terms become left terms
+			v_over_z += Tmap.fl_dvdx_wide;
+			one_over_z += Tmap.fl_dwdx_wide;
+			u_over_z += Tmap.fl_dudx_wide;
 
-	fstp		st(5)								// VL   1/ZL U/ZL V/ZL UL
-	fstp		st(5)								// 1/ZL U/ZL V/ZL UL   VL
+			// This divide happened while the pixel span was drawn.
+			z_right = 1.0f / one_over_z;
 
-	// calculate right side OverZ terms  ; st0  st1  st2  st3  st4  st5  st6  st7
+			// make EDX = DV:DU and ECX = V:U in 8.8:8.8
+			duv = ( ((uint)Tmap.DeltaU << 8) & 0xffff0000u ) | ( ((uint)Tmap.DeltaV >> 8) & 0xffffu );
+			uv  = ( ((uint)Tmap.UFixed << 8) & 0xffff0000u ) | ( ((uint)Tmap.VFixed >> 8) & 0xffffu );
 
-	fadd		Tmap.fl_dwdx_wide			// 1/ZR U/ZL V/ZL UL   VL
-	fxch		st(1)								// U/ZL 1/ZR V/ZL UL   VL
-	fadd		Tmap.fl_dudx_wide				// U/ZR 1/ZR V/ZL UL   VL
-	fxch		st(2)								// V/ZL 1/ZR U/ZR UL   VL
-	fadd		Tmap.fl_dvdx_wide				// V/ZR 1/ZR U/ZR UL   VL
+			for ( Tmap.InnerLooper = 32; Tmap.InnerLooper > 0; Tmap.InnerLooper-- )	{
+				uint u_int = uv >> 24;
+				uint v_int = ( uv & 0xffffu ) >> 8;
+				*dptr++ = src[ (v_int << 8) + u_int ];	// (V*256)+U
+				uv += duv;
+			}
 
-	// calculate right side coords		// st0  st1  st2  st3  st4  st5  st6  st7
+			// the fdiv is done, finish right
+			v_left = v_right;
+			u_left = u_right;
+			v_right = z_right * v_over_z;
+			u_right = z_right * u_over_z;
+		} while ( --Tmap.Subdivisions > 0 );
+	}
 
-	fld1											// 1    V/ZR 1/ZR U/ZR UL   VL
-	// @todo overlap this guy
-	fdiv		st,st(2)							// ZR   V/ZR 1/ZR U/ZR UL   VL
-	fld		st									// ZR   ZR   V/ZR 1/ZR U/ZR UL   VL
-	fmul		st,st(2)							// VR   ZR   V/ZR 1/ZR U/ZR UL   VL
-	fxch		st(1)								// ZR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul		st,st(4)							// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	cmp		ecx,0							// check for any full spans
-	jle      HandleLeftoverPixels
-    
-SpanLoop:
-
-	// at this point the FPU contains	// st0  st1  st2  st3  st4  st5  st6  st7
-													// UR   VR   V/ZR 1/ZR U/ZR UL   VL
+	// HandleLeftoverPixels
+	if ( Tmap.WidthModLength == 0 )
+		return;
 
 	// convert left side coords
-
-	fld     st(5)                       ; UL   UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul    Tmap.FixedScale            ; UL16 UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fistp   Tmap.UFixed                ; UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	fld     st(6)                       ; VL   UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul    Tmap.FixedScale            ; VL16 UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fistp   Tmap.VFixed                ; UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	// calculate deltas                  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-	fsubr   st(5),st                    ; UR   VR   V/ZR 1/ZR U/ZR dU   VL
-	fxch    st(1)                       ; VR   UR   V/ZR 1/ZR U/ZR dU   VL
-	fsubr   st(6),st                    ; VR   UR   V/ZR 1/ZR U/ZR dU   dV
-	fxch    st(6)                       ; dV   UR   V/ZR 1/ZR U/ZR dU   VR
-
-	fmul    Tmap.FixedScale8           ; dV8  UR   V/ZR 1/ZR U/ZR dU   VR
-	fistp   Tmap.DeltaV                ; UR   V/ZR 1/ZR U/ZR dU   VR
-
-	fxch    st(4)                       ; dU   V/ZR 1/ZR U/ZR UR   VR
-	fmul    Tmap.FixedScale8           ; dU8  V/ZR 1/ZR U/ZR UR   VR
-	fistp   Tmap.DeltaU                ; V/ZR 1/ZR U/ZR UR   VR
-
-	// increment terms for next span    // st0  st1  st2  st3  st4  st5  st6  st7
-	// Right terms become Left terms--->// V/ZL 1/ZL U/ZL UL   VL
-
-	fadd    Tmap.fl_dvdx_wide				// V/ZR 1/ZL U/ZL UL   VL
-	fxch    st(1)								// 1/ZL V/ZR U/ZL UL   VL
-	fadd    Tmap.fl_dwdx_wide				// 1/ZR V/ZR U/ZL UL   VL
-	fxch    st(2)								// U/ZL V/ZR 1/ZR UL   VL
-	fadd    Tmap.fl_dudx_wide				// U/ZR V/ZR 1/ZR UL   VL
-	fxch    st(2)								// 1/ZR V/ZR U/ZR UL   VL
-	fxch    st(1)								// V/ZR 1/ZR U/ZR UL   VL
-
-
-	// setup delta values
-	// set up affine registers
-
-	// calculate right side coords		st0  st1  st2  st3  st4  st5  st6  st7
-	fld1										// 1    V/ZR 1/ZR U/ZR UL   VL
-	// This divide should happen while the pixel span is drawn.
-	fdiv	st,st(2)							// ZR   V/ZR 1/ZR U/ZR UL   VL
-
-
-	// 8 pixel span code
-	// edi = dest dib bits at current pixel
-	// esi = texture pointer at current u,v
-	// eax = scratch
-	// ebx = u fraction 0.32
-	// ecx = v fraction 0.32
-	// edx = u frac step
-	// ebp = v carry scratch
-
-	mov	al,[edi]								// preread the destination cache line
-
-	mov	Tmap.InnerLooper, 32/4			// Set up loop counter
-
-// Make EDX =  DV:DU in 8:8,8:8 format
-	mov	eax, Tmap.DeltaV
-	shr	eax, 8
-	mov	edx, Tmap.DeltaU
-	shl	edx, 8
-	mov	dx, ax
-		
-// Make ECX = V:U in 8:8,8:8 format
-	mov	eax, Tmap.VFixed
-	shr	eax, 8
-	mov	ecx, Tmap.UFixed
-	shl	ecx, 8
-	mov	cx, ax
-
-	// eax = tmp
-	// ebx = 
-	// ecx = V:U in 8.8:8.8
-	// edx = zbuffer pointer
-	// esi = 
-	// edi = screen data
-	// ebp = dl_dx
-
-
-InnerInnerLoop:
-
-		// pixel 0
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		add	ecx, edx
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-
-		mov	al, [esi+eax]			
-		mov	[edi+0], al
-
-		// pixel 1
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		add	ecx, edx
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-
-		mov	al, [esi+eax]			
-		mov	[edi+1], al
-
-		// pixel 2
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		add	ecx, edx
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-
-		mov	al, [esi+eax]			
-		mov	[edi+2], al
-
-		// pixel 3
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		add	ecx, edx
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-
-		mov	al, [esi+eax]			
-		mov	[edi+3], al
-
-
-	add	edi, 4
-	dec	Tmap.InnerLooper
-	jnz	InnerInnerLoop
-
-	mov	Tmap.fx_w, esi
-
-	// the fdiv is done, finish right	// st0  st1  st2  st3  st4  st5  st6  st7
-	                                    // ZR   V/ZR 1/ZR U/ZR UL   VL
-
-    fld     st									// ZR   ZR   V/ZR 1/ZR U/ZR UL   VL
-    fmul    st,st(2)							// VR   ZR   V/ZR 1/ZR U/ZR UL   VL
-    fxch    st(1)								// ZR   VR   V/ZR 1/ZR U/ZR UL   VL
-    fmul    st,st(4)							// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-    dec     Tmap.Subdivisions			// decrement span count
-    jnz     SpanLoop							// loop back
-
-
-HandleLeftoverPixels:
-
-    // edi = dest dib bits
-    // esi = current texture dib bits
-    // at this point the FPU contains    ; st0  st1  st2  st3  st4  st5  st6  st7
-    // inv. means invalid numbers        ; inv. inv. inv. inv. inv. UL   VL
-
-    cmp     Tmap.WidthModLength,0          ; are there remaining pixels to draw?
-    jz      FPUReturn                   ; nope, pop the FPU and bail
-
-    // convert left side coords          ; st0  st1  st2  st3  st4  st5  st6  st7
-
-    fld     st(5)                       ; UL   inv. inv. inv. inv. inv. UL   VL
-    fmul    Tmap.FixedScale                ; UL16 inv. inv. inv. inv. inv. UL   VL
-    fistp   Tmap.UFixed                    ; inv. inv. inv. inv. inv. UL   VL
-
-    fld     st(6)                       ; VL   inv. inv. inv. inv. inv. UL   VL
-    fmul    Tmap.FixedScale                // VL16 inv. inv. inv. inv. inv. UL   VL
-    fistp   Tmap.VFixed                    ; inv. inv. inv. inv. inv. UL   VL
-
-    dec     Tmap.WidthModLength            ; calc how many steps to take
-    jz      OnePixelSpan                ; just one, don't do deltas
-
-    // calculate right edge coordinates  ; st0  st1  st2  st3  st4  st5  st6  st7
-    // r -> R+1
-
-    // @todo rearrange things so we don't need these two instructions
-    fstp    Tmap.FloatTemp                 ; inv. inv. inv. inv. UL   VL
-    fstp    Tmap.FloatTemp                 ; inv. inv. inv. UL   VL
-
-    fld     Tmap.r.v           ; V/Zr inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.v             ; V/ZR inv. inv. inv. UL   VL
-    fld     Tmap.r.u           ; U/Zr V/ZR inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.u             ; U/ZR V/ZR inv. inv. inv. UL   VL
-    fld     Tmap.r.sw              ; 1/Zr U/ZR V/ZR inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.sw           ; 1/ZR U/ZR V/ZR inv. inv. inv. UL   VL
-
-    fdivr   Tmap.One                       ; ZR   U/ZR V/ZR inv. inv. inv. UL   VL
-
-    fmul    st(1),st                    ; ZR   UR   V/ZR inv. inv. inv. UL   VL
-    fmulp   st(2),st                    ; UR   VR   inv. inv. inv. UL   VL
-
-    // calculate deltas                  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-    fsubr   st(5),st                    ; UR   VR   inv. inv. inv. dU   VL
-    fxch    st(1)                       ; VR   UR   inv. inv. inv. dU   VL
-    fsubr   st(6),st                    ; VR   UR   inv. inv. inv. dU   dV
-    fxch    st(6)                       ; dV   UR   inv. inv. inv. dU   VR
-
-    fidiv   Tmap.WidthModLength            ; dv   UR   inv. inv. inv. dU   VR
-    fmul    Tmap.FixedScale                ; dv16 UR   inv. inv. inv. dU   VR
-    fistp   Tmap.DeltaV                    ; UR   inv. inv. inv. dU   VR
-
-    fxch    st(4)                       ; dU   inv. inv. inv. UR   VR
-    fidiv   Tmap.WidthModLength            ; du   inv. inv. inv. UR   VR
-    fmul    Tmap.FixedScale                ; du16 inv. inv. inv. UR   VR
-    fistp   Tmap.DeltaU                    ; inv. inv. inv. UR   VR
-
-    // @todo gross!  these are to line up with the other loop
-    fld     st(1)                       ; inv. inv. inv. inv. UR   VR
-    fld     st(2)                       ; inv. inv. inv. inv. inv. UR   VR
-
-
-OnePixelSpan:
-
-// Make EDX =  DV:DU in 8:8,8:8 format
-	mov	eax, Tmap.DeltaV
-	shr	eax, 8
-	mov	edx, Tmap.DeltaU
-	shl	edx, 8
-	mov	dx, ax
-		
-// Make ECX = V:U in 8:8,8:8 format
-	mov	eax, Tmap.VFixed
-	shr	eax, 8
-	mov	ecx, Tmap.UFixed
-	shl	ecx, 8
-	mov	cx, ax
-
-	inc	Tmap.WidthModLength
-	mov	eax,Tmap.WidthModLength
-	shr	eax, 1
-	jz		one_more_pix
-	pushf
-	mov	Tmap.WidthModLength, eax
-
-	// eax = tmp
-	// ebx = light
-	// ecx = V:U in 8.8:8.8
-	// edx = zbuffer pointer
-	// esi = z
-	// edi = screen data
-	// ebp = dl_dx
-
-
-NextPixel:
-		// pixel 0
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		add	ecx, edx
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-
-		mov	al, [esi+eax]			
-		mov	[edi+0], al
-
-		// pixel 1
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		add	ecx, edx
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-
-		mov	al, [esi+eax]			
-		mov	[edi+1], al
-
-
-	add	edi, 2
-	dec	Tmap.WidthModLength
-	jg		NextPixel
-
-	popf
-	jnc	FPUReturn
-
-one_more_pix:	
-		// pixel 0
-		mov	eax, ecx							// EAX = V.VF:U.UF in 8.8:8.8
-		add	ecx, edx
-		shr	ax, 8								// EAX = V:U in 8.8:8.0
-		rol	eax, 8							// EAX = V:U in 0.0:8:8
-		and	eax, 0ffffh						// clear upper bits
-
-		mov	al, [esi+eax]			
-		mov	[edi+0], al
-
-FPUReturn:
-
-	// busy FPU registers:	// st0  st1  st2  st3  st4  st5  st6  st7
-									// xxx  xxx  xxx  xxx  xxx  xxx  xxx
-	ffree	st(0)
-	ffree	st(1)
-	ffree	st(2)
-	ffree	st(3)
-	ffree	st(4)
-	ffree	st(5)
-	ffree	st(6)
-
-	fldcw	Tmap.OldFPUCW                  // restore the FPU
-
-	pop	edi
-	pop	esi
-	pop	ebp
-	pop	ebx
-	pop	edx
-	pop	ecx
-	pop	eax
+	Tmap.UFixed = (uint)lrintf( u_left * Tmap.FixedScale );
+	Tmap.VFixed = (uint)lrintf( v_left * Tmap.FixedScale );
+
+	if ( --Tmap.WidthModLength > 0 )	{
+		// calculate right edge coordinates: r -> R+1
+		v_over_z = Tmap.r.v - Tmap.deltas.v;
+		u_over_z = Tmap.r.u - Tmap.deltas.u;
+		one_over_z = Tmap.r.sw - Tmap.deltas.sw;
+
+		z_right = Tmap.One / one_over_z;
+		u_right = u_over_z * z_right;
+		v_right = v_over_z * z_right;
+
+		Tmap.DeltaV = (uint)lrintf( (v_right - v_left) / (float)Tmap.WidthModLength * Tmap.FixedScale );
+		Tmap.DeltaU = (uint)lrintf( (u_right - u_left) / (float)Tmap.WidthModLength * Tmap.FixedScale );
+	}
+
+	// OnePixelSpan
+	duv = ( ((uint)Tmap.DeltaU << 8) & 0xffff0000u ) | ( ((uint)Tmap.DeltaV >> 8) & 0xffffu );
+	uv  = ( ((uint)Tmap.UFixed << 8) & 0xffff0000u ) | ( ((uint)Tmap.VFixed >> 8) & 0xffffu );
+
+	int n = ++Tmap.WidthModLength;
+	int pairs = n >> 1;
+	if ( pairs != 0 )	{
+		Tmap.WidthModLength = pairs;
+		do	{	// NextPixel drew pixel pairs
+			for ( int i = 0; i < 2; i++ )	{
+				uint u_int = uv >> 24;
+				uint v_int = ( uv & 0xffffu ) >> 8;
+				*dptr++ = src[ (v_int << 8) + u_int ];
+				uv += duv;
+			}
+		} while ( --Tmap.WidthModLength > 0 );
+	}
+	if ( n & 1 )	{
+		// one_more_pix
+		uint u_int = uv >> 24;
+		uint v_int = ( uv & 0xffffu ) >> 8;
+		*dptr = src[ (v_int << 8) + u_int ];
 	}
 }
-
-

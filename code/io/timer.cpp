@@ -7,7 +7,7 @@
  *
 */ 
 
-#include <windows.h>
+#include <time.h>
 
 #include	"limits.h"
 #include "pstypes.h"
@@ -19,98 +19,54 @@
 	#define USE_TIMING
 #endif
 
-static longlong Timer_last_value, Timer_base;
-static uint Timer_freq=0;
+static longlong Timer_base = 0;		// CLOCK_MONOTONIC reading at timer_init, in microseconds
 
 static int Timer_inited = 0;
 
-static CRITICAL_SECTION Timer_lock;
+// Current CLOCK_MONOTONIC reading in microseconds
+static longlong timer_read_clock()
+{
+	struct timespec ts;
+
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+
+	return (longlong)ts.tv_sec * 1000000 + ts.tv_nsec / 1000;
+}
 
 void timer_close()
 {
 	if ( Timer_inited )	{
 		Timer_inited = 0;
-		DeleteCriticalSection( &Timer_lock );
 	}
 }
 
 void timer_init()
 {
 	if ( !Timer_inited )	{
-		LARGE_INTEGER tmp;
-		QueryPerformanceFrequency(&tmp);
-		Assert( tmp.HighPart == 0 );
-		Timer_freq = tmp.LowPart;
+		Timer_base = timer_read_clock();
 
-		QueryPerformanceCounter((LARGE_INTEGER *)&Timer_base);
-		QueryPerformanceCounter((LARGE_INTEGER *)&Timer_last_value);
-
-		InitializeCriticalSection(&Timer_lock);
-		
 		Timer_inited = 1;
 
 		atexit(timer_close);
 	}
 }
 
-// Fills Time_now with the ticks since program start
-static void timer_get(LARGE_INTEGER * out)
+// Returns the microseconds since timer_init.  CLOCK_MONOTONIC never rolls,
+// so the Win32 roll-over handling is gone.
+static longlong timer_get()
 {
-	EnterCriticalSection(&Timer_lock);
-
-	longlong time_tmp;
-	longlong Time_now;
-
-	QueryPerformanceCounter((LARGE_INTEGER *)&time_tmp);
-	if ( time_tmp < Timer_last_value )	{
-		// The clock has rolled!
-		Timer_base = time_tmp;
-		mprintf(( "TIMER ROLLED!\n" ));
-		// Hack: I'm not accounting for the time before roll occured,
-		// since I'm not sure at what value this timer is going to roll at.
-		Time_now = time_tmp;
-	}
-	Time_now = time_tmp - Timer_base;
-	Timer_last_value = time_tmp;
-
-	out->QuadPart = Time_now;
-
-	LeaveCriticalSection(&Timer_lock);
+	return timer_read_clock() - Timer_base;
 }
 
 fix timer_get_fixed_seconds()
 {
-	int tmp;
-	LARGE_INTEGER temp_large;
-
 	if (!Timer_inited) {
 		Int3();					// Make sure you call timer_init before anything that uses timer functions!
 		return 0;
 	}
 
-	timer_get(&temp_large);
-
 	// Timing in fixed point (16.16) seconds.
-	// Can be used for up to 1000 hours
-	_asm	mov edx, temp_large.HighPart
-	_asm	mov eax, temp_large.LowPart
-
-	_asm	shld    edx, eax, 16            ; Keep 32+11 bits
-	_asm	shl     eax, 16			
-	// edx:eax = number of 1.19Mhz pulses elapsed.
-	_asm	mov     ebx, Timer_freq
-
-	// Make sure we won't divide overflow.  Make time wrap at about 9 hours
-sub_again:
-	_asm	sub     edx, ebx	; subtract until negative...
-	_asm	jns     sub_again	; ...to prevent divide overflow...
-	_asm	add     edx, ebx	; ...then add in to get correct value.
-	_asm	div     ebx
-	//eax = fixed point seconds elapsed...
-
-	_asm mov tmp, eax
-
-	return tmp;
+	return (fix)( (timer_get() << 16) / 1000000 );
 }
 
 fix timer_get_fixed_secondsX()
@@ -125,74 +81,22 @@ fix timer_get_approx_seconds()
 
 int timer_get_milliseconds()
 {
-	int tmp;
-	LARGE_INTEGER temp_large;
-
 	if (!Timer_inited) {
 		Int3();					// Make sure you call timer_init before anything that uses timer functions!
 		return 0;
 	}
 
-	timer_get(&temp_large);
-
-	temp_large.QuadPart *= (longlong)1000;
-
-	// Timing in milliseconds.
-	_asm	mov edx, temp_large.HighPart
-	_asm	mov eax, temp_large.LowPart
-
-	//_asm	shld    edx, eax, 16            ; Keep 32+11 bits
-	//_asm	shl     eax, 16			
-	// edx:eax = number of 1.19Mhz pulses elapsed.
-	_asm	mov     ebx, Timer_freq
-
-	// Make sure we won't divide overflow.  Make time wrap at about 9 hours
-sub_again:
-	_asm	sub     edx, ebx	; subtract until negative...
-	_asm	jns     sub_again	; ...to prevent divide overflow...
-	_asm	add     edx, ebx	; ...then add in to get correct value.
-	_asm	div     ebx
-	//eax = milliseconds elapsed...
-
-	_asm mov tmp, eax
-
-	return tmp;
+	return (int)( timer_get() / 1000 );
 }
 
 int timer_get_microseconds()
 {
-	int tmp;
-	LARGE_INTEGER temp_large;
-
 	if (!Timer_inited) {
 		Int3();					// Make sure you call timer_init before anything that uses timer functions!
 		return 0;
 	}
 
-	timer_get(&temp_large);
-
-	temp_large.QuadPart *= (longlong)1000000;
-
-	// Timing in milliseconds.
-	_asm	mov edx, temp_large.HighPart
-	_asm	mov eax, temp_large.LowPart
-
-	//_asm	shld    edx, eax, 16            ; Keep 32+11 bits
-	//_asm	shl     eax, 16			
-	// edx:eax = number of 1.19Mhz pulses elapsed.
-	_asm	mov     ebx, Timer_freq
-
-	// Make sure we won't divide overflow.  Make time wrap at about 9 hours
-sub_again:
-	_asm	sub     edx, ebx	; subtract until negative...
-	_asm	jns     sub_again	; ...to prevent divide overflow...
-	_asm	add     edx, ebx	; ...then add in to get correct value.
-	_asm	div     ebx
-	//eax = milliseconds elapsed...
-
-	_asm mov tmp, eax
-
-	return tmp;
+	return (int)timer_get();
 }
 
 // 0 means invalid,

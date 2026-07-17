@@ -1,18 +1,29 @@
 /*
  * Copyright (C) Volition, Inc. 1999.  All rights reserved.
  *
- * All source code herein is the property of Volition, Inc. You may not sell 
- * or otherwise commercially exploit the source or things you created based on the 
+ * All source code herein is the property of Volition, Inc. You may not sell
+ * or otherwise commercially exploit the source or things you created based on the
  * source.
  *
 */
 
-#include <windows.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#include <map>
+#include <string>
+
 #include "pstypes.h"
 #include "osregistry.h"
 
-// NEVER ADD ANY OTHER INCLUDES HERE - YOU'LL LIKELY BREAK THE LAUNCHER!!!!!!!!!!!!!
+// The Win32 registry is replaced with a plain "key=value" text file at
+// ~/.fs2/config.  Keys are "Section/Name" (the section defaults to "Default"
+// when the caller passes NULL, which is what the Win32 code used the plain
+// app key for).  The file is loaded lazily into an in-memory map and written
+// through on every write.
 
 // ------------------------------------------------------------------------------------------------------------
 // REGISTRY DEFINES/VARS
@@ -37,6 +48,82 @@ char *Osreg_title = "Freespace 2";
 
 int Os_reg_inited = 0;
 
+static std::map<std::string, std::string> Config_map;
+static int Config_loaded = 0;
+
+// full path of the config file; creates ~/.fs2 on first use
+static const char *config_file_name()
+{
+	static char path[1024] = "";
+
+	if ( !path[0] )	{
+		const char *home = getenv("HOME");
+		if ( !home )	{
+			home = ".";
+		}
+		sprintf( path, "%s/.fs2", home );
+		mkdir( path, 0755 );					// make sure ~/.fs2 exists
+		strcat( path, "/config" );
+	}
+
+	return path;
+}
+
+// build the "Section/Name" key of an entry
+static std::string config_key( char *section, char *name )
+{
+	std::string key = section ? section : "Default";
+
+	key += "/";
+	key += name;
+
+	return key;
+}
+
+static void config_load()
+{
+	char line[1024];
+
+	if ( Config_loaded )	{
+		return;
+	}
+	Config_loaded = 1;
+
+	FILE *f = fopen( config_file_name(), "r" );
+	if ( !f )	{
+		return;			// no config yet - all reads fall back on defaults
+	}
+
+	while ( fgets(line, sizeof(line), f) )	{
+		char *p = strchr( line, '\n' );
+		if ( p )	{
+			*p = 0;
+		}
+		p = strchr( line, '=' );
+		if ( !p )	{
+			continue;
+		}
+		*p = 0;
+		Config_map[line] = p + 1;
+	}
+
+	fclose(f);
+}
+
+static void config_save()
+{
+	FILE *f = fopen( config_file_name(), "w" );
+	if ( !f )	{
+		return;
+	}
+
+	for ( const auto &entry : Config_map )	{
+		fprintf( f, "%s=%s\n", entry.first.c_str(), entry.second.c_str() );
+	}
+
+	fclose(f);
+}
+
 
 // ------------------------------------------------------------------------------------------------------------
 // REGISTRY FUNCTIONS
@@ -48,19 +135,19 @@ int Os_reg_inited = 0;
 void os_init_registry_stuff(char *company, char *app, char *version)
 {
 	if(company){
-		strcpy( szCompanyName, company );	
+		strcpy( szCompanyName, company );
 	} else {
 		strcpy( szCompanyName, Osreg_company_name);
 	}
 
 	if(app){
-		strcpy( szAppName, app );	
+		strcpy( szAppName, app );
 	} else {
 		strcpy( szAppName, Osreg_app_name);
 	}
 
 	if(version){
-		strcpy( szAppVersion, version);	
+		strcpy( szAppVersion, version);
 	} else {
 		strcpy( szAppVersion, "1.0");
 	}
@@ -72,54 +159,28 @@ void os_init_registry_stuff(char *company, char *app, char *version)
 // name=NULL will delete the section.
 void os_config_remove( char *section, char *name )
 {
-	HKEY hKey = NULL;
-	DWORD dwDisposition;
-	char keyname[1024];
-	LONG lResult;	
-
 	if(!Os_reg_inited){
 		return;
 	}
 
-	if ( section )	{
-		sprintf( keyname, "Software\\%s\\%s\\%s", szCompanyName, szAppName, section );
-	} else {
-		sprintf( keyname, "Software\\%s\\%s", szCompanyName, szAppName );
-	}
+	config_load();
 
-	// remove the value
-	if ( !name )	{
-		if ( !section )	{			
-			goto Cleanup;
-		}
-		lResult = RegDeleteKey( HKEY_LOCAL_MACHINE, keyname );
-		if ( lResult != ERROR_SUCCESS )	{			
-			goto Cleanup;
-		}
+	if ( name )	{
+		Config_map.erase( config_key(section, name) );
 	} else	{
-		lResult = RegCreateKeyEx( HKEY_LOCAL_MACHINE,						// Where to add it
-												 keyname,								// name of key
-												 NULL,									// DWORD reserved
-												 "",										// Object class
-												 REG_OPTION_NON_VOLATILE,			// Save to disk
-												 KEY_ALL_ACCESS,						// Allows all changes
-												 NULL,									// Default security attributes
-												 &hKey,							// Location to store key
-												 &dwDisposition );					// Location to store status of key
+		// delete the whole section
+		std::string prefix = std::string(section ? section : "Default") + "/";
 
-		if ( lResult != ERROR_SUCCESS )	{			
-			goto Cleanup;
-		}
-
-		lResult = RegDeleteValue( hKey, name );
-		if ( lResult != ERROR_SUCCESS )	{			
-			goto Cleanup;
+		for ( auto it = Config_map.begin(); it != Config_map.end(); )	{
+			if ( it->first.compare(0, prefix.size(), prefix) == 0 )	{
+				it = Config_map.erase(it);
+			} else	{
+				++it;
+			}
 		}
 	}
 
-Cleanup:
-	if ( hKey )
-		RegCloseKey(hKey);
+	config_save();
 }
 
 // Writes a string to the INI file.  If value is NULL,
@@ -127,160 +188,49 @@ Cleanup:
 // the section.
 void os_config_write_string( char *section, char *name, char *value )
 {
-	HKEY hKey = NULL;
-	DWORD dwDisposition;
-	char keyname[1024];
-	LONG lResult;	
-
 	if(!Os_reg_inited){
 		return;
 	}
 
-	if ( section )	{
-		sprintf( keyname, "Software\\%s\\%s\\%s", szCompanyName, szAppName, section );
-	} else {
-		sprintf( keyname, "Software\\%s\\%s", szCompanyName, szAppName );
+	if ( !value )	{
+		os_config_remove( section, name );
+		return;
 	}
 
-	lResult = RegCreateKeyEx( HKEY_LOCAL_MACHINE,					// Where to add it
-											 keyname,							// name of key
-											 NULL,								// DWORD reserved
-											 "",									// Object class
-											 REG_OPTION_NON_VOLATILE,		// Save to disk
-											 KEY_ALL_ACCESS,					// Allows all changes
-											 NULL,								// Default security attributes
-											 &hKey,								// Location to store key
-											 &dwDisposition );				// Location to store status of key
-
-	if ( lResult != ERROR_SUCCESS )	{		
-		goto Cleanup;
+	if ( !name )	{
+		return;
 	}
 
-	if ( !name )	 {		
-		goto Cleanup;
-	}
-		
-	lResult = RegSetValueEx( hKey,									// Handle to key
-									 name,									// The values name
-									 NULL,									// DWORD reserved
-									 REG_SZ,									// null terminated string
-									 (CONST BYTE *)value,				// value to set
-									 strlen(value) + 1 );				// How many bytes to set
-																			
-	if ( lResult != ERROR_SUCCESS )	{		
-		goto Cleanup;
-	}
-
-
-Cleanup:
-	if ( hKey )
-		RegCloseKey(hKey);
+	config_load();
+	Config_map[ config_key(section, name) ] = value;
+	config_save();
 }
 
 // same as previous function except we don't use the application name to build up the keyname
+// (with a single per-user config file the distinction is gone)
 void os_config_write_string2( char *section, char *name, char *value )
 {
-	HKEY hKey = NULL;
-	DWORD dwDisposition;
-	char keyname[1024];
-	LONG lResult;	
-
-	if(!Os_reg_inited){
-		return;
-	}
-
-	if ( section )	{
-		sprintf( keyname, "Software\\%s\\%s", szCompanyName, section );
-	} else {
-		sprintf( keyname, "Software\\%s", szCompanyName );
-	}
-
-	lResult = RegCreateKeyEx( HKEY_LOCAL_MACHINE,					// Where to add it
-											 keyname,							// name of key
-											 NULL,								// DWORD reserved
-											 "",									// Object class
-											 REG_OPTION_NON_VOLATILE,		// Save to disk
-											 KEY_ALL_ACCESS,					// Allows all changes
-											 NULL,								// Default security attributes
-											 &hKey,								// Location to store key
-											 &dwDisposition );				// Location to store status of key
-
-	if ( lResult != ERROR_SUCCESS )	{		
-		goto Cleanup;
-	}
-
-	if ( !name )	 {		
-		goto Cleanup;
-	}
-		
-	lResult = RegSetValueEx( hKey,									// Handle to key
-									 name,									// The values name
-									 NULL,									// DWORD reserved
-									 REG_SZ,									// null terminated string
-									 (CONST BYTE *)value,				// value to set
-									 strlen(value) + 1 );				// How many bytes to set
-																			
-	if ( lResult != ERROR_SUCCESS )	{		
-		goto Cleanup;
-	}
-
-
-Cleanup:
-	if ( hKey )
-		RegCloseKey(hKey);
+	os_config_write_string( section, name, value );
 }
 
-// Writes an unsigned int to the INI file.  
+// Writes an unsigned int to the INI file.
 void os_config_write_uint( char *section, char *name, uint value )
 {
-	HKEY hKey = NULL;
-	DWORD dwDisposition;
-	char keyname[1024];
-	LONG lResult;	
+	char tmp[32];
 
 	if(!Os_reg_inited){
 		return;
 	}
 
-	if ( section )	{
-		sprintf( keyname, "Software\\%s\\%s\\%s", szCompanyName, szAppName, section );
-	} else {
-		sprintf( keyname, "Software\\%s\\%s", szCompanyName, szAppName );
+	if ( !name )	{
+		return;
 	}
 
-	lResult = RegCreateKeyEx( HKEY_LOCAL_MACHINE,						// Where to add it
-											 keyname,								// name of key
-											 NULL,									// DWORD reserved
-											 "",										// Object class
-											 REG_OPTION_NON_VOLATILE,			// Save to disk
-											 KEY_ALL_ACCESS,						// Allows all changes
-											 NULL,									// Default security attributes
-											 &hKey,							// Location to store key
-											 &dwDisposition );					// Location to store status of key
+	sprintf( tmp, "%u", value );
 
-	if ( lResult != ERROR_SUCCESS )	{		
-		goto Cleanup;
-	}
-
-	if ( !name )	 {		
-		goto Cleanup;
-	}
-		
-	lResult = RegSetValueEx( hKey,									// Handle to key
-									 name,											// The values name
-									 NULL,											// DWORD reserved
-									 REG_DWORD,										// null terminated string
-									 (CONST BYTE *)&value,						// value to set
-									 4 );								// How many bytes to set
-																				
-	if ( lResult != ERROR_SUCCESS )	{		
-		goto Cleanup;
-	}
-
-Cleanup:
-	if ( hKey )
-		RegCloseKey(hKey);
-
+	config_load();
+	Config_map[ config_key(section, name) ] = tmp;
+	config_save();
 }
 
 
@@ -292,206 +242,72 @@ Cleanup:
 static char tmp_string_data[1024];
 char * os_config_read_string( char *section, char *name, char *default_value )
 {
-	HKEY hKey = NULL;
-	DWORD dwType, dwLen;
-	char keyname[1024];
-	LONG lResult;	
-
 	if(!Os_reg_inited){
 		return NULL;
 	}
 
-	if ( section )	{
-		sprintf( keyname, "Software\\%s\\%s\\%s", szCompanyName, szAppName, section );
-	} else {
-		sprintf( keyname, "Software\\%s\\%s", szCompanyName, szAppName );
+	if ( !name )	{
+		return default_value;
 	}
 
-	lResult = RegOpenKeyEx( HKEY_LOCAL_MACHINE,							// Where it is
-											 keyname,								// name of key
-											 NULL,									// DWORD reserved
-											 KEY_QUERY_VALUE,						// Allows all changes
-											 &hKey );								// Location to store key
+	config_load();
 
-	if ( lResult != ERROR_SUCCESS )	{		
-		goto Cleanup;
+	auto it = Config_map.find( config_key(section, name) );
+	if ( it == Config_map.end() )	{
+		return default_value;
 	}
 
-	if ( !name )	 {		
-		goto Cleanup;
-	}
+	strncpy( tmp_string_data, it->second.c_str(), sizeof(tmp_string_data) - 1 );
+	tmp_string_data[sizeof(tmp_string_data) - 1] = 0;
 
-	dwLen = 1024;
-	lResult = RegQueryValueEx( hKey,									// Handle to key
-									 name,											// The values name
-									 NULL,											// DWORD reserved
-	                         &dwType,										// What kind it is
-									 (ubyte *)&tmp_string_data,						// value to set
-									 &dwLen );								// How many bytes to set
-																				
-	if ( lResult != ERROR_SUCCESS )	{		
-		goto Cleanup;
-	}
-
-	default_value = tmp_string_data;
-
-Cleanup:
-	if ( hKey )
-		RegCloseKey(hKey);
-
-	return default_value;
+	return tmp_string_data;
 }
 
 // same as previous function except we don't use the application name to build up the keyname
 char * os_config_read_string2( char *section, char *name, char *default_value )
 {
-	HKEY hKey = NULL;
-	DWORD dwType, dwLen;
-	char keyname[1024];
-	LONG lResult;	
-
-	if(!Os_reg_inited){
-		return NULL;
-	}
-
-	if ( section )	{
-		sprintf( keyname, "Software\\%s\\%s", szCompanyName, section );
-	} else {
-		sprintf( keyname, "Software\\%s", szCompanyName );
-	}
-
-	lResult = RegOpenKeyEx( HKEY_LOCAL_MACHINE,							// Where it is
-											 keyname,								// name of key
-											 NULL,									// DWORD reserved
-											 KEY_QUERY_VALUE,						// Allows all changes
-											 &hKey );								// Location to store key
-
-	if ( lResult != ERROR_SUCCESS )	{		
-		goto Cleanup;
-	}
-
-	if ( !name )	 {		
-		goto Cleanup;
-	}
-
-	dwLen = 1024;
-	lResult = RegQueryValueEx( hKey,									// Handle to key
-									 name,											// The values name
-									 NULL,											// DWORD reserved
-	                         &dwType,										// What kind it is
-									 (ubyte *)&tmp_string_data,						// value to set
-									 &dwLen );								// How many bytes to set
-																				
-	if ( lResult != ERROR_SUCCESS )	{		
-		goto Cleanup;
-	}
-
-	default_value = tmp_string_data;
-
-Cleanup:
-	if ( hKey )
-		RegCloseKey(hKey);
-
-	return default_value;
+	return os_config_read_string( section, name, default_value );
 }
 
-// Reads a string from the INI file.  Default_value must 
+// Reads a string from the INI file.  Default_value must
 // be passed, and if 'name' isn't found, then returns default_value
 uint  os_config_read_uint( char *section, char *name, uint default_value )
 {
-	HKEY hKey = NULL;
-	DWORD dwType, dwLen;
-	char keyname[1024];
-	LONG lResult;
-	uint tmp_val;	
-
 	if(!Os_reg_inited){
-		return NULL;
+		return 0;
 	}
 
-	if ( section )	{
-		sprintf( keyname, "Software\\%s\\%s\\%s", szCompanyName, szAppName, section );
-	} else {
-		sprintf( keyname, "Software\\%s\\%s", szCompanyName, szAppName );
+	if ( !name )	{
+		return default_value;
 	}
 
-	lResult = RegOpenKeyEx( HKEY_LOCAL_MACHINE,							// Where it is
-											 keyname,								// name of key
-											 NULL,									// DWORD reserved
-											 KEY_QUERY_VALUE,						// Allows all changes
-											 &hKey );								// Location to store key
+	config_load();
 
-	if ( lResult != ERROR_SUCCESS )	{		
-		goto Cleanup;
+	auto it = Config_map.find( config_key(section, name) );
+	if ( it == Config_map.end() )	{
+		return default_value;
 	}
 
-	if ( !name )	 {		
-		goto Cleanup;
-	}
-
-	dwLen = 4;
-	lResult = RegQueryValueEx( hKey,									// Handle to key
-									 name,											// The values name
-									 NULL,											// DWORD reserved
-	                         &dwType,										// What kind it is
-									 (ubyte *)&tmp_val,						// value to set
-									 &dwLen );								// How many bytes to set
-																				
-	if ( lResult != ERROR_SUCCESS )	{		
-		goto Cleanup;
-	}
-
-	default_value = tmp_val;
-
-Cleanup:
-	if ( hKey )
-		RegCloseKey(hKey);
-
-	return default_value;
+	return (uint)strtoul( it->second.c_str(), NULL, 10 );
 }
 
-// uses Ex versions of Windows registry functions
-static char tmp_string_data_ex[1024];
+// uses Ex versions of Windows registry functions - here the explicit keyname
+// is simply used as the section
 char * os_config_read_string_ex( char *keyname, char *name, char *default_value )
 {
-	HKEY hKey = NULL;
-	DWORD dwType, dwLen;
-	LONG lResult;
-
-	lResult = RegOpenKeyEx( HKEY_LOCAL_MACHINE,							// Where it is
-											 keyname,								// name of key
-											 NULL,									// DWORD reserved
-											 KEY_QUERY_VALUE,						// Allows all changes
-											 &hKey );								// Location to store key
-
-	if ( lResult != ERROR_SUCCESS )	{
-		//mprintf(( "Error opening registry key '%s'\n", keyname ));
-		goto Cleanup;
+	if ( !name )	{
+		return default_value;
 	}
 
-	if ( !name )	 {
-		//mprintf(( "No variable name passed\n" ));
-		goto Cleanup;
+	config_load();
+
+	auto it = Config_map.find( config_key(keyname, name) );
+	if ( it == Config_map.end() )	{
+		return default_value;
 	}
 
-	dwLen = 1024;
-	lResult = RegQueryValueEx( hKey,									// Handle to key
-									 name,											// The values name
-									 NULL,											// DWORD reserved
-	                         &dwType,										// What kind it is
-									 (ubyte *)&tmp_string_data_ex,						// value to set
-									 &dwLen );								// How many bytes to set
-																				
-	if ( lResult != ERROR_SUCCESS )	{
-		//mprintf(( "Error reading registry key '%s'\n", name ));
-		goto Cleanup;
-	}
+	strncpy( tmp_string_data, it->second.c_str(), sizeof(tmp_string_data) - 1 );
+	tmp_string_data[sizeof(tmp_string_data) - 1] = 0;
 
-	default_value = tmp_string_data_ex;
-
-Cleanup:
-	if ( hKey )
-		RegCloseKey(hKey);
-
-	return default_value;
+	return tmp_string_data;
 }

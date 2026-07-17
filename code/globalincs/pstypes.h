@@ -52,6 +52,16 @@
 // MSVC path splitter; any output pointer may be NULL
 void _splitpath(const char *path, char *drive, char *dir, char *fname, char *ext);
 
+// Win32 MulDiv: 64-bit intermediate, rounds to nearest (half away from zero)
+inline int MulDiv(int number, int numerator, int denominator)
+{
+	if (denominator == 0)
+		return -1;
+	long long t = (long long)number * numerator;
+	long long half = denominator > 0 ? denominator / 2 : -(long long)denominator / 2;
+	return (int)((t >= 0 ? t + half : t - half) / denominator);
+}
+
 inline char *strlwr(char *str)
 {
 	for (char *p = str; *p; p++)

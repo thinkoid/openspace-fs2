@@ -60,8 +60,8 @@ void tmapscan_write_z()
 	w = Tmap.fx_w;
 	dw = Tmap.fx_dwdx;
 
-	uint *zbuf = (uint *)&gr_zbuffer[(uint)dptr-(uint)Tmap.pScreenBits];
-	
+	uint *zbuf = &gr_zbuffer[(uintptr_t)dptr-Tmap.pScreenBits];
+
 	for (i=0; i<Tmap.loop_count; i++ )	{
 		*zbuf = w;
 		zbuf++;
@@ -86,8 +86,8 @@ void tmapscan_flat_gouraud_zbuffered()
 	l = Tmap.fx_l;
 	dl = Tmap.fx_dl_dx;
 
-	uint *zbuf = (uint *)&gr_zbuffer[(uint)dptr-(uint)Tmap.pScreenBits];
-	
+	uint *zbuf = &gr_zbuffer[(uintptr_t)dptr-Tmap.pScreenBits];
+
 	for (i=0; i<Tmap.loop_count; i++ )	{
 		if ( w > *zbuf )	{
 			*zbuf = w;
@@ -248,7 +248,7 @@ void tmapscan_flat8_zbuffered()
 
 
 	for (i=0; i<Tmap.loop_count; i++ )	{
-		int tmp = (uint)dptr-Tmap.pScreenBits;
+		int tmp = (int)((uintptr_t)dptr-Tmap.pScreenBits);
 		if ( Tmap.fx_w > (int)gr_zbuffer[tmp] )	{
 			gr_zbuffer[tmp] = Tmap.fx_w;
 			*dptr = c;
@@ -282,905 +282,217 @@ void tmapscan_flat8()
 void tmapscan_pln8_zbuffered();
 
 
-void tmapscan_pln8_ppro()
+// =====================================================================
+// C conversions of the retail MSVC inline-asm scanline mappers.  The
+// register roles survive as variable names:
+//
+//    edi -> dptr      destination pixel pointer
+//    esi -> tex       texture texel pointer
+//    ebx -> u_frac    u fraction 0.32; in the ramp-lit walkers the low
+//                     word doubles as the 8.8 light level (the asm kept
+//                     both packed in EBX and let the light carry ripple
+//                     into the u fraction -- the 32-bit adds below wrap
+//                     the same way)
+//    ecx -> v_frac    v fraction 0.32
+//    edx -> du_frac   u fraction step (low word = 8.8 light step)
+//
+// Each pixel the fractions advance and the texture pointer moves by a
+// whole-texel step selected by the v-fraction carry, plus one texel on
+// the u-fraction carry:
+//
+//    add  ecx,Tmap.DeltaVFrac         // increment v fraction
+//    sbb  ebp,ebp                     // get -1 if carry
+//    add  ebx,edx                     // increment u fraction
+//    adc  esi,Tmap.uv_delta[4*ebp+4]  // add in step ints & carries
+//
+// The perspective mappers ran the FPU in 24-bit precision mode; plain
+// float arithmetic below rounds identically.  fistp rounded to nearest,
+// hence lrintf.
+static inline ubyte *tmap_uv_step( ubyte *tex, uint *v_frac, uint *u_frac, uint dv_frac, uint du_frac )
 {
-	_asm {
-	
-	push	eax
-	push	ecx
-	push	edx
-	push	ebx
-	push	ebp
-	push	esi
-	push	edi
+	*v_frac += dv_frac;
+	int v_carry = ( *v_frac < dv_frac );		// sbb ebp,ebp
+	*u_frac += du_frac;
+	int u_carry = ( *u_frac < du_frac );		// carry into the adc
+	return tex + (int)Tmap.uv_delta[ v_carry ? 0 : 1 ] + u_carry;
+}
 
-	// Put the FPU in low precision mode
-	fstcw		Tmap.OldFPUCW					// store copy of CW
-	mov		ax,Tmap.OldFPUCW				// get it in ax
-	and		eax, ~0x300L
-	mov		Tmap.FPUCW,ax					// store it
-	fldcw		Tmap.FPUCW						// load the FPU
+// "setup delta values": split a 16.16 u/v step into the fraction steps
+// and the two whole-texel steps (without and with the v carry).
+static void tmap_setup_uv_deltas( int du, int dv )
+{
+	Tmap.DeltaVFrac = (uint)dv << 16;			// v frac step
+	Tmap.DeltaUFrac = (uint)du << 16;			// u frac step
+	Tmap.uv_delta[1] = (uint)( (dv >> 16) * Tmap.src_offset + (du >> 16) );	// whole step in non-v-carry slot
+	Tmap.uv_delta[0] = Tmap.uv_delta[1] + (uint)Tmap.src_offset;				// whole step + v carry
+}
 
-	mov		ecx, Tmap.loop_count		// ecx = width
-	mov		edi, Tmap.dest_row_data	// edi = dest pointer
+// "setup initial coordinates": texel address and 0.32 fractions from
+// 16.16 u and v.
+static ubyte *tmap_uv_start( int u, int v, uint *u_frac, uint *v_frac )
+{
+	*u_frac = (uint)u << 16;					// get fractional part
+	*v_frac = (uint)v << 16;
+	return Tmap.pixptr + (u >> 16) + (v >> 16) * Tmap.src_offset;	// calc address
+}
 
-	// edi = pointer to start pixel in dest dib
-	// ecx = spanwidth
+// tmapscan_pln8_ppro / tmapscan_pln8_pentium
+//
+// Perspective-correct, ramp-lit, non-tiled 8-bpp mapper.  The scanline
+// is cut into 32-pixel spans; u/z, v/z and 1/z step on the FPU across
+// span boundaries and the walk inside a span is affine 16.16 fixed
+// point.  The Pentium and PPro asm variants differed only in
+// instruction scheduling -- the pixel results are identical -- so both
+// entry points share this body.
+//
+// Note the pipelined texel read: the asm preread the first texel, and
+// inside the loop read the next pixel's texel *before* stepping the
+// texture pointer, so every pixel after the first in a span reuses the
+// previous pixel's texel.  That schedule (and its one-texel lag) is
+// reproduced exactly.
+static void tmapscan_pln8_c()
+{
+	ubyte *dptr = (ubyte *)Tmap.dest_row_data;		// edi
+	int width = Tmap.loop_count;						// ecx
 
-	mov		eax,ecx							// eax and ecx = width
-	shr		ecx,5								// ecx = width / subdivision length
-	and		eax,31								// eax = width mod subdivision length
-	jnz		some_left_over					// any leftover?
-	dec		ecx								// no, so special case last span
-	mov		eax,32								// it's 8 pixels long
-some_left_over:
-	mov		Tmap.Subdivisions,ecx		// store widths
-	mov		Tmap.WidthModLength,eax
+	int subdivisions = width >> 5;					// width / subdivision length
+	int leftover = width & 31;							// width mod subdivision length
+	if ( leftover == 0 )	{							// no leftover? special case last span
+		subdivisions--;
+		leftover = 32;
+	}
+	Tmap.Subdivisions = (uint)subdivisions;
+	Tmap.WidthModLength = leftover;
 
-	// calculate ULeft and VLeft			// FPU Stack (ZL = ZLeft)
-													// st0  st1  st2  st3  st4  st5  st6  st7
-	fld		Tmap.l.v					// V/ZL 
-	fld		Tmap.l.u					// U/ZL V/ZL 
-	fld		Tmap.l.sw					// 1/ZL U/ZL V/ZL 
-	fld1											// 1    1/ZL U/ZL V/ZL 
-	fdiv		st,st(1)							// ZL   1/ZL U/ZL V/ZL 
-	fld		st									// ZL   ZL   1/ZL U/ZL V/ZL 
-	fmul		st,st(4)							// VL   ZL   1/ZL U/ZL V/ZL 
-	fxch		st(1)								// ZL   VL   1/ZL U/ZL V/ZL 
-	fmul		st,st(3)							// UL   VL   1/ZL U/ZL V/ZL 
+	// calculate ULeft and VLeft
+	float v_over_z = Tmap.l.v;
+	float u_over_z = Tmap.l.u;
+	float one_over_z = Tmap.l.sw;
+	float z_left = 1.0f / one_over_z;
+	float v_left = z_left * v_over_z;
+	float u_left = z_left * u_over_z;
 
-	fstp		st(5)								// VL   1/ZL U/ZL V/ZL UL
-	fstp		st(5)								// 1/ZL U/ZL V/ZL UL   VL
+	// calculate right side OverZ terms and coords
+	one_over_z += Tmap.fl_dwdx_wide;
+	u_over_z += Tmap.fl_dudx_wide;
+	v_over_z += Tmap.fl_dvdx_wide;
 
-	// calculate right side OverZ terms  ; st0  st1  st2  st3  st4  st5  st6  st7
+	float z_right = 1.0f / one_over_z;
+	float v_right = z_right * v_over_z;
+	float u_right = z_right * u_over_z;
 
-	fadd		Tmap.fl_dwdx_wide			// 1/ZR U/ZL V/ZL UL   VL
-	fxch		st(1)								// U/ZL 1/ZR V/ZL UL   VL
-	fadd		Tmap.fl_dudx_wide				// U/ZR 1/ZR V/ZL UL   VL
-	fxch		st(2)								// V/ZL 1/ZR U/ZR UL   VL
-	fadd		Tmap.fl_dvdx_wide				// V/ZR 1/ZR U/ZR UL   VL
+	uint u_frac = 0, v_frac = 0;		// ebx, ecx
+	uint du_frac = 0;						// edx
+	ubyte *tex = NULL;					// esi
+	ubyte texel = 0;						// al
 
-	// calculate right side coords		// st0  st1  st2  st3  st4  st5  st6  st7
+	if ( subdivisions > 0 )	{
+		do	{	// SpanLoop
+			// convert left side coords to 16.16
+			Tmap.UFixed = (uint)lrintf( u_left * Tmap.FixedScale );
+			Tmap.VFixed = (uint)lrintf( v_left * Tmap.FixedScale );
 
-	fld1											// 1    V/ZR 1/ZR U/ZR UL   VL
-	// @todo overlap this guy
-	fdiv		st,st(2)							// ZR   V/ZR 1/ZR U/ZR UL   VL
-	fld		st									// ZR   ZR   V/ZR 1/ZR U/ZR UL   VL
-	fmul		st,st(2)							// VR   ZR   V/ZR 1/ZR U/ZR UL   VL
-	fxch		st(1)								// ZR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul		st,st(4)							// UR   VR   V/ZR 1/ZR U/ZR UL   VL
+			// calculate deltas; FixedScale8 is 2^16/32
+			Tmap.DeltaV = (uint)lrintf( (v_right - v_left) * Tmap.FixedScale8 );
+			Tmap.DeltaU = (uint)lrintf( (u_right - u_left) * Tmap.FixedScale8 );
 
-	cmp		ecx,0							// check for any full spans
-	jle      HandleLeftoverPixels
-    
-SpanLoop:
+			// increment terms for next span; right terms become left terms
+			v_over_z += Tmap.fl_dvdx_wide;
+			one_over_z += Tmap.fl_dwdx_wide;
+			u_over_z += Tmap.fl_dudx_wide;
 
-	// at this point the FPU contains	// st0  st1  st2  st3  st4  st5  st6  st7
-													// UR   VR   V/ZR 1/ZR U/ZR UL   VL
+			tmap_setup_uv_deltas( (int)Tmap.DeltaU, (int)Tmap.DeltaV );
+			tex = tmap_uv_start( (int)Tmap.UFixed, (int)Tmap.VFixed, &u_frac, &v_frac );
+
+			// set up affine registers: low word of EBX carries the 8.8
+			// light, low word of EDX its per-pixel step
+			uint light = (uint)(Tmap.fx_l >> 8) & 0xffff;			// bx
+			Tmap.fx_l += Tmap.fx_dl_dx << 5;						// walk the light a whole span
+			ushort lstep = (ushort)( (ushort)(uint)(Tmap.fx_l >> 8) - (ushort)light );
+			lstep = (ushort)( lstep >> 5 );							// per-pixel light step
+			u_frac = ( u_frac & 0xffff0000u ) | light;
+			du_frac = ( Tmap.DeltaUFrac & 0xffff0000u ) | lstep;
+
+			// This divide happened while the pixel span was drawn.
+			z_right = 1.0f / one_over_z;
+
+			texel = *tex;							// get texture pixel 0
+			for ( Tmap.InnerLooper = 32; Tmap.InnerLooper > 0; Tmap.InnerLooper-- )	{
+				*dptr++ = gr_fade_table[ (u_frac & 0xff00) + texel ];	// get shaded pixel
+				texel = *tex;						// read for the next pixel *before* stepping
+				tex = tmap_uv_step( tex, &v_frac, &u_frac, Tmap.DeltaVFrac, du_frac );
+			}
+
+			// the fdiv is done, finish right
+			v_left = v_right;
+			u_left = u_right;
+			v_right = z_right * v_over_z;
+			u_right = z_right * u_over_z;
+		} while ( --Tmap.Subdivisions > 0 );
+	}
+
+	// HandleLeftoverPixels
+	if ( Tmap.WidthModLength == 0 )
+		return;
 
 	// convert left side coords
-
-	fld     st(5)                       ; UL   UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul    Tmap.FixedScale            ; UL16 UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fistp   Tmap.UFixed                ; UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	fld     st(6)                       ; VL   UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul    Tmap.FixedScale            ; VL16 UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fistp   Tmap.VFixed                ; UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	// calculate deltas                  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-	fsubr   st(5),st                    ; UR   VR   V/ZR 1/ZR U/ZR dU   VL
-	fxch    st(1)                       ; VR   UR   V/ZR 1/ZR U/ZR dU   VL
-	fsubr   st(6),st                    ; VR   UR   V/ZR 1/ZR U/ZR dU   dV
-	fxch    st(6)                       ; dV   UR   V/ZR 1/ZR U/ZR dU   VR
-
-	fmul    Tmap.FixedScale8           ; dV8  UR   V/ZR 1/ZR U/ZR dU   VR
-	fistp   Tmap.DeltaV                ; UR   V/ZR 1/ZR U/ZR dU   VR
-
-	fxch    st(4)                       ; dU   V/ZR 1/ZR U/ZR UR   VR
-	fmul    Tmap.FixedScale8           ; dU8  V/ZR 1/ZR U/ZR UR   VR
-	fistp   Tmap.DeltaU                ; V/ZR 1/ZR U/ZR UR   VR
-
-	// increment terms for next span    // st0  st1  st2  st3  st4  st5  st6  st7
-	// Right terms become Left terms--->// V/ZL 1/ZL U/ZL UL   VL
-
-	fadd    Tmap.fl_dvdx_wide				// V/ZR 1/ZL U/ZL UL   VL
-	fxch    st(1)								// 1/ZL V/ZR U/ZL UL   VL
-	fadd    Tmap.fl_dwdx_wide				// 1/ZR V/ZR U/ZL UL   VL
-	fxch    st(2)								// U/ZL V/ZR 1/ZR UL   VL
-	fadd    Tmap.fl_dudx_wide				// U/ZR V/ZR 1/ZR UL   VL
-	fxch    st(2)								// 1/ZR V/ZR U/ZR UL   VL
-	fxch    st(1)								// V/ZR 1/ZR U/ZR UL   VL
-
-
-	// setup delta values
-    
-	mov     eax,Tmap.DeltaV				// get v 16.16 step
-	mov     ebx,eax							// copy it
-	sar     eax,16								// get v int step
-	shl     ebx,16								// get v frac step
-	mov     Tmap.DeltaVFrac,ebx			// store it
-	imul    eax,Tmap.src_offset			// calculate texture step for v int step
-
-	mov     ebx,Tmap.DeltaU				// get u 16.16 step
-	mov     ecx,ebx							// copy it
-	sar     ebx,16								// get u int step
-	shl     ecx,16								// get u frac step
-	mov     Tmap.DeltaUFrac,ecx			// store it
-	add     eax,ebx							// calculate uint + vint step
-	mov     Tmap.uv_delta[4],eax			// save whole step in non-v-carry slot
-	add     eax,Tmap.src_offset			// calculate whole step + v carry
-	mov     Tmap.uv_delta[0],eax			// save in v-carry slot
-
-	// setup initial coordinates
-	mov     esi,Tmap.UFixed				// get u 16.16 fixedpoint coordinate
-
-	mov     ebx,esi							// copy it
-	sar     esi,16								// get integer part
-	shl     ebx,16								// get fractional part
-
-	mov     ecx,Tmap.VFixed				// get v 16.16 fixedpoint coordinate
-   
-	mov     edx,ecx							// copy it
-	sar     edx,16								// get integer part
-	shl     ecx,16								// get fractional part
-	imul    edx,Tmap.src_offset			// calc texture scanline address
-	add     esi,edx							// calc texture offset
-	add     esi,Tmap.pixptr				// calc address
-
-	// set up affine registers
-	mov     edx,Tmap.DeltaUFrac			// get register copy
-
- 	mov	eax, Tmap.fx_l
-	shr	eax, 8
-	mov	bx, ax
-
-	mov	ebp, Tmap.fx_dl_dx
-	shl	ebp, 5	//*32
-	add	Tmap.fx_l, ebp
-
-	mov	ebp, Tmap.fx_l
-	shr	ebp, 8
-	sub	bp, ax
-	shr	bp, 5
-
-	mov	dx, bp
-
-	// calculate right side coords		st0  st1  st2  st3  st4  st5  st6  st7
-	fld1										// 1    V/ZR 1/ZR U/ZR UL   VL
-	// This divide should happen while the pixel span is drawn.
-	fdiv	st,st(2)							// ZR   V/ZR 1/ZR U/ZR UL   VL
-
-
-	// 8 pixel span code
-	// edi = dest dib bits at current pixel
-	// esi = texture pointer at current u,v
-	// eax = scratch
-	// ebx = u fraction 0.32
-	// ecx = v fraction 0.32
-	// edx = u frac step
-	// ebp = v carry scratch
-
-	xor	eax, eax
-	mov	al,[edi]								// preread the destination cache line
-	xor	eax, eax
-	mov	al,[esi]								// get texture pixel 0
-
-	mov	Tmap.InnerLooper, 32/4			// Set up loop counter
-
-InnerInnerLoop:
-
-	push	ebx
-	and	ebx, 0ff00h
-	mov	eax, DWORD PTR gr_fade_table[eax+ebx]	// Get shaded pixel
-	pop	ebx
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+0],al							// store pixel
-	xor	eax, eax
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	push	ebx
-	and	ebx, 0ff00h
-	mov	eax, DWORD PTR gr_fade_table[eax+ebx]	// Get shaded pixel
-	pop	ebx
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+1],al							// store pixel
-	xor	eax, eax
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	push	ebx
-	and	ebx, 0ff00h
-	mov	eax, DWORD PTR gr_fade_table[eax+ebx]	// Get shaded pixel
-	pop	ebx
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+2],al							// store pixel
-	xor	eax, eax
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	push	ebx
-	and	ebx, 0ff00h
-	mov	eax, DWORD PTR gr_fade_table[eax+ebx]	// Get shaded pixel
-	pop	ebx
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+3],al							// store pixel
-	xor	eax, eax
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	add	edi, 4
-	dec	Tmap.InnerLooper
-	jnz	InnerInnerLoop
-
-	// the fdiv is done, finish right	// st0  st1  st2  st3  st4  st5  st6  st7
-	                                    // ZR   V/ZR 1/ZR U/ZR UL   VL
-
-    fld     st									// ZR   ZR   V/ZR 1/ZR U/ZR UL   VL
-    fmul    st,st(2)							// VR   ZR   V/ZR 1/ZR U/ZR UL   VL
-    fxch    st(1)								// ZR   VR   V/ZR 1/ZR U/ZR UL   VL
-    fmul    st,st(4)							// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-    dec     Tmap.Subdivisions			// decrement span count
-    jnz     SpanLoop							// loop back
-
-
-HandleLeftoverPixels:
-
-    mov     esi,Tmap.pixptr				// load texture pointer
-
-    // edi = dest dib bits
-    // esi = current texture dib bits
-    // at this point the FPU contains    ; st0  st1  st2  st3  st4  st5  st6  st7
-    // inv. means invalid numbers        ; inv. inv. inv. inv. inv. UL   VL
-
-    cmp     Tmap.WidthModLength,0          ; are there remaining pixels to draw?
-    jz      FPUReturn                   ; nope, pop the FPU and bail
-
-    // convert left side coords          ; st0  st1  st2  st3  st4  st5  st6  st7
-
-    fld     st(5)                       ; UL   inv. inv. inv. inv. inv. UL   VL
-    fmul    Tmap.FixedScale                ; UL16 inv. inv. inv. inv. inv. UL   VL
-    fistp   Tmap.UFixed                    ; inv. inv. inv. inv. inv. UL   VL
-
-    fld     st(6)                       ; VL   inv. inv. inv. inv. inv. UL   VL
-    fmul    Tmap.FixedScale                // VL16 inv. inv. inv. inv. inv. UL   VL
-    fistp   Tmap.VFixed                    ; inv. inv. inv. inv. inv. UL   VL
-
-    dec     Tmap.WidthModLength            ; calc how many steps to take
-    jz      OnePixelSpan                ; just one, don't do deltas
-
-    // calculate right edge coordinates  ; st0  st1  st2  st3  st4  st5  st6  st7
-    // r -> R+1
-
-    // @todo rearrange things so we don't need these two instructions
-    fstp    Tmap.FloatTemp                 ; inv. inv. inv. inv. UL   VL
-    fstp    Tmap.FloatTemp                 ; inv. inv. inv. UL   VL
-
-    fld     Tmap.r.v           ; V/Zr inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.v             ; V/ZR inv. inv. inv. UL   VL
-    fld     Tmap.r.u           ; U/Zr V/ZR inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.u             ; U/ZR V/ZR inv. inv. inv. UL   VL
-    fld     Tmap.r.sw              ; 1/Zr U/ZR V/ZR inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.sw           ; 1/ZR U/ZR V/ZR inv. inv. inv. UL   VL
-
-    fdivr   Tmap.One                       ; ZR   U/ZR V/ZR inv. inv. inv. UL   VL
-
-    fmul    st(1),st                    ; ZR   UR   V/ZR inv. inv. inv. UL   VL
-    fmulp   st(2),st                    ; UR   VR   inv. inv. inv. UL   VL
-
-    // calculate deltas                  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-    fsubr   st(5),st                    ; UR   VR   inv. inv. inv. dU   VL
-    fxch    st(1)                       ; VR   UR   inv. inv. inv. dU   VL
-    fsubr   st(6),st                    ; VR   UR   inv. inv. inv. dU   dV
-    fxch    st(6)                       ; dV   UR   inv. inv. inv. dU   VR
-
-    fidiv   Tmap.WidthModLength            ; dv   UR   inv. inv. inv. dU   VR
-    fmul    Tmap.FixedScale                ; dv16 UR   inv. inv. inv. dU   VR
-    fistp   Tmap.DeltaV                    ; UR   inv. inv. inv. dU   VR
-
-    fxch    st(4)                       ; dU   inv. inv. inv. UR   VR
-    fidiv   Tmap.WidthModLength            ; du   inv. inv. inv. UR   VR
-    fmul    Tmap.FixedScale                ; du16 inv. inv. inv. UR   VR
-    fistp   Tmap.DeltaU                    ; inv. inv. inv. UR   VR
-
-    // @todo gross!  these are to line up with the other loop
-    fld     st(1)                       ; inv. inv. inv. inv. UR   VR
-    fld     st(2)                       ; inv. inv. inv. inv. inv. UR   VR
-
-
-	// setup delta values
-	mov	eax, Tmap.DeltaV	// get v 16.16 step
-	mov	ebx, eax						// copy it
-	sar	eax, 16						// get v int step
-	shl	ebx, 16						// get v frac step
-	mov	Tmap.DeltaVFrac, ebx	// store it
-	imul	eax, Tmap.src_offset	// calc texture step for v int step
-	
-	mov	ebx, Tmap.DeltaU			// get u 16.16 step
-	mov	ecx, ebx						// copy it
-	sar	ebx, 16						// get the u int step
-	shl	ecx, 16						// get the u frac step
-	mov	Tmap.DeltaUFrac, ecx			// store it
-	add	eax, ebx						// calc uint + vint step
-	mov	Tmap.uv_delta[4], eax	// save whole step in non-v-carry slot
-	add	eax, Tmap.src_offset				// calc whole step + v carry
-	mov	Tmap.uv_delta[0], eax	// save in v-carry slot
-
-
-OnePixelSpan:
-
-	; setup initial coordinates
-	mov	esi, Tmap.UFixed			// get u 16.16
-	mov	ebx, esi						// copy it
-	sar	esi, 16						// get integer part
-	shl	ebx, 16						// get fractional part
-
-	mov	ecx, Tmap.VFixed			// get v 16.16 
-	mov	edx, ecx						// copy it
-	sar	edx, 16						// get integer part
-	shl	ecx, 16						// get fractional part
-	imul	edx, Tmap.src_offset		// calc texture scanline address
-	add	esi, edx							// calc texture offset
-	add	esi, Tmap.pixptr			// calc address
-
-
-	mov	eax, Tmap.fx_l
-	shr	eax, 8
-	mov	bx, ax
-
-	mov	edx, Tmap.DeltaUFrac
-
-	cmp	Tmap.WidthModLength, 1
-	jle	NoDeltaLight
-
-	push	ebx
-	
-	mov	ebx, Tmap.fx_l_right
-	shr	ebx, 8
-	
-	sub	ebx, eax
-	mov	eax, ebx
-	
-	mov	eax, Tmap.fx_dl_dx
-	shr	eax, 8
-
-	mov	dx, ax
-
-	pop	ebx
-
-NoDeltaLight:
-
-	inc	Tmap.WidthModLength
-	mov	eax,Tmap.WidthModLength
-	shr	eax, 1
-	jz		one_more_pix
-	pushf
-	mov	Tmap.WidthModLength, eax
-
-	xor	eax, eax
-
-	mov	al,[edi]                    // preread the destination cache line
-	mov	al,[esi]
-
-NextPixel:
-	mov	ah, bh								// move lighting value into place
-	mov	al, gr_fade_table[eax]			// Get shaded pixel
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+0],al							// store pixel
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	mov	ah, bh								// move lighting value into place
-	mov	al, gr_fade_table[eax]			// Get shaded pixel
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+1],al							// store pixel
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	add	edi, 2
-	dec	Tmap.WidthModLength
-	jg		NextPixel
-
-	popf
-	jnc	FPUReturn
-
-one_more_pix:	
-
-	mov	al,[esi]                    // get texture pixel 2
-	mov	ah, bh
-	mov	al, gr_fade_table[eax]
-	mov	[edi],al                  // store pixel 2
-
-
-FPUReturn:
-
-	// busy FPU registers:	// st0  st1  st2  st3  st4  st5  st6  st7
-									// xxx  xxx  xxx  xxx  xxx  xxx  xxx
-	ffree	st(0)
-	ffree	st(1)
-	ffree	st(2)
-	ffree	st(3)
-	ffree	st(4)
-	ffree	st(5)
-	ffree	st(6)
-
-	fldcw	Tmap.OldFPUCW                  // restore the FPU
-
-	pop	edi
-	pop	esi
-	pop	ebp
-	pop	ebx
-	pop	edx
-	pop	ecx
-	pop	eax
+	Tmap.UFixed = (uint)lrintf( u_left * Tmap.FixedScale );
+	Tmap.VFixed = (uint)lrintf( v_left * Tmap.FixedScale );
+
+	if ( --Tmap.WidthModLength > 0 )	{
+		// calculate right edge coordinates: r -> R+1
+		v_over_z = Tmap.r.v - Tmap.deltas.v;
+		u_over_z = Tmap.r.u - Tmap.deltas.u;
+		one_over_z = Tmap.r.sw - Tmap.deltas.sw;
+
+		z_right = Tmap.One / one_over_z;
+		u_right = u_over_z * z_right;
+		v_right = v_over_z * z_right;
+
+		Tmap.DeltaV = (uint)lrintf( (v_right - v_left) / (float)Tmap.WidthModLength * Tmap.FixedScale );
+		Tmap.DeltaU = (uint)lrintf( (u_right - u_left) / (float)Tmap.WidthModLength * Tmap.FixedScale );
+
+		tmap_setup_uv_deltas( (int)Tmap.DeltaU, (int)Tmap.DeltaV );
+	}
+
+	// OnePixelSpan
+	tex = tmap_uv_start( (int)Tmap.UFixed, (int)Tmap.VFixed, &u_frac, &v_frac );
+
+	uint light = (uint)(Tmap.fx_l >> 8) & 0xffff;
+	u_frac = ( u_frac & 0xffff0000u ) | light;
+	du_frac = Tmap.DeltaUFrac;
+	if ( Tmap.WidthModLength > 1 )	{		// NoDeltaLight otherwise
+		du_frac = ( du_frac & 0xffff0000u ) | ( (uint)(Tmap.fx_dl_dx >> 8) & 0xffff );
+	}
+
+	int n = ++Tmap.WidthModLength;
+	int pairs = n >> 1;
+	if ( pairs != 0 )	{
+		texel = *tex;							// re-sync the pipelined read
+		Tmap.WidthModLength = pairs;
+		do	{	// NextPixel drew pixel pairs
+			for ( int i = 0; i < 2; i++ )	{
+				*dptr++ = gr_fade_table[ (u_frac & 0xff00) + texel ];
+				texel = *tex;
+				tex = tmap_uv_step( tex, &v_frac, &u_frac, Tmap.DeltaVFrac, du_frac );
+			}
+		} while ( --Tmap.WidthModLength > 0 );
+	}
+	if ( n & 1 )	{
+		// one_more_pix: reads its texel afresh
+		texel = *tex;
+		*dptr = gr_fade_table[ (u_frac & 0xff00) + texel ];
 	}
 }
 
+void tmapscan_pln8_ppro()
+{
+	tmapscan_pln8_c();
+}
 
 void tmapscan_pln8_pentium()
 {
-	_asm {
-	
-	push	eax
-	push	ecx
-	push	edx
-	push	ebx
-	push	ebp
-	push	esi
-	push	edi
-
-	// Put the FPU in low precision mode
-	fstcw		Tmap.OldFPUCW					// store copy of CW
-	mov		ax,Tmap.OldFPUCW				// get it in ax
-	and		eax, ~0x300L
-	mov		Tmap.FPUCW,ax					// store it
-	fldcw		Tmap.FPUCW						// load the FPU
-
-	mov		ecx, Tmap.loop_count		// ecx = width
-	mov		edi, Tmap.dest_row_data	// edi = dest pointer
-
-	// edi = pointer to start pixel in dest dib
-	// ecx = spanwidth
-
-	mov		eax,ecx							// eax and ecx = width
-	shr		ecx,5								// ecx = width / subdivision length
-	and		eax,31								// eax = width mod subdivision length
-	jnz		some_left_over					// any leftover?
-	dec		ecx								// no, so special case last span
-	mov		eax,32								// it's 8 pixels long
-some_left_over:
-	mov		Tmap.Subdivisions,ecx		// store widths
-	mov		Tmap.WidthModLength,eax
-
-	// calculate ULeft and VLeft			// FPU Stack (ZL = ZLeft)
-													// st0  st1  st2  st3  st4  st5  st6  st7
-	fld		Tmap.l.v					// V/ZL 
-	fld		Tmap.l.u					// U/ZL V/ZL 
-	fld		Tmap.l.sw					// 1/ZL U/ZL V/ZL 
-	fld1											// 1    1/ZL U/ZL V/ZL 
-	fdiv		st,st(1)							// ZL   1/ZL U/ZL V/ZL 
-	fld		st									// ZL   ZL   1/ZL U/ZL V/ZL 
-	fmul		st,st(4)							// VL   ZL   1/ZL U/ZL V/ZL 
-	fxch		st(1)								// ZL   VL   1/ZL U/ZL V/ZL 
-	fmul		st,st(3)							// UL   VL   1/ZL U/ZL V/ZL 
-
-	fstp		st(5)								// VL   1/ZL U/ZL V/ZL UL
-	fstp		st(5)								// 1/ZL U/ZL V/ZL UL   VL
-
-	// calculate right side OverZ terms  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-	fadd		Tmap.fl_dwdx_wide			// 1/ZR U/ZL V/ZL UL   VL
-	fxch		st(1)								// U/ZL 1/ZR V/ZL UL   VL
-	fadd		Tmap.fl_dudx_wide				// U/ZR 1/ZR V/ZL UL   VL
-	fxch		st(2)								// V/ZL 1/ZR U/ZR UL   VL
-	fadd		Tmap.fl_dvdx_wide				// V/ZR 1/ZR U/ZR UL   VL
-
-	// calculate right side coords		// st0  st1  st2  st3  st4  st5  st6  st7
-
-	fld1											// 1    V/ZR 1/ZR U/ZR UL   VL
-	// @todo overlap this guy
-	fdiv		st,st(2)							// ZR   V/ZR 1/ZR U/ZR UL   VL
-	fld		st									// ZR   ZR   V/ZR 1/ZR U/ZR UL   VL
-	fmul		st,st(2)							// VR   ZR   V/ZR 1/ZR U/ZR UL   VL
-	fxch		st(1)								// ZR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul		st,st(4)							// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	cmp		ecx,0							// check for any full spans
-	jle      HandleLeftoverPixels
-    
-SpanLoop:
-
-	// at this point the FPU contains	// st0  st1  st2  st3  st4  st5  st6  st7
-													// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	// convert left side coords
-
-	fld     st(5)                       ; UL   UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul    Tmap.FixedScale            ; UL16 UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fistp   Tmap.UFixed                ; UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	fld     st(6)                       ; VL   UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul    Tmap.FixedScale            ; VL16 UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fistp   Tmap.VFixed                ; UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	// calculate deltas                  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-	fsubr   st(5),st                    ; UR   VR   V/ZR 1/ZR U/ZR dU   VL
-	fxch    st(1)                       ; VR   UR   V/ZR 1/ZR U/ZR dU   VL
-	fsubr   st(6),st                    ; VR   UR   V/ZR 1/ZR U/ZR dU   dV
-	fxch    st(6)                       ; dV   UR   V/ZR 1/ZR U/ZR dU   VR
-
-	fmul    Tmap.FixedScale8           ; dV8  UR   V/ZR 1/ZR U/ZR dU   VR
-	fistp   Tmap.DeltaV                ; UR   V/ZR 1/ZR U/ZR dU   VR
-
-	fxch    st(4)                       ; dU   V/ZR 1/ZR U/ZR UR   VR
-	fmul    Tmap.FixedScale8           ; dU8  V/ZR 1/ZR U/ZR UR   VR
-	fistp   Tmap.DeltaU                ; V/ZR 1/ZR U/ZR UR   VR
-
-	// increment terms for next span    // st0  st1  st2  st3  st4  st5  st6  st7
-	// Right terms become Left terms--->// V/ZL 1/ZL U/ZL UL   VL
-
-	fadd    Tmap.fl_dvdx_wide				// V/ZR 1/ZL U/ZL UL   VL
-	fxch    st(1)								// 1/ZL V/ZR U/ZL UL   VL
-	fadd    Tmap.fl_dwdx_wide				// 1/ZR V/ZR U/ZL UL   VL
-	fxch    st(2)								// U/ZL V/ZR 1/ZR UL   VL
-	fadd    Tmap.fl_dudx_wide				// U/ZR V/ZR 1/ZR UL   VL
-	fxch    st(2)								// 1/ZR V/ZR U/ZR UL   VL
-	fxch    st(1)								// V/ZR 1/ZR U/ZR UL   VL
-
-
-	// setup delta values
-    
-	mov     eax,Tmap.DeltaV				// get v 16.16 step
-	mov     ebx,eax							// copy it
-	sar     eax,16								// get v int step
-	shl     ebx,16								// get v frac step
-	mov     Tmap.DeltaVFrac,ebx			// store it
-	imul    eax,Tmap.src_offset			// calculate texture step for v int step
-
-	mov     ebx,Tmap.DeltaU				// get u 16.16 step
-	mov     ecx,ebx							// copy it
-	sar     ebx,16								// get u int step
-	shl     ecx,16								// get u frac step
-	mov     Tmap.DeltaUFrac,ecx			// store it
-	add     eax,ebx							// calculate uint + vint step
-	mov     Tmap.uv_delta[4],eax			// save whole step in non-v-carry slot
-	add     eax,Tmap.src_offset			// calculate whole step + v carry
-	mov     Tmap.uv_delta[0],eax			// save in v-carry slot
-
-	// setup initial coordinates
-	mov     esi,Tmap.UFixed				// get u 16.16 fixedpoint coordinate
-
-	mov     ebx,esi							// copy it
-	sar     esi,16								// get integer part
-	shl     ebx,16								// get fractional part
-
-	mov     ecx,Tmap.VFixed				// get v 16.16 fixedpoint coordinate
-   
-	mov     edx,ecx							// copy it
-	sar     edx,16								// get integer part
-	shl     ecx,16								// get fractional part
-	imul    edx,Tmap.src_offset			// calc texture scanline address
-	add     esi,edx							// calc texture offset
-	add     esi,Tmap.pixptr				// calc address
-
-	// set up affine registers
-	mov     edx,Tmap.DeltaUFrac			// get register copy
-
- 	mov	eax, Tmap.fx_l
-	shr	eax, 8
-	mov	bx, ax
-
-	mov	ebp, Tmap.fx_dl_dx
-	shl	ebp, 5	//*32
-	add	Tmap.fx_l, ebp
-
-	mov	ebp, Tmap.fx_l
-	shr	ebp, 8
-	sub	bp, ax
-	shr	bp, 5
-
-	mov	dx, bp
-
-	// calculate right side coords		st0  st1  st2  st3  st4  st5  st6  st7
-	fld1										// 1    V/ZR 1/ZR U/ZR UL   VL
-	// This divide should happen while the pixel span is drawn.
-	fdiv	st,st(2)							// ZR   V/ZR 1/ZR U/ZR UL   VL
-
-
-	// 8 pixel span code
-	// edi = dest dib bits at current pixel
-	// esi = texture pointer at current u,v
-	// eax = scratch
-	// ebx = u fraction 0.32
-	// ecx = v fraction 0.32
-	// edx = u frac step
-	// ebp = v carry scratch
-
-
-	mov	al,[edi]								// preread the destination cache line
-
-	mov	al,[esi]								// get texture pixel 0
-
-	mov	Tmap.InnerLooper, 32/4			// Set up loop counter
-
-InnerInnerLoop:
-
-	mov	ah, bh								// move lighting value into place
-	mov	al, gr_fade_table[eax]			// Get shaded pixel
-
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+0],al							// store pixel
-
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	mov	ah, bh								// move lighting value into place
-	mov	al, gr_fade_table[eax]			// Get shaded pixel
-
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+1],al							// store pixel
-
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	mov	ah, bh								// move lighting value into place
-	mov	al, gr_fade_table[eax]			// Get shaded pixel
-
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+2],al							// store pixel
-
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	mov	ah, bh								// move lighting value into place
-	mov	al, gr_fade_table[eax]			// Get shaded pixel
-
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+3],al							// store pixel
-
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	add	edi, 4
-	dec	Tmap.InnerLooper
-	jnz	InnerInnerLoop
-
-	// the fdiv is done, finish right	// st0  st1  st2  st3  st4  st5  st6  st7
-	                                    // ZR   V/ZR 1/ZR U/ZR UL   VL
-
-    fld     st									// ZR   ZR   V/ZR 1/ZR U/ZR UL   VL
-    fmul    st,st(2)							// VR   ZR   V/ZR 1/ZR U/ZR UL   VL
-    fxch    st(1)								// ZR   VR   V/ZR 1/ZR U/ZR UL   VL
-    fmul    st,st(4)							// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-    dec     Tmap.Subdivisions			// decrement span count
-    jnz     SpanLoop							// loop back
-
-
-HandleLeftoverPixels:
-
-    mov     esi,Tmap.pixptr				// load texture pointer
-
-    // edi = dest dib bits
-    // esi = current texture dib bits
-    // at this point the FPU contains    ; st0  st1  st2  st3  st4  st5  st6  st7
-    // inv. means invalid numbers        ; inv. inv. inv. inv. inv. UL   VL
-
-    cmp     Tmap.WidthModLength,0          ; are there remaining pixels to draw?
-    jz      FPUReturn                   ; nope, pop the FPU and bail
-
-    // convert left side coords          ; st0  st1  st2  st3  st4  st5  st6  st7
-
-    fld     st(5)                       ; UL   inv. inv. inv. inv. inv. UL   VL
-    fmul    Tmap.FixedScale                ; UL16 inv. inv. inv. inv. inv. UL   VL
-    fistp   Tmap.UFixed                    ; inv. inv. inv. inv. inv. UL   VL
-
-    fld     st(6)                       ; VL   inv. inv. inv. inv. inv. UL   VL
-    fmul    Tmap.FixedScale                // VL16 inv. inv. inv. inv. inv. UL   VL
-    fistp   Tmap.VFixed                    ; inv. inv. inv. inv. inv. UL   VL
-
-    dec     Tmap.WidthModLength            ; calc how many steps to take
-    jz      OnePixelSpan                ; just one, don't do deltas
-
-    // calculate right edge coordinates  ; st0  st1  st2  st3  st4  st5  st6  st7
-    // r -> R+1
-
-    // @todo rearrange things so we don't need these two instructions
-    fstp    Tmap.FloatTemp                 ; inv. inv. inv. inv. UL   VL
-    fstp    Tmap.FloatTemp                 ; inv. inv. inv. UL   VL
-
-    fld     Tmap.r.v           ; V/Zr inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.v             ; V/ZR inv. inv. inv. UL   VL
-    fld     Tmap.r.u           ; U/Zr V/ZR inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.u             ; U/ZR V/ZR inv. inv. inv. UL   VL
-    fld     Tmap.r.sw              ; 1/Zr U/ZR V/ZR inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.sw           ; 1/ZR U/ZR V/ZR inv. inv. inv. UL   VL
-
-    fdivr   Tmap.One                       ; ZR   U/ZR V/ZR inv. inv. inv. UL   VL
-
-    fmul    st(1),st                    ; ZR   UR   V/ZR inv. inv. inv. UL   VL
-    fmulp   st(2),st                    ; UR   VR   inv. inv. inv. UL   VL
-
-    // calculate deltas                  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-    fsubr   st(5),st                    ; UR   VR   inv. inv. inv. dU   VL
-    fxch    st(1)                       ; VR   UR   inv. inv. inv. dU   VL
-    fsubr   st(6),st                    ; VR   UR   inv. inv. inv. dU   dV
-    fxch    st(6)                       ; dV   UR   inv. inv. inv. dU   VR
-
-    fidiv   Tmap.WidthModLength            ; dv   UR   inv. inv. inv. dU   VR
-    fmul    Tmap.FixedScale                ; dv16 UR   inv. inv. inv. dU   VR
-    fistp   Tmap.DeltaV                    ; UR   inv. inv. inv. dU   VR
-
-    fxch    st(4)                       ; dU   inv. inv. inv. UR   VR
-    fidiv   Tmap.WidthModLength            ; du   inv. inv. inv. UR   VR
-    fmul    Tmap.FixedScale                ; du16 inv. inv. inv. UR   VR
-    fistp   Tmap.DeltaU                    ; inv. inv. inv. UR   VR
-
-    // @todo gross!  these are to line up with the other loop
-    fld     st(1)                       ; inv. inv. inv. inv. UR   VR
-    fld     st(2)                       ; inv. inv. inv. inv. inv. UR   VR
-
-
-	// setup delta values
-	mov	eax, Tmap.DeltaV	// get v 16.16 step
-	mov	ebx, eax						// copy it
-	sar	eax, 16						// get v int step
-	shl	ebx, 16						// get v frac step
-	mov	Tmap.DeltaVFrac, ebx	// store it
-	imul	eax, Tmap.src_offset	// calc texture step for v int step
-	
-	mov	ebx, Tmap.DeltaU			// get u 16.16 step
-	mov	ecx, ebx						// copy it
-	sar	ebx, 16						// get the u int step
-	shl	ecx, 16						// get the u frac step
-	mov	Tmap.DeltaUFrac, ecx			// store it
-	add	eax, ebx						// calc uint + vint step
-	mov	Tmap.uv_delta[4], eax	// save whole step in non-v-carry slot
-	add	eax, Tmap.src_offset				// calc whole step + v carry
-	mov	Tmap.uv_delta[0], eax	// save in v-carry slot
-
-
-OnePixelSpan:
-
-	; setup initial coordinates
-	mov	esi, Tmap.UFixed			// get u 16.16
-	mov	ebx, esi						// copy it
-	sar	esi, 16						// get integer part
-	shl	ebx, 16						// get fractional part
-
-	mov	ecx, Tmap.VFixed			// get v 16.16 
-	mov	edx, ecx						// copy it
-	sar	edx, 16						// get integer part
-	shl	ecx, 16						// get fractional part
-	imul	edx, Tmap.src_offset		// calc texture scanline address
-	add	esi, edx							// calc texture offset
-	add	esi, Tmap.pixptr			// calc address
-
-
-	mov	eax, Tmap.fx_l
-	shr	eax, 8
-	mov	bx, ax
-
-	mov	edx, Tmap.DeltaUFrac
-
-	cmp	Tmap.WidthModLength, 1
-	jle	NoDeltaLight
-
-	push	ebx
-	
-	mov	ebx, Tmap.fx_l_right
-	shr	ebx, 8
-	
-	sub	ebx, eax
-	mov	eax, ebx
-	
-	mov	eax, Tmap.fx_dl_dx
-	shr	eax, 8
-
-	mov	dx, ax
-
-	pop	ebx
-
-NoDeltaLight:
-
-	inc	Tmap.WidthModLength
-	mov	eax,Tmap.WidthModLength
-	shr	eax, 1
-	jz		one_more_pix
-	pushf
-	mov	Tmap.WidthModLength, eax
-
-	xor	eax, eax
-
-	mov	al,[edi]                    // preread the destination cache line
-	mov	al,[esi]
-
-NextPixel:
-	mov	ah, bh								// move lighting value into place
-	mov	al, gr_fade_table[eax]			// Get shaded pixel
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+0],al							// store pixel
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	mov	ah, bh								// move lighting value into place
-	mov	al, gr_fade_table[eax]			// Get shaded pixel
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+1],al							// store pixel
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	add	edi, 2
-	dec	Tmap.WidthModLength
-	jg		NextPixel
-
-	popf
-	jnc	FPUReturn
-
-one_more_pix:	
-
-	mov	al,[esi]                    // get texture pixel 2
-	mov	ah, bh
-	mov	al, gr_fade_table[eax]
-	mov	[edi],al                  // store pixel 2
-
-
-FPUReturn:
-
-	// busy FPU registers:	// st0  st1  st2  st3  st4  st5  st6  st7
-									// xxx  xxx  xxx  xxx  xxx  xxx  xxx
-	ffree	st(0)
-	ffree	st(1)
-	ffree	st(2)
-	ffree	st(3)
-	ffree	st(4)
-	ffree	st(5)
-	ffree	st(6)
-
-	fldcw	Tmap.OldFPUCW                  // restore the FPU
-
-	pop	edi
-	pop	esi
-	pop	ebp
-	pop	ebx
-	pop	edx
-	pop	ecx
-	pop	eax
-	}
+	tmapscan_pln8_c();
 }
 
 
@@ -1213,698 +525,145 @@ void tmapscan_pln8()
 }
 
 
+// Linear (non-perspective) ramp-lit mapper.  u/v come in as 16.16 in
+// fx_u/fx_v.  The light is re-synced from Tmap.fx_l every 4-pixel
+// block: fx_l advances a whole block and the per-pixel step is the
+// resulting 8.8 difference divided back down, all in 16-bit arithmetic
+// like the asm's bx/bp.  Same pipelined (one-texel lag) read as
+// tmapscan_pln8_c.
 void tmapscan_lln8()
 {
-	_asm {
-	push	eax
-	push	ecx
-	push	edx
-	push	ebx
-	push	ebp
-	push	esi
-	push	edi
+	tmap_setup_uv_deltas( (int)Tmap.fx_du_dx, (int)Tmap.fx_dv_dx );
 
-	; setup delta values
-	mov	eax, Tmap.fx_dv_dx	// get v 16.16 step
-	mov	ebx, eax						// copy it
-	sar	eax, 16						// get v int step
-	shl	ebx, 16						// get v frac step
-	mov	Tmap.DeltaVFrac, ebx	// store it
-	imul	eax, Tmap.src_offset	// calc texture step for v int step
-	
-	mov	ebx, Tmap.fx_du_dx		// get u 16.16 step
-	mov	ecx, ebx						// copy it
-	sar	ebx, 16						// get the u int step
-	shl	ecx, 16						// get the u frac step
-	mov	Tmap.DeltaUFrac, ecx			// store it
-	add	eax, ebx						// calc uint + vint step
+	uint u_frac, v_frac;
+	ubyte *tex = tmap_uv_start( (int)Tmap.fx_u, (int)Tmap.fx_v, &u_frac, &v_frac );
+	ubyte *dptr = (ubyte *)Tmap.dest_row_data;		// edi
+	uint du_frac = Tmap.DeltaUFrac;					// edx
+	ubyte texel = 0;										// al
 
-	mov	Tmap.uv_delta[4], eax	// save whole step in non-v-carry slot
-	add	eax, Tmap.src_offset				// calc whole step + v carry
-	mov	Tmap.uv_delta[0], eax	// save in v-carry slot
+	int nblocks = Tmap.loop_count >> 2;
+	if ( nblocks != 0 )	{
+		Tmap.num_big_steps = nblocks;
+		Tmap.loop_count &= 3;
 
-	; setup initial coordinates
-	mov	esi, Tmap.fx_u			// get u 16.16
-	mov	ebx, esi						// copy it
-	sar	esi, 16						// get integer part
-	shl	ebx, 16						// get fractional part
+		texel = *tex;										// get texture pixel 0
+		do	{	// NextPixelBlock: re-sync the light each 4 pixels
+			uint light = (uint)(Tmap.fx_l >> 8) & 0xffff;		// bx
+			Tmap.fx_l += Tmap.fx_dl_dx << 2;					// walk the light a whole block
+			ushort lstep = (ushort)( (ushort)(uint)(Tmap.fx_l >> 8) - (ushort)light );
+			lstep = (ushort)( lstep >> 2 );						// per-pixel light step
+			u_frac = ( u_frac & 0xffff0000u ) | light;
+			du_frac = ( du_frac & 0xffff0000u ) | lstep;
 
-	mov	ecx, Tmap.fx_v			// get v 16.16 
-	mov	edx, ecx						// copy it
-	sar	edx, 16						// get integer part
-	shl	ecx, 16						// get fractional part
-	imul	edx, Tmap.src_offset		// calc texture scanline address
-	add	esi, edx							// calc texture offset
-	add	esi, Tmap.pixptr			// calc address
-	
-	; set edi = address of first pixel to modify
-	mov	edi, Tmap.dest_row_data
-	
-	mov	edx, Tmap.DeltaUFrac
+			for ( int i = 0; i < 4; i++ )	{
+				*dptr++ = gr_fade_table[ (u_frac & 0xff00) + texel ];	// get shaded pixel
+				texel = *tex;					// read for the next pixel *before* stepping
+				tex = tmap_uv_step( tex, &v_frac, &u_frac, Tmap.DeltaVFrac, du_frac );
+			}
+		} while ( --Tmap.num_big_steps != 0 );
+	}
 
-	mov	eax, Tmap.loop_count
-	shr	eax, 2
-	je		DoLeftOverPixels
+	// DoLeftOverPixels: light steps at fx_dl_dx per pixel, undivided
+	{
+		uint light = (uint)(Tmap.fx_l >> 8) & 0xffff;
+		u_frac = ( u_frac & 0xffff0000u ) | light;
+		du_frac = ( du_frac & 0xffff0000u ) | ( (uint)(Tmap.fx_dl_dx >> 8) & 0xffff );
+	}
 
-	mov	Tmap.num_big_steps, eax
-	and	Tmap.loop_count, 3
-
-	mov     al,[edi]                    // preread the destination cache line
-	mov     al,[esi]                    // get texture pixel 0
-
-NextPixelBlock:
-
-	push	eax
-	mov	eax, Tmap.fx_l
-	shr	eax, 8
-	mov	bx, ax
-
-	mov	ebp, Tmap.fx_dl_dx
-	shl	ebp, 2	//*4
-	add	Tmap.fx_l, ebp
-
-	mov	ebp, Tmap.fx_l
-	shr	ebp, 8
-	sub	bp, ax
-	shr	bp, 2
-
-	mov	dx, bp
-	pop	eax
-
-
-    // 8 pixel span code
-    // edi = dest dib bits at current pixel
-    // esi = texture pointer at current u,v
-    // eax = scratch
-    // ebx = u fraction 0.32
-    // ecx = v fraction 0.32
-    // edx = u frac step
-    // ebp = v carry scratch
-
-	mov	ah, bh								// move lighting value into place
-	mov	al, gr_fade_table[eax]			// Get shaded pixel
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+0],al							// store pixel
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	mov	ah, bh								// move lighting value into place
-	mov	al, gr_fade_table[eax]			// Get shaded pixel
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+1],al							// store pixel
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	mov	ah, bh								// move lighting value into place
-	mov	al, gr_fade_table[eax]			// Get shaded pixel
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+2],al							// store pixel
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	mov	ah, bh								// move lighting value into place
-	mov	al, gr_fade_table[eax]			// Get shaded pixel
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+3],al							// store pixel
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	add	edi, 4
-	dec	Tmap.num_big_steps
-	jne	NextPixelBlock
-	
-
-DoLeftOverPixels:
-
-	mov	ebp, Tmap.fx_l
-	shr	ebp, 8
-	mov	bx, bp
-
-	mov	ebp, Tmap.fx_dl_dx
-	shr	ebp, 8
-	mov	dx, bp
-
-	mov	eax,Tmap.loop_count
-	test	eax, -1
-	jz	_none_to_do
-	shr	eax, 1
-	je	one_more_pix
-	mov	Tmap.loop_count, eax
-	pushf
-
-	xor	eax, eax
-
-	mov	al, [edi]                    // preread the destination cache line
-	mov	al, [esi]							// Get first texel
-
-NextPixel:
-
-	mov	ah, bh								// move lighting value into place
-	mov	al, gr_fade_table[eax]			// Get shaded pixel
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+0],al							// store pixel
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	mov	ah, bh								// move lighting value into place
-	mov	al, gr_fade_table[eax]			// Get shaded pixel
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+1],al							// store pixel
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	add	edi, 2
-	dec	Tmap.loop_count
-	jne	NextPixel
-
-	popf
-	jnc	_none_to_do
-
-one_more_pix:	
-	xor	eax, eax
-	mov	al, [esi]							// Get first texel
-	mov	ah, bh
-	mov	al, gr_fade_table[eax]
-   mov	[edi],al                  // store pixel 2
-
-_none_to_do:	
-	pop	edi
-	pop	esi
-	pop	ebp
-	pop	ebx
-	pop	edx
-	pop	ecx
-	pop	eax
+	int nleft = Tmap.loop_count;
+	if ( nleft == 0 )
+		return;
+	int pairs = nleft >> 1;
+	if ( pairs != 0 )	{
+		texel = *tex;								// re-sync the pipelined read
+		Tmap.loop_count = pairs;
+		do	{
+			for ( int i = 0; i < 2; i++ )	{
+				*dptr++ = gr_fade_table[ (u_frac & 0xff00) + texel ];
+				texel = *tex;
+				tex = tmap_uv_step( tex, &v_frac, &u_frac, Tmap.DeltaVFrac, du_frac );
+			}
+		} while ( --Tmap.loop_count != 0 );
+	}
+	if ( nleft & 1 )	{
+		// one_more_pix: reads its texel afresh
+		texel = *tex;
+		*dptr = gr_fade_table[ (u_frac & 0xff00) + texel ];
 	}
 }
 
 
+// tmapscan_lna8_zbuffered_ppro / _pentium
+//
+// Linear alpha-blended mapper with z-buffer *test* only -- the retail
+// asm had the z write commented out.  BlendLookup maps
+// (texel<<8 | dest pixel) -> blended pixel.  The two CPU variants
+// differed only in scheduling; both entry points share this body.
+static void tmapscan_lna8_zbuffered_c()
+{
+	tmap_setup_uv_deltas( (int)Tmap.fx_du_dx, (int)Tmap.fx_dv_dx );
+
+	uint u_frac, v_frac;
+	ubyte *tex = tmap_uv_start( (int)Tmap.fx_u, (int)Tmap.fx_v, &u_frac, &v_frac );
+	ubyte *dptr = (ubyte *)Tmap.dest_row_data;		// edi
+	ubyte *blend = (ubyte *)Tmap.BlendLookup;
+
+	int w = Tmap.fx_w;									// ebp
+	uint *zbuf = &gr_zbuffer[(uintptr_t)dptr - Tmap.pScreenBits];	// edx
+
+	int nblocks = Tmap.loop_count >> 2;
+	if ( nblocks != 0 )	{
+		Tmap.num_big_steps = nblocks;
+		Tmap.loop_count &= 3;
+
+		do	{	// NextPixelBlock
+			for ( int i = 0; i < 4; i++ )	{
+				if ( w > (int)*zbuf )	{		// z test; covered pixels skipped
+					*dptr = blend[ ((uint)*tex << 8) + *dptr ];	// blend them
+				}
+				w += Tmap.fx_dwdx;
+				tex = tmap_uv_step( tex, &v_frac, &u_frac, Tmap.DeltaVFrac, Tmap.DeltaUFrac );
+				zbuf++;
+				dptr++;
+			}
+		} while ( --Tmap.num_big_steps != 0 );
+	}
+
+	// DoLeftOverPixels
+	int nleft = Tmap.loop_count;
+	if ( nleft == 0 )
+		return;
+	int pairs = nleft >> 1;
+	if ( pairs != 0 )	{
+		Tmap.loop_count = pairs;
+		do	{
+			for ( int i = 0; i < 2; i++ )	{
+				if ( w > (int)*zbuf )	{
+					*dptr = blend[ ((uint)*tex << 8) + *dptr ];
+				}
+				w += Tmap.fx_dwdx;
+				tex = tmap_uv_step( tex, &v_frac, &u_frac, Tmap.DeltaVFrac, Tmap.DeltaUFrac );
+				zbuf++;
+				dptr++;
+			}
+		} while ( --Tmap.loop_count != 0 );
+	}
+	if ( nleft & 1 )	{
+		// one_more_pix
+		if ( w > (int)*zbuf )	{
+			*dptr = blend[ ((uint)*tex << 8) + *dptr ];
+		}
+	}
+}
+
 void tmapscan_lna8_zbuffered_ppro()
 {
-	_asm {
-	push	eax
-	push	ecx
-	push	edx
-	push	ebx
-	push	ebp
-	push	esi
-	push	edi
-
-	; setup delta values
-	mov	eax, Tmap.fx_dv_dx	// get v 16.16 step
-	mov	ebx, eax						// copy it
-	sar	eax, 16						// get v int step
-	shl	ebx, 16						// get v frac step
-	mov	Tmap.DeltaVFrac, ebx	// store it
-	imul	eax, Tmap.src_offset	// calc texture step for v int step
-	
-	mov	ebx, Tmap.fx_du_dx		// get u 16.16 step
-	mov	ecx, ebx						// copy it
-	sar	ebx, 16						// get the u int step
-	shl	ecx, 16						// get the u frac step
-	mov	Tmap.DeltaUFrac, ecx			// store it
-	add	eax, ebx						// calc uint + vint step
-
-	mov	Tmap.uv_delta[4], eax	// save whole step in non-v-carry slot
-	add	eax, Tmap.src_offset				// calc whole step + v carry
-	mov	Tmap.uv_delta[0], eax	// save in v-carry slot
-
-	; setup initial coordinates
-	mov	esi, Tmap.fx_u			// get u 16.16
-	mov	ebx, esi						// copy it
-	sar	esi, 16						// get integer part
-	shl	ebx, 16						// get fractional part
-
-	mov	ecx, Tmap.fx_v			// get v 16.16 
-	mov	edx, ecx						// copy it
-	sar	edx, 16						// get integer part
-	shl	ecx, 16						// get fractional part
-	imul	edx, Tmap.src_offset		// calc texture scanline address
-	add	esi, edx							// calc texture offset
-	add	esi, Tmap.pixptr			// calc address
-	
-	; set edi = address of first pixel to modify
-	mov	edi, Tmap.dest_row_data
-	
-	xor	eax, eax
-	mov	al,[edi]							// get the destination pixel
-
-	mov	ebp, Tmap.fx_w
-	mov	edx, gr_zbuffer
-	mov	eax, edi
-	sub	eax, Tmap.pScreenBits
-	shl	eax, 2
-	add	edx, eax
-
-	mov	eax, Tmap.loop_count
-
-	shr	eax, 2
-	je		DoLeftOverPixels
-
-	mov	Tmap.num_big_steps, eax
-	and	Tmap.loop_count, 3
-
-NextPixelBlock:
-
-	// 8 pixel span code
-	// eax = scratch
-	// ebx = u fraction 0.32
-	// ecx = v fraction 0.32
-	// edx = zbuffer pointer
-	// edi = dest dib bits at current pixel
-	// esi = texture pointer at current u,v
-	// ebp = zvalue
-	// esp = stack
-
-	cmp	ebp, [edx+4*0]						// Compare the Z depth of this pixel with zbuffer
-	jle	Skip0a								// If pixel is covered, skip drawing
-//	mov	[edx+4*0], ebp						// Write new Z value
-
-	// Get pixel and blend it
-	push	ebx
-	xor	ebx, ebx
-	mov	bl, [edi+0]
-	xor	eax, eax									// Clear all bits of EAX.  This avoids a partial register stall on Pentium Pros
-	mov	ah, [esi]								// Get texel into AL
-	add	eax, Tmap.BlendLookup
-	mov	eax, [eax+ebx]		// Lookup pixel in lighting table
-	pop	ebx
-
-	mov	[edi+0],al							// store pixel
-Skip0a:
-	add	ebp,Tmap.fx_dwdx					// increment z value
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	eax,eax								// get -1 if carry
-	add	ebx,Tmap.DeltaUFrac				// increment u fraction
-	adc	esi,Tmap.uv_delta[4*eax+4]		// add in step ints & carries
-
-
-	cmp	ebp, [edx+4*1]						// Compare the Z depth of this pixel with zbuffer
-	jle	Skip1a								// If pixel is covered, skip drawing
-//	mov	[edx+4*1], ebp						// Write new Z value
-
-	// Get pixel and blend it
-	push	ebx
-	xor	ebx, ebx
-	mov	bl, [edi+1]
-	xor	eax, eax									// Clear all bits of EAX.  This avoids a partial register stall on Pentium Pros
-	mov	ah, [esi]								// Get texel into AL
-	add	eax, Tmap.BlendLookup
-	mov	eax, [eax+ebx]		// Lookup pixel in lighting table
-	pop	ebx
-
-	mov	[edi+1],al							// store pixel
-Skip1a:
-	add	ebp, Tmap.fx_dwdx
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	eax,eax								// get -1 if carry
-	add	ebx,Tmap.DeltaUFrac				// increment u fraction
-	adc	esi,Tmap.uv_delta[4*eax+4]		// add in step ints & carries
-
-	cmp	ebp, [edx+4*2]						// Compare the Z depth of this pixel with zbuffer
-	jle	Skip2a								// If pixel is covered, skip drawing
-//	mov	[edx+4*2], ebp						// Write new Z value
-
-	push	ebx
-	xor	ebx, ebx
-	mov	bl, [edi+2]
-	xor	eax, eax									// Clear all bits of EAX.  This avoids a partial register stall on Pentium Pros
-	mov	ah, [esi]								// Get texel into AL
-	add	eax, Tmap.BlendLookup
-	mov	eax, [eax+ebx]		// Lookup pixel in lighting table
-	pop	ebx
-
-	mov	[edi+2],al							// store pixel
-Skip2a:
-	add	ebp, Tmap.fx_dwdx
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	eax,eax								// get -1 if carry
-	add	ebx,Tmap.DeltaUFrac				// increment u fraction
-	adc	esi,Tmap.uv_delta[4*eax+4]		// add in step ints & carries
-
-	cmp	ebp, [edx+4*3]						// Compare the Z depth of this pixel with zbuffer
-	jle	Skip3a								// If pixel is covered, skip drawing
-//	mov	[edx+4*3], ebp						// Write new Z value
-
-	push	ebx
-	xor	ebx, ebx
-	mov	bl, [edi+3]
-	xor	eax, eax									// Clear all bits of EAX.  This avoids a partial register stall on Pentium Pros
-	mov	ah, [esi]								// Get texel into AL
-	add	eax, Tmap.BlendLookup
-	mov	eax, [eax+ebx]		// Lookup pixel in lighting table
-	pop	ebx
-
-	mov	[edi+3],al							// store pixel
-Skip3a:
-	add	ebp, Tmap.fx_dwdx
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	eax,eax								// get -1 if carry
-	add	ebx,Tmap.DeltaUFrac				// increment u fraction
-	adc	esi,Tmap.uv_delta[4*eax+4]		// add in step ints & carries
-
-	add	edx, 16
-	add	edi, 4
-	dec	Tmap.num_big_steps
-	jne	NextPixelBlock
-	
-
-DoLeftOverPixels:
-
-	mov	eax,Tmap.loop_count
-	test	eax, -1
-	jz	_none_to_do
-	shr	eax, 1
-	je	one_more_pix
-	mov	Tmap.loop_count, eax
-	pushf
-
-	xor	eax, eax
-	mov	al,[edi]							// get the destination pixel
-
-NextPixel:
-
-	cmp	ebp, [edx+4*0]						// Compare the Z depth of this pixel with zbuffer
-	jle	Skip0b								// If pixel is covered, skip drawing
-//	mov	[edx+4*0], ebp						// Write new Z value
-	mov	al,[edi+0]							// get the destination pixel
-	mov	ah,[esi]								// get texture pixel 0
-	and	eax, 0ffffh
-	add	eax, Tmap.BlendLookup
-	mov	al, [eax]							// blend them
-	mov	[edi+0],al							// store pixel
-Skip0b:
-	add	ebp, Tmap.fx_dwdx
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	eax,eax								// get -1 if carry
-	add	ebx,Tmap.DeltaUFrac				// increment u fraction
-	adc	esi,Tmap.uv_delta[4*eax+4]		// add in step ints & carries
-
-	cmp	ebp, [edx+4*1]						// Compare the Z depth of this pixel with zbuffer
-	jle	Skip1b								// If pixel is covered, skip drawing
-//	mov	[edx+4*1], ebp						// Write new Z value
-	mov	al,[edi+1]							// get the destination pixel
-	mov	ah,[esi]								// get texture pixel 0
-	and	eax, 0ffffh
-	add	eax, Tmap.BlendLookup
-	mov	al, [eax]							// blend them
-	mov	[edi+1],al							// store pixel
-Skip1b:
-	add	ebp, Tmap.fx_dwdx
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	eax,eax								// get -1 if carry
-	add	ebx,Tmap.DeltaUFrac				// increment u fraction
-	adc	esi,Tmap.uv_delta[4*eax+4]		// add in step ints & carries
-
-	add	edi, 2
-	add	edx, 8
-	dec	Tmap.loop_count
-	jne	NextPixel
-
-	popf
-	jnc	_none_to_do
-
-one_more_pix:	
-	cmp	ebp, [edx]						// Compare the Z depth of this pixel with zbuffer
-	jle	Skip0c								// If pixel is covered, skip drawing
-//	mov	[edx], ebp						// Write new Z value
-	mov	al,[edi]							// get the destination pixel
-	mov	ah,[esi]							// get texture pixel 0
-	and	eax, 0ffffh
-	add	eax, Tmap.BlendLookup
-	mov	al, [eax]							// blend them
-	mov	[edi],al							// store pixel
-Skip0c:
-
-_none_to_do:	
-	pop	edi
-  	pop	esi
-	pop	ebp
-	pop	ebx
-	pop	edx
-	pop	ecx
-	pop	eax
-	}	
+	tmapscan_lna8_zbuffered_c();
 }
 
 void tmapscan_lna8_zbuffered_pentium()
 {
-	_asm {
-	push	eax
-	push	ecx
-	push	edx
-	push	ebx
-	push	ebp
-	push	esi
-	push	edi
-
-	; setup delta values
-	mov	eax, Tmap.fx_dv_dx	// get v 16.16 step
-	mov	ebx, eax						// copy it
-	sar	eax, 16						// get v int step
-	shl	ebx, 16						// get v frac step
-	mov	Tmap.DeltaVFrac, ebx	// store it
-	imul	eax, Tmap.src_offset	// calc texture step for v int step
-	
-	mov	ebx, Tmap.fx_du_dx		// get u 16.16 step
-	mov	ecx, ebx						// copy it
-	sar	ebx, 16						// get the u int step
-	shl	ecx, 16						// get the u frac step
-	mov	Tmap.DeltaUFrac, ecx			// store it
-	add	eax, ebx						// calc uint + vint step
-
-	mov	Tmap.uv_delta[4], eax	// save whole step in non-v-carry slot
-	add	eax, Tmap.src_offset				// calc whole step + v carry
-	mov	Tmap.uv_delta[0], eax	// save in v-carry slot
-
-	; setup initial coordinates
-	mov	esi, Tmap.fx_u			// get u 16.16
-	mov	ebx, esi						// copy it
-	sar	esi, 16						// get integer part
-	shl	ebx, 16						// get fractional part
-
-	mov	ecx, Tmap.fx_v			// get v 16.16 
-	mov	edx, ecx						// copy it
-	sar	edx, 16						// get integer part
-	shl	ecx, 16						// get fractional part
-	imul	edx, Tmap.src_offset		// calc texture scanline address
-	add	esi, edx							// calc texture offset
-	add	esi, Tmap.pixptr			// calc address
-	
-	; set edi = address of first pixel to modify
-	mov	edi, Tmap.dest_row_data
-	
-	xor	eax, eax
-	mov	al,[edi]							// get the destination pixel
-
-	mov	ebp, Tmap.fx_w
-	mov	edx, gr_zbuffer
-	mov	eax, edi
-	sub	eax, Tmap.pScreenBits
-	shl	eax, 2
-	add	edx, eax
-
-	mov	eax, Tmap.loop_count
-
-	shr	eax, 2
-	je		DoLeftOverPixels
-
-	mov	Tmap.num_big_steps, eax
-	and	Tmap.loop_count, 3
-
-NextPixelBlock:
-
-	// 8 pixel span code
-	// eax = scratch
-	// ebx = u fraction 0.32
-	// ecx = v fraction 0.32
-	// edx = zbuffer pointer
-	// edi = dest dib bits at current pixel
-	// esi = texture pointer at current u,v
-	// ebp = zvalue
-	// esp = stack
-
-	cmp	ebp, [edx+4*0]						// Compare the Z depth of this pixel with zbuffer
-	jle	Skip0a								// If pixel is covered, skip drawing
-//	mov	[edx+4*0], ebp						// Write new Z value
-	mov	al,[edi+0]							// get the destination pixel
-	mov	ah,[esi]								// get texture pixel 0
-	and	eax, 0ffffh
-
-
-
-
-	add	eax, Tmap.BlendLookup
-	mov	al, [eax]							// blend them
-
-
-	mov	[edi+0],al							// store pixel
-Skip0a:
-	add	ebp,Tmap.fx_dwdx					// increment z value
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	eax,eax								// get -1 if carry
-	add	ebx,Tmap.DeltaUFrac				// increment u fraction
-	adc	esi,Tmap.uv_delta[4*eax+4]		// add in step ints & carries
-
-
-	cmp	ebp, [edx+4*1]						// Compare the Z depth of this pixel with zbuffer
-	jle	Skip1a								// If pixel is covered, skip drawing
-//	mov	[edx+4*1], ebp						// Write new Z value
-	mov	al,[edi+1]							// get the destination pixel
-	mov	ah,[esi]								// get texture pixel 0
-	and	eax, 0ffffh
-
-
-
-
-	add	eax, Tmap.BlendLookup
-	mov	al, [eax]							// blend them
-
-
-	mov	[edi+1],al							// store pixel
-Skip1a:
-	add	ebp, Tmap.fx_dwdx
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	eax,eax								// get -1 if carry
-	add	ebx,Tmap.DeltaUFrac				// increment u fraction
-	adc	esi,Tmap.uv_delta[4*eax+4]		// add in step ints & carries
-
-	cmp	ebp, [edx+4*2]						// Compare the Z depth of this pixel with zbuffer
-	jle	Skip2a								// If pixel is covered, skip drawing
-//	mov	[edx+4*2], ebp						// Write new Z value
-	mov	al,[edi+2]							// get the destination pixel
-	mov	ah,[esi]								// get texture pixel 0
-	and	eax, 0ffffh
-
-
-
-	add	eax, Tmap.BlendLookup
-	mov	al, [eax]							// blend them
-
-
-	mov	[edi+2],al							// store pixel
-Skip2a:
-	add	ebp, Tmap.fx_dwdx
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	eax,eax								// get -1 if carry
-	add	ebx,Tmap.DeltaUFrac				// increment u fraction
-	adc	esi,Tmap.uv_delta[4*eax+4]		// add in step ints & carries
-
-	cmp	ebp, [edx+4*3]						// Compare the Z depth of this pixel with zbuffer
-	jle	Skip3a								// If pixel is covered, skip drawing
-//	mov	[edx+4*3], ebp						// Write new Z value
-	mov	al,[edi+3]							// get the destination pixel
-	mov	ah,[esi]								// get texture pixel 0
-	and	eax, 0ffffh
-
-
-
-	add	eax, Tmap.BlendLookup
-	mov	al, [eax]							// blend them
-
-
-	mov	[edi+3],al							// store pixel
-Skip3a:
-	add	ebp, Tmap.fx_dwdx
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	eax,eax								// get -1 if carry
-	add	ebx,Tmap.DeltaUFrac				// increment u fraction
-	adc	esi,Tmap.uv_delta[4*eax+4]		// add in step ints & carries
-
-	add	edx, 16
-	add	edi, 4
-	dec	Tmap.num_big_steps
-	jne	NextPixelBlock
-	
-
-DoLeftOverPixels:
-
-	mov	eax,Tmap.loop_count
-	test	eax, -1
-	jz	_none_to_do
-	shr	eax, 1
-	je	one_more_pix
-	mov	Tmap.loop_count, eax
-	pushf
-
-	xor	eax, eax
-	mov	al,[edi]							// get the destination pixel
-
-NextPixel:
-
-	cmp	ebp, [edx+4*0]						// Compare the Z depth of this pixel with zbuffer
-	jle	Skip0b								// If pixel is covered, skip drawing
-//	mov	[edx+4*0], ebp						// Write new Z value
-	mov	al,[edi+0]							// get the destination pixel
-	mov	ah,[esi]								// get texture pixel 0
-	and	eax, 0ffffh
-	add	eax, Tmap.BlendLookup
-	mov	al, [eax]							// blend them
-	mov	[edi+0],al							// store pixel
-Skip0b:
-	add	ebp, Tmap.fx_dwdx
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	eax,eax								// get -1 if carry
-	add	ebx,Tmap.DeltaUFrac				// increment u fraction
-	adc	esi,Tmap.uv_delta[4*eax+4]		// add in step ints & carries
-
-	cmp	ebp, [edx+4*1]						// Compare the Z depth of this pixel with zbuffer
-	jle	Skip1b								// If pixel is covered, skip drawing
-//	mov	[edx+4*1], ebp						// Write new Z value
-	mov	al,[edi+1]							// get the destination pixel
-	mov	ah,[esi]								// get texture pixel 0
-	and	eax, 0ffffh
-	add	eax, Tmap.BlendLookup
-	mov	al, [eax]							// blend them
-	mov	[edi+1],al							// store pixel
-Skip1b:
-	add	ebp, Tmap.fx_dwdx
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	eax,eax								// get -1 if carry
-	add	ebx,Tmap.DeltaUFrac				// increment u fraction
-	adc	esi,Tmap.uv_delta[4*eax+4]		// add in step ints & carries
-
-	add	edi, 2
-	add	edx, 8
-	dec	Tmap.loop_count
-	jne	NextPixel
-
-	popf
-	jnc	_none_to_do
-
-one_more_pix:	
-	cmp	ebp, [edx]						// Compare the Z depth of this pixel with zbuffer
-	jle	Skip0c								// If pixel is covered, skip drawing
-//	mov	[edx], ebp						// Write new Z value
-	mov	al,[edi]							// get the destination pixel
-	mov	ah,[esi]							// get texture pixel 0
-	and	eax, 0ffffh
-	add	eax, Tmap.BlendLookup
-	mov	al, [eax]							// blend them
-	mov	[edi],al							// store pixel
-Skip0c:
-
-_none_to_do:	
-	pop	edi
-  	pop	esi
-	pop	ebp
-	pop	ebx
-	pop	edx
-	pop	ecx
-	pop	eax
-	}
+	tmapscan_lna8_zbuffered_c();
 }
 
 void tmapscan_lna8_zbuffered()
@@ -1935,186 +694,49 @@ void tmapscan_lna8()
 
 	}
 	
-	_asm {
-	push	eax
-	push	ecx
-	push	edx
-	push	ebx
-	push	ebp
-	push	esi
-	push	edi
+	// Linear alpha-blended mapper, no z-buffering.
+	tmap_setup_uv_deltas( (int)Tmap.fx_du_dx, (int)Tmap.fx_dv_dx );
 
-	; setup delta values
-	mov	eax, Tmap.fx_dv_dx	// get v 16.16 step
-	mov	ebx, eax						// copy it
-	sar	eax, 16						// get v int step
-	shl	ebx, 16						// get v frac step
-	mov	Tmap.DeltaVFrac, ebx	// store it
-	imul	eax, Tmap.src_offset	// calc texture step for v int step
-	
-	mov	ebx, Tmap.fx_du_dx		// get u 16.16 step
-	mov	ecx, ebx						// copy it
-	sar	ebx, 16						// get the u int step
-	shl	ecx, 16						// get the u frac step
-	mov	Tmap.DeltaUFrac, ecx			// store it
-	add	eax, ebx						// calc uint + vint step
+	uint u_frac, v_frac;
+	ubyte *tex = tmap_uv_start( (int)Tmap.fx_u, (int)Tmap.fx_v, &u_frac, &v_frac );
+	ubyte *dptr = (ubyte *)Tmap.dest_row_data;		// edi
+	ubyte *blend = (ubyte *)Tmap.BlendLookup;
+	uint du_frac = Tmap.DeltaUFrac;					// edx
 
-	mov	Tmap.uv_delta[4], eax	// save whole step in non-v-carry slot
-	add	eax, Tmap.src_offset				// calc whole step + v carry
-	mov	Tmap.uv_delta[0], eax	// save in v-carry slot
+	int nblocks = Tmap.loop_count >> 2;
+	if ( nblocks != 0 )	{
+		Tmap.num_big_steps = nblocks;
+		Tmap.loop_count &= 3;
 
-	; setup initial coordinates
-	mov	esi, Tmap.fx_u			// get u 16.16
-	mov	ebx, esi						// copy it
-	sar	esi, 16						// get integer part
-	shl	ebx, 16						// get fractional part
+		do	{	// NextPixelBlock
+			for ( int i = 0; i < 4; i++ )	{
+				ubyte c = *tex;						// get texture pixel
+				*dptr = blend[ ((uint)c << 8) + *dptr ];	// blend them
+				tex = tmap_uv_step( tex, &v_frac, &u_frac, Tmap.DeltaVFrac, du_frac );
+				dptr++;
+			}
+		} while ( --Tmap.num_big_steps != 0 );
+	}
 
-	mov	ecx, Tmap.fx_v			// get v 16.16 
-	mov	edx, ecx						// copy it
-	sar	edx, 16						// get integer part
-	shl	ecx, 16						// get fractional part
-	imul	edx, Tmap.src_offset		// calc texture scanline address
-	add	esi, edx							// calc texture offset
-	add	esi, Tmap.pixptr			// calc address
-	
-	; set edi = address of first pixel to modify
-	mov	edi, Tmap.dest_row_data
-	
-	mov	edx, Tmap.DeltaUFrac
-
-	xor	eax, eax
-	mov	al,[edi]							// get the destination pixel
-
-	mov	ebp, Tmap.loop_count
-
-	shr	ebp, 2
-	je		DoLeftOverPixels
-
-	mov	Tmap.num_big_steps, ebp
-	and	Tmap.loop_count, 3
-
-	mov	eax, 0
-
-NextPixelBlock:
-
-    // 8 pixel span code
-    // edi = dest dib bits at current pixel
-    // esi = texture pointer at current u,v
-    // eax = scratch
-    // ebx = u fraction 0.32
-    // ecx = v fraction 0.32
-    // edx = u frac step
-    // ebp = v carry scratch
-
-
-	xor	eax, eax
-	mov	al,[edi+0]							// get the destination pixel
-	mov	ah,[esi]								// get texture pixel 0
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]		// add in step ints & carries
-	add	eax, Tmap.BlendLookup
-	mov	al, [eax]							// blend them
-	mov	[edi+0],al							// store pixel
-
-	xor	eax, eax
-	mov	al,[edi+1]							// get the destination pixel
-	mov	ah,[esi]								// get texture pixel 0
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]		// add in step ints & carries
-	add	eax, Tmap.BlendLookup
-	mov	al, [eax]							// blend them
-	mov	[edi+1],al							// store pixel
-
-	xor	eax, eax
-	mov	al,[edi+2]							// get the destination pixel
-	mov	ah,[esi]								// get texture pixel 0
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]		// add in step ints & carries
-	add	eax, Tmap.BlendLookup
-	mov	al, [eax]							// blend them
-	mov	[edi+2],al							// store pixel
-
-	xor	eax, eax
-	mov	al,[edi+3]							// get the destination pixel
-	mov	ah,[esi]								// get texture pixel 0
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]		// add in step ints & carries
-	add	eax, Tmap.BlendLookup
-	mov	al, [eax]							// blend them
-	mov	[edi+3],al							// store pixel
-
-	add	edi, 4
-	dec	Tmap.num_big_steps
-	jne	NextPixelBlock
-	
-
-DoLeftOverPixels:
-
-	mov	ebp,Tmap.loop_count
-	test	ebp, -1
-	jz	_none_to_do
-	shr	ebp, 1
-	je	one_more_pix
-	mov	Tmap.loop_count, ebp
-	pushf
-
-	mov	al,[edi]							// get the destination pixel
-
-NextPixel:
-
-	xor	eax, eax
-	mov	al,[edi+0]							// get the destination pixel
-	mov	ah,[esi]								// get texture pixel 0
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]		// add in step ints & carries
-	add	eax, Tmap.BlendLookup
-	mov	al, [eax]							// blend them
-	mov	[edi+0],al							// store pixel
-
-	xor	eax, eax
-	mov	al,[edi+1]							// get the destination pixel
-	mov	ah,[esi]								// get texture pixel 0
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]		// add in step ints & carries
-	add	eax, Tmap.BlendLookup
-	mov	al, [eax]							// blend them
-	mov	[edi+1],al							// store pixel
-
-	add	edi, 2
-	dec	Tmap.loop_count
-	jne	NextPixel
-
-	popf
-	jnc	_none_to_do
-
-one_more_pix:	
-	mov	eax, 0
-	mov	al,[edi]							// get the destination pixel
-	mov	ah,[esi]							// get texture pixel 0
-	add	eax, Tmap.BlendLookup
-	mov	al, [eax]							// blend them
-	mov	[edi],al							// store pixel
-
-_none_to_do:	
-	pop	edi
-	pop	esi
-	pop	ebp
-	pop	ebx
-	pop	edx
-	pop	ecx
-	pop	eax
+	// DoLeftOverPixels
+	int nleft = Tmap.loop_count;
+	if ( nleft == 0 )
+		return;
+	int pairs = nleft >> 1;
+	if ( pairs != 0 )	{
+		Tmap.loop_count = pairs;
+		do	{
+			for ( int i = 0; i < 2; i++ )	{
+				ubyte c = *tex;
+				*dptr = blend[ ((uint)c << 8) + *dptr ];
+				tex = tmap_uv_step( tex, &v_frac, &u_frac, Tmap.DeltaVFrac, du_frac );
+				dptr++;
+			}
+		} while ( --Tmap.loop_count != 0 );
+	}
+	if ( nleft & 1 )	{
+		// one_more_pix
+		*dptr = blend[ ((uint)*tex << 8) + *dptr ];
 	}
 }
 
@@ -2147,157 +769,42 @@ void tmapscan_lnn8_read()
 	}
 */
 
-	_asm {
-	push	eax
-	push	ecx
-	push	edx
-	push	ebx
-	push	ebp
-	push	esi
-	push	edi
+	// Reverse mapper: copies the screen back into the texture along the
+	// same u/v walk (model caching).
+	tmap_setup_uv_deltas( (int)Tmap.fx_du_dx, (int)Tmap.fx_dv_dx );
 
-	; setup delta values
-	mov	eax, Tmap.fx_dv_dx	// get v 16.16 step
-	mov	ebx, eax						// copy it
-	sar	eax, 16						// get v int step
-	shl	ebx, 16						// get v frac step
-	mov	Tmap.DeltaVFrac, ebx	// store it
-	imul	eax, Tmap.src_offset	// calc texture step for v int step
-	
-	mov	ebx, Tmap.fx_du_dx		// get u 16.16 step
-	mov	ecx, ebx						// copy it
-	sar	ebx, 16						// get the u int step
-	shl	ecx, 16						// get the u frac step
-	mov	Tmap.DeltaUFrac, ecx			// store it
-	add	eax, ebx						// calc uint + vint step
+	uint u_frac, v_frac;
+	ubyte *tex = tmap_uv_start( (int)Tmap.fx_u, (int)Tmap.fx_v, &u_frac, &v_frac );
+	ubyte *dptr = (ubyte *)Tmap.dest_row_data;		// edi
+	uint du_frac = Tmap.DeltaUFrac;					// edx
 
-	mov	Tmap.uv_delta[4], eax	// save whole step in non-v-carry slot
-	add	eax, Tmap.src_offset				// calc whole step + v carry
-	mov	Tmap.uv_delta[0], eax	// save in v-carry slot
+	int nblocks = Tmap.loop_count >> 2;
+	if ( nblocks != 0 )	{
+		Tmap.num_big_steps = nblocks;
+		Tmap.loop_count &= 3;
+		do	{
+			for ( int i = 0; i < 4; i++ )	{
+				*tex = *dptr++;						// screen pixel -> texture
+				tex = tmap_uv_step( tex, &v_frac, &u_frac, Tmap.DeltaVFrac, du_frac );
+			}
+		} while ( --Tmap.num_big_steps != 0 );
+	}
 
-	; setup initial coordinates
-	mov	esi, Tmap.fx_u			// get u 16.16
-	mov	ebx, esi						// copy it
-	sar	esi, 16						// get integer part
-	shl	ebx, 16						// get fractional part
-
-	mov	ecx, Tmap.fx_v			// get v 16.16 
-	mov	edx, ecx						// copy it
-	sar	edx, 16						// get integer part
-	shl	ecx, 16						// get fractional part
-	imul	edx, Tmap.src_offset		// calc texture scanline address
-	add	esi, edx							// calc texture offset
-	add	esi, Tmap.pixptr			// calc address
-	
-	; set edi = address of first pixel to modify
-	mov	edi, Tmap.dest_row_data
-	
-	mov	edx, Tmap.DeltaUFrac
-
-	mov     al,[edi]                    // preread the destination cache line
-
-	mov	ebp, Tmap.loop_count
-
-	shr	ebp, 2
-	je		DoLeftOverPixels
-
-	mov	Tmap.num_big_steps, ebp
-	and	Tmap.loop_count, 3
-
-
-NextPixelBlock:
-
-    // 8 pixel span code
-    // edi = dest dib bits at current pixel
-    // esi = texture pointer at current u,v
-    // eax = scratch
-    // ebx = u fraction 0.32
-    // ecx = v fraction 0.32
-    // edx = u frac step
-    // ebp = v carry scratch
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	al,[edi+0]							// get texture pixel
-	mov	[esi],al								// store pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]		// add in step ints & carries
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	al,[edi+1]							// get texture pixel
-	mov	[esi],al								// store pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]		// add in step ints & carries
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	al,[edi+2]							// get texture pixel
-	mov	[esi],al								// store pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]		// add in step ints & carries
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	al,[edi+3]							// get texture pixel
-	mov	[esi],al								// store pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]		// add in step ints & carries
-
-	add	edi, 4
-	dec	Tmap.num_big_steps
-	jne	NextPixelBlock
-	
-
-DoLeftOverPixels:
-
-	mov	ebp,Tmap.loop_count
-	test	ebp, -1
-	jz	_none_to_do
-	shr	ebp, 1
-	je	one_more_pix
-	mov	Tmap.loop_count, ebp
-	pushf
-
-	xor	eax, eax
-
-	mov	al, [edi]                    // preread the destination cache line
-
-NextPixel:
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	al,[edi+0]							// get texture pixel
-	mov	[esi],al								// store pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]		// add in step ints & carries
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	al,[edi+1]							// get texture pixel
-	mov	[esi],al								// store pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]		// add in step ints & carries
-
-	add	edi, 2
-	dec	Tmap.loop_count
-	jne	NextPixel
-
-	popf
-	jnc	_none_to_do
-
-one_more_pix:	
-	mov	al,[edi]								// get texture pixel
-   mov	[esi],al                  // store pixel 2
-
-_none_to_do:	
-	pop	edi
-	pop	esi
-	pop	ebp
-	pop	ebx
-	pop	edx
-	pop	ecx
-	pop	eax
+	int nleft = Tmap.loop_count;
+	if ( nleft == 0 )
+		return;
+	int pairs = nleft >> 1;
+	if ( pairs != 0 )	{
+		Tmap.loop_count = pairs;
+		do	{
+			for ( int i = 0; i < 2; i++ )	{
+				*tex = *dptr++;
+				tex = tmap_uv_step( tex, &v_frac, &u_frac, Tmap.DeltaVFrac, du_frac );
+			}
+		} while ( --Tmap.loop_count != 0 );
+	}
+	if ( nleft & 1 )	{
+		*tex = *dptr;									// one_more_pix
 	}
 }
 
@@ -2332,178 +839,49 @@ void tmapscan_lnn8_write()
 	}
 */
 
-	_asm {
-	push	eax
-	push	ecx
-	push	edx
-	push	ebx
-	push	ebp
-	push	esi
-	push	edi
+	// Forward mapper for model caching: texel 255 is transparent.
+	tmap_setup_uv_deltas( (int)Tmap.fx_du_dx, (int)Tmap.fx_dv_dx );
 
-	; setup delta values
-	mov	eax, Tmap.fx_dv_dx	// get v 16.16 step
-	mov	ebx, eax						// copy it
-	sar	eax, 16						// get v int step
-	shl	ebx, 16						// get v frac step
-	mov	Tmap.DeltaVFrac, ebx	// store it
-	imul	eax, Tmap.src_offset	// calc texture step for v int step
-	
-	mov	ebx, Tmap.fx_du_dx		// get u 16.16 step
-	mov	ecx, ebx						// copy it
-	sar	ebx, 16						// get the u int step
-	shl	ecx, 16						// get the u frac step
-	mov	Tmap.DeltaUFrac, ecx			// store it
-	add	eax, ebx						// calc uint + vint step
+	uint u_frac, v_frac;
+	ubyte *tex = tmap_uv_start( (int)Tmap.fx_u, (int)Tmap.fx_v, &u_frac, &v_frac );
+	ubyte *dptr = (ubyte *)Tmap.dest_row_data;		// edi
+	uint du_frac = Tmap.DeltaUFrac;					// edx
 
-	mov	Tmap.uv_delta[4], eax	// save whole step in non-v-carry slot
-	add	eax, Tmap.src_offset				// calc whole step + v carry
-	mov	Tmap.uv_delta[0], eax	// save in v-carry slot
+	int nblocks = Tmap.loop_count >> 2;
+	if ( nblocks != 0 )	{
+		Tmap.num_big_steps = nblocks;
+		Tmap.loop_count &= 3;
+		do	{
+			for ( int i = 0; i < 4; i++ )	{
+				ubyte c = *tex;						// get texture pixel
+				tex = tmap_uv_step( tex, &v_frac, &u_frac, Tmap.DeltaVFrac, du_frac );
+				if ( c != 255 )
+					*dptr = c;							// store pixel
+				dptr++;
+			}
+		} while ( --Tmap.num_big_steps != 0 );
+	}
 
-	; setup initial coordinates
-	mov	esi, Tmap.fx_u			// get u 16.16
-	mov	ebx, esi						// copy it
-	sar	esi, 16						// get integer part
-	shl	ebx, 16						// get fractional part
-
-	mov	ecx, Tmap.fx_v			// get v 16.16 
-	mov	edx, ecx						// copy it
-	sar	edx, 16						// get integer part
-	shl	ecx, 16						// get fractional part
-	imul	edx, Tmap.src_offset		// calc texture scanline address
-	add	esi, edx							// calc texture offset
-	add	esi, Tmap.pixptr			// calc address
-	
-	; set edi = address of first pixel to modify
-	mov	edi, Tmap.dest_row_data
-	
-	mov	edx, Tmap.DeltaUFrac
-
-	mov     al,[edi]                    // preread the destination cache line
-
-	mov	ebp, Tmap.loop_count
-
-	shr	ebp, 2
-	je		DoLeftOverPixels
-
-	mov	Tmap.num_big_steps, ebp
-	and	Tmap.loop_count, 3
-
-
-NextPixelBlock:
-
-    // 8 pixel span code
-    // edi = dest dib bits at current pixel
-    // esi = texture pointer at current u,v
-    // eax = scratch
-    // ebx = u fraction 0.32
-    // ecx = v fraction 0.32
-    // edx = u frac step
-    // ebp = v carry scratch
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]		// add in step ints & carries
-	cmp	al, 255
-	je		Skip0
-	mov	[edi+0],al							// store pixel
-Skip0:
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]		// add in step ints & carries
-	cmp	al, 255
-	je		Skip1
-	mov	[edi+1],al							// store pixel
-Skip1:
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]		// add in step ints & carries
-	cmp	al, 255
-	je		Skip2
-	mov	[edi+2],al							// store pixel
-Skip2:
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]		// add in step ints & carries
-	cmp	al, 255
-	je		Skip3
-	mov	[edi+3],al							// store pixel
-Skip3:
-
-	add	edi, 4
-	dec	Tmap.num_big_steps
-	jne	NextPixelBlock
-	
-
-DoLeftOverPixels:
-
-	mov	ebp,Tmap.loop_count
-	test	ebp, -1
-	jz	_none_to_do
-	shr	ebp, 1
-	je	one_more_pix
-	mov	Tmap.loop_count, ebp
-	pushf
-
-	xor	eax, eax
-
-	mov	al, [edi]                    // preread the destination cache line
-
-NextPixel:
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]		// add in step ints & carries
-	cmp	al, 255
-	je		Skip0a
-	mov	[edi+0],al							// store pixel
-Skip0a:
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]		// add in step ints & carries
-	cmp	al, 255
-	je		Skip1a
-	mov	[edi+1],al							// store pixel
-Skip1a:
-
-	add	edi, 2
-	dec	Tmap.loop_count
-	jne	NextPixel
-
-	popf
-	jnc	_none_to_do
-
-one_more_pix:	
-	mov	al,[esi]								// get texture pixel
-	cmp	al, 255
-	je		Skip0b
-	mov	[edi],al							// store pixel
-Skip0b:
-
-_none_to_do:	
-	pop	edi
-	pop	esi
-	pop	ebp
-	pop	ebx
-	pop	edx
-	pop	ecx
-	pop	eax
+	int nleft = Tmap.loop_count;
+	if ( nleft == 0 )
+		return;
+	int pairs = nleft >> 1;
+	if ( pairs != 0 )	{
+		Tmap.loop_count = pairs;
+		do	{
+			for ( int i = 0; i < 2; i++ )	{
+				ubyte c = *tex;
+				tex = tmap_uv_step( tex, &v_frac, &u_frac, Tmap.DeltaVFrac, du_frac );
+				if ( c != 255 )
+					*dptr = c;
+				dptr++;
+			}
+		} while ( --Tmap.loop_count != 0 );
+	}
+	if ( nleft & 1 )	{
+		ubyte c = *tex;									// one_more_pix
+		if ( c != 255 )
+			*dptr = c;
 	}
 }
 
@@ -2524,158 +902,49 @@ void tmapscan_lnn8()
 		return;
 	}
 
-	_asm {
-	push	eax
-	push	ecx
-	push	edx
-	push	ebx
-	push	ebp
-	push	esi
-	push	edi
+	// Linear unlit opaque mapper.  Pipelined texel read as in
+	// tmapscan_pln8_c: the in-loop read happens before the step, so
+	// every pixel after the first reuses the previous pixel's texel;
+	// the leftover section re-syncs the read.
+	tmap_setup_uv_deltas( (int)Tmap.fx_du_dx, (int)Tmap.fx_dv_dx );
 
-	; setup delta values
-	mov	eax, Tmap.fx_dv_dx	// get v 16.16 step
-	mov	ebx, eax						// copy it
-	sar	eax, 16						// get v int step
-	shl	ebx, 16						// get v frac step
-	mov	Tmap.DeltaVFrac, ebx	// store it
-	imul	eax, Tmap.src_offset	// calc texture step for v int step
-	
-	mov	ebx, Tmap.fx_du_dx		// get u 16.16 step
-	mov	ecx, ebx						// copy it
-	sar	ebx, 16						// get the u int step
-	shl	ecx, 16						// get the u frac step
-	mov	Tmap.DeltaUFrac, ecx			// store it
-	add	eax, ebx						// calc uint + vint step
+	uint u_frac, v_frac;
+	ubyte *tex = tmap_uv_start( (int)Tmap.fx_u, (int)Tmap.fx_v, &u_frac, &v_frac );
+	ubyte *dptr = (ubyte *)Tmap.dest_row_data;		// edi
+	uint du_frac = Tmap.DeltaUFrac;					// edx
 
-	mov	Tmap.uv_delta[4], eax	// save whole step in non-v-carry slot
-	add	eax, Tmap.src_offset				// calc whole step + v carry
-	mov	Tmap.uv_delta[0], eax	// save in v-carry slot
+	ubyte texel = *tex;									// get texture pixel 0
 
-	; setup initial coordinates
-	mov	esi, Tmap.fx_u			// get u 16.16
-	mov	ebx, esi						// copy it
-	sar	esi, 16						// get integer part
-	shl	ebx, 16						// get fractional part
+	int nblocks = Tmap.loop_count >> 2;
+	if ( nblocks != 0 )	{
+		Tmap.num_big_steps = nblocks;
+		Tmap.loop_count &= 3;
+		do	{
+			for ( int i = 0; i < 4; i++ )	{
+				*dptr++ = texel;						// store pixel
+				texel = *tex;							// read *before* stepping
+				tex = tmap_uv_step( tex, &v_frac, &u_frac, Tmap.DeltaVFrac, du_frac );
+			}
+		} while ( --Tmap.num_big_steps != 0 );
+	}
 
-	mov	ecx, Tmap.fx_v			// get v 16.16 
-	mov	edx, ecx						// copy it
-	sar	edx, 16						// get integer part
-	shl	ecx, 16						// get fractional part
-	imul	edx, Tmap.src_offset		// calc texture scanline address
-	add	esi, edx							// calc texture offset
-	add	esi, Tmap.pixptr			// calc address
-	
-	; set edi = address of first pixel to modify
-	mov	edi, Tmap.dest_row_data
-	
-	mov	edx, Tmap.DeltaUFrac
-
-	mov     al,[edi]                    // preread the destination cache line
-	mov     al,[esi]                    // get texture pixel 0
-
-	mov	ebp, Tmap.loop_count
-
-	shr	ebp, 2
-	je		DoLeftOverPixels
-
-	mov	Tmap.num_big_steps, ebp
-	and	Tmap.loop_count, 3
-
-
-NextPixelBlock:
-
-    // 8 pixel span code
-    // edi = dest dib bits at current pixel
-    // esi = texture pointer at current u,v
-    // eax = scratch
-    // ebx = u fraction 0.32
-    // ecx = v fraction 0.32
-    // edx = u frac step
-    // ebp = v carry scratch
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+0],al							// store pixel
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+1],al							// store pixel
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+2],al							// store pixel
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+3],al							// store pixel
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	add	edi, 4
-	dec	Tmap.num_big_steps
-	jne	NextPixelBlock
-	
-
-DoLeftOverPixels:
-
-	mov	ebp,Tmap.loop_count
-	test	ebp, -1
-	jz	_none_to_do
-	shr	ebp, 1
-	je	one_more_pix
-	mov	Tmap.loop_count, ebp
-	pushf
-
-	xor	eax, eax
-
-	mov	al, [edi]                    // preread the destination cache line
-	mov	al, [esi]							// Get first texel
-
-NextPixel:
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+0],al							// store pixel
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	mov	[edi+1],al							// store pixel
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	add	edi, 2
-	dec	Tmap.loop_count
-	jne	NextPixel
-
-	popf
-	jnc	_none_to_do
-
-one_more_pix:	
-   mov     [edi],al                  // store pixel 2
-
-_none_to_do:	
-	pop	edi
-	pop	esi
-	pop	ebp
-	pop	ebx
-	pop	edx
-	pop	ecx
-	pop	eax
+	int nleft = Tmap.loop_count;
+	if ( nleft == 0 )
+		return;
+	int pairs = nleft >> 1;
+	if ( pairs != 0 )	{
+		texel = *tex;										// re-sync the pipelined read
+		Tmap.loop_count = pairs;
+		do	{
+			for ( int i = 0; i < 2; i++ )	{
+				*dptr++ = texel;
+				texel = *tex;
+				tex = tmap_uv_step( tex, &v_frac, &u_frac, Tmap.DeltaVFrac, du_frac );
+			}
+		} while ( --Tmap.loop_count != 0 );
+	}
+	if ( nleft & 1 )	{
+		*dptr = texel;										// one_more_pix: no re-read
 	}
 }
 
@@ -2686,1311 +955,223 @@ void tmapscan_lnt8()
 		return;
 	}
 
-	_asm {
-	push	eax
-	push	ecx
-	push	edx
-	push	ebx
-	push	ebp
-	push	esi
-	push	edi
+	// Linear unlit transparent mapper: texel 255 is not drawn.  Same
+	// pipelined texel read (and one-texel lag) as tmapscan_lnn8.
+	tmap_setup_uv_deltas( (int)Tmap.fx_du_dx, (int)Tmap.fx_dv_dx );
 
-	; setup delta values
-	mov	eax, Tmap.fx_dv_dx	// get v 16.16 step
-	mov	ebx, eax						// copy it
-	sar	eax, 16						// get v int step
-	shl	ebx, 16						// get v frac step
-	mov	Tmap.DeltaVFrac, ebx	// store it
-	imul	eax, Tmap.src_offset	// calc texture step for v int step
-	
-	mov	ebx, Tmap.fx_du_dx		// get u 16.16 step
-	mov	ecx, ebx						// copy it
-	sar	ebx, 16						// get the u int step
-	shl	ecx, 16						// get the u frac step
-	mov	Tmap.DeltaUFrac, ecx			// store it
-	add	eax, ebx						// calc uint + vint step
+	uint u_frac, v_frac;
+	ubyte *tex = tmap_uv_start( (int)Tmap.fx_u, (int)Tmap.fx_v, &u_frac, &v_frac );
+	ubyte *dptr = (ubyte *)Tmap.dest_row_data;		// edi
+	uint du_frac = Tmap.DeltaUFrac;					// edx
 
-	mov	Tmap.uv_delta[4], eax	// save whole step in non-v-carry slot
-	add	eax, Tmap.src_offset				// calc whole step + v carry
-	mov	Tmap.uv_delta[0], eax	// save in v-carry slot
+	ubyte texel = *tex;									// get texture pixel 0
 
-	; setup initial coordinates
-	mov	esi, Tmap.fx_u			// get u 16.16
-	mov	ebx, esi						// copy it
-	sar	esi, 16						// get integer part
-	shl	ebx, 16						// get fractional part
+	int nblocks = Tmap.loop_count >> 2;
+	if ( nblocks != 0 )	{
+		Tmap.num_big_steps = nblocks;
+		Tmap.loop_count &= 3;
+		do	{
+			for ( int i = 0; i < 4; i++ )	{
+				if ( texel != 255 )
+					*dptr = texel;						// store pixel
+				dptr++;
+				texel = *tex;							// read *before* stepping
+				tex = tmap_uv_step( tex, &v_frac, &u_frac, Tmap.DeltaVFrac, du_frac );
+			}
+		} while ( --Tmap.num_big_steps != 0 );
+	}
 
-	mov	ecx, Tmap.fx_v			// get v 16.16 
-	mov	edx, ecx						// copy it
-	sar	edx, 16						// get integer part
-	shl	ecx, 16						// get fractional part
-	imul	edx, Tmap.src_offset		// calc texture scanline address
-	add	esi, edx							// calc texture offset
-	add	esi, Tmap.pixptr			// calc address
-	
-	; set edi = address of first pixel to modify
-	mov	edi, Tmap.dest_row_data
-	
-	mov	edx, Tmap.DeltaUFrac
-
-	mov     al,[edi]                    // preread the destination cache line
-	mov     al,[esi]                    // get texture pixel 0
-
-	mov	ebp, Tmap.loop_count
-
-	shr	ebp, 2
-	je		DoLeftOverPixels
-
-	mov	Tmap.num_big_steps, ebp
-	and	Tmap.loop_count, 3
-
-NextPixelBlock:
-
-    // 8 pixel span code
-    // edi = dest dib bits at current pixel
-    // esi = texture pointer at current u,v
-    // eax = scratch
-    // ebx = u fraction 0.32
-    // ecx = v fraction 0.32
-    // edx = u frac step
-    // ebp = v carry scratch
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	cmp	al, 255
-	je		skip0
-	mov	[edi+0],al							// store pixel
-skip0:
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	cmp	al, 255
-	je		skip1
-	mov	[edi+1],al							// store pixel
-skip1:
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	cmp	al, 255
-	je		skip2
-	mov	[edi+2],al							// store pixel
-skip2:
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	cmp	al, 255
-	je		skip3
-	mov	[edi+3],al							// store pixel
-skip3:
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	add	edi, 4
-	dec	Tmap.num_big_steps
-	jne	NextPixelBlock
-	
-
-DoLeftOverPixels:
-
-	mov	ebp,Tmap.loop_count
-	test	ebp, -1
-	jz	_none_to_do
-	shr	ebp, 1
-	je	one_more_pix
-	mov	Tmap.loop_count, ebp
-	pushf
-
-	xor	eax, eax
-
-	mov	al, [edi]                    // preread the destination cache line
-	mov	al, [esi]							// Get first texel
-
-NextPixel:
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	cmp	al, 255
-	je		skipa0
-	mov	[edi+0],al							// store pixel
-skipa0:
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	add	ecx,Tmap.DeltaVFrac				// increment v fraction
-	sbb	ebp,ebp								// get -1 if carry
-	cmp	al, 255
-	je		skipa1
-	mov	[edi+1],al							// store pixel
-skipa1:
-	mov	al,[esi]								// get texture pixel
-	add	ebx,edx								// increment u fraction
-	adc	esi,Tmap.uv_delta[4*ebp+4]	// add in step ints & carries
-
-	add	edi, 2
-	dec	Tmap.loop_count
-	jne	NextPixel
-
-	popf
-	jnc	_none_to_do
-
-one_more_pix:	
-	cmp	al, 255
-	je		skipb0
-	mov	[edi],al							// store pixel
-skipb0:
-
-_none_to_do:	
-	pop	edi
-	pop	esi
-	pop	ebp
-	pop	ebx
-	pop	edx
-	pop	ecx
-	pop	eax
+	int nleft = Tmap.loop_count;
+	if ( nleft == 0 )
+		return;
+	int pairs = nleft >> 1;
+	if ( pairs != 0 )	{
+		texel = *tex;										// re-sync the pipelined read
+		Tmap.loop_count = pairs;
+		do	{
+			for ( int i = 0; i < 2; i++ )	{
+				if ( texel != 255 )
+					*dptr = texel;
+				dptr++;
+				texel = *tex;
+				tex = tmap_uv_step( tex, &v_frac, &u_frac, Tmap.DeltaVFrac, du_frac );
+			}
+		} while ( --Tmap.loop_count != 0 );
+	}
+	if ( nleft & 1 )	{
+		if ( texel != 255 )								// one_more_pix: no re-read
+			*dptr = texel;
 	}
 }
 
 
 
-void tmapscan_pln8_zbuffered_ppro()
+// tmapscan_pln8_zbuffered_ppro / _pentium
+//
+// Perspective-correct, ramp-lit, non-tiled mapper with full z-buffer
+// test and write.  Same span structure as tmapscan_pln8_c; each pixel
+// reads its texel afresh (no pipelined lag here), and the light step is
+// parked in the low word of Tmap.DeltaUFrac like the asm did.  The two
+// CPU variants differed only in scheduling; both entry points share
+// this body.
+static void tmapscan_pln8_zbuffered_c()
 {
-	_asm {
-	
-	push	eax
-	push	ecx
-	push	edx
-	push	ebx
-	push	ebp
-	push	esi
-	push	edi
+	ubyte *dptr = (ubyte *)Tmap.dest_row_data;		// edi
+	int width = Tmap.loop_count;						// ecx
 
-	// Put the FPU in low precision mode
-	fstcw		Tmap.OldFPUCW					// store copy of CW
-	mov		ax,Tmap.OldFPUCW				// get it in ax
-	and		eax, ~0x300L
-	mov		Tmap.FPUCW,ax					// store it
-	fldcw		Tmap.FPUCW						// load the FPU
+	int subdivisions = width >> 5;					// width / subdivision length
+	int leftover = width & 31;							// width mod subdivision length
+	if ( leftover == 0 )	{							// no leftover? special case last span
+		subdivisions--;
+		leftover = 32;
+	}
+	Tmap.Subdivisions = (uint)subdivisions;
+	Tmap.WidthModLength = leftover;
 
+	// calculate ULeft and VLeft
+	float v_over_z = Tmap.l.v;
+	float u_over_z = Tmap.l.u;
+	float one_over_z = Tmap.l.sw;
+	float z_left = 1.0f / one_over_z;
+	float v_left = z_left * v_over_z;
+	float u_left = z_left * u_over_z;
 
-	mov		ecx, Tmap.loop_count		// ecx = width
-	mov		edi, Tmap.dest_row_data	// edi = dest pointer
+	// calculate right side OverZ terms and coords
+	one_over_z += Tmap.fl_dwdx_wide;
+	u_over_z += Tmap.fl_dudx_wide;
+	v_over_z += Tmap.fl_dvdx_wide;
 
-	// edi = pointer to start pixel in dest dib
-	// ecx = spanwidth
+	float z_right = 1.0f / one_over_z;
+	float v_right = z_right * v_over_z;
+	float u_right = z_right * u_over_z;
 
-	mov		eax,ecx							// eax and ecx = width
-	shr		ecx,5								// ecx = width / subdivision length
-	and		eax,31								// eax = width mod subdivision length
-	jnz		some_left_over					// any leftover?
-	dec		ecx								// no, so special case last span
-	mov		eax,32								// it's 8 pixels long
-some_left_over:
-	mov		Tmap.Subdivisions,ecx		// store widths
-	mov		Tmap.WidthModLength,eax
+	uint u_frac = 0, v_frac = 0;		// ebx, ecx
+	ubyte *tex = NULL;					// esi
 
-	// calculate ULeft and VLeft			// FPU Stack (ZL = ZLeft)
-													// st0  st1  st2  st3  st4  st5  st6  st7
-	fld		Tmap.l.v					// V/ZL 
-	fld		Tmap.l.u					// U/ZL V/ZL 
-	fld		Tmap.l.sw					// 1/ZL U/ZL V/ZL 
-	fld1											// 1    1/ZL U/ZL V/ZL 
-	fdiv		st,st(1)							// ZL   1/ZL U/ZL V/ZL 
-	fld		st									// ZL   ZL   1/ZL U/ZL V/ZL 
-	fmul		st,st(4)							// VL   ZL   1/ZL U/ZL V/ZL 
-	fxch		st(1)								// ZL   VL   1/ZL U/ZL V/ZL 
-	fmul		st,st(3)							// UL   VL   1/ZL U/ZL V/ZL 
+	if ( subdivisions > 0 )	{
+		do	{	// SpanLoop
+			// convert left side coords to 16.16
+			Tmap.UFixed = (uint)lrintf( u_left * Tmap.FixedScale );
+			Tmap.VFixed = (uint)lrintf( v_left * Tmap.FixedScale );
 
-	fstp		st(5)								// VL   1/ZL U/ZL V/ZL UL
-	fstp		st(5)								// 1/ZL U/ZL V/ZL UL   VL
+			// calculate deltas; FixedScale8 is 2^16/32
+			Tmap.DeltaV = (uint)lrintf( (v_right - v_left) * Tmap.FixedScale8 );
+			Tmap.DeltaU = (uint)lrintf( (u_right - u_left) * Tmap.FixedScale8 );
 
-	// calculate right side OverZ terms  ; st0  st1  st2  st3  st4  st5  st6  st7
+			// increment terms for next span; right terms become left terms
+			v_over_z += Tmap.fl_dvdx_wide;
+			one_over_z += Tmap.fl_dwdx_wide;
+			u_over_z += Tmap.fl_dudx_wide;
 
-	fadd		Tmap.fl_dwdx_wide			// 1/ZR U/ZL V/ZL UL   VL
-	fxch		st(1)								// U/ZL 1/ZR V/ZL UL   VL
-	fadd		Tmap.fl_dudx_wide				// U/ZR 1/ZR V/ZL UL   VL
-	fxch		st(2)								// V/ZL 1/ZR U/ZR UL   VL
-	fadd		Tmap.fl_dvdx_wide				// V/ZR 1/ZR U/ZR UL   VL
+			tmap_setup_uv_deltas( (int)Tmap.DeltaU, (int)Tmap.DeltaV );
+			tex = tmap_uv_start( (int)Tmap.UFixed, (int)Tmap.VFixed, &u_frac, &v_frac );
 
-	// calculate right side coords		// st0  st1  st2  st3  st4  st5  st6  st7
+			// set up affine registers; light step goes into the low
+			// word of the DeltaUFrac field itself
+			uint light = (uint)(Tmap.fx_l >> 8) & 0xffff;			// bx
+			Tmap.fx_l += Tmap.fx_dl_dx << 5;						// walk the light a whole span
+			ushort lstep = (ushort)( (ushort)(uint)(Tmap.fx_l >> 8) - (ushort)light );
+			lstep = (ushort)( lstep >> 5 );							// per-pixel light step
+			u_frac = ( u_frac & 0xffff0000u ) | light;
+			Tmap.DeltaUFrac = ( Tmap.DeltaUFrac & 0xffff0000u ) | lstep;
 
-	fld1											// 1    V/ZR 1/ZR U/ZR UL   VL
-	// @todo overlap this guy
-	fdiv		st,st(2)							// ZR   V/ZR 1/ZR U/ZR UL   VL
-	fld		st									// ZR   ZR   V/ZR 1/ZR U/ZR UL   VL
-	fmul		st,st(2)							// VR   ZR   V/ZR 1/ZR U/ZR UL   VL
-	fxch		st(1)								// ZR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul		st,st(4)							// UR   VR   V/ZR 1/ZR U/ZR UL   VL
+			// This divide happened while the pixel span was drawn.
+			z_right = 1.0f / one_over_z;
 
-	cmp		ecx,0							// check for any full spans
-	jle      HandleLeftoverPixels
-    
-SpanLoop:
+			int w = Tmap.fx_w;					// ebp
+			uint *zbuf = &gr_zbuffer[(uintptr_t)dptr - Tmap.pScreenBits];	// edx
 
-	// at this point the FPU contains	// st0  st1  st2  st3  st4  st5  st6  st7
-													// UR   VR   V/ZR 1/ZR U/ZR UL   VL
+			for ( Tmap.InnerLooper = 32; Tmap.InnerLooper > 0; Tmap.InnerLooper-- )	{
+				if ( w > (int)*zbuf )	{		// compare the Z depth of this pixel
+					*zbuf = (uint)w;			// write new Z value
+					*dptr = gr_fade_table[ (u_frac & 0xff00) + *tex ];	// light the texel
+				}
+				w += Tmap.fx_dwdx;
+				tex = tmap_uv_step( tex, &v_frac, &u_frac, Tmap.DeltaVFrac, Tmap.DeltaUFrac );
+				zbuf++;
+				dptr++;
+			}
+
+			Tmap.fx_w = w;
+
+			// the fdiv is done, finish right
+			v_left = v_right;
+			u_left = u_right;
+			v_right = z_right * v_over_z;
+			u_right = z_right * u_over_z;
+		} while ( --Tmap.Subdivisions > 0 );
+	}
+
+	// HandleLeftoverPixels
+	if ( Tmap.WidthModLength == 0 )
+		return;
 
 	// convert left side coords
-
-	fld     st(5)                       ; UL   UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul    Tmap.FixedScale            ; UL16 UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fistp   Tmap.UFixed                ; UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	fld     st(6)                       ; VL   UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul    Tmap.FixedScale            ; VL16 UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fistp   Tmap.VFixed                ; UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	// calculate deltas                  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-	fsubr   st(5),st                    ; UR   VR   V/ZR 1/ZR U/ZR dU   VL
-	fxch    st(1)                       ; VR   UR   V/ZR 1/ZR U/ZR dU   VL
-	fsubr   st(6),st                    ; VR   UR   V/ZR 1/ZR U/ZR dU   dV
-	fxch    st(6)                       ; dV   UR   V/ZR 1/ZR U/ZR dU   VR
-
-	fmul    Tmap.FixedScale8           ; dV8  UR   V/ZR 1/ZR U/ZR dU   VR
-	fistp   Tmap.DeltaV                ; UR   V/ZR 1/ZR U/ZR dU   VR
-
-	fxch    st(4)                       ; dU   V/ZR 1/ZR U/ZR UR   VR
-	fmul    Tmap.FixedScale8           ; dU8  V/ZR 1/ZR U/ZR UR   VR
-	fistp   Tmap.DeltaU                ; V/ZR 1/ZR U/ZR UR   VR
-
-	// increment terms for next span    // st0  st1  st2  st3  st4  st5  st6  st7
-	// Right terms become Left terms--->// V/ZL 1/ZL U/ZL UL   VL
-
-	fadd    Tmap.fl_dvdx_wide				// V/ZR 1/ZL U/ZL UL   VL
-	fxch    st(1)								// 1/ZL V/ZR U/ZL UL   VL
-	fadd    Tmap.fl_dwdx_wide				// 1/ZR V/ZR U/ZL UL   VL
-	fxch    st(2)								// U/ZL V/ZR 1/ZR UL   VL
-	fadd    Tmap.fl_dudx_wide				// U/ZR V/ZR 1/ZR UL   VL
-	fxch    st(2)								// 1/ZR V/ZR U/ZR UL   VL
-	fxch    st(1)								// V/ZR 1/ZR U/ZR UL   VL
-
-
-	// setup delta values
-    
-	mov     eax,Tmap.DeltaV				// get v 16.16 step
-	mov     ebx,eax							// copy it
-	sar     eax,16								// get v int step
-	shl     ebx,16								// get v frac step
-	mov     Tmap.DeltaVFrac,ebx			// store it
-	imul    eax,Tmap.src_offset			// calculate texture step for v int step
-
-	mov     ebx,Tmap.DeltaU				// get u 16.16 step
-	mov     ecx,ebx							// copy it
-	sar     ebx,16								// get u int step
-	shl     ecx,16								// get u frac step
-	mov     Tmap.DeltaUFrac,ecx			// store it
-	add     eax,ebx							// calculate uint + vint step
-	mov     Tmap.uv_delta[4],eax			// save whole step in non-v-carry slot
-	add     eax,Tmap.src_offset			// calculate whole step + v carry
-	mov     Tmap.uv_delta[0],eax			// save in v-carry slot
-
-	// setup initial coordinates
-	mov     esi,Tmap.UFixed				// get u 16.16 fixedpoint coordinate
-
-	mov     ebx,esi							// copy it
-	sar     esi,16								// get integer part
-	shl     ebx,16								// get fractional part
-
-	mov     ecx,Tmap.VFixed				// get v 16.16 fixedpoint coordinate
-   
-	mov     edx,ecx							// copy it
-	sar     edx,16								// get integer part
-	shl     ecx,16								// get fractional part
-	imul    edx,Tmap.src_offset			// calc texture scanline address
-	add     esi,edx							// calc texture offset
-	add     esi,Tmap.pixptr				// calc address
-
-	// set up affine registers
-
-	mov	eax, Tmap.fx_l
-	shr	eax, 8
-	mov	bx, ax
-
-	mov	ebp, Tmap.fx_dl_dx
-	shl	ebp, 5	//*32
-	add	Tmap.fx_l, ebp
-
-	mov	ebp, Tmap.fx_l
-	shr	ebp, 8
-	sub	bp, ax
-	shr	bp, 5
-
-	mov	edx, Tmap.DeltaUFrac
-	mov	dx, bp
-	mov	Tmap.DeltaUFrac, edx
-
-
-	// calculate right side coords		st0  st1  st2  st3  st4  st5  st6  st7
-	fld1										// 1    V/ZR 1/ZR U/ZR UL   VL
-	// This divide should happen while the pixel span is drawn.
-	fdiv	st,st(2)							// ZR   V/ZR 1/ZR U/ZR UL   VL
-
-
-	// 8 pixel span code
-	// edi = dest dib bits at current pixel
-	// esi = texture pointer at current u,v
-	// eax = scratch
-	// ebx = u fraction 0.32
-	// ecx = v fraction 0.32
-	// edx = u frac step
-	// ebp = v carry scratch
-
-	mov	al,[edi]								// preread the destination cache line
-	mov	al,[esi]								// get texture pixel 0
-
-	mov	Tmap.InnerLooper, 32/4			// Set up loop counter
-
-	mov	ebp, Tmap.fx_w
-
-
-	mov	eax, edi
-	sub	eax, Tmap.pScreenBits
-	mov	edx, gr_zbuffer
-	shl	eax, 2
-	add	edx, eax
-
-InnerInnerLoop:
-
-			// Pixel 0
-			cmp	ebp, [edx+0]							// Compare the Z depth of this pixel with zbuffer
-			jle	Skip0									// If pixel is covered, skip drawing
-			mov	[edx+0], ebp							// Write new Z value
-	
-			// Get pixel and light it
-			push	ebx
-			xor	eax, eax									// Clear all bits of EAX.  This avoids a partial register stall on Pentium Pros
-			mov	al, [esi]								// Get texel into AL
-			and	ebx, 0ff00h								// Clear out fractional part of EBX
-			mov	eax, DWORD PTR gr_fade_table[eax+ebx]		// Lookup pixel in lighting table
-			pop	ebx
-
-			mov	[edi+0],al								// Write new pixel
-
-Skip0:	add	ecx,Tmap.DeltaVFrac
-			sbb	eax,eax
-			add	ebp,Tmap.fx_dwdx
-			add	ebx,Tmap.DeltaUFrac
-			adc	esi,Tmap.uv_delta[4*eax+4]
-
-
-			// Pixel 1
-			cmp	ebp, [edx+4]							// Compare the Z depth of this pixel with zbuffer
-			jle	Skip1								// If pixel is covered, skip drawing
-			mov	[edx+4], ebp							// Write new Z value
-	
-			// Get pixel and light it
-			push	ebx
-			xor	eax, eax									// Clear all bits of EAX.  This avoids a partial register stall on Pentium Pros
-			mov	al, [esi]								// Get texel into AL
-			and	ebx, 0ff00h								// Clear out fractional part of EBX
-			mov	eax, DWORD PTR gr_fade_table[eax+ebx]		// Lookup pixel in lighting table
-			pop	ebx
-
-			mov	[edi+1],al								// Write new pixel
-
-Skip1:	add	ecx,Tmap.DeltaVFrac
-			sbb	eax,eax
-			add	ebp,Tmap.fx_dwdx
-			add	ebx,Tmap.DeltaUFrac
-			adc	esi,Tmap.uv_delta[4*eax+4]
-
-
-			// Pixel 2
-			cmp	ebp, [edx+8]							// Compare the Z depth of this pixel with zbuffer
-			jle	Skip2										// If pixel is covered, skip drawing
-			mov	[edx+8], ebp							// Write new Z value
-	
-			// Get pixel and light it
-			push	ebx
-			xor	eax, eax									// Clear all bits of EAX.  This avoids a partial register stall on Pentium Pros
-			mov	al, [esi]								// Get texel into AL
-			and	ebx, 0ff00h								// Clear out fractional part of EBX
-			mov	eax, DWORD PTR gr_fade_table[eax+ebx]		// Lookup pixel in lighting table
-			pop	ebx
-
-			mov	[edi+2],al								// Write new pixel
-
-Skip2:	add	ecx,Tmap.DeltaVFrac
-			sbb	eax,eax
-			add	ebp,Tmap.fx_dwdx
-			add	ebx,Tmap.DeltaUFrac
-			adc	esi,Tmap.uv_delta[4*eax+4]
-
-
-			// Pixel 3
-			cmp	ebp, [edx+12]							// Compare the Z depth of this pixel with zbuffer
-			jle	Skip3									// If pixel is covered, skip drawing
-			mov	[edx+12], ebp							// Write new Z value
-	
-			// Get pixel and light it
-			push	ebx
-			xor	eax, eax									// Clear all bits of EAX.  This avoids a partial register stall on Pentium Pros
-			mov	al, [esi]								// Get texel into AL
-			and	ebx, 0ff00h								// Clear out fractional part of EBX
-			mov	eax, DWORD PTR gr_fade_table[eax+ebx]		// Lookup pixel in lighting table
-			pop	ebx
-
-			mov	[edi+3],al								// Write new pixel
-
-Skip3:	add	ecx,Tmap.DeltaVFrac
-			sbb	eax,eax
-			add	ebp,Tmap.fx_dwdx
-			add	ebx,Tmap.DeltaUFrac
-			adc	esi,Tmap.uv_delta[4*eax+4]
-
-
-
-	add	edi, 4
-	add	edx, 16
-	dec	Tmap.InnerLooper
-	jnz	InnerInnerLoop
-
-	mov	Tmap.fx_w, ebp
-
-	// the fdiv is done, finish right	// st0  st1  st2  st3  st4  st5  st6  st7
-	                                    // ZR   V/ZR 1/ZR U/ZR UL   VL
-
-    fld     st									// ZR   ZR   V/ZR 1/ZR U/ZR UL   VL
-    fmul    st,st(2)							// VR   ZR   V/ZR 1/ZR U/ZR UL   VL
-    fxch    st(1)								// ZR   VR   V/ZR 1/ZR U/ZR UL   VL
-    fmul    st,st(4)							// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-    dec     Tmap.Subdivisions			// decrement span count
-    jnz     SpanLoop							// loop back
-
-
-HandleLeftoverPixels:
-
-    mov     esi,Tmap.pixptr				// load texture pointer
-
-    // edi = dest dib bits
-    // esi = current texture dib bits
-    // at this point the FPU contains    ; st0  st1  st2  st3  st4  st5  st6  st7
-    // inv. means invalid numbers        ; inv. inv. inv. inv. inv. UL   VL
-
-    cmp     Tmap.WidthModLength,0          ; are there remaining pixels to draw?
-    jz      FPUReturn                   ; nope, pop the FPU and bail
-
-    // convert left side coords          ; st0  st1  st2  st3  st4  st5  st6  st7
-
-    fld     st(5)                       ; UL   inv. inv. inv. inv. inv. UL   VL
-    fmul    Tmap.FixedScale                ; UL16 inv. inv. inv. inv. inv. UL   VL
-    fistp   Tmap.UFixed                    ; inv. inv. inv. inv. inv. UL   VL
-
-    fld     st(6)                       ; VL   inv. inv. inv. inv. inv. UL   VL
-    fmul    Tmap.FixedScale                // VL16 inv. inv. inv. inv. inv. UL   VL
-    fistp   Tmap.VFixed                    ; inv. inv. inv. inv. inv. UL   VL
-
-    dec     Tmap.WidthModLength            ; calc how many steps to take
-    jz      OnePixelSpan                ; just one, don't do deltas
-
-    // calculate right edge coordinates  ; st0  st1  st2  st3  st4  st5  st6  st7
-    // r -> R+1
-
-    // @todo rearrange things so we don't need these two instructions
-    fstp    Tmap.FloatTemp                 ; inv. inv. inv. inv. UL   VL
-    fstp    Tmap.FloatTemp                 ; inv. inv. inv. UL   VL
-
-    fld     Tmap.r.v           ; V/Zr inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.v             ; V/ZR inv. inv. inv. UL   VL
-    fld     Tmap.r.u           ; U/Zr V/ZR inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.u             ; U/ZR V/ZR inv. inv. inv. UL   VL
-    fld     Tmap.r.sw              ; 1/Zr U/ZR V/ZR inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.sw           ; 1/ZR U/ZR V/ZR inv. inv. inv. UL   VL
-
-    fdivr   Tmap.One                       ; ZR   U/ZR V/ZR inv. inv. inv. UL   VL
-
-    fmul    st(1),st                    ; ZR   UR   V/ZR inv. inv. inv. UL   VL
-    fmulp   st(2),st                    ; UR   VR   inv. inv. inv. UL   VL
-
-    // calculate deltas                  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-    fsubr   st(5),st                    ; UR   VR   inv. inv. inv. dU   VL
-    fxch    st(1)                       ; VR   UR   inv. inv. inv. dU   VL
-    fsubr   st(6),st                    ; VR   UR   inv. inv. inv. dU   dV
-    fxch    st(6)                       ; dV   UR   inv. inv. inv. dU   VR
-
-    fidiv   Tmap.WidthModLength            ; dv   UR   inv. inv. inv. dU   VR
-    fmul    Tmap.FixedScale                ; dv16 UR   inv. inv. inv. dU   VR
-    fistp   Tmap.DeltaV                    ; UR   inv. inv. inv. dU   VR
-
-    fxch    st(4)                       ; dU   inv. inv. inv. UR   VR
-    fidiv   Tmap.WidthModLength            ; du   inv. inv. inv. UR   VR
-    fmul    Tmap.FixedScale                ; du16 inv. inv. inv. UR   VR
-    fistp   Tmap.DeltaU                    ; inv. inv. inv. UR   VR
-
-    // @todo gross!  these are to line up with the other loop
-    fld     st(1)                       ; inv. inv. inv. inv. UR   VR
-    fld     st(2)                       ; inv. inv. inv. inv. inv. UR   VR
-
-
-	// setup delta values
-	mov	eax, Tmap.DeltaV	// get v 16.16 step
-	mov	ebx, eax						// copy it
-	sar	eax, 16						// get v int step
-	shl	ebx, 16						// get v frac step
-	mov	Tmap.DeltaVFrac, ebx	// store it
-	imul	eax, Tmap.src_offset	// calc texture step for v int step
-	
-	mov	ebx, Tmap.DeltaU			// get u 16.16 step
-	mov	ecx, ebx						// copy it
-	sar	ebx, 16						// get the u int step
-	shl	ecx, 16						// get the u frac step
-	mov	Tmap.DeltaUFrac, ecx			// store it
-	add	eax, ebx						// calc uint + vint step
-	mov	Tmap.uv_delta[4], eax	// save whole step in non-v-carry slot
-	add	eax, Tmap.src_offset				// calc whole step + v carry
-	mov	Tmap.uv_delta[0], eax	// save in v-carry slot
-
-
-OnePixelSpan:
-
-	; setup initial coordinates
-	mov	esi, Tmap.UFixed			// get u 16.16
-	mov	ebx, esi						// copy it
-	sar	esi, 16						// get integer part
-	shl	ebx, 16						// get fractional part
-
-	mov	ecx, Tmap.VFixed			// get v 16.16 
-	mov	edx, ecx						// copy it
-	sar	edx, 16						// get integer part
-	shl	ecx, 16						// get fractional part
-	imul	edx, Tmap.src_offset		// calc texture scanline address
-	add	esi, edx							// calc texture offset
-	add	esi, Tmap.pixptr			// calc address
-
-
-	mov	eax, Tmap.fx_l
-	shr	eax, 8
-	mov	bx, ax
-
-//	mov	edx, Tmap.DeltaUFrac
-
-	cmp	Tmap.WidthModLength, 1
-	jle	NoDeltaLight
-
-	push	ebx
-	
-	mov	ebx, Tmap.fx_l_right
-	shr	ebx, 8
-	
-	sub	ebx, eax
-	mov	eax, ebx
-	
-	mov	eax, Tmap.fx_dl_dx
-	shr	eax, 8
-
-	mov	edx, Tmap.DeltaUFrac
-	mov	dx, ax
-	mov	Tmap.DeltaUFrac, edx
-
-	pop	ebx
-
-NoDeltaLight:
-
-	mov	ebp, Tmap.fx_w
-
-	mov	eax, edi
-	sub	eax, Tmap.pScreenBits
-	shl	eax, 2
-	mov	edx, gr_zbuffer
-	add	edx, eax
-
-	inc	Tmap.WidthModLength
-	mov	eax,Tmap.WidthModLength
-	shr	eax, 1
-	jz		one_more_pix
-	pushf
-	mov	Tmap.WidthModLength, eax
-
-	xor	eax, eax
-
-	mov	al,[edi]                    // preread the destination cache line
-	mov	al,[esi]
-
-
-
-NextPixel:
-			// Pixel 0
-			cmp	ebp, [edx+0]							// Compare the Z depth of this pixel with zbuffer
-			jle	Skip0a									// If pixel is covered, skip drawing
-			mov	[edx+0], ebp							// Write new Z value
-
-			// Get pixel and light it
-			push	ebx
-			xor	eax, eax									// Clear all bits of EAX.  This avoids a partial register stall on Pentium Pros
-			mov	al, [esi]								// Get texel into AL
-			and	ebx, 0ff00h								// Clear out fractional part of EBX
-			mov	eax, DWORD PTR gr_fade_table[eax+ebx]		// Lookup pixel in lighting table
-			pop	ebx
-
-			mov	[edi+0],al								// Write new pixel
-
-Skip0a:	add	ecx,Tmap.DeltaVFrac
-			sbb	eax,eax
-
-			//add	edx, 4								// Go to next
-			add	ebp,Tmap.fx_dwdx
-
-			add	ebx,Tmap.DeltaUFrac
-
-			adc	esi,Tmap.uv_delta[4*eax+4]
-
-
-			// Pixel 1
-			cmp	ebp, [edx+4]							// Compare the Z depth of this pixel with zbuffer
-			jle	Skip1a									// If pixel is covered, skip drawing
-			mov	[edx+4], ebp							// Write new Z value
-
-			// Get pixel and light it
-			push	ebx
-			xor	eax, eax									// Clear all bits of EAX.  This avoids a partial register stall on Pentium Pros
-			mov	al, [esi]								// Get texel into AL
-			and	ebx, 0ff00h								// Clear out fractional part of EBX
-			mov	eax, DWORD PTR gr_fade_table[eax+ebx]		// Lookup pixel in lighting table
-			pop	ebx
-
-			mov	[edi+1],al								// Write new pixel
-
-Skip1a:	add	ecx,Tmap.DeltaVFrac
-			sbb	eax,eax
-
-			//add	edx, 4								// Go to next
-			add	ebp,Tmap.fx_dwdx
-
-			add	ebx,Tmap.DeltaUFrac
-
-			adc	esi,Tmap.uv_delta[4*eax+4]
-
-
-	add	edi, 2
-	add	edx, 8
-	dec	Tmap.WidthModLength
-	jg		NextPixel
-
-	popf
-	jnc	FPUReturn
-
-one_more_pix:	
-
-			cmp	ebp, [edx+0]							// Compare the Z depth of this pixel with zbuffer
-			jle	Skip0c									// If pixel is covered, skip drawing
-			mov	[edx+0], ebp							// Write new Z value
-
-			// Get pixel and light it
-			push	ebx
-			xor	eax, eax									// Clear all bits of EAX.  This avoids a partial register stall on Pentium Pros
-			mov	al, [esi]								// Get texel into AL
-			and	ebx, 0ff00h								// Clear out fractional part of EBX
-			mov	eax, DWORD PTR gr_fade_table[eax+ebx]		// Lookup pixel in lighting table
-			pop	ebx
-
-			mov	[edi+0],al								// Write new pixel
-
-Skip0c:	
-
-FPUReturn:
-
-	// busy FPU registers:	// st0  st1  st2  st3  st4  st5  st6  st7
-									// xxx  xxx  xxx  xxx  xxx  xxx  xxx
-	ffree	st(0)
-	ffree	st(1)
-	ffree	st(2)
-	ffree	st(3)
-	ffree	st(4)
-	ffree	st(5)
-	ffree	st(6)
-
-	fldcw	Tmap.OldFPUCW                  // restore the FPU
-
-	pop	edi
-	pop	esi
-	pop	ebp
-	pop	ebx
-	pop	edx
-	pop	ecx
-	pop	eax
+	Tmap.UFixed = (uint)lrintf( u_left * Tmap.FixedScale );
+	Tmap.VFixed = (uint)lrintf( v_left * Tmap.FixedScale );
+
+	if ( --Tmap.WidthModLength > 0 )	{
+		// calculate right edge coordinates: r -> R+1
+		v_over_z = Tmap.r.v - Tmap.deltas.v;
+		u_over_z = Tmap.r.u - Tmap.deltas.u;
+		one_over_z = Tmap.r.sw - Tmap.deltas.sw;
+
+		z_right = Tmap.One / one_over_z;
+		u_right = u_over_z * z_right;
+		v_right = v_over_z * z_right;
+
+		Tmap.DeltaV = (uint)lrintf( (v_right - v_left) / (float)Tmap.WidthModLength * Tmap.FixedScale );
+		Tmap.DeltaU = (uint)lrintf( (u_right - u_left) / (float)Tmap.WidthModLength * Tmap.FixedScale );
+
+		tmap_setup_uv_deltas( (int)Tmap.DeltaU, (int)Tmap.DeltaV );
 	}
+
+	// OnePixelSpan
+	tex = tmap_uv_start( (int)Tmap.UFixed, (int)Tmap.VFixed, &u_frac, &v_frac );
+
+	uint light = (uint)(Tmap.fx_l >> 8) & 0xffff;
+	u_frac = ( u_frac & 0xffff0000u ) | light;
+	if ( Tmap.WidthModLength > 1 )	{		// NoDeltaLight otherwise
+		Tmap.DeltaUFrac = ( Tmap.DeltaUFrac & 0xffff0000u ) | ( (uint)(Tmap.fx_dl_dx >> 8) & 0xffff );
+	}
+
+	int w = Tmap.fx_w;						// ebp
+	uint *zbuf = &gr_zbuffer[(uintptr_t)dptr - Tmap.pScreenBits];	// edx
+
+	int n = ++Tmap.WidthModLength;
+	int pairs = n >> 1;
+	if ( pairs != 0 )	{
+		Tmap.WidthModLength = pairs;
+		do	{	// NextPixel drew pixel pairs
+			for ( int i = 0; i < 2; i++ )	{
+				if ( w > (int)*zbuf )	{
+					*zbuf = (uint)w;
+					*dptr = gr_fade_table[ (u_frac & 0xff00) + *tex ];
+				}
+				w += Tmap.fx_dwdx;
+				tex = tmap_uv_step( tex, &v_frac, &u_frac, Tmap.DeltaVFrac, Tmap.DeltaUFrac );
+				zbuf++;
+				dptr++;
+			}
+		} while ( --Tmap.WidthModLength > 0 );
+	}
+	if ( n & 1 )	{
+		// one_more_pix
+		if ( w > (int)*zbuf )	{
+			*zbuf = (uint)w;
+			*dptr = gr_fade_table[ (u_frac & 0xff00) + *tex ];
+		}
+	}
+}
+
+void tmapscan_pln8_zbuffered_ppro()
+{
+	tmapscan_pln8_zbuffered_c();
 }
 
 void tmapscan_pln8_zbuffered_pentium()
 {
-	_asm {
-	
-	push	eax
-	push	ecx
-	push	edx
-	push	ebx
-	push	ebp
-	push	esi
-	push	edi
-
-	// Put the FPU in low precision mode
-	fstcw		Tmap.OldFPUCW					// store copy of CW
-	mov		ax,Tmap.OldFPUCW				// get it in ax
-	and		eax, ~0x300L
-	mov		Tmap.FPUCW,ax					// store it
-	fldcw		Tmap.FPUCW						// load the FPU
-
-
-	mov		ecx, Tmap.loop_count		// ecx = width
-	mov		edi, Tmap.dest_row_data	// edi = dest pointer
-
-	// edi = pointer to start pixel in dest dib
-	// ecx = spanwidth
-
-	mov		eax,ecx							// eax and ecx = width
-	shr		ecx,5								// ecx = width / subdivision length
-	and		eax,31								// eax = width mod subdivision length
-	jnz		some_left_over					// any leftover?
-	dec		ecx								// no, so special case last span
-	mov		eax,32								// it's 8 pixels long
-some_left_over:
-	mov		Tmap.Subdivisions,ecx		// store widths
-	mov		Tmap.WidthModLength,eax
-
-	// calculate ULeft and VLeft			// FPU Stack (ZL = ZLeft)
-													// st0  st1  st2  st3  st4  st5  st6  st7
-	fld		Tmap.l.v					// V/ZL 
-	fld		Tmap.l.u					// U/ZL V/ZL 
-	fld		Tmap.l.sw					// 1/ZL U/ZL V/ZL 
-	fld1											// 1    1/ZL U/ZL V/ZL 
-	fdiv		st,st(1)							// ZL   1/ZL U/ZL V/ZL 
-	fld		st									// ZL   ZL   1/ZL U/ZL V/ZL 
-	fmul		st,st(4)							// VL   ZL   1/ZL U/ZL V/ZL 
-	fxch		st(1)								// ZL   VL   1/ZL U/ZL V/ZL 
-	fmul		st,st(3)							// UL   VL   1/ZL U/ZL V/ZL 
-
-	fstp		st(5)								// VL   1/ZL U/ZL V/ZL UL
-	fstp		st(5)								// 1/ZL U/ZL V/ZL UL   VL
-
-	// calculate right side OverZ terms  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-	fadd		Tmap.fl_dwdx_wide			// 1/ZR U/ZL V/ZL UL   VL
-	fxch		st(1)								// U/ZL 1/ZR V/ZL UL   VL
-	fadd		Tmap.fl_dudx_wide				// U/ZR 1/ZR V/ZL UL   VL
-	fxch		st(2)								// V/ZL 1/ZR U/ZR UL   VL
-	fadd		Tmap.fl_dvdx_wide				// V/ZR 1/ZR U/ZR UL   VL
-
-	// calculate right side coords		// st0  st1  st2  st3  st4  st5  st6  st7
-
-	fld1											// 1    V/ZR 1/ZR U/ZR UL   VL
-	// @todo overlap this guy
-	fdiv		st,st(2)							// ZR   V/ZR 1/ZR U/ZR UL   VL
-	fld		st									// ZR   ZR   V/ZR 1/ZR U/ZR UL   VL
-	fmul		st,st(2)							// VR   ZR   V/ZR 1/ZR U/ZR UL   VL
-	fxch		st(1)								// ZR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul		st,st(4)							// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	cmp		ecx,0							// check for any full spans
-	jle      HandleLeftoverPixels
-    
-SpanLoop:
-
-	// at this point the FPU contains	// st0  st1  st2  st3  st4  st5  st6  st7
-													// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	// convert left side coords
-
-	fld     st(5)                       ; UL   UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul    Tmap.FixedScale            ; UL16 UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fistp   Tmap.UFixed                ; UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	fld     st(6)                       ; VL   UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fmul    Tmap.FixedScale            ; VL16 UR   VR   V/ZR 1/ZR U/ZR UL   VL
-	fistp   Tmap.VFixed                ; UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-	// calculate deltas                  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-	fsubr   st(5),st                    ; UR   VR   V/ZR 1/ZR U/ZR dU   VL
-	fxch    st(1)                       ; VR   UR   V/ZR 1/ZR U/ZR dU   VL
-	fsubr   st(6),st                    ; VR   UR   V/ZR 1/ZR U/ZR dU   dV
-	fxch    st(6)                       ; dV   UR   V/ZR 1/ZR U/ZR dU   VR
-
-	fmul    Tmap.FixedScale8           ; dV8  UR   V/ZR 1/ZR U/ZR dU   VR
-	fistp   Tmap.DeltaV                ; UR   V/ZR 1/ZR U/ZR dU   VR
-
-	fxch    st(4)                       ; dU   V/ZR 1/ZR U/ZR UR   VR
-	fmul    Tmap.FixedScale8           ; dU8  V/ZR 1/ZR U/ZR UR   VR
-	fistp   Tmap.DeltaU                ; V/ZR 1/ZR U/ZR UR   VR
-
-	// increment terms for next span    // st0  st1  st2  st3  st4  st5  st6  st7
-	// Right terms become Left terms--->// V/ZL 1/ZL U/ZL UL   VL
-
-	fadd    Tmap.fl_dvdx_wide				// V/ZR 1/ZL U/ZL UL   VL
-	fxch    st(1)								// 1/ZL V/ZR U/ZL UL   VL
-	fadd    Tmap.fl_dwdx_wide				// 1/ZR V/ZR U/ZL UL   VL
-	fxch    st(2)								// U/ZL V/ZR 1/ZR UL   VL
-	fadd    Tmap.fl_dudx_wide				// U/ZR V/ZR 1/ZR UL   VL
-	fxch    st(2)								// 1/ZR V/ZR U/ZR UL   VL
-	fxch    st(1)								// V/ZR 1/ZR U/ZR UL   VL
-
-
-	// setup delta values
-    
-	mov     eax,Tmap.DeltaV				// get v 16.16 step
-	mov     ebx,eax							// copy it
-	sar     eax,16								// get v int step
-	shl     ebx,16								// get v frac step
-	mov     Tmap.DeltaVFrac,ebx			// store it
-	imul    eax,Tmap.src_offset			// calculate texture step for v int step
-
-	mov     ebx,Tmap.DeltaU				// get u 16.16 step
-	mov     ecx,ebx							// copy it
-	sar     ebx,16								// get u int step
-	shl     ecx,16								// get u frac step
-	mov     Tmap.DeltaUFrac,ecx			// store it
-	add     eax,ebx							// calculate uint + vint step
-	mov     Tmap.uv_delta[4],eax			// save whole step in non-v-carry slot
-	add     eax,Tmap.src_offset			// calculate whole step + v carry
-	mov     Tmap.uv_delta[0],eax			// save in v-carry slot
-
-	// setup initial coordinates
-	mov     esi,Tmap.UFixed				// get u 16.16 fixedpoint coordinate
-
-	mov     ebx,esi							// copy it
-	sar     esi,16								// get integer part
-	shl     ebx,16								// get fractional part
-
-	mov     ecx,Tmap.VFixed				// get v 16.16 fixedpoint coordinate
-   
-	mov     edx,ecx							// copy it
-	sar     edx,16								// get integer part
-	shl     ecx,16								// get fractional part
-	imul    edx,Tmap.src_offset			// calc texture scanline address
-	add     esi,edx							// calc texture offset
-	add     esi,Tmap.pixptr				// calc address
-
-	// set up affine registers
-
-	mov	eax, Tmap.fx_l
-	shr	eax, 8
-	mov	bx, ax
-
-	mov	ebp, Tmap.fx_dl_dx
-	shl	ebp, 5	//*32
-	add	Tmap.fx_l, ebp
-
-	mov	ebp, Tmap.fx_l
-	shr	ebp, 8
-	sub	bp, ax
-	shr	bp, 5
-
-	mov	edx, Tmap.DeltaUFrac
-	mov	dx, bp
-	mov	Tmap.DeltaUFrac, edx
-
-
-	// calculate right side coords		st0  st1  st2  st3  st4  st5  st6  st7
-	fld1										// 1    V/ZR 1/ZR U/ZR UL   VL
-	// This divide should happen while the pixel span is drawn.
-	fdiv	st,st(2)							// ZR   V/ZR 1/ZR U/ZR UL   VL
-
-
-	// 8 pixel span code
-	// edi = dest dib bits at current pixel
-	// esi = texture pointer at current u,v
-	// eax = scratch
-	// ebx = u fraction 0.32
-	// ecx = v fraction 0.32
-	// edx = u frac step
-	// ebp = v carry scratch
-
-	mov	al,[edi]								// preread the destination cache line
-	mov	al,[esi]								// get texture pixel 0
-
-	mov	Tmap.InnerLooper, 32/4			// Set up loop counter
-
-	mov	ebp, Tmap.fx_w
-
-	mov	edx, gr_zbuffer
-
-	mov	eax, edi
-	sub	eax, Tmap.pScreenBits
-	shl	eax, 2
-	add	edx, eax
-
-InnerInnerLoop:
-
-			// Pixel 0
-			mov	eax, ebx								// Get lighting value from BH into AH
-			and	eax, 0ffffh;						// Clear upper bits of EAX
-
-			cmp	ebp, [edx+0]							// Compare the Z depth of this pixel with zbuffer
-			mov	al, [esi]							// Get texel into AL
-			jle	Skip0									// If pixel is covered, skip drawing
-
-			mov	[edx+0], ebp							// Write new Z value
-
-			mov	al, gr_fade_table[eax]			// Lookup pixel in lighting table
-			mov	[edi+0],al								// Write new pixel
-
-Skip0:	add	ecx,Tmap.DeltaVFrac
-			sbb	eax,eax
-
-			//add	edx, 4								// Go to next
-			add	ebp,Tmap.fx_dwdx
-
-			add	ebx,Tmap.DeltaUFrac
-
-			adc	esi,Tmap.uv_delta[4*eax+4]
-
-
-			// Pixel 1
-			mov	eax, ebx								// Get lighting value from BH into AH
-			and	eax, 0ffffh;						// Clear upper bits of EAX
-
-			cmp	ebp, [edx+4]							// Compare the Z depth of this pixel with zbuffer
-			mov	al, [esi]							// Get texel into AL
-			jle	Skip1									// If pixel is covered, skip drawing
-
-
-			mov	[edx+4], ebp							// Write new Z value
-
-			mov	al, gr_fade_table[eax]			// Lookup pixel in lighting table
-			mov	[edi+1],al								// Write new pixel
-
-Skip1:	add	ecx,Tmap.DeltaVFrac
-			sbb	eax,eax
-
-			//add	edx, 4								// Go to next
-			add	ebp,Tmap.fx_dwdx
-
-			add	ebx,Tmap.DeltaUFrac
-
-			adc	esi,Tmap.uv_delta[4*eax+4]
-
-			// Pixel 2
-
-			mov	eax, ebx								// Get lighting value from BH into AH
-			and	eax, 0ffffh;						// Clear upper bits of EAX
-
-
-			cmp	ebp, [edx+8]							// Compare the Z depth of this pixel with zbuffer
-			mov	al, [esi]							// Get texel into AL
-			jle	Skip2									// If pixel is covered, skip drawing
-
-
-			mov	[edx+8], ebp							// Write new Z value
-
-			mov	al, gr_fade_table[eax]			// Lookup pixel in lighting table
-			mov	[edi+2],al								// Write new pixel
-
-Skip2:	add	ecx,Tmap.DeltaVFrac
-			sbb	eax,eax
-
-			//add	edx, 4								// Go to next
-			add	ebp,Tmap.fx_dwdx
-
-			add	ebx,Tmap.DeltaUFrac
-
-			adc	esi,Tmap.uv_delta[4*eax+4]
-
-			// Pixel 3
-			mov	eax, ebx								// Get lighting value from BH into AH
-			and	eax, 0ffffh;						// Clear upper bits of EAX
-
-
-			cmp	ebp, [edx+12]							// Compare the Z depth of this pixel with zbuffer
-			mov	al, [esi]							// Get texel into AL
-			jle	Skip3									// If pixel is covered, skip drawing
-
-
-			mov	[edx+12], ebp							// Write new Z value
-
-			mov	al, gr_fade_table[eax]			// Lookup pixel in lighting table
-			mov	[edi+3],al								// Write new pixel
-
-Skip3:	add	ecx,Tmap.DeltaVFrac
-			sbb	eax,eax
-
-			//add	edx, 4								// Go to next
-			add	ebp,Tmap.fx_dwdx
-
-			add	ebx,Tmap.DeltaUFrac
-
-			adc	esi,Tmap.uv_delta[4*eax+4]
-
-
-	add	edi, 4
-	add	edx, 16
-	dec	Tmap.InnerLooper
-	jnz	InnerInnerLoop
-
-	mov	Tmap.fx_w, ebp
-
-	// the fdiv is done, finish right	// st0  st1  st2  st3  st4  st5  st6  st7
-	                                    // ZR   V/ZR 1/ZR U/ZR UL   VL
-
-    fld     st									// ZR   ZR   V/ZR 1/ZR U/ZR UL   VL
-    fmul    st,st(2)							// VR   ZR   V/ZR 1/ZR U/ZR UL   VL
-    fxch    st(1)								// ZR   VR   V/ZR 1/ZR U/ZR UL   VL
-    fmul    st,st(4)							// UR   VR   V/ZR 1/ZR U/ZR UL   VL
-
-    dec     Tmap.Subdivisions			// decrement span count
-    jnz     SpanLoop							// loop back
-
-
-HandleLeftoverPixels:
-
-    mov     esi,Tmap.pixptr				// load texture pointer
-
-    // edi = dest dib bits
-    // esi = current texture dib bits
-    // at this point the FPU contains    ; st0  st1  st2  st3  st4  st5  st6  st7
-    // inv. means invalid numbers        ; inv. inv. inv. inv. inv. UL   VL
-
-    cmp     Tmap.WidthModLength,0          ; are there remaining pixels to draw?
-    jz      FPUReturn                   ; nope, pop the FPU and bail
-
-    // convert left side coords          ; st0  st1  st2  st3  st4  st5  st6  st7
-
-    fld     st(5)                       ; UL   inv. inv. inv. inv. inv. UL   VL
-    fmul    Tmap.FixedScale                ; UL16 inv. inv. inv. inv. inv. UL   VL
-    fistp   Tmap.UFixed                    ; inv. inv. inv. inv. inv. UL   VL
-
-    fld     st(6)                       ; VL   inv. inv. inv. inv. inv. UL   VL
-    fmul    Tmap.FixedScale                // VL16 inv. inv. inv. inv. inv. UL   VL
-    fistp   Tmap.VFixed                    ; inv. inv. inv. inv. inv. UL   VL
-
-    dec     Tmap.WidthModLength            ; calc how many steps to take
-    jz      OnePixelSpan                ; just one, don't do deltas
-
-    // calculate right edge coordinates  ; st0  st1  st2  st3  st4  st5  st6  st7
-    // r -> R+1
-
-    // @todo rearrange things so we don't need these two instructions
-    fstp    Tmap.FloatTemp                 ; inv. inv. inv. inv. UL   VL
-    fstp    Tmap.FloatTemp                 ; inv. inv. inv. UL   VL
-
-    fld     Tmap.r.v           ; V/Zr inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.v             ; V/ZR inv. inv. inv. UL   VL
-    fld     Tmap.r.u           ; U/Zr V/ZR inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.u             ; U/ZR V/ZR inv. inv. inv. UL   VL
-    fld     Tmap.r.sw              ; 1/Zr U/ZR V/ZR inv. inv. inv. UL   VL
-    fsub    Tmap.deltas.sw           ; 1/ZR U/ZR V/ZR inv. inv. inv. UL   VL
-
-    fdivr   Tmap.One                       ; ZR   U/ZR V/ZR inv. inv. inv. UL   VL
-
-    fmul    st(1),st                    ; ZR   UR   V/ZR inv. inv. inv. UL   VL
-    fmulp   st(2),st                    ; UR   VR   inv. inv. inv. UL   VL
-
-    // calculate deltas                  ; st0  st1  st2  st3  st4  st5  st6  st7
-
-    fsubr   st(5),st                    ; UR   VR   inv. inv. inv. dU   VL
-    fxch    st(1)                       ; VR   UR   inv. inv. inv. dU   VL
-    fsubr   st(6),st                    ; VR   UR   inv. inv. inv. dU   dV
-    fxch    st(6)                       ; dV   UR   inv. inv. inv. dU   VR
-
-    fidiv   Tmap.WidthModLength            ; dv   UR   inv. inv. inv. dU   VR
-    fmul    Tmap.FixedScale                ; dv16 UR   inv. inv. inv. dU   VR
-    fistp   Tmap.DeltaV                    ; UR   inv. inv. inv. dU   VR
-
-    fxch    st(4)                       ; dU   inv. inv. inv. UR   VR
-    fidiv   Tmap.WidthModLength            ; du   inv. inv. inv. UR   VR
-    fmul    Tmap.FixedScale                ; du16 inv. inv. inv. UR   VR
-    fistp   Tmap.DeltaU                    ; inv. inv. inv. UR   VR
-
-    // @todo gross!  these are to line up with the other loop
-    fld     st(1)                       ; inv. inv. inv. inv. UR   VR
-    fld     st(2)                       ; inv. inv. inv. inv. inv. UR   VR
-
-
-	// setup delta values
-	mov	eax, Tmap.DeltaV	// get v 16.16 step
-	mov	ebx, eax						// copy it
-	sar	eax, 16						// get v int step
-	shl	ebx, 16						// get v frac step
-	mov	Tmap.DeltaVFrac, ebx	// store it
-	imul	eax, Tmap.src_offset	// calc texture step for v int step
-	
-	mov	ebx, Tmap.DeltaU			// get u 16.16 step
-	mov	ecx, ebx						// copy it
-	sar	ebx, 16						// get the u int step
-	shl	ecx, 16						// get the u frac step
-	mov	Tmap.DeltaUFrac, ecx			// store it
-	add	eax, ebx						// calc uint + vint step
-	mov	Tmap.uv_delta[4], eax	// save whole step in non-v-carry slot
-	add	eax, Tmap.src_offset				// calc whole step + v carry
-	mov	Tmap.uv_delta[0], eax	// save in v-carry slot
-
-
-OnePixelSpan:
-
-	; setup initial coordinates
-	mov	esi, Tmap.UFixed			// get u 16.16
-	mov	ebx, esi						// copy it
-	sar	esi, 16						// get integer part
-	shl	ebx, 16						// get fractional part
-
-	mov	ecx, Tmap.VFixed			// get v 16.16 
-	mov	edx, ecx						// copy it
-	sar	edx, 16						// get integer part
-	shl	ecx, 16						// get fractional part
-	imul	edx, Tmap.src_offset		// calc texture scanline address
-	add	esi, edx							// calc texture offset
-	add	esi, Tmap.pixptr			// calc address
-
-
-	mov	eax, Tmap.fx_l
-	shr	eax, 8
-	mov	bx, ax
-
-//	mov	edx, Tmap.DeltaUFrac
-
-	cmp	Tmap.WidthModLength, 1
-	jle	NoDeltaLight
-
-	push	ebx
-	
-	mov	ebx, Tmap.fx_l_right
-	shr	ebx, 8
-	
-	sub	ebx, eax
-	mov	eax, ebx
-	
-	mov	eax, Tmap.fx_dl_dx
-	shr	eax, 8
-
-	mov	edx, Tmap.DeltaUFrac
-	mov	dx, ax
-	mov	Tmap.DeltaUFrac, edx
-
-	pop	ebx
-
-NoDeltaLight:
-
-	mov	ebp, Tmap.fx_w
-
-	mov	eax, edi
-	sub	eax, Tmap.pScreenBits
-	mov	edx, gr_zbuffer
-	shl	eax, 2
-	add	edx, eax
-
-	inc	Tmap.WidthModLength
-	mov	eax,Tmap.WidthModLength
-	shr	eax, 1
-	jz		one_more_pix
-	pushf
-	mov	Tmap.WidthModLength, eax
-
-	xor	eax, eax
-
-	mov	al,[edi]                    // preread the destination cache line
-	mov	al,[esi]
-
-
-
-NextPixel:
-			// Pixel 0
-			mov	eax, ebx								// Get lighting value from BH into AH
-			and	eax, 0ffffh;						// Clear upper bits of EAX
-
-			cmp	ebp, [edx+0]							// Compare the Z depth of this pixel with zbuffer
-			mov	al, [esi]							// Get texel into AL
-			jle	Skip0a									// If pixel is covered, skip drawing
-
-
-			mov	[edx+0], ebp							// Write new Z value
-
-			mov	al, gr_fade_table[eax]			// Lookup pixel in lighting table
-			mov	[edi+0],al								// Write new pixel
-
-Skip0a:	add	ecx,Tmap.DeltaVFrac
-			sbb	eax,eax
-
-			//add	edx, 4								// Go to next
-			add	ebp,Tmap.fx_dwdx
-
-			add	ebx,Tmap.DeltaUFrac
-
-			adc	esi,Tmap.uv_delta[4*eax+4]
-
-
-			// Pixel 1
-			mov	eax, ebx								// Get lighting value from BH into AH
-			and	eax, 0ffffh;						// Clear upper bits of EAX
-
-
-			cmp	ebp, [edx+4]							// Compare the Z depth of this pixel with zbuffer
-			mov	al, [esi]							// Get texel into AL
-			jle	Skip1a									// If pixel is covered, skip drawing
-
-			mov	[edx+4], ebp							// Write new Z value
-
-			mov	al, gr_fade_table[eax]			// Lookup pixel in lighting table
-			mov	[edi+1],al								// Write new pixel
-
-Skip1a:	add	ecx,Tmap.DeltaVFrac
-			sbb	eax,eax
-
-			//add	edx, 4								// Go to next
-			add	ebp,Tmap.fx_dwdx
-
-			add	ebx,Tmap.DeltaUFrac
-
-			adc	esi,Tmap.uv_delta[4*eax+4]
-
-
-	add	edi, 2
-	add	edx, 8
-	dec	Tmap.WidthModLength
-	jg		NextPixel
-
-	popf
-	jnc	FPUReturn
-
-one_more_pix:	
-
-			mov	eax, ebx								// Get lighting value from BH into AH
-			and	eax, 0ffffh;						// Clear upper bits of EAX
-
-			cmp	ebp, [edx+0]							// Compare the Z depth of this pixel with zbuffer
-			mov	al, [esi]							// Get texel into AL
-			jle	Skip0c									// If pixel is covered, skip drawing
-
-			mov	al, gr_fade_table[eax]			// Lookup pixel in lighting table
-
-			mov	[edx+0], ebp							// Write new Z value
-
-			mov	[edi+0],al								// Write new pixel
-
-Skip0c:	
-
-FPUReturn:
-
-	// busy FPU registers:	// st0  st1  st2  st3  st4  st5  st6  st7
-									// xxx  xxx  xxx  xxx  xxx  xxx  xxx
-	ffree	st(0)
-	ffree	st(1)
-	ffree	st(2)
-	ffree	st(3)
-	ffree	st(4)
-	ffree	st(5)
-	ffree	st(6)
-
-	fldcw	Tmap.OldFPUCW                  // restore the FPU
-
-	pop	edi
-	pop	esi
-	pop	ebp
-	pop	ebx
-	pop	edx
-	pop	ecx
-	pop	eax
-	}
+	tmapscan_pln8_zbuffered_c();
 }
 
 void tmapscan_pln8_zbuffered()
@@ -4435,3 +1616,272 @@ _none_to_do:
 
 
 
+
+
+// =====================================================================
+// Generic tiled perspective mapper -- the C conversion of the asm that
+// lived in the five tmapscantiled{16x16..256x256}.cpp files, which
+// differed only in their shift/mask constants (and in whether they
+// recomputed the per-scanline setup; see tmapscan_pln8_tiled_setup).
+//
+// Inside a span, u and v travel packed in one 32-bit register with
+// 'shift' = log2(tilesize) integer bits and 16-shift fraction bits per
+// component, u in the high half:
+//
+//    ecx = [ u_int.u_frac | v_int.v_frac ]
+//
+// so a single 32-bit add steps both coordinates and the wrap of each
+// component implements the tiling.  The texel index is recovered as
+// (v_int << shift) | u_int -- the asm's shr ax,16-shift / rol eax,shift
+// / and eax,(size*size-1).  The v-fraction carry into u_frac on the
+// packed add is an inherited artifact of the packing.
+//
+// Conversion notes (deliberate deviations, see also the commit log):
+//  - the 64x64 original packed the leftover span's registers as V:U
+//    instead of U:V in its non-zbuffered path, transposing the tile for
+//    those pixels; the consistent packing is used for all sizes here.
+//  - the originals branched to the single-pixel leftover case before
+//    packing the registers, so a 1-pixel leftover drew from garbage
+//    (and compared the texture address against the z-buffer); here the
+//    registers are packed first, as the subspace mapper already did.
+//  - the non-zbuffered originals stored a leftover register into
+//    Tmap.fx_w at the end of each span (dead copy-paste from the
+//    z-buffered loop); never read, not reproduced.
+static void tmapscan_pln8_tiled_c( int shift, int zbuffered )
+{
+	const int frac_bits = 16 - shift;
+
+	ubyte *dptr = (ubyte *)Tmap.dest_row_data;		// edi
+	int width = Tmap.loop_count;						// ecx
+
+	int subdivisions = width >> 5;					// width / subdivision length
+	int leftover = width & 31;							// width mod subdivision length
+	if ( leftover == 0 )	{							// no leftover? special case last span
+		subdivisions--;
+		leftover = 32;
+	}
+	Tmap.Subdivisions = (uint)subdivisions;
+	Tmap.WidthModLength = leftover;
+
+	// calculate ULeft and VLeft
+	float v_over_z = Tmap.l.v;
+	float u_over_z = Tmap.l.u;
+	float one_over_z = Tmap.l.sw;
+	float z_left = 1.0f / one_over_z;
+	float v_left = z_left * v_over_z;
+	float u_left = z_left * u_over_z;
+
+	// calculate right side OverZ terms and coords
+	one_over_z += Tmap.fl_dwdx_wide;
+	u_over_z += Tmap.fl_dudx_wide;
+	v_over_z += Tmap.fl_dvdx_wide;
+
+	float z_right = 1.0f / one_over_z;
+	float v_right = z_right * v_over_z;
+	float u_right = z_right * u_over_z;
+
+	uint uv = 0, duv = 0;			// ecx and its packed step
+	ushort light = 0, lstep = 0;	// bx, bp
+
+	if ( subdivisions > 0 )	{
+		do	{	// SpanLoop
+			// convert left side coords to 16.16
+			Tmap.UFixed = (uint)lrintf( u_left * Tmap.FixedScale );
+			Tmap.VFixed = (uint)lrintf( v_left * Tmap.FixedScale );
+
+			// calculate deltas; FixedScale8 is 2^16/32
+			Tmap.DeltaV = (uint)lrintf( (v_right - v_left) * Tmap.FixedScale8 );
+			Tmap.DeltaU = (uint)lrintf( (u_right - u_left) * Tmap.FixedScale8 );
+
+			// increment terms for next span; right terms become left terms
+			v_over_z += Tmap.fl_dvdx_wide;
+			one_over_z += Tmap.fl_dwdx_wide;
+			u_over_z += Tmap.fl_dudx_wide;
+
+			// the asm still set up the linear-walk fields here even
+			// though the packed walk below doesn't use them
+			tmap_setup_uv_deltas( (int)Tmap.DeltaU, (int)Tmap.DeltaV );
+
+			// set up affine light registers
+			light = (ushort)(uint)(Tmap.fx_l >> 8);					// bx
+			Tmap.fx_l += Tmap.fx_dl_dx << 5;						// walk the light a whole span
+			lstep = (ushort)( (ushort)(uint)(Tmap.fx_l >> 8) - light );
+			lstep = (ushort)( lstep >> 5 );							// per-pixel light step
+
+			// This divide happened while the pixel span was drawn.
+			z_right = 1.0f / one_over_z;
+
+			// pack DU:DV and U:V
+			duv = ( ((uint)Tmap.DeltaU << frac_bits) & 0xffff0000u )
+				 | ( ((uint)Tmap.DeltaV >> shift) & 0xffffu );
+			Tmap.DeltaUFrac = duv;			// the asm parked the packed step here
+			uv  = ( ((uint)Tmap.UFixed << frac_bits) & 0xffff0000u )
+				 | ( ((uint)Tmap.VFixed >> shift) & 0xffffu );
+
+			if ( zbuffered )	{
+				int w = Tmap.fx_w;			// esi
+				uint *zbuf = &gr_zbuffer[(uintptr_t)dptr - Tmap.pScreenBits];	// edx
+
+				for ( Tmap.InnerLooper = 32; Tmap.InnerLooper > 0; Tmap.InnerLooper-- )	{
+					if ( w > (int)*zbuf )	{	// compare the Z depth of this pixel
+						*zbuf = (uint)w;		// write z
+						uint u_int = uv >> (32 - shift);
+						uint v_int = ( uv & 0xffffu ) >> frac_bits;
+						ubyte c = Tmap.pixptr[ (v_int << shift) + u_int ];	// (V*size)+U
+						*dptr = gr_fade_table[ (uint)(light & 0xff00) + c ];
+					}
+					uv += duv;
+					w += Tmap.fx_dwdx;
+					light = (ushort)( light + lstep );
+					zbuf++;
+					dptr++;
+				}
+
+				Tmap.fx_w = w;
+			} else {
+				for ( Tmap.InnerLooper = 32; Tmap.InnerLooper > 0; Tmap.InnerLooper-- )	{
+					uint u_int = uv >> (32 - shift);
+					uint v_int = ( uv & 0xffffu ) >> frac_bits;
+					ubyte c = Tmap.pixptr[ (v_int << shift) + u_int ];
+					*dptr = gr_fade_table[ (uint)(light & 0xff00) + c ];
+					uv += duv;
+					light = (ushort)( light + lstep );
+					dptr++;
+				}
+			}
+
+			// the fdiv is done, finish right
+			v_left = v_right;
+			u_left = u_right;
+			v_right = z_right * v_over_z;
+			u_right = z_right * u_over_z;
+		} while ( --Tmap.Subdivisions > 0 );
+	}
+
+	// HandleLeftoverPixels
+	if ( Tmap.WidthModLength == 0 )
+		return;
+
+	// convert left side coords
+	Tmap.UFixed = (uint)lrintf( u_left * Tmap.FixedScale );
+	Tmap.VFixed = (uint)lrintf( v_left * Tmap.FixedScale );
+
+	if ( --Tmap.WidthModLength > 0 )	{
+		// calculate right edge coordinates: r -> R+1
+		v_over_z = Tmap.r.v - Tmap.deltas.v;
+		u_over_z = Tmap.r.u - Tmap.deltas.u;
+		one_over_z = Tmap.r.sw - Tmap.deltas.sw;
+
+		z_right = Tmap.One / one_over_z;
+		u_right = u_over_z * z_right;
+		v_right = v_over_z * z_right;
+
+		Tmap.DeltaV = (uint)lrintf( (v_right - v_left) / (float)Tmap.WidthModLength * Tmap.FixedScale );
+		Tmap.DeltaU = (uint)lrintf( (u_right - u_left) / (float)Tmap.WidthModLength * Tmap.FixedScale );
+
+		tmap_setup_uv_deltas( (int)Tmap.DeltaU, (int)Tmap.DeltaV );
+	}
+
+	// OnePixelSpan
+	light = (ushort)(uint)(Tmap.fx_l >> 8);
+	lstep = (ushort)(uint)(Tmap.fx_dl_dx >> 8);		// undivided per-pixel step
+
+	duv = ( ((uint)Tmap.DeltaU << frac_bits) & 0xffff0000u )
+		 | ( ((uint)Tmap.DeltaV >> shift) & 0xffffu );
+	Tmap.DeltaUFrac = duv;
+	uv  = ( ((uint)Tmap.UFixed << frac_bits) & 0xffff0000u )
+		 | ( ((uint)Tmap.VFixed >> shift) & 0xffffu );
+
+	int w = Tmap.fx_w;					// esi
+	uint *zbuf = &gr_zbuffer[(uintptr_t)dptr - Tmap.pScreenBits];
+
+	int n = ++Tmap.WidthModLength;
+	int pairs = n >> 1;
+	if ( pairs != 0 )	{
+		Tmap.WidthModLength = pairs;
+		do	{	// NextPixel drew pixel pairs
+			for ( int i = 0; i < 2; i++ )	{
+				if ( !zbuffered || w > (int)*zbuf )	{
+					if ( zbuffered )
+						*zbuf = (uint)w;
+					uint u_int = uv >> (32 - shift);
+					uint v_int = ( uv & 0xffffu ) >> frac_bits;
+					ubyte c = Tmap.pixptr[ (v_int << shift) + u_int ];
+					*dptr = gr_fade_table[ (uint)(light & 0xff00) + c ];
+				}
+				uv += duv;
+				w += Tmap.fx_dwdx;
+				light = (ushort)( light + lstep );
+				zbuf++;
+				dptr++;
+			}
+		} while ( --Tmap.WidthModLength > 0 );
+	}
+	if ( n & 1 )	{
+		// one_more_pix
+		if ( !zbuffered || w > (int)*zbuf )	{
+			if ( zbuffered )
+				*zbuf = (uint)w;
+			uint u_int = uv >> (32 - shift);
+			uint v_int = ( uv & 0xffffu ) >> frac_bits;
+			ubyte c = Tmap.pixptr[ (v_int << shift) + u_int ];
+			*dptr = gr_fade_table[ (uint)(light & 0xff00) + c ];
+		}
+	}
+}
+
+// Per-scanline setup that the 16/32/64 tile files performed before
+// their asm.  The 128/256 files did not, relying on grx_tmapper's
+// outer loop having set the same fields; the do_setup flag preserves
+// each size's original behavior.
+static void tmapscan_pln8_tiled_setup()
+{
+	Tmap.fx_l = fl2f(Tmap.l.b*32.0);
+	Tmap.fx_l_right = fl2f(Tmap.r.b*32.0);
+	Tmap.fx_dl_dx = fl2f(Tmap.deltas.b*32.0);
+
+	if ( Tmap.fx_dl_dx < 0 )	{
+		Tmap.fx_dl_dx = -Tmap.fx_dl_dx;
+		Tmap.fx_l = (67*F1_0)-Tmap.fx_l;
+		Tmap.fx_l_right = (67*F1_0)-Tmap.fx_l_right;
+	}
+
+	Tmap.fl_dudx_wide = Tmap.deltas.u*32.0f;
+	Tmap.fl_dvdx_wide = Tmap.deltas.v*32.0f;
+	Tmap.fl_dwdx_wide = Tmap.deltas.sw*32.0f;
+
+	Tmap.fx_w = fl2i(Tmap.l.sw * GR_Z_RANGE)+gr_zoffset;
+	Tmap.fx_dwdx = fl2i(Tmap.deltas.sw * GR_Z_RANGE);
+}
+
+void tmapscan_pln8_zbuffered_tiled_g( int shift, int do_setup )
+{
+	if ( do_setup )
+		tmapscan_pln8_tiled_setup();
+
+	tmapscan_pln8_tiled_c( shift, 1 );
+}
+
+void tmapscan_pln8_tiled_g( int shift, int do_setup )
+{
+	if (gr_zbuffering) {
+		switch(gr_zbuffering_mode)	{
+		case GR_ZBUFF_NONE:
+			break;
+		case GR_ZBUFF_FULL:		// both
+			tmapscan_pln8_zbuffered_tiled_g( shift, do_setup );
+			return;
+		case GR_ZBUFF_WRITE:		// write only
+			tmapscan_pln8_zbuffered_tiled_g( shift, do_setup );
+			break;
+		case GR_ZBUFF_READ:		// read only
+			tmapscan_pln8_zbuffered_tiled_g( shift, do_setup );
+			return;
+		}
+	}
+
+	if ( do_setup )
+		tmapscan_pln8_tiled_setup();
+
+	tmapscan_pln8_tiled_c( shift, 0 );
+}

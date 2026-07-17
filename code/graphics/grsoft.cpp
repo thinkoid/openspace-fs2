@@ -8,8 +8,7 @@
 */ 
 
 #include <math.h>
-#include <windows.h>
-#include <windowsx.h>
+#include <SDL2/SDL.h>
 
 #include "osapi.h"
 #include "2d.h"
@@ -39,36 +38,15 @@
 
  // Window's specific
 
-// This structure is the same as LOGPALETTE except that LOGPALETTE
-// requires you to malloc out space for the palette, which just isn't
-// worth the trouble.
-
-typedef struct {
-    WORD         palVersion; 
-    WORD         palNumEntries; 
-    PALETTEENTRY palPalEntry[256]; 
-} EZ_LOGPALETTE; 
-
-// This structure is the same as BITMAPINFO except that BITMAPINFO
-// requires you to malloc out space for the palette, which just isn't
-// worth the trouble.   I also went ahead and threw a handy union to
-// easily reference the hicolor masks in 15/16 bpp modes.
-typedef struct	{
-	BITMAPINFOHEADER Header;
-	union {
-		RGBQUAD aColors[256];
-		ushort PalIndex[256];
-		uint hicolor_masks[3];
-	} Colors;
-} EZ_BITMAPINFO;
-
-EZ_BITMAPINFO DibInfo;
-HBITMAP hDibSection = NULL;
-HBITMAP hOldBitmap = NULL;
-HDC hDibDC = NULL;
-void *lpDibBits=NULL;
-
-HPALETTE hOldPalette=NULL, hPalette = NULL;	
+// SDL2 replaces the Win32 DIB section: the offscreen buffer is plain memory,
+// the palette becomes a lookup table applied while presenting to the window
+// surface in grx_sdl_present().
+static ubyte *Soft_buffer = NULL;
+static int Soft_buffer_w = 0, Soft_buffer_h = 0;
+static ubyte Soft_palette[768];
+static uint Soft_lut[256];
+static int Soft_lut_dirty = 1;
+void *lpDibBits = NULL;	// alias of Soft_buffer; retail name kept for gr_soft_init
 
 int Gr_soft_inited = 0;
 
@@ -76,32 +54,16 @@ static volatile int Grsoft_activated = 0;				// If set, that means application g
 
 void gr_buffer_release()
 {
-	if ( hPalette )	{
-		if (hDibDC)
-			SelectPalette( hDibDC, hOldPalette, FALSE );
-		if (!DeleteObject(hPalette))	{
-			mprintf(( "JOHN: Couldn't delete palette object\n" ));
-		}
-		hPalette = NULL;
+	if ( Soft_buffer )	{
+		free( Soft_buffer );
+		Soft_buffer = NULL;
 	}
-
-	if ( hDibDC )	{
-		SelectObject(hDibDC, hOldBitmap );
-		DeleteDC(hDibDC);
-		hDibDC = NULL;
-	}
-
-	if ( hDibSection )	{
-		DeleteObject(hDibSection);
-		hDibSection = NULL;
-	}
+	lpDibBits = NULL;
 }
 
 
 void gr_buffer_create( int w, int h, int bpp )
 {
-	int i;
-
 	if (w & 3) {
 		Int3();	// w must be multiple 4
 		return;
@@ -109,355 +71,21 @@ void gr_buffer_create( int w, int h, int bpp )
 
 	gr_buffer_release();
 
-	memset( &DibInfo, 0, sizeof(EZ_BITMAPINFO));
-   DibInfo.Header.biSize = sizeof(BITMAPINFOHEADER);
-	DibInfo.Header.biWidth = w;
-	DibInfo.Header.biHeight = h;
-	DibInfo.Header.biPlanes = 1; 
-	DibInfo.Header.biClrUsed = 0;
-
-	switch( bpp )	{
-	case 8:
-		Gr_red.bits = 8;
-		Gr_red.shift = 16;
-		Gr_red.scale = 1;
-		Gr_red.mask = 0xff0000;
-
-		Gr_green.bits = 8;
-		Gr_green.shift = 8;
-		Gr_green.scale = 1;
-		Gr_green.mask = 0xff00;
-
-		Gr_blue.bits = 8;
-		Gr_blue.shift = 0;
-		Gr_blue.scale = 1;
-		Gr_blue.mask = 0xff;
-
-		DibInfo.Header.biCompression = BI_RGB; 
-		DibInfo.Header.biBitCount = 8; 
-		for (i=0; i<256; i++ )	{
-			DibInfo.Colors.aColors[i].rgbRed = 0;
-			DibInfo.Colors.aColors[i].rgbGreen = 0;
-			DibInfo.Colors.aColors[i].rgbBlue = 0;
-			DibInfo.Colors.aColors[i].rgbReserved = 0;
-		}
-		break;
-
-	case 15:
-		Gr_red.bits = 5;
-		Gr_red.shift = 10;
-		Gr_red.scale = 8;
-		Gr_red.mask = 0x7C00;
-
-		Gr_green.bits = 5;
-		Gr_green.shift = 5;
-		Gr_green.scale = 8;
-		Gr_green.mask = 0x3E0;
-
-		Gr_blue.bits = 5;
-		Gr_blue.shift = 0;
-		Gr_blue.scale = 8;
-		Gr_blue.mask = 0x1F;
-
-		DibInfo.Header.biCompression = BI_BITFIELDS;
-		DibInfo.Header.biBitCount = 16; 
-		DibInfo.Colors.hicolor_masks[0] = Gr_red.mask;
-		DibInfo.Colors.hicolor_masks[1] = Gr_green.mask;
-		DibInfo.Colors.hicolor_masks[2] = Gr_blue.mask;
-
-
-		break;
-
-	case 16:
-		Gr_red.bits = 5;
-		Gr_red.shift = 11;
-		Gr_red.scale = 8;
-		Gr_red.mask = 0xF800;
-
-		Gr_green.bits = 6;
-		Gr_green.shift = 5;
-		Gr_green.scale = 4;
-		Gr_green.mask = 0x7E0;
-
-		Gr_blue.bits = 5;
-		Gr_blue.shift = 0;
-		Gr_blue.scale = 8;
-		Gr_blue.mask = 0x1F;
-
-		DibInfo.Header.biCompression = BI_BITFIELDS;
-		DibInfo.Header.biBitCount = 16; 
-		DibInfo.Colors.hicolor_masks[0] = Gr_red.mask;
-		DibInfo.Colors.hicolor_masks[1] = Gr_green.mask;
-		DibInfo.Colors.hicolor_masks[2] = Gr_blue.mask;
-		break;
-
-	case 24:
-	case 32:
-		Gr_red.bits = 8;
-		Gr_red.shift = 16;
-		Gr_red.scale = 1;
-		Gr_red.mask = 0xff0000;
-
-		Gr_green.bits = 8;
-		Gr_green.shift = 8;
-		Gr_green.scale = 1;
-		Gr_green.mask = 0xff00;
-
-		Gr_blue.bits = 8;
-		Gr_blue.shift = 0;
-		Gr_blue.scale = 1;
-		Gr_blue.mask = 0xff;
-
-		DibInfo.Header.biCompression = BI_RGB; 
-		DibInfo.Header.biBitCount = unsigned short(bpp); 
-		break;
-
-	default:
-		Int3();	// Illegal bpp
+	Assert( bpp == 8 );
+	Soft_buffer_w = w;
+	Soft_buffer_h = h;
+	Soft_buffer = (ubyte *)malloc( w * h );
+	if ( !Soft_buffer )	{
+		fprintf( stderr, "Couldn't allocate screen buffer\n" );
+		exit(1);
 	}
-
-	lpDibBits = NULL;
-
-	hDibDC = CreateCompatibleDC(NULL);
-	hDibSection = CreateDIBSection(hDibDC,(BITMAPINFO *)&DibInfo,DIB_RGB_COLORS,&lpDibBits,NULL,NULL);
-	hOldBitmap = (HBITMAP)SelectObject(hDibDC, hDibSection );
-
-	if ( hDibSection == NULL )	{
-		Int3();	// couldn't allocate dib section
-	}
+	memset( Soft_buffer, 0, w * h );
+	lpDibBits = Soft_buffer;
 }
 
-
-// This makes a best-fit palette from the 256 target colors and
-// the system colors which should look better than only using the
-// colors in the range 10-246, but it will totally reorder the palette.
-// All colors get changed in target_palette.
-
-
-HPALETTE gr_create_palette_0(ubyte * target_palette)
-{
-	EZ_LOGPALETTE LogicalPalette;
-	HDC ScreenDC;
-	HPALETTE hpal,hpalOld;
-	PALETTEENTRY pe[256];
-	int NumSysColors, NumColors;
-	int i;
-
-	// Create a 1-1 mapping of the system palette
-	LogicalPalette.palVersion = 0x300;
-	LogicalPalette.palNumEntries = 256;
-
-	// Pack in all the colors
-	for (i=0;i<256; i++)	{
-		LogicalPalette.palPalEntry[i].peRed = target_palette[i*3+0];
-		LogicalPalette.palPalEntry[i].peGreen = target_palette[i*3+1];
-		LogicalPalette.palPalEntry[i].peBlue = target_palette[i*3+2];
-		LogicalPalette.palPalEntry[i].peFlags = 0;	//PC_EXPLICIT;
-	} 
-
-	hpal = CreatePalette( (LOGPALETTE *)&LogicalPalette );
-
-	ScreenDC = CreateCompatibleDC(NULL);
-
-	if ( !(GetDeviceCaps(ScreenDC,RASTERCAPS) & RC_PALETTE) ) {
-		DeleteDC(ScreenDC);
-		return hpal;
-	}
-	 
-	NumSysColors = GetDeviceCaps( ScreenDC, NUMCOLORS );
-	NumColors = GetDeviceCaps( ScreenDC, SIZEPALETTE );
-
-	// Reset all the Palette Manager tables
-	SetSystemPaletteUse( ScreenDC, SYSPAL_NOSTATIC );
-	SetSystemPaletteUse( ScreenDC, SYSPAL_STATIC );
-
-	// Enter our palette's values into the free slots
-	hpalOld=SelectPalette( ScreenDC, hpal, FALSE );
-	RealizePalette( ScreenDC );
-	SelectPalette( ScreenDC, hpalOld, FALSE );
-
-	GetSystemPaletteEntries(ScreenDC,0,NumColors,pe);
-
-	for (i=0; i<NumSysColors/2; i++ )	{
-		pe[i].peFlags = 0;
-	}
-	for (; i<NumColors - NumSysColors/2; i++ )	{
-		pe[i].peFlags = PC_NOCOLLAPSE;
-	}
-	for (; i<NumColors; i++ )	{
-		pe[i].peFlags = 0;
-	}
-	ResizePalette( hpal, NumColors);
-	SetPaletteEntries( hpal, 0, NumColors, pe );
-		
-	for (i=0; i<256; i++ )	{
-		target_palette[i*3+0] = pe[i].peRed;
-		target_palette[i*3+1] = pe[i].peGreen;
-		target_palette[i*3+2] = pe[i].peBlue;
-	}
-
-	DeleteDC(ScreenDC);
-
-	return hpal;
-}
-
-HPALETTE gr_create_palette_256( ubyte * target_palette )
-{
-	EZ_LOGPALETTE LogicalPalette;
-	int i;
-
-	// Pack in all the colors
-	for (i=0;i<256; i++)	{
-		LogicalPalette.palPalEntry[i].peRed = target_palette[i*3+0];
-		LogicalPalette.palPalEntry[i].peGreen = target_palette[i*3+1];
-		LogicalPalette.palPalEntry[i].peBlue = target_palette[i*3+2];
-		LogicalPalette.palPalEntry[i].peFlags = 0;	//PC_RESERVED;	//PC_EXPLICIT;
-	} 
-
-	// Create a 1-1 mapping of the system palette
-	LogicalPalette.palVersion = 0x300;
-	LogicalPalette.palNumEntries = 256;
-
-	return CreatePalette( (LOGPALETTE *)&LogicalPalette );
-}
-
-// This makes an indentity logical palette that saves entries 10-246
-// and leaves them in place.  Colors 0-9 and 246-255 get changed in 
-// target_palette.  trash_flag tells us whether to trash the system palette
-// or not
-HPALETTE gr_create_palette_236( ubyte * target_palette )
-{
-	EZ_LOGPALETTE LogicalPalette;
-	HDC ScreenDC;
-	int NumSysColors, NumColors, UserLowest, UserHighest;
-	int i;
-
-	// Pack in all the colors
-	for (i=0;i<256; i++)	{
-		LogicalPalette.palPalEntry[i].peRed = target_palette[i*3+0];
-		LogicalPalette.palPalEntry[i].peGreen = target_palette[i*3+1];
-		LogicalPalette.palPalEntry[i].peBlue = target_palette[i*3+2];
-		LogicalPalette.palPalEntry[i].peFlags = 0;	//PC_EXPLICIT;
-	} 
-
-	// Create a 1-1 mapping of the system palette
-	LogicalPalette.palVersion = 0x300;
-	LogicalPalette.palNumEntries = 256;
-
-	ScreenDC = CreateCompatibleDC(NULL);
-
-	// Reset all the Palette Manager tables
-	SetSystemPaletteUse( ScreenDC, SYSPAL_NOSTATIC );
-	SetSystemPaletteUse( ScreenDC, SYSPAL_STATIC );
-		
-	if ( !(GetDeviceCaps(ScreenDC,RASTERCAPS) & RC_PALETTE) ) {
-		DeleteDC(ScreenDC);
-		return CreatePalette( (LOGPALETTE *)&LogicalPalette );
-	}
-
-	NumSysColors = GetDeviceCaps( ScreenDC, NUMCOLORS );
-	NumColors = GetDeviceCaps( ScreenDC, SIZEPALETTE );
-
-	Assert( NumColors <= 256 );
-
-	UserLowest = NumSysColors/2;								// 10 normally
-	UserHighest = NumColors - NumSysColors/2 - 1;		// 245 normally
-
-	Assert( (UserHighest - UserLowest + 1) >= 236 );
-			
-	GetSystemPaletteEntries(ScreenDC,0,NumSysColors/2,LogicalPalette.palPalEntry);
-	GetSystemPaletteEntries(ScreenDC,UserHighest+1,NumSysColors/2,LogicalPalette.palPalEntry+1+UserHighest);
-
-	DeleteDC(ScreenDC);
-		
-	for (i=0; i<256; i++ )	{
-
-		if ( (i >= UserLowest) && (i<=UserHighest) )	{
-			LogicalPalette.palPalEntry[i].peFlags = PC_NOCOLLAPSE;
-		} else
-			LogicalPalette.palPalEntry[i].peFlags = 0;
-
-		target_palette[i*3+0] = LogicalPalette.palPalEntry[i].peRed;
-		target_palette[i*3+1] = LogicalPalette.palPalEntry[i].peGreen;
-		target_palette[i*3+2] = LogicalPalette.palPalEntry[i].peBlue;
-	}
-
-	return CreatePalette( (LOGPALETTE *)&LogicalPalette );
-}
-
-HPALETTE gr_create_palette_254( ubyte * target_palette )
-{
-	EZ_LOGPALETTE LogicalPalette;
-	HDC ScreenDC;
-	int NumSysColors, NumColors, UserLowest, UserHighest;
-	int i;
-
-	// Pack in all the colors
-	for (i=0;i<256; i++)	{
-		LogicalPalette.palPalEntry[i].peRed = target_palette[i*3+0];
-		LogicalPalette.palPalEntry[i].peGreen = target_palette[i*3+1];
-		LogicalPalette.palPalEntry[i].peBlue = target_palette[i*3+2];
-		LogicalPalette.palPalEntry[i].peFlags = 0;	//PC_EXPLICIT;
-	} 
-
-	// Create a 1-1 mapping of the system palette
-	LogicalPalette.palVersion = 0x300;
-	LogicalPalette.palNumEntries = 256;
-
-	ScreenDC = CreateCompatibleDC(NULL);
-
-	// Reset all the Palette Manager tables
-	SetSystemPaletteUse( ScreenDC, SYSPAL_NOSTATIC );
-	SetSystemPaletteUse( ScreenDC, SYSPAL_STATIC );
-		
-	if ( !(GetDeviceCaps(ScreenDC,RASTERCAPS) & RC_PALETTE) ) {
-		DeleteDC(ScreenDC);
-		return CreatePalette( (LOGPALETTE *)&LogicalPalette );
-	}
-
-	SetSystemPaletteUse( ScreenDC, SYSPAL_NOSTATIC );
-	NumSysColors = 2;
-	NumColors = GetDeviceCaps( ScreenDC, SIZEPALETTE );
-
-	Assert( NumColors <= 256 );
-
-	UserLowest = NumSysColors/2;								// 10 normally
-	UserHighest = NumColors - NumSysColors/2 - 1;		// 245 normally
-
-	Assert( (UserHighest - UserLowest + 1) >= 236 );
-			
-	GetSystemPaletteEntries(ScreenDC,0,NumSysColors/2,LogicalPalette.palPalEntry);
-	GetSystemPaletteEntries(ScreenDC,UserHighest+1,NumSysColors/2,LogicalPalette.palPalEntry+1+UserHighest);
-
-	DeleteDC(ScreenDC);
-	
-	for (i=0; i<256; i++ )	{
-
-		if ( (i >= UserLowest) && (i<=UserHighest) )	{
-			LogicalPalette.palPalEntry[i].peFlags = PC_NOCOLLAPSE;
-		} else
-			LogicalPalette.palPalEntry[i].peFlags = 0;
-
-		target_palette[i*3+0] = LogicalPalette.palPalEntry[i].peRed;
-		target_palette[i*3+1] = LogicalPalette.palPalEntry[i].peGreen;
-		target_palette[i*3+2] = LogicalPalette.palPalEntry[i].peBlue;
-	}
-
-	return CreatePalette( (LOGPALETTE *)&LogicalPalette );
-}
 
 void grx_set_palette_internal( ubyte * new_pal )
 {
-	if ( hPalette )	{
-		if (hDibDC)
-			SelectPalette( hDibDC, hOldPalette, FALSE );
-		if (!DeleteObject(hPalette))	{
-			mprintf(( "JOHN: Couldn't delete palette object\n" ));
-		}
-		hPalette = NULL;
-	}
-
-
 	// Make sure color 0 is black
 	if ( (new_pal[0]!=0) || (new_pal[1]!=0) || (new_pal[2]!=0) )	{
 		// color 0 isn't black!! switch it!
@@ -494,50 +122,15 @@ void grx_set_palette_internal( ubyte * new_pal )
 
 
 
-	if ( gr_screen.bits_per_pixel==8 )	{
-
-		// Name                    n_preserved  One-one     Speed      Windowed? 
-		// -------------------------------------------------------------------
-		// gr_create_palette_256   256          0-255       Slow       Yes
-		// gr_create_palette_254   254          1-254       Fast       No
-		// gr_create_palette_236   236          10-245      Fast       Yes
-		// gr_create_palette_0     0            none        Fast       Yes		
-
-/*
-		n_preserved = 256;
-
-		if ( n_preserved <= 0 )	{
-			hPalette = gr_create_palette_0(new_pal);	// No colors mapped one-to-one, but probably has close to all 256 colors in it somewhere.
-		} else if ( n_preserved <= 236 )	{
-			hPalette = gr_create_palette_236(new_pal);	// All colors except low 10 and high 10 mapped one-to-one
-		} else if ( n_preserved <= 254 )	{
-			hPalette = gr_create_palette_254(new_pal);	// All colors except 0 and 255 mapped one-to-one, but changes system colors.  Not pretty in a window.
-		} else {
-*/
-		hPalette = gr_create_palette_256(new_pal);	// All 256 mapped one-to-one, but BLT's are slow.
-
-		if ( hDibDC )	{
-			int i; 
-			for (i=0; i<256; i++ )	{
-				DibInfo.Colors.aColors[i].rgbRed = new_pal[i*3+0];
-				DibInfo.Colors.aColors[i].rgbGreen = new_pal[i*3+1];
-				DibInfo.Colors.aColors[i].rgbBlue = new_pal[i*3+2];
-				DibInfo.Colors.aColors[i].rgbReserved = 0;
-			}
-
-			hOldPalette = SelectPalette( hDibDC, hPalette, FALSE );
-			SetDIBColorTable( hDibDC, 0, 256, DibInfo.Colors.aColors );
-		}
-	} else {
-		hPalette = NULL;
-	}
+memcpy( Soft_palette, new_pal, 768 );
+	Soft_lut_dirty = 1;
 }
 
 
 
 void grx_set_palette( ubyte * new_pal, int is_alphacolor )
 {
-	if ( hPalette )	{
+	if ( Gr_soft_inited )	{
 		Mouse_hidden++;
 		gr_reset_clip();
 		gr_clear();
@@ -676,6 +269,43 @@ static int Palette_flashed_last_frame = 0;
 
 void grx_change_palette( ubyte *pal );
 
+// convert the 8bpp offscreen buffer through the palette LUT onto the SDL
+// window surface and present it
+static void grx_sdl_present()
+{
+	SDL_Window *win = os_get_sdl_window();
+	if ( !win )	return;
+
+	SDL_Surface *ws = SDL_GetWindowSurface( win );
+	if ( !ws )	return;
+
+	if ( Soft_lut_dirty )	{
+		for (int i=0; i<256; i++ )	{
+			Soft_lut[i] = SDL_MapRGB( ws->format, Soft_palette[i*3+0], Soft_palette[i*3+1], Soft_palette[i*3+2] );
+		}
+		Soft_lut_dirty = 0;
+	}
+
+	if ( SDL_MUSTLOCK(ws) )
+		SDL_LockSurface(ws);
+
+	Assert( ws->format->BytesPerPixel == 4 );
+	int w = min(Soft_buffer_w, ws->w);
+	int h = min(Soft_buffer_h, ws->h);
+	for (int y=0; y<h; y++ )	{
+		ubyte *src = Soft_buffer + y * Soft_buffer_w;
+		uint *dst = (uint *)((ubyte *)ws->pixels + y * ws->pitch);
+		for (int x=0; x<w; x++ )	{
+			dst[x] = Soft_lut[src[x]];
+		}
+	}
+
+	if ( SDL_MUSTLOCK(ws) )
+		SDL_UnlockSurface(ws);
+
+	SDL_UpdateWindowSurface( win );
+}
+
 void grx_flip()
 {
 	if ( (!Palette_flashed) && (Palette_flashed_last_frame) )	{
@@ -728,47 +358,7 @@ void grx_flip()
 		}
 	} 
 
-	fix t1, t2, d, t;
-
-	HWND hwnd = (HWND)os_get_window();
-
-	if ( hwnd )	{
-		int x = gr_screen.offset_x;
-		int y = gr_screen.offset_y;
-		int w = gr_screen.clip_width;
-		int h = gr_screen.clip_height;
-
-		HPALETTE hOldPalette = NULL;
-		HDC hdc = GetDC(hwnd);
-
-		if ( hdc )	{
-			t1 = timer_get_fixed_seconds();
-
-			if (hPalette)	{
-				hOldPalette=SelectPalette(hdc,hPalette, FALSE );
-				uint nColors = RealizePalette( hdc );
-				nColors;
-				//if (nColors)	mprintf(( "Actually set %d palette colors.\n", nColors ));
-			}
-
-#if 0 
-			BitBlt(hdc,0,h/2,w,h/2,hDibDC,x,y+h/2,SRCCOPY);
-#else
-			BitBlt(hdc,0,0,w,h,hDibDC,x,y,SRCCOPY);
-#endif
-
-			if ( hOldPalette )	
-				SelectPalette(hdc,hOldPalette, FALSE );
-
-			ReleaseDC( hwnd, hdc );
-
-			t2 = timer_get_fixed_seconds();
-			d = t2 - t1;
-			t = (w*h*gr_screen.bytes_per_pixel)/1024;
-			//mprintf(( "%d MB/s\n", fixmuldiv(t,65,d) ));
-
-		}
-	}
+	grx_sdl_present();
 
 	if ( Grx_mouse_saved )	{
 		grx_restore_mouse_area();
@@ -780,28 +370,9 @@ void grx_flip()
 // Set msg to 0 if calling outside of the window handler.
 void grx_flip_window(uint _hdc, int x, int y, int w, int h )
 {
-	HDC hdc = (HDC)_hdc;
-	HPALETTE hOldPalette = NULL;
-	int min_w, min_h;
-
-	if (hPalette)	{
-		hOldPalette=SelectPalette(hdc,hPalette, FALSE );
-		RealizePalette( hdc );
-	}
-
-	min_w = gr_screen.clip_width;
-	if ( w < min_w ) min_w = w;
-
-	min_h = gr_screen.clip_height;
-	if ( h < min_h ) min_h = h;
-
-	BitBlt(hdc,x,y,min_w,min_h,hDibDC,gr_screen.offset_x,gr_screen.offset_y,SRCCOPY);
-
-	//StretchBlt( hdc, 0, 0, w, h, hDibDC, 0, 0, 640, 480, SRCCOPY );
-	
-	if ( hOldPalette ){	
-		SelectPalette(hdc,hOldPalette, FALSE );
-	}
+	// Win32 blitted the DIB into a caller dialog DC here; under SDL the whole
+	// frame is presented by grx_flip, so there is nothing to do.
+	(void)_hdc; (void)x; (void)y; (void)w; (void)h;
 }
 
 
@@ -1169,8 +740,6 @@ void gr8_set_gamma(float gamma)
 void gr_soft_init()
 {
 //	int i;
-	HWND hwnd = (HWND)os_get_window();
-	
 	// software mode only supports 640x480
 	Assert(gr_screen.res == GR_640);
 	if(gr_screen.res != GR_640){
@@ -1179,39 +748,7 @@ void gr_soft_init()
 		gr_screen.max_h = 480;
 	}
 
-	// Prepare the window to go full screen
-	if ( hwnd )	{
-		DWORD style, exstyle;
-		RECT		client_rect;
-
-		exstyle = 0;
-		style = WS_CAPTION | WS_SYSMENU;
-		
-		//	Create Game Window
-		client_rect.left = client_rect.top = 0;
-		client_rect.right = gr_screen.max_w;
-		client_rect.bottom = gr_screen.max_h;
-		AdjustWindowRect(&client_rect,style,FALSE);
-
-		RECT work_rect;
-		SystemParametersInfo( SPI_GETWORKAREA, 0, &work_rect, 0 );
-		int x = work_rect.left + (( work_rect.right - work_rect.left )-(client_rect.right - client_rect.left))/2;
-		int y = work_rect.top;
-		if ( x < work_rect.left ) {
-			x = work_rect.left;
-		}
-		int WinX = x;
-		int WinY = y;
-		int WinW = client_rect.right - client_rect.left;
-		int WinH = client_rect.bottom - client_rect.top;
-
-		ShowWindow(hwnd, SW_SHOWNORMAL );
-		SetWindowLong( hwnd, GWL_STYLE, style );
-		SetWindowLong( hwnd, GWL_EXSTYLE, exstyle );
-		SetWindowPos( hwnd, HWND_NOTOPMOST, WinX, WinY, WinW, WinH, SWP_SHOWWINDOW );
-		SetActiveWindow(hwnd);
-		SetForegroundWindow(hwnd);
-	}
+	os_create_window( gr_screen.max_w, gr_screen.max_h );
 
 	Palette_flashed = 0;
 	Palette_flashed_last_frame = 0;
@@ -1222,18 +759,8 @@ void gr_soft_init()
 	gr_buffer_create( gr_screen.max_w, gr_screen.max_h, gr_screen.bits_per_pixel );
 
 	gr_screen.offscreen_buffer_base = lpDibBits;
-
-	gr_screen.rowsize = DibInfo.Header.biWidth*((gr_screen.bits_per_pixel+7)/8);
-	Assert( DibInfo.Header.biWidth == gr_screen.max_w );
-
-	if (DibInfo.Header.biHeight > 0)	{
-		// top down 
-		gr_screen.offscreen_buffer = (void *)((uint)gr_screen.offscreen_buffer_base + (gr_screen.max_h - 1) * gr_screen.rowsize);
-		gr_screen.rowsize *= -1;
-	} else {
-		// top up
-		gr_screen.offscreen_buffer = gr_screen.offscreen_buffer_base;
-	}
+	gr_screen.rowsize = gr_screen.max_w;	// 8bpp, top-down
+	gr_screen.offscreen_buffer = gr_screen.offscreen_buffer_base;
 
 	grx_init_alphacolors();
 
@@ -1345,29 +872,10 @@ void gr_soft_cleanup()
 
 void grx_change_palette( ubyte * new_pal )
 {
-	if ( hPalette )	{
-		if (hDibDC)
-			SelectPalette( hDibDC, hOldPalette, FALSE );
-		if (!DeleteObject(hPalette))
-			Int3();
-		hPalette = NULL;
-	}
-
-	hPalette = gr_create_palette_256(new_pal);	// All 256 mapped one-to-one, but BLT's are slow.
-
-	if ( hDibDC )	{
-		int i; 
-		for (i=0; i<256; i++ )	{
-			DibInfo.Colors.aColors[i].rgbRed = new_pal[i*3+0];
-			DibInfo.Colors.aColors[i].rgbGreen = new_pal[i*3+1];
-			DibInfo.Colors.aColors[i].rgbBlue = new_pal[i*3+2];
-			DibInfo.Colors.aColors[i].rgbReserved = 0;
-		}
-
-		hOldPalette = SelectPalette( hDibDC, hPalette, FALSE );
-		SetDIBColorTable( hDibDC, 0, 256, DibInfo.Colors.aColors );
-	}
+	memcpy( Soft_palette, new_pal, 768 );
+	Soft_lut_dirty = 1;
 }
+
 
 void grx_flash( int r, int g, int b )
 {

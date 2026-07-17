@@ -10,6 +10,8 @@
 #ifndef _OSAPI_H
 #define _OSAPI_H
 
+#include "pstypes.h"
+
 // --------------------------------------------------------------------------------------------------
 // OSAPI DEFINES/VARS
 //
@@ -55,6 +57,16 @@ int os_foreground();
 
 // Returns the handle to the main window
 uint os_get_window();
+
+// SDL2 window management.  osapi owns the SDL window; the graphics backend
+// renders into it.  Forward declared so this header doesn't drag SDL in.
+struct SDL_Window;
+
+// Returns the main SDL window, or NULL until os_create_window() succeeds.
+SDL_Window *os_get_sdl_window();
+
+// Create (or resize) and show the main window.  Returns 0 on success.
+int os_create_window(int w, int h);
 
 
 // process management --------------------------------------------------------------

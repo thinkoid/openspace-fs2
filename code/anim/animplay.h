@@ -10,6 +10,8 @@
 #ifndef __ANIMPLAY_H__
 #define __ANIMPLAY_H__
 
+#include "pstypes.h"
+
 struct anim;
 struct anim_info;
 struct anim_instance;

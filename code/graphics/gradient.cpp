@@ -7,8 +7,8 @@
  *
 */ 
 
-#include <windows.h>
-#include <windowsx.h>
+// (windows.h removed)
+// (windowsx.h removed)
 
 #include "2d.h"
 #include "grinternal.h"

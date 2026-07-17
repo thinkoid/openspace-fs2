@@ -7,8 +7,6 @@
  *
 */ 
 
-#include <windows.h>
-#include <windowsx.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include "grinternal.h"
@@ -349,54 +347,15 @@ void gr8_string(int sx, int sy, char *s )
 #ifndef HARDWARE_ONLY
 		if ( Current_alphacolor )	{
 			for (row=0; row<hc; row++)	{
-				#ifdef USE_INLINE_ASM
-					ubyte *lookup = &Current_alphacolor->table.lookup[0][0];
-						_asm mov edx, lookup
-						_asm xor eax, eax
-						_asm mov ecx, wc
-						_asm xor ebx, ebx
-						_asm mov edi, dptr
-						_asm mov esi, fp
-						_asm shr ecx, 1
-						_asm jz  OnlyOne
-						_asm pushf
-					InnerFontLoop:
-						_asm mov al, [edi]
-						_asm mov bl, [edi+1]
-						_asm add edi,2
-
-						_asm mov ah, [esi]
-						_asm mov bh, [esi+1]
-						_asm add esi,2
-
-						_asm mov al, [edx+eax]
-						_asm mov ah, [edx+ebx]
-
-						_asm mov [edi-2], ax
-
-						_asm dec ecx
-						_asm jnz InnerFontLoop
-
-						_asm popf
-						_asm jnc NotOdd
-
-					OnlyOne:
-						_asm mov al, [edi]
-						_asm mov ah, [esi]
-						_asm mov al, [edx+eax]
-						_asm mov [edi], al
-
-					NotOdd:
-					dptr += gr_screen.rowsize;
-					fp += width;
-				#else
-					int i;
-					for (i=0; i< wc; i++ )	{
-						*dptr++ = Current_alphacolor->table.lookup[*fp++][*dptr];
-					}
-					fp += width - wc;
-					dptr += gr_screen.rowsize - wc;
-				#endif
+				int i;
+				for (i=0; i< wc; i++ )	{
+					// lookup[font pixel][dest pixel], as in the retail word-at-a-time asm
+					*dptr = Current_alphacolor->table.lookup[*fp][*dptr];
+					dptr++;
+					fp++;
+				}
+				fp += width - wc;
+				dptr += gr_screen.rowsize - wc;
 			}
 		} else {		// No alpha color
 #endif
@@ -411,101 +370,17 @@ void gr8_string(int sx, int sy, char *s )
 				fp += width - wc;
 				dptr += gr_screen.rowsize - wc;
 			}
-		// }
+#ifndef HARDWARE_ONLY
+		}
+#endif
 	}
 	gr_unlock();
 }
 
-HFONT MyhFont = NULL;
-extern HDC hDibDC;
+// gr_string_win/gr_get_string_size_win (Win32 GDI text into the DIB section)
+// went with the windows.h dependency; nothing in the game code called them.
 
-void gr_string_win(int x, int y, char *s)
-{
-	char *ptr;
-	SIZE size;
-
-	if ( MyhFont==NULL )	{
-		MyhFont = CreateFont(14, 0, 0, 0,				// height,width,?,?
-				700,
-				FALSE,
-				FALSE,
-				FALSE,											// strikeout?
-				ANSI_CHARSET,									// character set
-				OUT_DEVICE_PRECIS,
-				CLIP_DEFAULT_PRECIS,
-				DEFAULT_QUALITY,
-				DEFAULT_PITCH | FF_DONTCARE,
-//				NULL );
-//				"Times New Roman" );
-//XSTR:OFF
-				"Ariel" );
-//XSTR:ON
-	}
-
-	SelectObject( hDibDC, MyhFont );
-
-	if ( gr_screen.bits_per_pixel==8 )
-		SetTextColor(hDibDC, PALETTEINDEX(gr_screen.current_color.raw8));
-	else
-		SetTextColor(hDibDC, RGB(gr_screen.current_color.red,gr_screen.current_color.green,gr_screen.current_color.blue));
-
-	SetBkMode(hDibDC,TRANSPARENT);
-
-
-	HRGN hclip;
-	hclip = CreateRectRgn( gr_screen.offset_x, 
-								  gr_screen.offset_y, 
-								  gr_screen.offset_x+gr_screen.clip_width-1, 
-								  gr_screen.offset_y+gr_screen.clip_height-1 );
-
-	SelectClipRgn(hDibDC, hclip );
-	x += gr_screen.offset_x;
-	y += gr_screen.offset_y;
-	//ptr = strchr(s,'\n);
-	while ((ptr = strchr(s, '\n'))!=NULL) {
-		TextOut(hDibDC, x, y, s, ptr - s);
-		GetTextExtentPoint32(hDibDC, s, ptr - s, &size);
-		y += size.cy;
-		s = ptr + 1;
-	}
-
-	TextOut(hDibDC, x, y, s, strlen(s));
-	SelectClipRgn(hDibDC, NULL);
-	DeleteObject(hclip);
-}
-
-void gr_get_string_size_win(int *w, int *h, char *text)
-{
-	char *ptr;
-	SIZE size;
-
-	ptr = strchr(text, '\n');
-
-	if (MyhFont==NULL)	{
-		if (w) *w = 0;
-		if (h) *h = 0;
-		return;
-	}
-
-	SelectObject( hDibDC, MyhFont );
-
-	if (!ptr)	{
-		GetTextExtentPoint32( hDibDC, text, strlen(text), &size);
-		if (w) *w = size.cx;
-		if (h) *h = size.cy;
-		return;
-	}
-
-	GetTextExtentPoint32(hDibDC, text, ptr - text, &size);
-	gr_get_string_size_win(w, h, ptr+1);
-	if (w && (size.cx > *w) )
-		*w = size.cx;
-
-	if (h)
-		*h += size.cy;
-}
-
-char grx_printf_text[2048];	
+char grx_printf_text[2048];
 
 void _cdecl gr_printf( int x, int y, char * format, ... )
 {
@@ -537,7 +412,7 @@ int gr_create_font(char * typeface)
 	n = -1;
 	for (fontnum=0; fontnum<Num_fonts; fontnum++ )	{
 		if (fnt->id != 0 )	{
-			if ( !_strnicmp( fnt->filename, typeface, MAX_FILENAME_LEN ) )	{
+			if ( !strnicmp( fnt->filename, typeface, MAX_FILENAME_LEN ) )	{
 				return fontnum;
 			}
 		} else {
@@ -634,7 +509,7 @@ int gr_create_font(char * typeface)
 			for (x1=0; x1<fnt->char_data[i].byte_width; x1++ )	{
 				uint c = *fp++;
 				if ( c > 14 ) c = 14;
-				fnt->bm_data[(x+x1)+(y+y1)*fnt->bm_w] = unsigned char(c);	
+				fnt->bm_data[(x+x1)+(y+y1)*fnt->bm_w] = (ubyte)(c);
 			}
 		}
 		x += fnt->char_data[i].byte_width;

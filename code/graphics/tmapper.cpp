@@ -10,7 +10,6 @@
 #include <math.h>
 #include <limits.h>
 #include <stdio.h>
-#include <conio.h>
 #include <stdlib.h>
 
 #include "2d.h"
@@ -189,10 +188,9 @@ void tmap_scan_generic()
 // just for Z and L.
 inline int tmap_ftol(float f)
 {
-	int x;
-	_asm fld f
-	_asm fistp x
-	return x; 
+	// was fld/fistp: converts with the current rounding mode (nearest),
+	// which is exactly what lrintf does
+	return (int)lrintf(f);
 }
 
 /*
@@ -347,8 +345,8 @@ void grx_tmapper( int nverts, vertex **verts, uint flags )
 
 	if ( tmap_scanline == NULL ) return;
 
-	Tmap.FadeLookup = (uint)palette_get_fade_table();
-	Tmap.BlendLookup = (uint)palette_get_blend_table(gr_screen.current_alpha);
+	Tmap.FadeLookup = (uintptr_t)palette_get_fade_table();
+	Tmap.BlendLookup = (uintptr_t)palette_get_blend_table(gr_screen.current_alpha);
 
 	if ( flags & TMAP_FLAG_TEXTURED )	{
 
@@ -413,7 +411,7 @@ void grx_tmapper( int nverts, vertex **verts, uint flags )
 	ly = ry = y - 1;
 
 	gr_lock();
-	Tmap.pScreenBits = (uint)gr_screen.offscreen_buffer_base;
+	Tmap.pScreenBits = (uintptr_t)gr_screen.offscreen_buffer_base;
 
 	while( rem > 0 )	{
 		while ( ly<=y && rem>0 )	{	// Advance left edge?
