@@ -742,7 +742,9 @@ void brief_set_default_closeup()
 // which shouldn't get shown
 void brief_compact_stages()
 {
-	int num, result, i;
+	int num, result, i, before;
+
+	before = Briefing->num_stages;
 
 	num = 0;
 	while ( num < Briefing->num_stages ) {
@@ -772,6 +774,13 @@ void brief_compact_stages()
 			continue;
 		}
 		num++;
+	}
+
+	// the shift loop above leaves the vacated tail slots holding copies of
+	// live stage pointers (new_text/icons/lines); clear them so briefing
+	// cleanup can't free the same stage twice
+	for ( i = Briefing->num_stages; i < before; i++ ) {
+		memset( &Briefing->stages[i], 0, sizeof(brief_stage) );
 	}
 }
 
