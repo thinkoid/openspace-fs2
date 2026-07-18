@@ -451,10 +451,12 @@ void parse_mission_info(mission *pm)
 	//	Maybe delay the player's entry.
 	if (optional_string("+Player Entry Delay:")) {
 		float	temp;
-		
+
 		stuff_float(&temp);
 		Assert(temp >= 0.0f);
 		Entry_delay_time = fl2f(temp);
+	} else {
+		Entry_delay_time = 0;	// without the reset a mission inherits the previous mission's delay
 	}
 
 	if (optional_string("+Viewer pos:")){
