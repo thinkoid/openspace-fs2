@@ -589,7 +589,7 @@ void message_translate_tokens(char *buf, char *text)
 			text = toke2 + 1;  // advance pointers past processed data
 
 			toke1 = strchr(text, '#');
-			if (toke1)  // No second one?
+			if (!toke1)  // No second one?
 				break;
 
 			strncpy(temp, text, toke1 - text);  // isolate token into seperate buffer
