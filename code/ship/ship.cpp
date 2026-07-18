@@ -4956,9 +4956,13 @@ done_secondary:
 
 	// AL 3-7-98: Move to next valid secondary bank if out of ammo
 	if ( (obj->flags & OF_PLAYER_SHIP) && (swp->secondary_bank_ammo[bank] <= 0) ) {
-		int fire_wait = (int)(Weapon_info[weapon].fire_wait * 1000.0f);
 		if ( ship_select_next_valid_secondary_bank(swp) ) {
-			swp->next_secondary_fire_stamp[swp->current_secondary_bank] = max(timestamp(250),timestamp(fire_wait));	//	1/4 second delay until can fire
+			// the new bank keeps its own remaining fire delay; just enforce the
+			// 1/4 second minimum so the switch can't fire instantly (setting the
+			// emptied weapon's full fire_wait here locked out the fresh bank)
+			if ( timestamp_elapsed(swp->next_secondary_fire_stamp[swp->current_secondary_bank]) ) {
+				swp->next_secondary_fire_stamp[swp->current_secondary_bank] = timestamp(250);	//	1/4 second delay until can fire
+			}
 			if ( obj == Player_obj ) {
 				snd_play( &Snds[SND_SECONDARY_CYCLE] );
 			}
