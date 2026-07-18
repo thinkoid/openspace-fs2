@@ -7934,6 +7934,13 @@ int is_support_allowed(object *objp)
 		return 0;
 	}
 
+	// make sure this guy's model has a rearming dockpoint -- granting the
+	// request without one crashes down the rearm docking path
+	if (model_find_dock_index(Ships[objp->instance].modelnum, DOCK_TYPE_REARM) < 0){
+		mprintf(("support not allowed for %s because its model lacks a rearming dockpoint\n", Ships[objp->instance].ship_name));
+		return 0;
+	}
+
 	if ( Game_mode & GM_NORMAL ) {
 		if (Ships[objp->instance].team != TEAM_FRIENDLY){
 			return 0;
