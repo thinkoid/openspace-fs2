@@ -760,13 +760,9 @@ void gr8_set_gamma(float gamma)
 void gr_soft_init()
 {
 //	int i;
-	// software mode only supports 640x480
-	Assert(gr_screen.res == GR_640);
-	if(gr_screen.res != GR_640){
-		gr_screen.res = GR_640;
-		gr_screen.max_w = 640;
-		gr_screen.max_h = 480;
-	}
+	// retail gated software to 640x480 here (hi-res was hardware-only);
+	// the rasterizer is resolution-parametric — FRED ran it at window
+	// size — so both retail resolutions are allowed through
 
 	os_create_window( gr_screen.max_w, gr_screen.max_h );
 

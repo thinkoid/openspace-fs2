@@ -1571,10 +1571,8 @@ void game_init()
 	} else {
 		mprintf(("No sparky_hi_fs2.vp in directory %s\n", dir));
 	}
-	// hi-res needs the hardware backends; unused until then
-	(void)has_sparky_hi;
-
-	gr_init(GR_640, GR_SOFTWARE, 8);
+	// hi-res if the hi-res art pack is present, as retail did for hardware
+	gr_init(has_sparky_hi ? GR_1024 : GR_640, GR_SOFTWARE, 8);
 
 	// Set the gamma
 	ptr = os_config_read_string(NULL,NOX("Gamma"),NOX("1.80"));
