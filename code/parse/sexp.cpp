@@ -5303,12 +5303,12 @@ void sexp_protect_ships( int n, int flag )
 	char *ship_name;
 	int num;
 
-	while ( n != -1 ) {
+	for ( ; n != -1; n = CDR(n) ) {
 		ship_name = CTEXT(n);
 
 		// check to see if ship destroyed or departed.  In either case, do nothing.
 		if ( mission_log_get_time(LOG_SHIP_DEPART, ship_name, NULL, NULL) || mission_log_get_time(LOG_SHIP_DESTROYED, ship_name, NULL, NULL) )
-			return;
+			continue;
 
 		// get the ship num.  If we get a -1 for the number here, ship has yet to arrive.  Store this ship
 		// in a list until created
@@ -5327,15 +5327,12 @@ void sexp_protect_ships( int n, int flag )
 					parse_obj->flags |= P_OF_PROTECTED;
 				else
 					parse_obj->flags &= ~P_OF_PROTECTED;
-				break;
 	#ifndef NDEBUG
 			} else {
 				Int3();	// get allender -- could be a potential problem here
 	#endif
 			}
 		}
-
-		n = CDR(n);
 	}
 }
 
@@ -5346,12 +5343,12 @@ void sexp_beam_protect_ships( int n, int flag )
 	char *ship_name;
 	int num;
 
-	while ( n != -1 ) {
+	for ( ; n != -1; n = CDR(n) ) {
 		ship_name = CTEXT(n);
 
 		// check to see if ship destroyed or departed.  In either case, do nothing.
 		if ( mission_log_get_time(LOG_SHIP_DEPART, ship_name, NULL, NULL) || mission_log_get_time(LOG_SHIP_DESTROYED, ship_name, NULL, NULL) )
-			return;
+			continue;
 
 		// get the ship num.  If we get a -1 for the number here, ship has yet to arrive.  Store this ship
 		// in a list until created
@@ -5370,15 +5367,12 @@ void sexp_beam_protect_ships( int n, int flag )
 					parse_obj->flags |= P_OF_BEAM_PROTECTED;
 				else
 					parse_obj->flags &= ~P_OF_BEAM_PROTECTED;
-				break;
 	#ifndef NDEBUG
 			} else {
 				Int3();	// get allender -- could be a potential problem here
 	#endif
 			}
 		}
-
-		n = CDR(n);
 	}
 }
 
@@ -5419,7 +5413,6 @@ void sexp_ships_visible( int n, int visible )
 					parse_obj->flags |= P_SF_HIDDEN_FROM_SENSORS;
 				else
 					parse_obj->flags &= ~P_SF_HIDDEN_FROM_SENSORS;
-				break;
 	#ifndef NDEBUG
 			} else {
 				Int3();	// get allender -- could be a potential problem here
@@ -5461,7 +5454,6 @@ void sexp_ships_invulnerable( int n, int invulnerable )
 					parse_obj->flags |= P_SF_INVULNERABLE;
 				else
 					parse_obj->flags &= ~P_SF_INVULNERABLE;
-				break;
 	#ifndef NDEBUG
 			} else {
 				Int3();	// get allender -- could be a potential problem here
@@ -5503,7 +5495,6 @@ void sexp_ships_guardian( int n, int guardian )
 					parse_obj->flags |= P_SF_GUARDIAN;
 				else
 					parse_obj->flags &= ~P_SF_GUARDIAN;
-				break;
 	#ifndef NDEBUG
 			} else {
 				Int3();	// get allender -- could be a potential problem here
