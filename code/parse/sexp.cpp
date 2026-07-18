@@ -4005,8 +4005,7 @@ int sexp_is_iff( int n )
 		team = TEAM_HOSTILE;
 	}
 
-	n = CDR(n);
-	while ( n != -1 ) {
+	for ( n = CDR(n); n != -1; n = CDR(n) ) {
 		ship_name = CTEXT(n);
 		// find the ship and check to be sure that it is still around.
 		num = ship_name_lookup(ship_name);
@@ -4016,8 +4015,6 @@ int sexp_is_iff( int n )
 		// if the team doesn't match the team specified, return 0 immediately
 		if ( Ships[num].team != team)
 			return 0;
-
-		n = CDR(n);
 	}
 
 	return 1;
