@@ -1413,6 +1413,11 @@ void hud_show_damage_popup()
 
 	num = 0;
 	for ( pss = GET_FIRST(&Player_ship->subsys_list); pss !=END_OF_LIST(&Player_ship->subsys_list); pss = GET_NEXT(pss) ) {
+		// the list is sized for the subsystem TYPES but filled per damaged
+		// INSTANCE -- a ship with many turrets/engines can overrun it
+		if ( num >= SUBSYSTEM_MAX ) {
+			break;
+		}
 		psub = pss->system_info;
 		strength = ship_get_subsystem_strength(Player_ship, psub->type);
 		if ( strength < 1 ) {
