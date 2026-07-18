@@ -393,8 +393,11 @@ int read_pilot_file(char *callsign, int single, player *p)
 	// write out the image file name
 	p->insignia_texture = -1;
 	cfread_string_len(p->squad_name, NAME_LENGTH, file);
-	cfread_string_len(p->squad_filename, MAX_FILENAME_LEN - 1, file);
-	player_set_squad_bitmap(p, p->squad_filename);
+	// read into a local first -- player_set_squad_bitmap copies its argument
+	// onto p->squad_filename, and overlapping strncpy is undefined
+	char squad_fname[MAX_FILENAME_LEN];
+	cfread_string_len(squad_fname, MAX_FILENAME_LEN - 1, file);
+	player_set_squad_bitmap(p, squad_fname);
 
 	// deal with campaign stuff.  The way we store the information in the file is to first store the
 	// name of the current campaign that the player is playing.  Next we store the info regarding the campaigns
