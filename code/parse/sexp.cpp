@@ -4958,7 +4958,7 @@ void sexp_deal_with_warp( int n, int should_break, int nix )
 			if ( should_break )
 				flag = P_SF_WARP_BROKEN;
 			else
-				flag = P_SF_WARP_BROKEN;
+				flag = P_SF_WARP_NEVER;
 
 			if ( nix )
 				pobjp->flags |= flag;
