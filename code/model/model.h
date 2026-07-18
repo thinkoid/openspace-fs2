@@ -440,7 +440,6 @@ typedef struct polymodel {
 	int			num_ins;
 
 #ifndef NDEBUG
-	int			ram_used;		// How much RAM this model uses
 	int			debug_info_size;
 	char			*debug_info;
 #endif

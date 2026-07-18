@@ -10,7 +10,6 @@
 #include "afterburner.h"
 #include "key.h"
 #include "joy.h"
-#include "joy_ff.h"
 #include "gamesnd.h"
 #include "ship.h"
 #include "controlsconfig.h"
@@ -136,7 +135,6 @@ void afterburners_start(object *objp)
 		}
 
 		snd_play( &Snds[SND_ABURN_ENGAGE], 0.0f, 1.0f, SND_PRIORITY_MUST_PLAY );
-		joy_ff_afterburn_on();
 	} else {
 		snd_play_3d( &Snds[SND_ABURN_ENGAGE], &objp->pos, &View_position, objp->radius );
 	}
@@ -299,8 +297,6 @@ void afterburners_stop(object *objp, int key_released)
 		if ( Player_afterburner_loop_id > -1 )	{
 			Player_disengage_timer = timestamp(DISENGAGE_TIME);
 		}
-
-		joy_ff_afterburn_off();
 	}
 }
 

@@ -32,7 +32,6 @@
 #define GS_EVENT_TECH_MENU							11		// go to the tech room menu
 #define GS_EVENT_LOAD_MISSION_MENU				12		// go to the load mission menu
 #define GS_EVENT_SHIP_SELECTION					13		// Show ship selection menu
-#define GS_EVENT_TOGGLE_FULLSCREEN				14		//	toggle fullscreen mode
 #define GS_EVENT_START_BRIEFING					15		// go to the briefing for the current mission
 #define GS_EVENT_DEBUG_PAUSE_GAME				16
 #define GS_EVENT_HUD_CONFIG						17		// start the HUD configuration screen
@@ -61,7 +60,6 @@
 #define GS_EVENT_GAME_INIT                   49
 #define GS_EVENT_CAMPAIGN_ROOM					54
 #define GS_EVENT_CMD_BRIEF							55		// switch to command briefing screen
-#define GS_EVENT_TOGGLE_GLIDE						56		//	GS_EVENT_TOGGLE_GLIDE
 #define GS_EVENT_RED_ALERT							57		// go to red alert screen
 #define GS_EVENT_SIMULATOR_ROOM					58
 #define GS_EVENT_END_CAMPAIGN						59		// end of the whole thang.

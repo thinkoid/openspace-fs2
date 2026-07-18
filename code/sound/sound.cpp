@@ -26,7 +26,6 @@
 #include "ds.h"
 #include "ds3d.h"
 #include "acm.h"
-#include "dscap.h"
 		
 #define SND_F_USED			(1<<0)		// Sounds[] element is used
 
@@ -395,7 +394,6 @@ void snd_close(void)
 	snd_unload_all();		// free the sound data stored in DirectSound secondary buffers
 	ACM_close();	// Close the Audio Compression Manager (ACM)
 	ds3d_close();	// Close DirectSound3D
-	dscap_close();	// Close DirectSoundCapture
 	ds_close();		// Close DirectSound off
 }
 

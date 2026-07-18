@@ -25,10 +25,6 @@
 #define	GM_STATS_TRANSFER				(1 << 9)				// in the process of stats transfer
 #define	GM_CAMPAIGN_MODE				(1 << 10)			// are we currently in a campaign.
 
-#define	GM_DEMO_RECORD					(1 << 11)			// recording a demo
-#define	GM_DEMO_PLAYBACK				(1 << 12)			// playing a demo back
-#define	GM_DEMO							(GM_DEMO_RECORD | GM_DEMO_PLAYBACK)			// true whenever a demo is being recorded or played back
-
 #define	VM_EXTERNAL						(1 << 0)				//	Set if not viewing from player position.
 #define	VM_SLEWED						(1 << 1)				//	Set if viewer orientation is slewed.
 #define	VM_DEAD_VIEW					(1 << 2)				//	Set if viewer is watching from dead view.
@@ -109,8 +105,6 @@ extern float Noise[NOISE_NUM_FRAMES];
 
 // If true, then we are using Direct3D hardware.  This is used for game type stuff
 // that changes when you're using hardware.
-extern int D3D_enabled;
-
 // game skill levels 
 #define	NUM_SKILL_LEVELS	5
 
@@ -157,10 +151,5 @@ void detail_level_set(int level);
 
 // Returns the current detail level or -1 if custom.
 int current_detail_level();
-
-//====================================================================================
-// Memory stuff from WinDebug.cpp
-extern int TotalRam;
-void windebug_memwatch_init();
 
 #endif

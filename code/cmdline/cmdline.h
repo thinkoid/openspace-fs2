@@ -25,7 +25,6 @@ extern int Cmdline_gimme_all_medals;
 extern int Cmdline_use_last_pilot;
 extern int Cmdline_cd_check;
 extern int Cmdline_spew_pof_info;
-extern int Cmdline_force_32bit;
 extern int Cmdline_mouse_coords;
 
 extern int Cmdline_window;

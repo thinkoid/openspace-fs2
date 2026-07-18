@@ -30,7 +30,6 @@
 #include "sound.h"
 #include "gamesnd.h"
 #include "bmpman.h"
-#include "rbaudio.h"
 #include "hudsquadmsg.h"
 #include "eventmusic.h"
 #include "animplay.h"
@@ -51,7 +50,6 @@
 #include "objcollide.h"
 #include "hudconfig.h"
 #include "missioncampaign.h"
-#include "rtvoice.h"
 #include "crypt.h"
 #include "ui.h"
 #include "beam.h"
@@ -457,9 +455,6 @@ void process_debug_keys(int k)
 	if ( !Debug_allowed )
 		return;
 #endif
-
-	// if ( (k & KEY_DEBUGGED) && (Game_mode & GM_RECORDING_DEMO) )
-		// return;
 
 	switch (k) {
 		case KEY_DEBUGGED + KEY_H:
@@ -1671,11 +1666,10 @@ int button_allowed(int n)
 }
 
 // execute function corresponding to action n
-// basically, these are actions which don't affect demo playback at all
-int button_function_demo_valid(int n)
+// basically, these are actions which are always processed regardless of game state
+int button_function_always(int n)
 {
-	// by default, we'll return "not processed". ret will get set to 1, if this is one of the keys which is always allowed, even in demo
-	// playback.
+	// by default, we'll return "not processed". ret will get set to 1, if this is one of the keys which is always allowed.
 	int ret = 0;
 
 	//	No keys, not even targeting keys, when player in death roll.  He can press keys after he blows up.
@@ -2268,20 +2262,13 @@ void button_info_do(button_info *bi)
 
 			// check if the bit is set. If button_function returns 1 (implying the action was taken), then unset the bit
 			if ( bi->status[i] & (1 << j) ) {
-				// always process buttons which are valid for demo playback
-				if(button_function_demo_valid(32 * i + j)){
+				// process buttons which are always allowed
+				if(button_function_always(32 * i + j)){
 					bi->status[i] &= ~(1 << j);
 				}
 				// other buttons
-				else {
-					// if we're in demo playback, always clear the bits
-					if(Game_mode & GM_DEMO_PLAYBACK){
-						bi->status[i] &= ~(1 << j);
-					}
-					// otherwise check as normal
-					else if (button_function(32 * i + j)) {
-						bi->status[i] &= ~(1 << j);					
-					}
+				else if (button_function(32 * i + j)) {
+					bi->status[i] &= ~(1 << j);
 				}
 			}
 		}

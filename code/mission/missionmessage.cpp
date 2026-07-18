@@ -27,7 +27,6 @@
 #include "subsysdamage.h"
 #include "emp.h"
 #include "localize.h"
-#include "demo.h"
 #include "hudconfig.h"
 
 // here is a text list of the builtin message names.  These names are used to match against
@@ -1392,11 +1391,6 @@ void message_send_unique_to_player( char *id, void *data, int m_source, int prio
 
 			message_queue_message( i, priority, MESSAGE_TIME_ANYTIME, who_from, source, group, delay );
 
-			// record to the demo if necessary
-			if(Game_mode & GM_DEMO_RECORD){
-				demo_POST_unique_message(id, who_from, m_source, priority);
-			}
-
 			return;		// all done with displaying
 		}
 	}
@@ -1469,11 +1463,6 @@ void message_send_builtin_to_player( int type, ship *shipp, int priority, int ti
 			}
 
 			message_queue_message( i, priority, timing, who_from, source, group, delay, type );
-
-			// post a builtin message
-			if(Game_mode & GM_DEMO_RECORD){
-				demo_POST_builtin_message(type, shipp, priority, timing);
-			}
 
 			return;		// all done with displaying
 		}

@@ -41,7 +41,6 @@
 #include "neb.h"
 #include "beam.h"
 #include "swarm.h"
-#include "demo.h"
 
 /*
  *  Global variables
@@ -782,7 +781,7 @@ void obj_move_call_physics(object *objp, float frametime)
 				}
 			}			
 
-			if ( (objp->type == OBJ_ASTEROID) && (Model_caching && (!D3D_enabled) ) )	{
+			if ( (objp->type == OBJ_ASTEROID) && Model_caching )	{
 				// If we're doing model caching, don't rotate asteroids
 				vector tmp = objp->phys_info.rotvel;
 
@@ -1018,27 +1017,7 @@ void obj_move_all_post(object *objp, float frametime)
 			}
 
 			if ( cast_light )	{
-				if ( D3D_enabled )	{
-					weapon_info * wi = &Weapon_info[Weapons[objp->instance].weapon_info_index];
-
-					if ( wi->render_type == WRT_LASER )	{
-						color c;
-						float r,g,b;
-
-						// get the laser color
-						weapon_get_laser_color(&c, objp);
-
-						r = i2fl(c.red)/255.0f;
-						g = i2fl(c.green)/255.0f;
-						b = i2fl(c.blue)/255.0f;
-						light_add_point( &objp->pos, 10.0f, 20.0f, 1.0f, r, g, b, objp->parent );
-						//light_add_point( &objp->pos, 10.0f, 20.0f, 1.0f, 0.0f, 0.0f, 1.0f, objp->parent );
-					} else {
-						light_add_point( &objp->pos, 10.0f, 20.0f, 1.0f, 1.0f, 1.0f, 1.0f, objp->parent );
-					} 
-				} else {
-					light_add_point( &objp->pos, 10.0f, 20.0f, 1.0f, 1.0f, 1.0f, 1.0f, objp->parent );
-				}
+				light_add_point( &objp->pos, 10.0f, 20.0f, 1.0f, 1.0f, 1.0f, 1.0f, objp->parent );
 			}
 		}
 		break;	
@@ -1180,12 +1159,6 @@ void obj_move_all(float frametime)
 				continue;
 			}
 
-			// if we're playing a demo back, only sim stuff that we're supposed to
-			if((Game_mode & GM_DEMO_PLAYBACK) && !demo_should_sim(objp)){
-				objp = GET_NEXT(objp);
-				continue;
-			}
-
 #ifdef OBJECT_CHECK
 			obj_check_object( objp );
 #endif
@@ -1207,18 +1180,16 @@ void obj_move_all(float frametime)
 	}
 
 	//	After all objects have been moved, move all docked objects.
-	if(!(Game_mode & GM_DEMO_PLAYBACK)){
-		objp = GET_FIRST(&obj_used_list);
-		while( objp !=END_OF_LIST(&obj_used_list) )	{
-			if (objp->type == OBJ_SHIP){
-				move_docked_objects(objp);
-			}
-
-			// unflag all objects as being updates
-			objp->flags &= ~OF_JUST_UPDATED;
-
-			objp = GET_NEXT(objp);
+	objp = GET_FIRST(&obj_used_list);
+	while( objp !=END_OF_LIST(&obj_used_list) )	{
+		if (objp->type == OBJ_SHIP){
+			move_docked_objects(objp);
 		}
+
+		// unflag all objects as being updates
+		objp->flags &= ~OF_JUST_UPDATED;
+
+		objp = GET_NEXT(objp);
 	}
 
 	// Now that all objects have moved, we should calculate the
@@ -1235,9 +1206,7 @@ void obj_move_all(float frametime)
 		objp = GET_NEXT(objp);
 	} */
 
-	if(!(Game_mode & GM_DEMO_PLAYBACK)){
-		find_homing_object_cmeasures();	//	If any cmeasures fired, maybe steer away homing missiles	
-	}
+	find_homing_object_cmeasures();	//	If any cmeasures fired, maybe steer away homing missiles
 
 	// do pre-collision stuff for beam weapons
 	beam_move_all_pre();
@@ -1246,9 +1215,7 @@ void obj_move_all(float frametime)
 		obj_check_all_collisions();		
 	}
 
-	if(!(Game_mode & GM_DEMO_PLAYBACK)){
-		turret_swarm_check_validity();
-	}
+	turret_swarm_check_validity();
 
 	// do post-collision stuff for beam weapons
 	beam_move_all_post();

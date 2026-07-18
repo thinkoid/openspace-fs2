@@ -53,7 +53,6 @@
 #include "jumpnode.h"
 #include "localize.h"
 #include "neb.h"
-#include "demo.h"
 #include "neblightning.h"
 #include "fvi.h"
 
@@ -1410,11 +1409,6 @@ int parse_create_object(p_object *objp)
 		if ( Ships[shipnum].flags & SF_ESCORT ){
 			hud_add_remove_ship_escort( objnum, 1 );
 		}
-	}
-
-	// if recording a demo, post the event
-	if(Game_mode & GM_DEMO_RECORD){
-		demo_POST_obj_create(objp->name, Objects[objnum].signature);
 	}
 
 	return objnum;

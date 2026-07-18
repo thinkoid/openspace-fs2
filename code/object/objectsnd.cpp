@@ -17,7 +17,6 @@
 #include "ds3d.h"
 #include "timer.h"
 #include "3d.h"
-#include "joy_ff.h"
 
 // Persistant sounds for objects (pointer to obj_snd is in object struct)
 typedef struct _obj_snd {
@@ -419,8 +418,6 @@ void maybe_play_flyby_snd(float closest_dist, object *closest_objp)
 //				nprintf(("AI", "Frame %i: Playing flyby sound, species = %i, size = %i, dist = %7.3f\n", Framecount, Debug_1, Debug_2, dist));
 //Debug_1 = (Debug_1+1)%3;
 //Debug_2 = (Debug_2+1)%2;
-
-				joy_ff_fly_by(100 - (int) (100.0f * closest_dist / FLYBY_MIN_DISTANCE));
 
 				Flyby_next_sound = timestamp(FLYBY_MIN_NEXT_TIME);
 				Flyby_last_objp = closest_objp;

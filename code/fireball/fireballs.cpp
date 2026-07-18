@@ -225,11 +225,7 @@ void fireball_init()
 
 }
 
-MONITOR( NumFireballsRend );	
-
-//extern int tcache_hit(int);
-//extern int Glide_expl_textures_in_frame;
-//extern float Glide_avg_exp_text_per_sec;
+MONITOR( NumFireballsRend );
 
 void fireball_render(object * obj)
 {
@@ -268,25 +264,6 @@ void fireball_render(object * obj)
 		case FIREBALL_EXPLOSION_LARGE1:
 		case FIREBALL_EXPLOSION_LARGE2:
 		// case FIREBALL_EXPLOSION_LARGE3:
-			/*
-			if (!tcache_hit(Fireballs[num].current_bitmap)) {
-				// if we're over 200k exp vram upload this frame, change to lower lod
-				if (Glide_expl_textures_in_frame > 1024 * 200) {
-					// change fireball instance to lower LOD or don't draw
-
-					// get current LOD and number of LODs
-					int cur_lod = Fireballs[num].lod;
-					int num_lods = Fireball_info[Fireballs[num].fireball_info_index].lod_count;
-
-					if (num_lods > cur_lod+1) {
-						// bump lod
-						int frame = Fireballs[num].current_bitmap - Fireball_info[Fireballs[num].fireball_info_index].lod[cur_lod].bitmap_id;
-						Fireballs[num].lod++;
-						Fireballs[num].current_bitmap = Fireball_info[Fireballs[num].fireball_info_index].lod[cur_lod+1].bitmap_id + frame;
-						mprintf(("bumping down lod for fireball %s, frame %d\n", Fireball_info[Fireballs[num].fireball_info_index].lod[cur_lod].filename, frame));
-					}
-				}
-			}*/
 
 		case FIREBALL_ASTEROID:
 			// Make the big explosions rotate with the viewer.

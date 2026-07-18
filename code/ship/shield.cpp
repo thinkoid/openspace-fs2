@@ -109,9 +109,6 @@ shield_ani Sheild_ani[MAX_SHIELD_ANIMS] = {
 
 int Shield_bitmaps_loaded = 0;
 
-//	This is a recursive function, so prototype it.
-extern void create_shield_from_triangle(int trinum, matrix *orient, shield_info *shieldp, vector *tcp, vector *centerp, float radius, vector *rvec, vector *uvec);
-
 void load_shield_hit_bitmap()
 {
 	#ifndef DEMO // not for FS2_DEMO
@@ -234,48 +231,6 @@ void create_low_detail_poly(int global_index, vector *tcp, vector *rightv, vecto
 }
 
 //	----------------------------------------------------------------------------------------------------
-//	Given a shield triangle, compute the uv coordinates at its vertices given
-//	the center point of the explosion texture, distance to center of shield and
-//	right and up vectors.
-//	For small distances (relative to radius), coordinates can be computed using
-//	distance.  For larger values, should comptue angle.
-void rs_compute_uvs(shield_tri *stp, shield_vertex *verts, vector *tcp, float radius, vector *rightv, vector *upv)
-{
-	int	i;
-	shield_vertex *sv;
-
-	for (i=0; i<3; i++) {
-		vector	v2cp;
-
-		sv = &verts[stp->verts[i]];
-
-		vm_vec_sub(&v2cp, &sv->pos, tcp);
-		sv->u = vm_vec_dot(&v2cp, rightv) * Shield_scale + 0.5f;
-		sv->v = - vm_vec_dot(&v2cp, upv) * Shield_scale + 0.5f;
-
-		if (sv->u > UV_MAX){
-			sv->u = UV_MAX;
-		}
-
-		if (sv->u < 0.0f){
-			sv->u = 0.0f;
-		}
-
-		if (sv->v > UV_MAX){
-			sv->v = UV_MAX;
-		}
-
-		if (sv->v < 0.0f){
-			sv->v = 0.0f;
-		}
-
-		// mprintf(("u, v = %7.3f %7.3f\n", stp->verts[i].u, stp->verts[i].v));
-	}
-
-	// mprintf(("\n"));
-}
-
-//	----------------------------------------------------------------------------------------------------
 //	Free records in Global_tris previously used by Shield_hits[shnum].tri_list
 void free_global_tri_records(int shnum)
 {
@@ -341,69 +296,11 @@ void render_low_detail_shield_bitmap(gshield_tri *trip, matrix *orient, vector *
 	}
 }
 
-//	Render one triangle of a shield hit effect on one ship.
-//	Each frame, the triangle needs to be rotated into global coords.
-//	trip		pointer to triangle in global array
-//	orient	orientation of object shield is associated with
-//	pos		center point of object
-void render_shield_triangle(gshield_tri *trip, matrix *orient, vector *pos, ubyte r, ubyte g, ubyte b)
-{
-	matrix	m;
-	int		j;
-	vector	pnt;
-	vertex	*verts[3];
-	vertex	points[3];
-
-	if (trip->trinum == -1)
-		return;	//	Means this is a quad, must have switched detail_level.
-
-	vm_copy_transpose_matrix(&m,orient);
-
-	for (j=0; j<3; j++ )	{
-		// Rotate point into world coordinates
-		vm_vec_rotate(&pnt, &trip->verts[j].pos, &m);
-		vm_vec_add2(&pnt, pos);
-
-		// Pnt is now the x,y,z world coordinates of this vert.
-		// For this example, I am just drawing a sphere at that point.
-		g3_rotate_vertex(&points[j], &pnt);
-		points[j].u = trip->verts[j].u;
-		points[j].v = trip->verts[j].v;
-		Assert((trip->verts[j].u >= 0.0f) && (trip->verts[j].u <= UV_MAX));
-		Assert((trip->verts[j].v >= 0.0f) && (trip->verts[j].v <= UV_MAX));
-		verts[j] = &points[j];
-	}
-
-	verts[0]->r = r;
-	verts[0]->g = g;
-	verts[0]->b = b;
-	verts[1]->r = r;
-	verts[1]->g = g;
-	verts[1]->b = b;
-	verts[2]->r = r;
-	verts[2]->g = g;
-	verts[2]->b = b;
-
-	vector	norm;
-	Poly_count++;
-	vm_vec_perp(&norm,(vector *)&verts[0]->x,(vector *)&verts[1]->x,(vector*)&verts[2]->x);
-	if ( vm_vec_dot(&norm,(vector *)&verts[1]->x ) >= 0.0 )	{
-		vertex	*vertlist[3];
-		vertlist[0] = verts[2]; 
-		vertlist[1] = verts[1]; 
-		vertlist[2] = verts[0]; 
-		g3_draw_poly( 3, vertlist, TMAP_FLAG_TEXTURED | TMAP_FLAG_RGB | TMAP_FLAG_GOURAUD);
-	} else {
-		g3_draw_poly( 3, verts, TMAP_FLAG_TEXTURED | TMAP_FLAG_RGB | TMAP_FLAG_GOURAUD);
-	}
-}
-
 MONITOR(NumShieldRend);
 
 //	Render a shield mesh in the global array Shield_hits[]
 void render_shield(int shield_num) //, matrix *orient, vector *centerp)
 {
-	int		i;
 	vector	*centerp;
 	matrix	*orient;
 	object	*objp;
@@ -428,10 +325,8 @@ void render_shield(int shield_num) //, matrix *orient, vector *centerp)
 		return;
 	}
 
-	//	At detail levels 1, 3, animations play at double speed to reduce load.
-	if (!D3D_enabled || (Detail.shield_effects == 1) || (Detail.shield_effects == 3)) {
-		Shield_hits[shield_num].start_time -= Frametime;
-	}
+	//	Animations play at double speed to reduce load.
+	Shield_hits[shield_num].start_time -= Frametime;
 
 	MONITOR_INC(NumShieldRend,1);
 
@@ -486,20 +381,8 @@ void render_shield(int shield_num) //, matrix *orient, vector *centerp)
 	}
 	gr_set_bitmap(bitmap_id, GR_ALPHABLEND_FILTER, GR_BITBLT_MODE_NORMAL, alpha );
 
-	if (!D3D_enabled || (Detail.shield_effects == 1) || (Detail.shield_effects == 2)) {
-		if ( bitmap_id != - 1 ) {
-			render_low_detail_shield_bitmap(&Global_tris[Shield_hits[shield_num].tri_list[0]], orient, centerp, Shield_hits[shield_num].rgb[0], Shield_hits[shield_num].rgb[1], Shield_hits[shield_num].rgb[2]);
-		}
-	} else {
-
-		// AL 06/01/97 don't use Assert() until issue with Missiontime being reset to 0 are worked out
-		if ( bitmap_id != - 1 ) {
-			for (i=0; i<Shield_hits[shield_num].num_tris; i++) {
-				//if (Missiontime == Shield_hits[shield_num].start_time)
-				//	nprintf(("AI", "Frame %i: Render triangle %i.\n", Framecount, Global_tris[Shield_hits[shield_num].tri_list[i]].trinum));
-				render_shield_triangle(&Global_tris[Shield_hits[shield_num].tri_list[i]], orient, centerp, Shield_hits[shield_num].rgb[0], Shield_hits[shield_num].rgb[1], Shield_hits[shield_num].rgb[2]);
-			}
-		}
+	if ( bitmap_id != - 1 ) {
+		render_low_detail_shield_bitmap(&Global_tris[Shield_hits[shield_num].tri_list[0]], orient, centerp, Shield_hits[shield_num].rgb[0], Shield_hits[shield_num].rgb[1], Shield_hits[shield_num].rgb[2]);
 	}
 }
 
@@ -525,37 +408,6 @@ void render_shields()
 	}
 }
 
-
-// -----------------------------------------------------------------------------------------------------
-void create_tris_containing(vector *vp, matrix *orient, shield_info *shieldp, vector *tcp, vector *centerp, float radius, vector *rvec, vector *uvec)
-{
-	int	i, j;
-	shield_vertex *verts;
-
-	verts = shieldp->verts;
-
-	for (i=0; i<Num_tris; i++) {
-		if ( !shieldp->tris[i].used ) {
-			for (j=0; j<3; j++) {
-				vector v;
-
-				v = verts[shieldp->tris[i].verts[j]].pos;
-				if ((vp->x == v.x) && (vp->y == v.y) && (vp->z == v.z))
-					create_shield_from_triangle(i, orient, shieldp, tcp, centerp, radius, rvec, uvec);
-			}
-		}
-	}
-}
-
-void visit_children(int trinum, int vertex_index, matrix *orient, shield_info *shieldp, vector *tcp, vector *centerp, float radius, vector *rvec, vector *uvec)
-{
-	shield_vertex *sv;
-
-	sv = &(shieldp->verts[shieldp->tris[trinum].verts[vertex_index]]);
-
-	if ( (sv->u > 0.0f) && (sv->u < UV_MAX) && (sv->v > 0.0f) && (sv->v < UV_MAX))
-			create_tris_containing(&sv->pos, orient, shieldp, tcp, centerp, radius, rvec, uvec);
-}
 
 int	Gi_max = 0;
 
@@ -591,79 +443,6 @@ int get_global_shield_tri()
 	Assert((shnum >= 0) && (shnum < MAX_SHIELD_HITS));
 
 	return shnum;
-}
-
-void create_shield_from_triangle(int trinum, matrix *orient, shield_info *shieldp, vector *tcp, vector *centerp, float radius, vector *rvec, vector *uvec)
-{
-	//nprintf(("AI", "[%3i] ", trinum));
-
-	rs_compute_uvs( &shieldp->tris[trinum], shieldp->verts, tcp, radius, rvec, uvec);
-
-	//Assert(trinum < MAX_SHIELD_HITS);
-	shieldp->tris[trinum].used = 1;
-
-//mprintf(("%i ", trinum));
-	visit_children(trinum, 0, orient, shieldp, tcp, centerp, radius, rvec, uvec);
-	visit_children(trinum, 1, orient, shieldp, tcp, centerp, radius, rvec, uvec);
-	visit_children(trinum, 2, orient, shieldp, tcp, centerp, radius, rvec, uvec);
-}
-
-//	Copy information from Current_tris to Global_tris, stuffing information
-//	in a slot in Shield_hits.  The Global_tris array is not a shield_tri structure.
-// We need to store vertex information in the global array since the vertex list
-// will not be available to us when we actually use the array.
-void copy_shield_to_globals( int objnum, shield_info *shieldp )
-{
-	int	i, j;
-	int	gi = 0;
-	int	count = 0;			//	Number of triangles in this shield hit.
-	int	shnum;				//	shield hit number, index in Shield_hits.
-
-	shnum = get_global_shield_tri();
-	
-	Shield_hits[shnum].type = SH_TYPE_1;
-	// mprintf(("Creating hit #%i at time = %7.3f\n", shnum, f2fl(Missiontime)));
-
-	for (i = 0; i < shieldp->ntris; i++ ) {
-		if ( shieldp->tris[i].used ) {
-			while ( (gi < MAX_SHIELD_TRI_BUFFER) && (Global_tris[gi].used) && (Global_tris[gi].creation_time + SHIELD_HIT_DURATION > Missiontime)) {
-				gi++;
-			}
-			
-			//	If couldn't find one, choose a random one.
-			if (gi == MAX_SHIELD_TRI_BUFFER)
-				gi = (int) (frand() * MAX_SHIELD_TRI_BUFFER);
-
-			Global_tris[gi].used = shieldp->tris[i].used;
-			Global_tris[gi].trinum = i;
-			Global_tris[gi].creation_time = Missiontime;
-
-			// copy the pos/u/v elements of the shield_vertex structure into the shield vertex structure for this global triangle.
-			for (j = 0; j < 3; j++)
-				Global_tris[gi].verts[j] = shieldp->verts[shieldp->tris[i].verts[j]];
-			Shield_hits[shnum].tri_list[count++] = gi;
-
-			if (count >= MAX_TRIS_PER_HIT) {
-				mprintf(("Warning: Too many triangles in shield hit.\n"));
-				break;
-			}
-		}
-	}
-
-	Shield_hits[shnum].num_tris = count;
-	Shield_hits[shnum].start_time = Missiontime;
-	Shield_hits[shnum].objnum = objnum;
-
-	Shield_hits[shnum].rgb[0] = 255;
-	Shield_hits[shnum].rgb[1] = 255;
-	Shield_hits[shnum].rgb[2] = 255;
-	if((objnum >= 0) && (objnum < MAX_OBJECTS) && (Objects[objnum].type == OBJ_SHIP) && (Objects[objnum].instance >= 0) && (Objects[objnum].instance < MAX_SHIPS) && (Ships[Objects[objnum].instance].ship_info_index >= 0) && (Ships[Objects[objnum].instance].ship_info_index < Num_ship_types)){
-		ship_info *sip = &Ship_info[Ships[Objects[objnum].instance].ship_info_index];
-		
-		Shield_hits[shnum].rgb[0] = sip->shield_color[0];
-		Shield_hits[shnum].rgb[1] = sip->shield_color[1];
-		Shield_hits[shnum].rgb[2] = sip->shield_color[2];
-	}
 }
 
 //	***** This is the version that works on a quadrant basis.
@@ -727,36 +506,15 @@ void create_shield_low_detail(int objnum, int model_num, matrix *orient, vector 
 	}
 
 	vm_vector_2_matrix(&tom, &shieldp->tris[tr0].norm, NULL, NULL);
-	//rs_compute_uvs( &shieldp->tris[tr0], shieldp->verts, tcp, Objects[objnum].radius, &tom.rvec, &tom.uvec);
 
 	create_low_detail_poly(gi, tcp, &tom.rvec, &tom.uvec);
 
 }
 
-// Algorithm for shrink-wrapping a texture across a triangular mesh.
-// 
-// - Given a point of intersection, tcp (local to objnum)
-// - Vector to center of shield from tcp is v2c.
-// - Using v2c, compute right and down vectors.  These are the vectors of
-//   increasing u and v, respectively.
-// - Triangle of intersection of tcp is tr0.
-// - For 3 points in tr0, compute u,v coordinates using up and down vectors
-//   from center point, tcp.  Need to know size of explosion texture.  N units
-//   along right vector corresponds to O units in explosion texture space.
-// - For each edge, if either endpoint was outside texture bounds, recursively
-//   apply previous and current step.
-// 
-// Output of above is a list of triangles with u,v coordinates.  These u,v
-// coordinates will have to be clipped against the explosion texture bounds.
-
 void create_shield_explosion(int objnum, int model_num, matrix *orient, vector *centerp, vector *tcp, int tr0)
 {
-//	vector	v2c;		//	Vector to center from point tcp
-	matrix	tom;		//	Texture Orientation Matrix
-//	float		radius;	// Radius of shield, computed as distance from tcp to objp->pos.
 	shield_info	*shieldp;
 	polymodel	*pm;
-	int		i;
 
 	if (!New_shield_system)
 		return;
@@ -774,32 +532,7 @@ void create_shield_explosion(int objnum, int model_num, matrix *orient, vector *
 
 	//nprintf(("AI", "Frame %i: Creating explosion on %i.\n", Framecount, objnum));
 
-	if (!D3D_enabled || (Detail.shield_effects == 1) || (Detail.shield_effects == 2)) {
-		create_shield_low_detail(objnum, model_num, orient, centerp, tcp, tr0, shieldp);
-		return;
-	}
-
-	for (i=0; i<Num_tris; i++)
-		shieldp->tris[i].used = 0;
-
-	//	Compute orientation matrix from normal of surface hit.
-	//	Note, this will cause the shape of the bitmap to change abruptly
-	//	as the impact point moves to another triangle.  To prevent this,
-	//	you could average the normals at the vertices, then interpolate the
-	//	normals from the vertices to get a smoothly changing normal across the face.
-	//	I had tried using the vector from the impact point to the center, which
-	//	changes smoothly, but this looked surprisingly bad.
-	vm_vector_2_matrix(&tom, &shieldp->tris[tr0].norm, NULL, NULL);
-	//vm_vec_sub(&v2c, tcp, &Objects[objnum].pos);
-
-	//	Create the shield from the current triangle, as well as its neighbors.
-	create_shield_from_triangle(tr0, orient, shieldp, tcp, centerp, Objects[objnum].radius, &tom.rvec, &tom.uvec);
-	//nprintf(("AI", "\n"));
-	for (i=0; i<3; i++)
-		create_shield_from_triangle(shieldp->tris[tr0].neighbors[i], orient, shieldp, tcp, centerp, Objects[objnum].radius, &tom.rvec, &tom.uvec);
-	
-	copy_shield_to_globals(objnum, shieldp);
-	// render_shield(orient, centerp);
+	create_shield_low_detail(objnum, model_num, orient, centerp, tcp, tr0, shieldp);
 }
 
 MONITOR(NumShieldHits);

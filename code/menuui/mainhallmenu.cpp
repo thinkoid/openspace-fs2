@@ -29,7 +29,6 @@
 #include "playermenu.h"
 #include "freespace.h"
 #include "alphacolors.h"
-#include "demo.h"
 #include "fishtank.h"
 
 // #include "movie.h"
@@ -445,7 +444,7 @@ void main_hall_init(int main_hall_num)
 	
 	// init tooltip shader
 	float gray_intensity = 0.02f;													// nearly black
-	float c = (gr_screen.mode == GR_DIRECT3D) ? 0.11f : 0.07f;			// adjust for renderer differences
+	float c = 0.07f;
 	gr_create_shader(&Main_hall_tooltip_shader, gray_intensity, gray_intensity, gray_intensity, c);
 
 	// load the background bitmap
@@ -641,9 +640,6 @@ void main_hall_do(float frametime)
 	case KEY_3:		
 		main_hall_campaign_cheat();	
 		break;	
-	case KEY_DEBUGGED + KEY_D:
-		demo_start_playback("test.fsd");
-		break;
 	}
 #else 
 	}
@@ -835,37 +831,6 @@ void main_hall_do(float frametime)
 
 	// blit ship and weapon table status
 	main_hall_blit_table_status();
-
-	// if we're in nice D3D texture format
-#ifndef NDEBUG
-	gr_set_color_fast(&Color_white);
-
-	// d3d
-	if(gr_screen.mode == GR_DIRECT3D){
-		if(Bm_pixel_format == BM_PIXEL_FORMAT_ARGB_D3D){		
-			gr_string(320, gr_screen.max_h - 10, "D3D ARGB");
-		}
-		extern int D3d_rendition_uvs;
-		extern int D3D_32bit;
-		extern int D3D_fog_mode;	
-		extern int D3D_zbias;
-		if(D3d_rendition_uvs){
-			gr_string(320, gr_screen.max_h - 20, "D3D rendition");
-		}
-		if(D3D_32bit){
-			gr_string(320, gr_screen.max_h - 30, "D3D 32bit");
-		}
-		gr_printf(320, gr_screen.max_h - 40, "Fog : %d", D3D_fog_mode);
-		gr_printf(320, gr_screen.max_h - 50, "Zbias : %d", D3D_zbias);
-		// extern void d3d_test();
-		// d3d_test();
-	} else if(gr_screen.mode == GR_GLIDE){
-		extern int Glide_voodoo3;
-		if(Glide_voodoo3){
-			gr_string(320, gr_screen.max_h - 20, "VOODOO 3");
-		}
-	}
-#endif	
 
 	gr_flip();
 
@@ -1701,38 +1666,4 @@ void main_hall_read_table()
 void main_hall_vasudan_funny()
 {
 	Vasudan_funny = 1;
-}
-
-
-/*
-#include "3d.h"
-int argh = -1;
-matrix view = {
-	0.0f, 0.0f, 0.0f,
-	0.0f, 0.0f, 0.0f,
-	0.0f, 0.0f, 1.0f
-};
-*/
-void d3d_test()
-{
-	/*	
-	vertex p1;
-	vector sun_pos = vmd_zero_vector;
-	sun_pos.z = 1.0f;
-
-	if(argh == -1){
-		argh = bm_load("sun01");
-		bm_lock(argh, 16, BMP_TEX_XPARENT);
-		bm_unlock(argh);
-	}
-	
-	g3_start_frame(1);
-	g3_set_view_matrix(&vmd_zero_vector, &view, 0.5f);	
-	g3_rotate_vertex(&p1, &sun_pos);
-	g3_project_vertex(&p1);
-	gr_zbuffer_set(GR_ZBUFF_NONE);
-	gr_set_bitmap( argh );
-	g3_draw_bitmap(&p1, 0, 0.05f, TMAP_FLAG_TEXTURED | TMAP_FLAG_XPARENT);		
-	g3_end_frame();
-	*/
 }

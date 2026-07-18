@@ -20,7 +20,6 @@
 #include "timer.h"
 #include "math.h"
 #include "mouse.h"
-#include "winmidi.h"
 #include "player.h"
 #include "linklist.h"
 #include "missionlog.h"

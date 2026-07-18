@@ -27,7 +27,6 @@
 #include "bmpman.h"
 #include "freespace.h"
 #include "muzzleflash.h"
-#include "demo.h"
 #include "shiphit.h"
 #include "neblightning.h"
 #include "objectsnd.h"
@@ -465,11 +464,6 @@ void shipfx_warpin_start( object *objp )
 		return;
 	}
 
-	// post a warpin event
-	if(Game_mode & GM_DEMO_RECORD){
-		demo_POST_warpin(objp->signature, shipp->flags);
-	}
-
 	// if there is no arrival warp, then skip the whole thing
 	if ( shipp->flags & SF_NO_ARRIVAL_WARP )	{
 		shipfx_actually_warpin(shipp,objp);
@@ -798,11 +792,6 @@ void shipfx_warpout_start( object *objp )
 	// if we're HUGE, keep alive - set guardian
 	if (Ship_info[shipp->ship_info_index].flags & SIF_HUGE_SHIP) {
 		objp->flags |= OF_GUARDIAN;
-	}
-
-	// post a warpin event
-	if(Game_mode & GM_DEMO_RECORD){
-		demo_POST_warpout(objp->signature, shipp->flags);
 	}
 
 	// don't do departure wormhole if ship flag is set which indicates no effect
@@ -1369,7 +1358,6 @@ void shipfx_emit_spark( int n, int sn )
 
 	float spark_time_scale  = 1.0f + spark_scale_factor * (Particle_life   - 1.0f);
 	float spark_width_scale = 1.0f + spark_scale_factor * (Particle_width  - 1.0f);
-	float spark_num_scale   = 1.0f + spark_scale_factor * (Particle_number - 1.0f);
 
 	obj = &Objects[shipp->objnum];
 	ship_info* si = &Ship_info[shipp->ship_info_index];
@@ -1468,13 +1456,8 @@ void shipfx_emit_spark( int n, int sn )
 				}
 			}
 
-			if ( D3D_enabled ) {
-				pe.num_low  = 25;				// Lowest number of particles to create (hardware)
-				pe.num_high = 30;				// Highest number of particles to create (hardware)
-			} else {
-				pe.num_low  = 5;				// Lowest number of particles to create (software)
-				pe.num_high = 7;				// Highest number of particles to create (software)
-			}
+			pe.num_low  = 5;				// Lowest number of particles to create (software)
+			pe.num_high = 7;				// Highest number of particles to create (software)
 			pe.normal_variance = 1.0f;	//	How close they stick to that normal 0=good, 1=360 degree
 			pe.min_vel = 2.0f;				// How fast the slowest particle can move
 			pe.max_vel = 12.0f;				// How fast the fastest particle can move
@@ -1486,13 +1469,8 @@ void shipfx_emit_spark( int n, int sn )
 
 			pe.min_rad = 0.7f;				// Min radius
 			pe.max_rad = 1.3f;				// Max radius
-			if ( D3D_enabled ) {
-				pe.num_low  = int (20 * spark_num_scale);		// Lowest number of particles to create (hardware)
-				pe.num_high = int (50 * spark_num_scale);		// Highest number of particles to create (hardware)
-			} else {
-				pe.num_low  = 2;			// Lowest number of particles to create (software)
-				pe.num_high = 8;		// Highest number of particles to create (software)
-			}
+			pe.num_low  = 2;			// Lowest number of particles to create (software)
+			pe.num_high = 8;		// Highest number of particles to create (software)
 			pe.normal_variance = 0.2f * spark_width_scale;		//	How close they stick to that normal 0=good, 1=360 degree
 			pe.min_vel = 3.0f;				// How fast the slowest particle can move
 			pe.max_vel = 12.0f;				// How fast the fastest particle can move

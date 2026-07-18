@@ -14,7 +14,7 @@ openal_dep = dependency('openal')
 inc = include_directories(
     'code/anim', 'code/asteroid', 'code/bmpman', 'code/cfile',
     'code/cmdline', 'code/cmeasure', 'code/controlconfig', 'code/cryptstring',
-    'code/cutscene', 'code/debris', 'code/demo', 'code/exceptionhandler', 'code/debugconsole', 'code/fireball',
+    'code/cutscene', 'code/debris', 'code/debugconsole', 'code/fireball',
     'code/freespace2', 'code/gamehelp', 'code/gamesequence', 'code/gamesnd',
     'code/globalincs', 'code/graphics', 'code/hud', 'code/io',
     'code/jumpnode', 'code/lighting', 'code/localization', 'code/math',

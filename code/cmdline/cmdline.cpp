@@ -35,9 +35,8 @@ public:
 cmdline_parm nosound_arg("-nosound", NULL);
 cmdline_parm nomusic_arg("-nomusic", NULL);
 cmdline_parm pof_spew("-pofspew", NULL);
-cmdline_parm d3d_32bit("-32bit", NULL);
 cmdline_parm mouse_coords("-coords", NULL);
-cmdline_parm d3d_window("-window", NULL);
+cmdline_parm window_arg("-window", NULL);
 
 int Cmdline_freespace_no_sound = 0;
 int Cmdline_freespace_no_music = 0;
@@ -45,7 +44,6 @@ int Cmdline_gimme_all_medals = 0;
 int Cmdline_use_last_pilot = 0;
 int Cmdline_cd_check = 1;
 int Cmdline_spew_pof_info = 0;
-int Cmdline_force_32bit = 0;
 int Cmdline_mouse_coords = 0;
 
 int Cmdline_window = 0;
@@ -285,18 +283,13 @@ int parse_cmdline(char *cmdline)
 		Cmdline_spew_pof_info = 1;
 	}
 
-	// 32 bit
-	if(d3d_32bit.found()){
-		Cmdline_force_32bit = 1;
-	}
-
 	// mouse coords
 	if(mouse_coords.found()){
 		Cmdline_mouse_coords = 1;
 	}
 
-	// d3d windowed
-	if(d3d_window.found()){
+	// windowed mode
+	if(window_arg.found()){
 		Cmdline_window = 1;
 	}
 

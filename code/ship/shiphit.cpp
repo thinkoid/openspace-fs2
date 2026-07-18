@@ -31,7 +31,6 @@
 #include "missionparse.h"
 #include "bmpman.h"
 #include "joy.h"
-#include "joy_ff.h"
 #include "player.h"
 #include "parselo.h"
 #include "freespace.h"
@@ -58,7 +57,6 @@
 #include "popup.h"
 #include "emp.h"
 #include "beam.h"
-#include "demo.h"
 
 //#pragma optimize("", off)
 //#pragma auto_inline(off)
@@ -506,7 +504,7 @@ float do_subobj_hit_stuff(object *ship_obj, object *other_obj, vector *hitpos, f
 			damage_to_apply = damage_left * (1.0f - dist/range);
 		}
 
-		if (damage_to_apply > 0.1f && !(Game_mode & GM_DEMO_PLAYBACK)) {
+		if (damage_to_apply > 0.1f) {
 			//	Decrease damage to subsystems to player ships.
 			if (ship_obj->flags & OF_PLAYER_SHIP){
 				damage_to_apply *= Skill_level_subsys_damage_scale[Game_skill_level];
@@ -526,7 +524,7 @@ float do_subobj_hit_stuff(object *ship_obj, object *other_obj, vector *hitpos, f
 				ship_p->subsys_info[subsys->system_info->type].current_hits = 0.0f;
 			}
 
-			if ( (subsys->current_hits <= 0.0f) && !(Game_mode & GM_DEMO_PLAYBACK)){
+			if ( subsys->current_hits <= 0.0f ){
 				do_subobj_destroyed_stuff( ship_p, subsys, hitpos );
 			}
 
@@ -1091,11 +1089,6 @@ void ship_generic_kill_stuff( object *objp, float percent_killed )
 	sp = &Ships[objp->instance];
 	ship_info *sip = &Ship_info[sp->ship_info_index];
 
-	// if recording demo
-	if(Game_mode & GM_DEMO_RECORD){
-		demo_POST_ship_kill(objp);
-	}
-
 	ai_announce_ship_dying(objp);
 
 	sp->flags |= SF_DYING;
@@ -1158,8 +1151,6 @@ void ship_generic_kill_stuff( object *objp, float percent_killed )
 
 	// play death roll begin sound
 	sp->death_roll_snd = snd_play_3d( &Snds[SND_DEATH_ROLL], &objp->pos, &View_position, objp->radius );
-	if (objp == Player_obj)
-		joy_ff_deathroll();
 
 	// apply a whack
 	//	rotational velocity proportional to original translational velocity, with a bit added in.
@@ -1258,52 +1249,50 @@ void ship_hit_kill(object *ship_obj, object *other_obj, float percent_killed, in
 	game_tst_mark(ship_obj, sp);
 
 	// evaluate the scoring and kill stuff
-	if ( !(Game_mode & GM_DEMO_PLAYBACK)) {
-		scoring_eval_kill( ship_obj );
+	scoring_eval_kill( ship_obj );
 
-		// ship is destroyed -- send this event to the mission log stuff to record this event.  Try to find who
-		// killed this ship.  scoring_eval_kill above should leave the obj signature of the ship who killed
-		// this guy (or a -1 if no one got the kill).
-		killer_ship_name = NULL;
-		killer_damage_percent = -1;
-		if ( sp->damage_ship_id[0] != -1 ) {
-			object *objp;
-			int sig;
+	// ship is destroyed -- send this event to the mission log stuff to record this event.  Try to find who
+	// killed this ship.  scoring_eval_kill above should leave the obj signature of the ship who killed
+	// this guy (or a -1 if no one got the kill).
+	killer_ship_name = NULL;
+	killer_damage_percent = -1;
+	if ( sp->damage_ship_id[0] != -1 ) {
+		object *objp;
+		int sig;
 
-			sig = sp->damage_ship_id[0];
-			for ( objp = GET_FIRST(&obj_used_list); objp != END_OF_LIST(&obj_used_list); objp = GET_NEXT(objp) ) {
-				if ( objp->signature == sig ){
-					break;
-				}
+		sig = sp->damage_ship_id[0];
+		for ( objp = GET_FIRST(&obj_used_list); objp != END_OF_LIST(&obj_used_list); objp = GET_NEXT(objp) ) {
+			if ( objp->signature == sig ){
+				break;
 			}
-			// if the object isn't around, the try to find the object in the list of ships which has exited			
-			if ( objp != END_OF_LIST(&obj_used_list) ) {
-				Assert ( (objp->type == OBJ_SHIP ) || (objp->type == OBJ_GHOST) );					// I suppose that this should be true
-				killer_ship_name = Ships[objp->instance].ship_name;
+		}
+		// if the object isn't around, the try to find the object in the list of ships which has exited			
+		if ( objp != END_OF_LIST(&obj_used_list) ) {
+			Assert ( (objp->type == OBJ_SHIP ) || (objp->type == OBJ_GHOST) );					// I suppose that this should be true
+			killer_ship_name = Ships[objp->instance].ship_name;
 
-				killer_objp = objp;
-			} else {
-				int ei;
+			killer_objp = objp;
+		} else {
+			int ei;
 
-				ei = ship_find_exited_ship_by_signature( sig );
-				if ( ei != -1 ){
-					killer_ship_name = Ships_exited[ei].ship_name;
-				}
+			ei = ship_find_exited_ship_by_signature( sig );
+			if ( ei != -1 ){
+				killer_ship_name = Ships_exited[ei].ship_name;
 			}
-			killer_damage_percent = (int)(sp->damage_ship[0] * 100.0f);
-		}		
-
-		if(!self_destruct){
-			// DKA: 8/23/99 allow message log in single player with no killer name
-			//if(killer_ship_name != NULL){
-			mission_log_add_entry(LOG_SHIP_DESTROYED, sp->ship_name, killer_ship_name, killer_damage_percent);
-			//}
 		}
+		killer_damage_percent = (int)(sp->damage_ship[0] * 100.0f);
+	}		
 
-		// maybe praise the player for this kill
- 		if ( (killer_damage_percent > 10) && (other_obj != NULL) && (other_obj->parent_sig == Player_obj->signature) ) {
-			ship_maybe_praise_player(sp);
-		}
+	if(!self_destruct){
+		// DKA: 8/23/99 allow message log in single player with no killer name
+		//if(killer_ship_name != NULL){
+		mission_log_add_entry(LOG_SHIP_DESTROYED, sp->ship_name, killer_ship_name, killer_damage_percent);
+		//}
+	}
+
+	// maybe praise the player for this kill
+ 	if ( (killer_damage_percent > 10) && (other_obj != NULL) && (other_obj->parent_sig == Player_obj->signature) ) {
+		ship_maybe_praise_player(sp);
 	}
 
 	ship_generic_kill_stuff( ship_obj, percent_killed );
@@ -1615,9 +1604,7 @@ static void ship_do_damage(object *ship_obj, object *other_obj, vector *hitpos, 
 				}
 			}
 
-			if ( !(Game_mode & GM_DEMO_PLAYBACK) ) {
-				ship_obj->hull_strength -= damage;
-			}
+			ship_obj->hull_strength -= damage;
 
 			// let damage gauge know that player ship just took damage
 			if ( Player_obj == ship_obj ) {
@@ -1673,7 +1660,7 @@ static void ship_do_damage(object *ship_obj, object *other_obj, vector *hitpos, 
 					percent_killed = 1.0f;
 				}
 
-				if ( !(shipp->flags & SF_DYING) && !(Game_mode & GM_DEMO_PLAYBACK)){  // if not killed, then kill
+				if ( !(shipp->flags & SF_DYING) ){  // if not killed, then kill
 					ship_hit_kill(ship_obj, other_obj, percent_killed, 0);
 				}
 			}
@@ -1737,7 +1724,7 @@ void ship_apply_local_damage(object *ship_obj, object *other_obj, vector *hitpos
 		}
 	}
 
-	if ( !(Game_mode & GM_DEMO_PLAYBACK) && ((other_obj->type == OBJ_SHIP) || (other_obj->type == OBJ_WEAPON)) ){
+	if ( (other_obj->type == OBJ_SHIP) || (other_obj->type == OBJ_WEAPON) ){
 		ai_ship_hit(ship_obj, other_obj, hitpos, shield_quadrant, hit_normal);
 	}
 

@@ -47,7 +47,6 @@
 #include "aibig.h"
 #include "particle.h"
 #include "asteroid.h"
-#include "joy_ff.h"
 #include "corkscrew.h"
 #include "emp.h"
 #include "localize.h"
@@ -1148,8 +1147,7 @@ MONITOR( NumWeaponsRend );
 float weapon_glow_scale_f = 2.3f;
 float weapon_glow_scale_r = 2.3f;
 float weapon_glow_scale_l = 1.5f;
-float weapon_glow_alpha_d3d = 0.85f;
-float weapon_glow_alpha_glide = 0.99f;
+float weapon_glow_alpha = 0.99f;
 void weapon_render(object *obj)
 {
 	int num;
@@ -1189,7 +1187,7 @@ void weapon_render(object *obj)
 
 				vector headp2;			
 				vm_vec_scale_add(&headp2, &obj->pos, &obj->orient.fvec, wip->laser_length * weapon_glow_scale_l);
-				gr_set_bitmap(wip->laser_glow_bitmap, GR_ALPHABLEND_FILTER, GR_BITBLT_MODE_NORMAL, gr_screen.mode == GR_DIRECT3D ? weapon_glow_alpha_d3d : weapon_glow_alpha_glide);
+				gr_set_bitmap(wip->laser_glow_bitmap, GR_ALPHABLEND_FILTER, GR_BITBLT_MODE_NORMAL, weapon_glow_alpha);
 				g3_draw_laser_rgb(&headp2, wip->laser_head_radius * weapon_glow_scale_f, &obj->pos, wip->laser_tail_radius * weapon_glow_scale_r, c.red, c.green, c.blue);
 			}						
 			break;
@@ -1926,7 +1924,6 @@ void weapon_process_post(object * obj, float frame_time)
 			}
 		} else {
 			obj->flags |= OF_SHOULD_BE_DEAD;
-//			demo_do_flag_dead(OBJ_INDEX(obj));
 		}
 
 		return;
@@ -2622,9 +2619,6 @@ void weapon_area_apply_blast(vector *force_apply_pos, object *ship_obj, vector *
 
 	if (make_shockwave) {
 		physics_apply_shock (&force, blast, &ship_obj->phys_info, &ship_obj->orient, &pm->mins, &pm->maxs, pm->rad);
-		if (ship_obj == Player_obj) {
-			joy_ff_play_vector_effect(&vec_blast_to_ship, blast * 2.0f);
-		}
 	} else {
 		ship_apply_whack( &force, &vec_ship_to_impact, ship_obj);
 	}
@@ -2847,12 +2841,7 @@ void weapons_page_in()
 						int bitmap_num = pm->original_textures[j];
 
 						if ( bitmap_num > -1 )	{
-							// if we're in Glide (and maybe later with D3D), use nondarkening textures
-							if(gr_screen.mode == GR_GLIDE){
-								bm_page_in_nondarkening_texture( bitmap_num );
-							} else {
-								bm_page_in_texture( bitmap_num );
-							}
+							bm_page_in_texture( bitmap_num );
 						}
 					}
 				}

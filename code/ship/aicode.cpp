@@ -47,7 +47,6 @@
 #include "hudlock.h"
 #include "missiontraining.h"
 #include "gamesequence.h"
-#include "joy_ff.h"
 #include "localize.h"
 #include "flak.h"
 #include "beam.h"
@@ -9651,9 +9650,6 @@ void ai_dock()
 					snd_play_3d( &Snds[SND_DOCK_ATTACH], &Pl_objp->pos, &View_position );
 					hud_maybe_flash_docking_text(Pl_objp);
 					// ai_dock_shake(Pl_objp, goal_objp);
-
-					if ((Pl_objp == Player_obj) || (goal_objp == Player_obj))
-						joy_ff_docked();  // shake player's joystick a little
 				}
 
 				//	If this ship is repairing another ship...

@@ -20,17 +20,12 @@
 #include "font.h"
 #include "grinternal.h"
 #include "systemvars.h"
-#include "cmdline.h"
 
 // 3dnow stuff
 // #include "amd3d.h"
 
 // Includes for different rendering systems
 #include "grsoft.h"
-#include "grd3d.h"
-#include "grglide.h"
-#include "gropengl.h"
-#include "grdirectdraw.h"
 
 screen gr_screen;
 
@@ -68,109 +63,12 @@ void gr_close()
 
 	palette_flush();
 
-	switch( gr_screen.mode )	{
-	case GR_SOFTWARE:		
-		gr_soft_cleanup();
-		break;
-	case GR_DIRECTDRAW:
-		Int3();
-		gr_directdraw_cleanup();
-		break;
-	case GR_DIRECT3D:		
-		gr_d3d_cleanup();
-		break;
-	case GR_GLIDE:
-		gr_glide_cleanup();
-		break;
-	case GR_OPENGL:
-		Int3();
-		gr_opengl_cleanup();
-		break;
-	default:
-		Int3();		// Invalid graphics mode
-	}
+	gr_soft_cleanup();
 
 	gr_font_close();
 
 	Gr_inited = 0;
 }
-
-//XSTR:OFF
-DCF(gr,"Changes graphics mode")
-{
-#ifndef HARDWARE_ONLY
-	int mode = gr_screen.mode;
-
-	if ( Dc_command )	{
-		dc_get_arg(ARG_STRING);
-		
-		if ( !strcmp( Dc_arg, "a"))	{
-			Int3();
-			mode = GR_SOFTWARE;
-		} else if ( !strcmp( Dc_arg, "b"))	{
-			Int3();
-			mode = GR_DIRECTDRAW;
-		} else if ( !strcmp( Dc_arg, "d"))	{
-			mode = GR_DIRECT3D;
-		} else if ( !strcmp( Dc_arg, "g"))	{
-			mode = GR_GLIDE;
-		} else if ( !strcmp( Dc_arg, "o"))	{
-			Int3();
-			mode = GR_OPENGL;
-		} else {
-			// print usage, not stats
-			Dc_help = 1;
-		}
-
-		/*
-		if ( mode != gr_screen.mode )	{
-			dc_printf( "Setting new video mode...\n" );
-			int errcode = gr_init( gr_screen.max_w, gr_screen.max_h, mode );
-			if (errcode)	{
-				dc_printf( "Error %d.  Graphics unchanged.\n", errcode );
-			}
-		}
-		*/
-	}
-
-	if ( Dc_help )	{
-		dc_printf( "Usage: gr mode\n" );
-		dc_printf( "The options can be:\n" );
-		dc_printf( "Macros:  A=software win32 window (obsolete)\n" );
-		dc_printf( "         B=software directdraw fullscreen (obsolete)\n" );
-		dc_printf( "         D=Direct3d\n" );
-		dc_printf( "         G=Glide\n" );
-		dc_printf( "         O=OpenGl (obsolete)\n" );
-		Dc_status = 0;	// don't print status if help is printed.  Too messy.
-	}
-
-	if ( Dc_status )	{
-		switch( gr_screen.mode )	{
-		case GR_SOFTWARE:
-			Int3();
-			dc_printf( "Win32 software windowed\n" );
-			break;
-		case GR_DIRECTDRAW:
-			Int3();
-			dc_printf( "DirectDraw software windowed\n" );
-			break;
-		case GR_DIRECT3D:
-			dc_printf( "Direct3D\n" );
-			break;
-		case GR_GLIDE:
-			dc_printf( "3Dfx Glide\n" );
-			break;
-		case GR_OPENGL:
-			Int3();
-			dc_printf( "OpenGl\n" );
-			break;
-		default:
-			Int3();		// Invalid graphics mode
-		}
-	}
-#endif
-}
-//XSTR:ON
 
 // set screen clear color
 DCF(clear_color, "set clear color r, g, b")
@@ -384,27 +282,7 @@ int gr_init(int res, int mode, int depth, int fred_x, int fred_y)
 
 	// If already inited, shutdown the previous graphics
 	if ( Gr_inited )	{
-		switch( gr_screen.mode )	{
-		case GR_SOFTWARE:			
-			gr_soft_cleanup();
-			break;
-		case GR_DIRECTDRAW:
-			Int3();
-			gr_directdraw_cleanup();
-			break;
-		case GR_DIRECT3D:			
-			gr_d3d_cleanup();
-			break;
-		case GR_GLIDE:
-			gr_glide_cleanup();
-			break;
-		case GR_OPENGL:
-			Int3();
-			gr_opengl_cleanup();
-			break;
-		default:
-			Int3();		// Invalid graphics mode
-		}
+		gr_soft_cleanup();
 	} else {
 		first_time = 1;
 	}
@@ -412,7 +290,6 @@ int gr_init(int res, int mode, int depth, int fred_x, int fred_y)
 	// Retail (HARDWARE_ONLY) forced Glide here when a non-hardware mode was
 	// requested; the hardware backends are gone, software is the mode.
 
-	D3D_enabled = 0;
 	Gr_inited = 1;
 
 	max_w = -1;
@@ -446,8 +323,8 @@ int gr_init(int res, int mode, int depth, int fred_x, int fred_y)
 	memset( &gr_screen, 0, sizeof(screen) );
 
 	gr_screen.signature = Gr_signature++;
-	gr_screen.mode = mode;
-	gr_screen.res = res;	
+	gr_screen.mode = GR_SOFTWARE;		// the only renderer; the mode argument is vestigial
+	gr_screen.res = res;
 	gr_screen.max_w = max_w;
 	gr_screen.max_h = max_h;
 	gr_screen.aspect = 1.0f;			// Normal PC screen
@@ -460,47 +337,9 @@ int gr_init(int res, int mode, int depth, int fred_x, int fred_y)
 	gr_screen.clip_width = gr_screen.max_w;
 	gr_screen.clip_height = gr_screen.max_h;
 
-	switch( gr_screen.mode )	{
-		case GR_SOFTWARE:
-			// retail allowed software only for the tools (FRED/pofview);
-			// here it is the game renderer
-			gr_soft_init();
-			break;
-		case GR_DIRECTDRAW:
-			Int3();
-			gr_directdraw_init();
-			break;
-		case GR_DIRECT3D:
-			// we only care about possible 32 bit stuff here
-			Cmdline_force_32bit = 0;
-			if(depth == 32){
-				Cmdline_force_32bit = 1;
-			} 
-
-			gr_d3d_init();
-
-			// bad startup - stupid D3D
-			extern int D3D_inited;
-			if(!D3D_inited){
-				Gr_inited = 0;
-				return 1;
-			}
-
-			break;
-		case GR_GLIDE:
-			// if we're in high-res. force polygon interface
-			if(gr_screen.res == GR_1024){
-				Gr_bitmap_poly = 1;
-			}
-			gr_glide_init();
-			break;
-		case GR_OPENGL:
-			Int3();
-			gr_opengl_init();
-			break;
-		default:
-			Int3();		// Invalid graphics mode
-	}
+	// retail allowed software only for the tools (FRED/pofview);
+	// here it is the game renderer
+	gr_soft_init();
 
 	memmove( Gr_current_palette, Gr_original_palette, 768 );
 	gr_set_palette_internal(Gr_current_palette_name, Gr_current_palette,0);	
@@ -532,35 +371,8 @@ void gr_force_windowed()
 {
 	if ( !Gr_inited )	return;
 
-	switch( gr_screen.mode )	{
-		case GR_SOFTWARE:
-			{				
-				extern void gr_soft_force_windowed();
-				gr_soft_force_windowed();
-			}
-			break;
-		case GR_DIRECTDRAW:
-			{
-				Int3();
-				extern void gr_directdraw_force_windowed();
-				gr_directdraw_force_windowed();
-			}
-			break;
-		case GR_DIRECT3D:
-			break;
-		case GR_GLIDE:
-			{
-				extern void gr_glide_force_windowed();
-				gr_glide_force_windowed();
-			}
-			break;
-		case GR_OPENGL:
-			Int3();
-			break;
-
-		default:
-			Int3();		// Invalid graphics mode
-	}
+	extern void gr_soft_force_windowed();
+	gr_soft_force_windowed();
 
 	if ( Os_debugger_running )
 		os_sleep(1000);
@@ -571,43 +383,8 @@ void gr_activate(int active)
 {
 	if ( !Gr_inited ) return;
 
-	switch( gr_screen.mode )	{
-		case GR_SOFTWARE:
-			{				
-				extern void gr_soft_activate(int active);
-				gr_soft_activate(active);
-				return;
-			}
-			break;
-		case GR_DIRECTDRAW:
-			{
-				Int3();
-				extern void gr_dd_activate(int active);
-				gr_dd_activate(active);
-				return;
-			}
-			break;
-		case GR_DIRECT3D:
-			{	
-				extern void gr_d3d_activate(int active);
-				gr_d3d_activate(active);
-				return;
-			}
-			break;
-		case GR_GLIDE:
-			{
-				extern void gr_glide_activate(int active);
-				gr_glide_activate(active);
-				return;
-			}
-			break;
-		case GR_OPENGL:
-			Int3();
-			break;
-		default:
-			Int3();		// Invalid graphics mode
-	}
-
+	extern void gr_soft_activate(int active);
+	gr_soft_activate(active);
 }
 
 // -----------------------------------------------------------------------
@@ -660,80 +437,12 @@ DCF(bmap, "")
 // new bitmap functions
 void gr_bitmap(int x, int y)
 {
-	int section_x, section_y;	
-	int x_line, y_line;
-	int w, h;
-
-	// d3d and glide support texture poly shiz
-	if(((gr_screen.mode == GR_DIRECT3D) || (gr_screen.mode == GR_GLIDE)) && Gr_bitmap_poly){		
-		int idx, s_idx;
-		// float u_scale, v_scale;
-		bitmap_section_info *sections;			
-
-		// render all sections
-		bm_get_info(gr_screen.current_bitmap, &w, &h, NULL, NULL, NULL, &sections);
-		y_line = 0;
-		section_y = 0;
-		for(idx=0; idx<sections->num_y; idx++){
-			x_line = 0;
-			for(s_idx=0; s_idx<sections->num_x; s_idx++){
-				// get the section as a texture in vram					
-				gr_set_bitmap(gr_screen.current_bitmap, gr_screen.current_alphablend_mode, gr_screen.current_bitblt_mode, gr_screen.current_alpha, s_idx, idx);
-
-				// determine the width and height of this section
-				bm_get_section_size(gr_screen.current_bitmap, s_idx, idx, &section_x, &section_y);
-
-				// draw as a poly
-				g3_draw_2d_poly_bitmap(x + x_line, y + y_line, section_x, section_y, TMAP_FLAG_BITMAP_SECTION);
-				x_line += section_x;
-			}
-			y_line += section_y;
-		}
-
-		// done. whee!
-		return;
-	}			
-
-	// old school bitmaps
-	switch(gr_screen.mode){
-	case GR_SOFTWARE:
-	case GR_DIRECTDRAW:
-		grx_bitmap(x, y);
-		break;
-
-	case GR_DIRECT3D:
-		gr_d3d_bitmap(x, y);
-		break;
-	
-	case GR_GLIDE:		
-		gr_glide_bitmap(x, y);		
-		break;
-
-	case GR_OPENGL:
-		gr_opengl_bitmap(x, y);
-		break;
-	}
+	grx_bitmap(x, y);
 }
 
 void gr_bitmap_ex(int x, int y, int w, int h, int sx, int sy)
 {
-	switch(gr_screen.mode){
-	case GR_SOFTWARE:
-	case GR_DIRECTDRAW:
-		grx_bitmap_ex(x, y, w, h, sx, sy);
-		break;
-
-	case GR_DIRECT3D:
-		gr_d3d_bitmap_ex(x, y, w, h, sx, sy);
-		break;
-
-	case GR_GLIDE:
-		gr_glide_bitmap_ex(x, y, w, h, sx, sy);
-		break;
-
-	case GR_OPENGL:
-		gr_opengl_bitmap_ex(x, y, w, h, sx, sy);
-	}
+	grx_bitmap_ex(x, y, w, h, sx, sy);
 }
 
 // given endpoints, and thickness, calculate coords of the endpoint

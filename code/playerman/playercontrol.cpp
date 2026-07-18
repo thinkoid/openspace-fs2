@@ -11,7 +11,6 @@
 #include "physics.h"
 #include "key.h"
 #include "joy.h"
-#include "joy_ff.h"
 #include "mouse.h"
 #include "fix.h"
 #include "floating.h"
@@ -667,8 +666,6 @@ void read_player_controls(object *objp, float frametime)
 {
 //	if (Game_mode & GM_DEAD)
 //		return;
-
-	joy_ff_adjust_handling((int) objp->phys_info.speed);
 
 	{
 		switch( Player->control_mode )	{

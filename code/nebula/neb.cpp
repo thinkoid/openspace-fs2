@@ -13,7 +13,6 @@
 #include "bmpman.h"
 #include "2d.h"
 #include "object.h"
-// (glide.h removed)
 #include "timer.h"
 #include "freespace.h"
 #include "key.h"
@@ -32,18 +31,6 @@
 //
 
 // #define NEB2_THUMBNAIL
-
-/*
-3D CARDS THAT FOG PROPERLY
-Voodoo1
-Voodoo2
-G200
-TNT
-
-3D CARDS THAT DON'T FOG PROPERLY
-Permedia2
-AccelStar II
-*/
 
 // if nebula rendering is active (DCF stuff - not mission specific)
 int Neb2_render_mode = NEB2_RENDER_NONE;
@@ -73,29 +60,7 @@ float max_rotation = 3.75f;
 float neb2_flash_fade = 0.3f;
 
 // fog values for different ship types
-float Neb_ship_fog_vals_glide[MAX_SHIP_TYPE_COUNTS][2] = {
-	{0.0f, 0.0f},				// SHIP_TYPE_NONE
-	{10.0f, 500.0f},			// SHIP_TYPE_CARGO
-	{10.0f, 500.0f},			// SHIP_TYPE_FIGHTER_BOMBER
-	{10.0f, 600.0f},			// SHIP_TYPE_CRUISER
-	{10.0f, 600.0f},			// SHIP_TYPE_FREIGHTER
-	{10.0f, 750.0f},			// SHIP_TYPE_CAPITAL
-	{10.0f, 500.0f},			// SHIP_TYPE_TRANSPORT
-	{10.0f, 500.0f},			// SHIP_TYPE_REPAIR_REARM
-	{10.0f, 500.0f},			// SHIP_TYPE_NAVBUOY
-	{10.0f, 500.0f},			// SHIP_TYPE_SENTRYGUN
-	{10.0f, 600.0f},			// SHIP_TYPE_ESCAPEPOD
-	{10.0f, 1000.0f},			// SHIP_TYPE_SUPERCAP
-	{10.0f, 500.0f},			// SHIP_TYPE_STEALTH
-	{10.0f, 500.0f},			// SHIP_TYPE_FIGHTER
-	{10.0f, 500.0f},			// SHIP_TYPE_BOMBER
-	{10.0f, 750.0f},			// SHIP_TYPE_DRYDOCK
-	{10.0f, 600.0f},			// SHIP_TYPE_AWACS
-	{10.0f, 600.0f},			// SHIP_TYPE_GAS_MINER
-	{10.0f, 600.0f},			// SHIP_TYPE_CORVETTE
-	{10.0f, 1000.0f},			// SHIP_TYPE_KNOSSOS_DEVICE
-};
-float Neb_ship_fog_vals_d3d[MAX_SHIP_TYPE_COUNTS][2] = {
+float Neb_ship_fog_vals[MAX_SHIP_TYPE_COUNTS][2] = {
 	{0.0f, 0.0f},				// SHIP_TYPE_NONE
 	{10.0f, 500.0f},			// SHIP_TYPE_CARGO
 	{10.0f, 500.0f},			// SHIP_TYPE_FIGHTER_BOMBER
@@ -119,12 +84,10 @@ float Neb_ship_fog_vals_d3d[MAX_SHIP_TYPE_COUNTS][2] = {
 };
 
 // fog near and far values for rendering the background nebula
-#define NEB_BACKG_FOG_NEAR_GLIDE				2.5f
-#define NEB_BACKG_FOG_NEAR_D3D				4.5f
-#define NEB_BACKG_FOG_FAR_GLIDE				10.0f
-#define NEB_BACKG_FOG_FAR_D3D					10.0f
-float Neb_backg_fog_near = NEB_BACKG_FOG_NEAR_GLIDE;
-float Neb_backg_fog_far = NEB_BACKG_FOG_FAR_GLIDE;
+#define NEB_BACKG_FOG_NEAR				2.5f
+#define NEB_BACKG_FOG_FAR					10.0f
+float Neb_backg_fog_near = NEB_BACKG_FOG_NEAR;
+float Neb_backg_fog_far = NEB_BACKG_FOG_FAR;
 
 // stats
 int pneb_tried = 0;				// total pnebs tried to render
@@ -146,8 +109,7 @@ cube_poof Neb2_cubes[MAX_CPTS][MAX_CPTS][MAX_CPTS];
 
 // nebula detail level
 typedef struct neb2_detail {
-	float max_alpha_glide;					// max alpha for this detail level in Glide
-	float max_alpha_d3d;						// max alpha for this detail level in D3d
+	float max_alpha;							// max alpha for this detail level
 	float break_alpha;						// break alpha (below which, poofs don't draw). this affects the speed and visual quality a lot
 	float break_x, break_y;					// x and y alpha fade/break values. adjust alpha on the polys as they move offscreen 
 	float cube_dim;							// total dimension of player poof cube
@@ -158,8 +120,7 @@ typedef struct neb2_detail {
 } neb2_detail;
 neb2_detail	Neb2_detail[MAX_DETAIL_LEVEL] = {
 	{ // lowest detail level
-		0.575f,										// max alpha for this detail level in Glide
-		0.71f,									// max alpha for this detail level in D3d
+		0.575f,										// max alpha for this detail level
 		0.13f,									// break alpha (below which, poofs don't draw). this affects the speed and visual quality a lot
 		150.0f, 150.0f / 1.3333f,			// x and y alpha fade/break values. adjust alpha on the polys as they move offscreen 
 		510.0f,									// total dimension of player poof cube
@@ -169,8 +130,7 @@ neb2_detail	Neb2_detail[MAX_DETAIL_LEVEL] = {
 		1.0f, 1.0f, 1.0f						// width, height, depth jittering. best left at 1.0	
 	},	
 	{ // 2nd lowest detail level
-		0.575f,										// max alpha for this detail level in Glide
-		0.71f,									// max alpha for this detail level in D3d
+		0.575f,										// max alpha for this detail level
 		0.125f,									// break alpha (below which, poofs don't draw). this affects the speed and visual quality a lot
 		300.0f, 300.0f / 1.3333f,			// x and y alpha fade/break values. adjust alpha on the polys as they move offscreen 
 		550.0f,									// total dimension of player poof cube
@@ -180,8 +140,7 @@ neb2_detail	Neb2_detail[MAX_DETAIL_LEVEL] = {
 		1.0f, 1.0f, 1.0f						// width, height, depth jittering. best left at 1.0	
 	},
 	{ // 2nd highest detail level
-		0.575f,										// max alpha for this detail level in Glide
-		0.71f,									// max alpha for this detail level in D3d
+		0.575f,										// max alpha for this detail level
 		0.1f,										// break alpha (below which, poofs don't draw). this affects the speed and visual quality a lot
 		300.0f, 300.0f / 1.3333f,			// x and y alpha fade/break values. adjust alpha on the polys as they move offscreen 
 		550.0f,									// total dimension of player poof cube
@@ -191,8 +150,7 @@ neb2_detail	Neb2_detail[MAX_DETAIL_LEVEL] = {
 		1.0f, 1.0f, 1.0f						// width, height, depth jittering. best left at 1.0	
 	},
 	{ // higest detail level
-		0.475f,									// max alpha for this detail level in Glide
-		0.575f,									// max alpha for this detail level in D3d
+		0.475f,									// max alpha for this detail level
 		0.05f,									// break alpha (below which, poofs don't draw). this affects the speed and visual quality a lot
 		200.0f, 200.0f / 1.3333f,			// x and y alpha fade/break values. adjust alpha on the polys as they move offscreen 
 		750.0f,									// total dimension of player poof cube
@@ -306,14 +264,6 @@ void neb2_level_init()
 		return;
 	}
 
-	/*
-	if(gr_screen.mode == GR_DIRECT3D){
-		max_alpha_player = NEB2_MAX_ALPHA_D3D;
-	} else {
-		max_alpha_player = NEB2_MAX_ALPHA_GLIDE;
-	}
-	*/
-
 	// by default we'll use pof rendering
 	Neb2_render_mode = NEB2_RENDER_POF;
 	stars_set_background_model(BACKGROUND_MODEL_FILENAME, Neb2_texture_name);
@@ -334,21 +284,8 @@ void neb2_level_init()
 	neb_tossed_count = 0;
 
 	// setup proper fogging values
-	switch(gr_screen.mode){
-	case GR_GLIDE:
-		Neb_backg_fog_near = NEB_BACKG_FOG_NEAR_GLIDE;
-		Neb_backg_fog_far = NEB_BACKG_FOG_FAR_GLIDE;				
-		break;
-	case GR_DIRECT3D:
-		Neb_backg_fog_near = NEB_BACKG_FOG_NEAR_D3D;
-		Neb_backg_fog_far = NEB_BACKG_FOG_FAR_D3D;					
-		break;
-	case GR_SOFTWARE:
-		Assert(Fred_running);
-		break;
-	default :
-		Int3();
-	}	
+	Neb_backg_fog_near = NEB_BACKG_FOG_NEAR;
+	Neb_backg_fog_far = NEB_BACKG_FOG_FAR;
 
 	// regen the nebula
 	neb2_eye_changed();
@@ -560,7 +497,7 @@ float neb2_get_alpha_2shell(float inner_radius, float outer_radius, float magic_
 	// becoming more transparent as it gets close
 	if(dist <= inner_radius){
 		// alpha per meter between the magic # and the inner radius
-		alpha = Nd->max_alpha_glide / (inner_radius - magic_num);
+		alpha = Nd->max_alpha / (inner_radius - magic_num);
 
 		// above value times the # of meters away we are
 		alpha *= (dist - magic_num);
@@ -570,7 +507,7 @@ float neb2_get_alpha_2shell(float inner_radius, float outer_radius, float magic_
 	// outer radius, and becomes more opaque as it moves towards inner radius	
 	else if(dist <= outer_radius){				
 		// alpha per meter between the outer radius and the inner radius
-		alpha = Nd->max_alpha_glide / (outer_radius - inner_radius);
+		alpha = Nd->max_alpha / (outer_radius - inner_radius);
 
 		// above value times the range between the outer radius and the poof
 		return alpha < 0.0f ? 0.0f : alpha * (outer_radius - dist);
@@ -1034,20 +971,8 @@ void neb2_get_fog_values(float *fnear, float *ffar, object *objp)
 	}
 
 	// get the values
-	switch(gr_screen.mode){
-	case GR_GLIDE:
-		*fnear = Neb_ship_fog_vals_glide[fog_index][0];
-		*ffar = Neb_ship_fog_vals_glide[fog_index][1];
-		break;
-
-	case GR_DIRECT3D:
-		*fnear = Neb_ship_fog_vals_d3d[fog_index][0];
-		*ffar = Neb_ship_fog_vals_d3d[fog_index][1];
-		break;
-
-	default:
-		Int3();
-	}
+	*fnear = Neb_ship_fog_vals[fog_index][0];
+	*ffar = Neb_ship_fog_vals[fog_index][1];
 }
 
 // given a position in space, return a value from 0.0 to 1.0 representing the fog level 
@@ -1102,13 +1027,7 @@ void neb2_pre_render(vector *eye_pos, matrix *eye_orient)
 	extern void stars_draw_background();
 	stars_draw_background();		
 
-	Neb2_render_mode = neb_save;	
-
-	// HACK - flush d3d here so everything is rendered
-	if(gr_screen.mode == GR_DIRECT3D){
-		extern void d3d_flush();
-		d3d_flush();
-	}
+	Neb2_render_mode = neb_save;
 
 	// grab the region
 	gr_get_region(0, this_esize, this_esize, (ubyte*)tpixels);	
@@ -1126,13 +1045,7 @@ void neb2_pre_render(vector *eye_pos, matrix *eye_orient)
 	// end the frame
 	g3_end_frame();
 	
-	gr_clear();	
-
-	// HACK - flush d3d here so everything is properly cleared
-	if(gr_screen.mode == GR_DIRECT3D){
-		extern void d3d_flush();
-		d3d_flush();
-	}
+	gr_clear();
 
 	// if the size has changed between frames, make a new bitmap
 	if(this_esize != last_esize){
@@ -1393,14 +1306,8 @@ DCF(neb2_fog, "")
 			Neb_backg_fog_near = fnear;
 			Neb_backg_fog_far = ffar;
 		} else {
-			if(gr_screen.mode == GR_GLIDE){
-				Neb_ship_fog_vals_glide[index][0] = fnear;
-				Neb_ship_fog_vals_glide[index][1] = ffar;
-			} else {
-				Assert(gr_screen.mode == GR_DIRECT3D);
-				Neb_ship_fog_vals_d3d[index][0] = fnear;
-				Neb_ship_fog_vals_d3d[index][1] = ffar;
-			}
+			Neb_ship_fog_vals[index][0] = fnear;
+			Neb_ship_fog_vals[index][1] = ffar;
 		}
 	}
 }
@@ -1408,7 +1315,7 @@ DCF(neb2_fog, "")
 DCF(neb2_max_alpha, "")
 {
 	dc_get_arg(ARG_FLOAT);
-	Nd->max_alpha_glide = Dc_arg_float;
+	Nd->max_alpha = Dc_arg_float;
 }
 
 DCF(neb2_break_alpha, "")
@@ -1511,34 +1418,18 @@ DCF(neb2_background, "")
 DCF(neb2_fog_vals, "")
 {
 	dc_printf("neb2_fog : \n");
-	if(gr_screen.mode == GR_GLIDE){		
-		dc_printf("(1)cargo containers : %f, %f\n", Neb_ship_fog_vals_glide[1][0], Neb_ship_fog_vals_glide[1][1]);
-		dc_printf("(2)fighters/bombers : %f, %f\n", Neb_ship_fog_vals_glide[2][0], Neb_ship_fog_vals_glide[2][1]);
-		dc_printf("(3)cruisers : %f, %f\n", Neb_ship_fog_vals_glide[3][0], Neb_ship_fog_vals_glide[3][1]);
-		dc_printf("(4)freighters : %f, %f\n", Neb_ship_fog_vals_glide[4][0], Neb_ship_fog_vals_glide[4][1]);
-		dc_printf("(5)cap ships : %f, %f\n", Neb_ship_fog_vals_glide[5][0], Neb_ship_fog_vals_glide[5][1]);
-		dc_printf("(6)transports : %f, %f\n", Neb_ship_fog_vals_glide[6][0], Neb_ship_fog_vals_glide[6][1]);
-		dc_printf("(7)support ships : %f, %f\n", Neb_ship_fog_vals_glide[7][0], Neb_ship_fog_vals_glide[7][1]);
-		dc_printf("(8)navbuoys : %f, %f\n", Neb_ship_fog_vals_glide[8][0], Neb_ship_fog_vals_glide[8][1]);
-		dc_printf("(9)sentry guns : %f, %f\n", Neb_ship_fog_vals_glide[9][0], Neb_ship_fog_vals_glide[9][1]);
-		dc_printf("(10)escape pods : %f, %f\n", Neb_ship_fog_vals_glide[10][0], Neb_ship_fog_vals_glide[10][1]);
-		dc_printf("(11)background polys : %f, %f\n\n", Neb_backg_fog_near, Neb_backg_fog_far);
-
-	} else {
-		Assert(gr_screen.mode == GR_DIRECT3D);
-		dc_printf("(1)cargo containers : %f, %f\n", Neb_ship_fog_vals_d3d[1][0], Neb_ship_fog_vals_d3d[1][1]);
-		dc_printf("(2)fighters/bombers : %f, %f\n", Neb_ship_fog_vals_d3d[2][0], Neb_ship_fog_vals_d3d[2][1]);
-		dc_printf("(3)cruisers : %f, %f\n", Neb_ship_fog_vals_d3d[3][0], Neb_ship_fog_vals_d3d[3][1]);
-		dc_printf("(4)freighters : %f, %f\n", Neb_ship_fog_vals_d3d[4][0], Neb_ship_fog_vals_d3d[4][1]);
-		dc_printf("(5)cap ships : %f, %f\n", Neb_ship_fog_vals_d3d[5][0], Neb_ship_fog_vals_d3d[5][1]);
-		dc_printf("(6)transports : %f, %f\n", Neb_ship_fog_vals_d3d[6][0], Neb_ship_fog_vals_d3d[6][1]);
-		dc_printf("(7)support ships : %f, %f\n", Neb_ship_fog_vals_d3d[7][0], Neb_ship_fog_vals_d3d[7][1]);
-		dc_printf("(8)navbuoys : %f, %f\n", Neb_ship_fog_vals_d3d[8][0], Neb_ship_fog_vals_d3d[8][1]);
-		dc_printf("(9)sentry guns : %f, %f\n", Neb_ship_fog_vals_d3d[9][0], Neb_ship_fog_vals_d3d[9][1]);
-		dc_printf("(10)escape pods : %f, %f\n", Neb_ship_fog_vals_d3d[10][0], Neb_ship_fog_vals_d3d[10][1]);
-		dc_printf("(11)background polys : %f, %f\n\n", Neb_backg_fog_near, Neb_backg_fog_far);		
-	}
-	dc_printf("neb2_max_alpha   : %f\n", Nd->max_alpha_glide);
+	dc_printf("(1)cargo containers : %f, %f\n", Neb_ship_fog_vals[1][0], Neb_ship_fog_vals[1][1]);
+	dc_printf("(2)fighters/bombers : %f, %f\n", Neb_ship_fog_vals[2][0], Neb_ship_fog_vals[2][1]);
+	dc_printf("(3)cruisers : %f, %f\n", Neb_ship_fog_vals[3][0], Neb_ship_fog_vals[3][1]);
+	dc_printf("(4)freighters : %f, %f\n", Neb_ship_fog_vals[4][0], Neb_ship_fog_vals[4][1]);
+	dc_printf("(5)cap ships : %f, %f\n", Neb_ship_fog_vals[5][0], Neb_ship_fog_vals[5][1]);
+	dc_printf("(6)transports : %f, %f\n", Neb_ship_fog_vals[6][0], Neb_ship_fog_vals[6][1]);
+	dc_printf("(7)support ships : %f, %f\n", Neb_ship_fog_vals[7][0], Neb_ship_fog_vals[7][1]);
+	dc_printf("(8)navbuoys : %f, %f\n", Neb_ship_fog_vals[8][0], Neb_ship_fog_vals[8][1]);
+	dc_printf("(9)sentry guns : %f, %f\n", Neb_ship_fog_vals[9][0], Neb_ship_fog_vals[9][1]);
+	dc_printf("(10)escape pods : %f, %f\n", Neb_ship_fog_vals[10][0], Neb_ship_fog_vals[10][1]);
+	dc_printf("(11)background polys : %f, %f\n\n", Neb_backg_fog_near, Neb_backg_fog_far);
+	dc_printf("neb2_max_alpha   : %f\n", Nd->max_alpha);
 	dc_printf("neb2_break_alpha : %f\n", Nd->break_alpha);
 	dc_printf("neb2_break_off   : %d\n", (int)Nd->break_y);
 	dc_printf("neb2_smooth      : %d\n", wacky_scheme);

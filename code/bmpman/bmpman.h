@@ -19,9 +19,7 @@
 #endif
 
 // 16 bit pixel formats
-#define BM_PIXEL_FORMAT_ARGB				0						// for glide - can assume certain things, like 1555 LFB writes, whee!
-#define BM_PIXEL_FORMAT_D3D				1						// d3d - card dependant. booo!
-#define BM_PIXEL_FORMAT_ARGB_D3D			2						// this card has nice 1555 textures like Glide - ahhhhh!
+#define BM_PIXEL_FORMAT_ARGB				0						// 1555 LFB writes
 
 // 16 bit pixel formats
 extern int Bm_pixel_format;
@@ -193,11 +191,6 @@ void bm_24_to_16(int bit_24, ushort *bit_16);
 // set the rgba components of a pixel, any of the parameters can be NULL
 extern void (*bm_set_components)(ubyte *pixel, ubyte *r, ubyte *g, ubyte *b, ubyte *a);
 void bm_set_components_argb(ubyte *pixel, ubyte *r, ubyte *g, ubyte *b, ubyte *a);
-void bm_set_components_d3d(ubyte *pixel, ubyte *r, ubyte *g, ubyte *b, ubyte *a);
-void bm_set_components_argb_d3d_16_screen(ubyte *pixel, ubyte *r, ubyte *g, ubyte *b, ubyte *a);
-void bm_set_components_argb_d3d_32_screen(ubyte *pixel, ubyte *r, ubyte *g, ubyte *b, ubyte *a);
-void bm_set_components_argb_d3d_16_tex(ubyte *pixel, ubyte *r, ubyte *g, ubyte *b, ubyte *a);
-void bm_set_components_argb_d3d_32_tex(ubyte *pixel, ubyte *r, ubyte *g, ubyte *b, ubyte *a);
 
 // get the rgba components of a pixel, any of the parameters can be NULL
 void bm_get_components(ubyte *pixel, ubyte *r, ubyte *g, ubyte *b, ubyte *a);

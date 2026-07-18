@@ -33,7 +33,6 @@
 #include "missionparse.h"
 #include "bmpman.h"
 #include "joy.h"
-#include "joy_ff.h"
 #include "player.h"
 #include "parselo.h"
 #include "freespace.h"
@@ -77,7 +76,6 @@
 struct ssm_firing_info;
 extern void ssm_create(vector *target, vector *start, int ssm_index);
 #include "alphacolors.h"
-#include "demo.h"
 #include "beam.h"
 #include "staticrand.h"
 #include "missionshipchoice.h"
@@ -2201,11 +2199,6 @@ void ship_vanished(int num)
 	sp = &Ships[num];
 	objp = &Objects[sp->objnum];
 
-	// demo recording
-	if(Game_mode & GM_DEMO_RECORD){
-		demo_POST_departed(Objects[Ships[num].objnum].signature, Ships[num].flags);
-	}
-
 	// add the information to the exited ship list
 	ship_add_exited_ship( sp, SEF_DEPARTED );
 
@@ -2223,11 +2216,6 @@ void ship_departed( int num )
 	int i;
 
 	sp = &Ships[num];
-
-	// demo recording
-	if(Game_mode & GM_DEMO_RECORD){
-		demo_POST_departed(Objects[Ships[num].objnum].signature, Ships[num].flags);
-	}
 
 	// add the information to the exited ship list
 	ship_add_exited_ship( sp, SEF_DEPARTED );
@@ -2260,15 +2248,12 @@ void ship_departed( int num )
 		
 	ai_ship_destroy(num, SEF_DEPARTED);		// should still do AI cleanup after ship has departed
 
-	// don't bother doing this for demo playback - we don't keep track of wing info
-	if(!(Game_mode & GM_DEMO_PLAYBACK)){
-		if ( sp->wingnum != -1 ) {
-			wing *wingp;
+	if ( sp->wingnum != -1 ) {
+		wing *wingp;
 
-			wingp = &Wings[sp->wingnum];
-			wingp->total_departed++;
-			ship_wing_cleanup( num, wingp );
-		}
+		wingp = &Wings[sp->wingnum];
+		wingp->total_departed++;
+		ship_wing_cleanup( num, wingp );
 	}
 }
 
@@ -2494,11 +2479,6 @@ void ship_dying_frame(object *objp, int ship_num)
 				// play death sound
 				snd_play_3d( &Snds[SND_VAPORIZED], &objp->pos, &View_position, objp->radius, NULL, 0, 1.0f, SND_PRIORITY_MUST_PLAY  );
 
-				// do joystick effect
-				if (objp == Player_obj) {
-					joy_ff_explode();
-				}
-
 				// if dying ship is docked, do damage to docked and physics
 				if (sp->dock_objnum_when_dead != -1)  {
 					do_dying_undock_physics(objp, sp);
@@ -2656,8 +2636,6 @@ void ship_dying_frame(object *objp, int ship_num)
 			}
 
 			snd_play_3d( &Snds[sound_index], &objp->pos, &View_position, objp->radius, NULL, 0, 1.0f, SND_PRIORITY_MUST_PLAY  );
-			if (objp == Player_obj)
-				joy_ff_explode();
 
 			if ( sp->death_roll_snd != -1 ) {
 				snd_stop(sp->death_roll_snd);
@@ -4487,9 +4465,6 @@ int ship_fire_primary(object * obj, int stream_weapons, int force)
 			sound_played = winfo_p->launch_snd;
 			if ( obj == Player_obj ) {
 				if ( winfo_p->launch_snd != -1 ) {
-					weapon_info *wip;
-					ship_weapon *swp;
-
 					// HACK
 					if(winfo_p->launch_snd == SND_AUTOCANNON_SHOT){
 						snd_play( &Snds[winfo_p->launch_snd], 0.0f, 1.0f, SND_PRIORITY_TRIPLE_INSTANCE );
@@ -4497,12 +4472,6 @@ int ship_fire_primary(object * obj, int stream_weapons, int force)
 						snd_play( &Snds[winfo_p->launch_snd], 0.0f, 1.0f, SND_PRIORITY_MUST_PLAY );
 					}
 	//				snd_play( &Snds[winfo_p->launch_snd] );
-
-					swp = &Player_ship->weapons;
-					if (swp->current_primary_bank >= 0) {
-						wip = &Weapon_info[swp->primary_bank_weapons[swp->current_primary_bank]];
-						joy_ff_play_primary_shoot((int) ((wip->armor_factor + wip->shield_factor * 0.2f) * (wip->damage * wip->damage - 7.5f) * 0.45f + 0.6f) * 10 + 2000);
-					}
 				}
 			}
 			else {
@@ -4512,11 +4481,6 @@ int ship_fire_primary(object * obj, int stream_weapons, int force)
 			}
 		}		
 	}	// end for (go to next primary bank)
-
-	// post a primary fired event
-	if(Game_mode & GM_DEMO_RECORD){
-		demo_POST_primary_fired(obj, swp->current_primary_bank, shipp->flags & SF_PRIMARY_LINKED);
-	}
 
    // STATS
    if (obj->flags & OF_PLAYER_SHIP) {
@@ -4953,10 +4917,6 @@ int ship_fire_secondary( object *obj, int allow_swarm )
 			// create the muzzle flash effect
 			shipfx_flash_create( obj, shipp, &pnt, &obj->orient.fvec, 0, weapon );
 
-/*
-			if ( weapon_num != -1 )
-				Demo_fire_secondary_requests++;	// testing for demo
-*/
 			num_fired++;
 			swp->last_fired_weapon_index = weapon_num;
 			swp->detonate_weapon_time = timestamp(500);		//	Can detonate 1/2 second later.
@@ -4973,19 +4933,7 @@ int ship_fire_secondary( object *obj, int allow_swarm )
 
 	if ( obj == Player_obj ) {
 		if ( Weapon_info[weapon].launch_snd != -1 ) {
-			weapon_info *wip;
-			ship_weapon *swp;
-
 			snd_play( &Snds[Weapon_info[weapon].launch_snd], 0.0f, 1.0f, SND_PRIORITY_MUST_PLAY );
-			swp = &Player_ship->weapons;
-			if (swp->current_secondary_bank >= 0) {
-				wip = &Weapon_info[swp->secondary_bank_weapons[swp->current_secondary_bank]];
-				if (Player_ship->flags & SF_SECONDARY_DUAL_FIRE){
-					joy_ff_play_secondary_shoot((int) (wip->cargo_size * 2.0f));
-				} else {
-					joy_ff_play_secondary_shoot((int) wip->cargo_size);
-				}
-			}
 		}
 
 	} else {
@@ -5987,8 +5935,6 @@ int ship_do_rearm_frame( object *objp, float frametime )
 
 					} else {
 						snd_play_3d( &Snds[SND_MISSILE_LOAD], &objp->pos, &View_position );
-						if (objp == Player_obj)
-							joy_ff_play_reload_effect();
 
 						swp->secondary_bank_ammo[i] += REARM_NUM_MISSILES_PER_BATCH;
 						if ( swp->secondary_bank_ammo[i] > swp->secondary_bank_start_ammo[i] ) 
@@ -7933,12 +7879,7 @@ void ship_page_in()
 					int bitmap_num = pm->original_textures[j];
 
 					if ( bitmap_num > -1 )	{
-						// if we're in Glide (and maybe later with D3D), use nondarkening textures
-						if(gr_screen.mode == GR_GLIDE){
-							bm_page_in_nondarkening_texture( bitmap_num );
-						} else {
-							bm_page_in_texture( bitmap_num );
-						}
+						bm_page_in_texture( bitmap_num );
 					}
 				}
 

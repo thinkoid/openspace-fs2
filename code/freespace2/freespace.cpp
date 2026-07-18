@@ -42,7 +42,6 @@
 #include "missionparse.h"
 #include "bmpman.h"
 #include "joy.h"
-#include "joy_ff.h"
 #include "cfile.h"
 #include "player.h"
 #include "freespace.h"
@@ -63,8 +62,6 @@
 #include "hudets.h"
 #include "hudtarget.h"
 #include "gamesnd.h"
-#include "rbaudio.h"
-#include "winmidi.h"
 #include "eventmusic.h"
 #include "animplay.h"
 #include "missionweaponchoice.h"
@@ -123,10 +120,8 @@
 #include "beam.h"
 #include "muzzleflash.h"
 #include "encrypt.h"
-#include "demo.h"
 #include "version.h"
 #include "mainhalltemp.h"
-#include "exceptionhandler.h"
 #include "supernova.h"
 #include "hudshield.h"
 // #include "names.h"
@@ -1763,19 +1758,6 @@ void game_show_framerate()
 
 		gr_set_color_fast(&HUD_color_debug);
 
-		{
-			extern int D3D_textures_in;
-			extern int D3D_textures_in_frame;
-			extern int Glide_textures_in;
-			extern int Glide_textures_in_frame;
-			extern int Glide_explosion_vram;
-			gr_printf( sx, sy, NOX("VRAM: %d KB\n"), (D3D_textures_in+Glide_textures_in)/1024 );
-			sy += dy;
-			gr_printf( sx, sy, NOX("VRAM: +%d KB\n"), (Glide_textures_in_frame+D3D_textures_in_frame)/1024 );
-			sy += dy;
-			gr_printf( sx, sy, NOX("EXP VRAM: %dKB\n"), (Glide_explosion_vram)/1024 );
-			sy += dy;
-		}
 //		gr_printf( sx, sy, "BPP: %d", gr_screen.bits_per_pixel );
 //		sy += dy;
 		gr_printf( sx, sy, NOX("DMA: %s"), transfer_text );
@@ -1826,36 +1808,12 @@ void game_show_framerate()
 
 		gr_set_color_fast(&HUD_color_debug);
 
-		{
-			extern int TotalRam;
-			gr_printf( sx, sy, NOX("DYN: %d KB\n"), TotalRam/1024 );
-			sy += dy;
-		}	
-
-		{
-			extern int Model_ram;
-			gr_printf( sx, sy, NOX("POF: %d KB\n"), Model_ram/1024 );
-			sy += dy;
-		}	
-
 		gr_printf( sx, sy, NOX("BMP: %d KB\n"), bm_texture_ram/1024 );
 		sy += dy;
 		gr_printf( sx, sy, NOX("S-SRAM: %d KB\n"), Snd_sram/1024 );		// mem used to store game sound
 		sy += dy;
 		gr_printf( sx, sy, NOX("S-HRAM: %d KB\n"), Snd_hram/1024 );		// mem used to store game sound
 		sy += dy;
-		{
-			extern int D3D_textures_in;
-			extern int Glide_textures_in;
-			extern int Glide_textures_in_frame;
-			extern int Glide_explosion_vram;
-			gr_printf( sx, sy, NOX("VRAM: %d KB\n"), (D3D_textures_in+Glide_textures_in)/1024 );
-			sy += dy;
-			gr_printf( sx, sy, NOX("VRAM: +%d KB\n"), (Glide_textures_in_frame)/1024 );
-			sy += dy;
-			gr_printf( sx, sy, NOX("EXP VRAM: %dKB\n"), (Glide_explosion_vram)/1024 );
-			sy += dy;
-		}
 	}
 
 
@@ -2405,10 +2363,7 @@ void game_whack_reset()
 // Apply a 2d whack to the player
 void game_whack_apply( float x, float y )
 {
-	// Do some force feedback
-	joy_ff_play_dir_effect(x * 80.0f, y * 80.0f);
-
-	// Move the eye 
+	// Move the eye
 	Game_hit_x += x;
 	Game_hit_y += y;
 
@@ -2423,7 +2378,6 @@ void game_shudder_apply(int time, float intensity)
 	Game_shudder_intensity = intensity;
 }
 
-#define FF_SCALE	10000
 void apply_hud_shake(matrix *eye_orient)
 {
 	if (Viewer_obj == Player_obj) {
@@ -2454,16 +2408,6 @@ void apply_hud_shake(matrix *eye_orient)
 			int r2 = myrand();
 			tangles.p += 0.07f * Ships[Player_obj->instance].wash_intensity * (float) (r1-RAND_MAX/2)/RAND_MAX;
 			tangles.h += 0.07f * Ships[Player_obj->instance].wash_intensity * (float) (r2-RAND_MAX/2)/RAND_MAX;
-
-			// get the   intensity
-			float intensity = FF_SCALE * Ships[Player_obj->instance].wash_intensity;
-
-			// vector rand_vec
-			vector rand_vec;
-			vm_vec_rand_vec_quick(&rand_vec);
-
-			// play the effect
-			joy_ff_play_dir_effect(intensity*rand_vec.x, intensity*rand_vec.y);
 		}
 
 	
@@ -3004,9 +2948,7 @@ void game_simulation_frame()
 #define	VM_PADLOCK_RIGHT				(1 << 10)
 		
 	// evaluate mission departures and arrivals before we process all objects.
-	if ( !(Game_mode & GM_DEMO_PLAYBACK) ){
-		mission_parse_eval_stuff();
-	}
+	mission_parse_eval_stuff();
 
 	// move all the objects now
 	obj_move_all(flFrametime);
@@ -3014,26 +2956,20 @@ void game_simulation_frame()
 	// check for cargo reveal (this has an internal timestamp, so only runs every N ms)
 	// AL: 3-15-98: It was decided to not let AI ships inspect cargo
 	//	ship_check_cargo_all();
-	if(!(Game_mode & GM_DEMO_PLAYBACK)){
-		mission_eval_goals();
-	}
+	mission_eval_goals();
 
 	// always check training objectives
-	if(!(Game_mode & GM_DEMO_PLAYBACK)){
-		training_check_objectives();
-	}
+	training_check_objectives();
 
 	// only process the message queue when the player is "in" the game
 	if ( !Pre_player_entry ){
 		message_queue_process();				// process any messages send to the player
 	}
 
-	if(!(Game_mode & GM_DEMO_PLAYBACK)){
-		message_maybe_distort();				// maybe distort incoming message if comms damaged
-		player_repair_frame(flFrametime);	//	AI objects get repaired in ai_process, called from move code...deal with player.
-		player_process_pending_praise();		// maybe send off a delayed praise message to the player
-		player_maybe_play_all_alone_msg();	// mabye tell the player he is all alone	
-	}
+	message_maybe_distort();				// maybe distort incoming message if comms damaged
+	player_repair_frame(flFrametime);	//	AI objects get repaired in ai_process, called from move code...deal with player.
+	player_process_pending_praise();		// maybe send off a delayed praise message to the player
+	player_maybe_play_all_alone_msg();	// mabye tell the player he is all alone
 
 	// process some stuff every frame (before frame is rendered)
 	emp_process_local();
@@ -3201,14 +3137,6 @@ void game_frame()
 	}
 #endif
 
-#ifdef DEMO_SYSTEM
-	demo_do_frame_start();
-	if(Demo_error){
-		mprintf(("Error (%d) while processing demo!\n", Demo_error));
-		demo_close();
-	}
-#endif
-	
 	// start timing frame
 	timing_frame_start();
 
@@ -3237,10 +3165,7 @@ void game_frame()
 		if( (!popup_running_state()) && (!popupdead_is_active()) ){
 			game_process_keys();
 
-			// don't read flying controls if we're playing a demo back
-			if(!(Game_mode & GM_DEMO_PLAYBACK)){
-				read_player_controls( Player_obj, flFrametime);
-			}
+			read_player_controls( Player_obj, flFrametime);
 		}
 	}
 
@@ -3337,14 +3262,6 @@ void game_frame()
 	Timing_render2 = f2fl( render2_time2- render2_time1 ) * 1000.0f;
 	Timing_render3 = f2fl( render3_time2- render3_time1 ) * 1000.0f;
 	Timing_flip = f2fl( flip_time2 - flip_time1 ) * 1000.0f;
-
-#ifdef DEMO_SYSTEM
-	demo_do_frame_end();
-	if(Demo_error){
-		mprintf(("Error (%d) while processing demo!\n", Demo_error));
-		demo_close();
-	}
-#endif
 }
 
 #define	MAX_FRAMETIME	(F1_0/4)		// Frametime gets saturated at this.  Changed by MK on 11/1/97.
@@ -3732,14 +3649,6 @@ int game_poll()
 			#endif
 			break;
 
-		case KEY_DEBUGGED + KEY_F3:
-			gameseq_post_event( GS_EVENT_TOGGLE_FULLSCREEN );
-			break;
-
-		case KEY_DEBUGGED + KEY_F4:
-			gameseq_post_event( GS_EVENT_TOGGLE_GLIDE );
-			break;
-		
 		case KEY_F4:
 			if ((state == GS_STATE_GAME_PLAY) || (state == GS_STATE_DEATH_DIED) || (state == GS_STATE_DEATH_BLEW_UP) || (state == GS_STATE_GAME_PAUSED) ) {
 				gameseq_post_event( GS_EVENT_MISSION_LOG_SCROLLBACK );
@@ -3948,14 +3857,7 @@ void game_process_event( int current_state, int event )
 			gameseq_set_state( GS_STATE_WEAPON_SELECT );
 			break;
 
-		case GS_EVENT_ENTER_GAME:		
-#ifdef DEMO_SYSTEM
-			// maybe start recording a demo
-			if(Demo_make){
-				demo_start_record("test.fsd");
-			}
-#endif
-
+		case GS_EVENT_ENTER_GAME:
 			gameseq_set_state(GS_STATE_GAME_PLAY, 1);
 
 			Start_time = f2fl(timer_get_approx_seconds());
@@ -4005,22 +3907,6 @@ void game_process_event( int current_state, int event )
 			gameseq_pop_state();
 			break;
 
-		case GS_EVENT_TOGGLE_FULLSCREEN:
-			#ifndef HARDWARE_ONLY
-				#ifndef NDEBUG
-				if ( gr_screen.mode == GR_SOFTWARE )	{
-					gr_init( GR_640, GR_DIRECTDRAW );
-				} else if ( gr_screen.mode == GR_DIRECTDRAW )	{
-					gr_init( GR_640, GR_SOFTWARE );
-				}
-				#endif
-			#endif
-			break;
-
-		case GS_EVENT_TOGGLE_GLIDE:
-			// Glide backend is gone; software is the only renderer
-			break;
- 
 		case GS_EVENT_LOAD_MISSION_MENU:
 			gameseq_set_state(GS_STATE_LOAD_MISSION_MENU);
 			break;
@@ -4359,7 +4245,6 @@ void game_leave_state( int old_state, int new_state )
 			game_stop_looped_sounds();
 
 			sound_env_disable();
-			joy_ff_stop_effects();
 
 			// stop game time under certain conditions
 			if ( end_mission || (Game_mode & GM_NORMAL) ){
@@ -4367,11 +4252,6 @@ void game_leave_state( int old_state, int new_state )
 			}
 
 			if (end_mission) {
-			// shut down any recording or playing demos
-#ifdef DEMO_SYSTEM
-				demo_close();
-#endif
-
 				freespace_stop_mission();
 				Game_time_compression = F1_0;
 			}
@@ -4659,7 +4539,6 @@ void mouse_force_pos(int x, int y);
 			}
 
 			sound_env_set(&Game_sound_env);
-			joy_ff_mission_init(Ship_info[Player_ship->ship_info_index].rotation_time);
 			break;
 
 		case GS_STATE_HUD_CONFIG:
@@ -5161,13 +5040,6 @@ int main(int argc, char *argv[])
 		game_maybe_update_launcher(exe_dir);
 	}
 
-
-	#ifndef NDEBUG
-	{
-		extern void windebug_memwatch_init();
-		windebug_memwatch_init();
-	}
-	#endif
 
 	// WinMain got the arguments as a single string; rebuild one for the
 	// retail parser (which strtok's it in place)
@@ -6601,23 +6473,11 @@ void display_title_screen()
 		return;
 	}
 
-	// d3d	
-	if((gr_screen.mode == GR_DIRECT3D) && (Gr_bitmap_poly)){
-		extern void d3d_start_frame();
-		d3d_start_frame();
-	}
-
 	// set
 	gr_set_bitmap(title_bitmap);
 
 	// draw
 	gr_bitmap(0, 0);
-
-	// d3d	
-	if((gr_screen.mode == GR_DIRECT3D) && (Gr_bitmap_poly)){
-		extern void d3d_stop_frame();
-		d3d_stop_frame();
-	}
 
 	// flip
 	gr_flip();

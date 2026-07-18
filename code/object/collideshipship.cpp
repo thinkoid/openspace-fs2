@@ -19,7 +19,6 @@
 #include "3d.h"			// needed for View_position, which is used when playing 3d sound
 #include "gamesequence.h"
 #include "hudshield.h"
-#include "joy_ff.h"
 #include "timer.h"
 #include "asteroid.h"
 
@@ -1198,16 +1197,6 @@ int collide_ship_ship( obj_pair * pair )
 //			vm_vec_add(&world_hit_pos, &ship_ship_hit_info.heavy->pos, &ship_ship_hit_info.hit_pos);
 
 			collide_ship_ship_do_sound(&world_hit_pos, A, B, player_involved);
-
-			// check if we should do force feedback stuff
-			if (player_involved && (ship_ship_hit_info.impulse > 0)) {
-				float scaler;
-				vector v;
-
-				scaler = -ship_ship_hit_info.impulse / Player_obj->phys_info.mass * 300;
-				vm_vec_copy_normalize(&v, &world_hit_pos);
-				joy_ff_play_vector_effect(&v, scaler);
-			}
 
 			//mprintf(("Ship:Ship damage = %7.3f\n", speed));
 			#ifndef NDEBUG

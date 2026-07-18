@@ -108,15 +108,10 @@ int Bm_pixel_format = BM_PIXEL_FORMAT_ARGB;
 #define BM_SET_B_ARGB(p, b)	{ p[0] &= ~(0x1f); p[0] |= b & 0x1f; }
 #define BM_SET_A_ARGB(p, a)	{ p[1] &= ~(0x80); p[1] |= ((a & 0x01) << 7); }
 
-#define BM_SET_R_D3D(p, r)		{ *p |= (ushort)(( (int)r / Gr_current_red->scale ) << Gr_current_red->shift); }
-#define BM_SET_G_D3D(p, g)		{ *p |= (ushort)(( (int)g / Gr_current_green->scale ) << Gr_current_green->shift); }
-#define BM_SET_B_D3D(p, b)		{ *p |= (ushort)(( (int)b / Gr_current_blue->scale ) << Gr_current_blue->shift); }
-#define BM_SET_A_D3D(p, a)		{ if(a == 0){ *p = (ushort)Gr_current_green->mask; } }
-
-#define BM_SET_R(p, r)	{ switch(Bm_pixel_format){ case BM_PIXEL_FORMAT_ARGB: BM_SET_R_ARGB(((char*)p), r); break; case BM_PIXEL_FORMAT_D3D: BM_SET_R_D3D(p, r); break; default: Int3(); } }
-#define BM_SET_G(p, g)	{ switch(Bm_pixel_format){ case BM_PIXEL_FORMAT_ARGB: BM_SET_G_ARGB(((char*)p), g); break; case BM_PIXEL_FORMAT_D3D: BM_SET_G_D3D(p, g); break; default: Int3(); } }
-#define BM_SET_B(p, b)	{ switch(Bm_pixel_format){ case BM_PIXEL_FORMAT_ARGB: BM_SET_B_ARGB(((char*)p), b); break; case BM_PIXEL_FORMAT_D3D: BM_SET_B_D3D(p, b); break;  default: Int3(); } }
-#define BM_SET_A(p, a)	{ switch(Bm_pixel_format){ case BM_PIXEL_FORMAT_ARGB: BM_SET_A_ARGB(((char*)p), a); break; case BM_PIXEL_FORMAT_D3D: BM_SET_A_D3D(p, a); break;  default: Int3(); } }
+#define BM_SET_R(p, r)	{ BM_SET_R_ARGB(((char*)p), r); }
+#define BM_SET_G(p, g)	{ BM_SET_G_ARGB(((char*)p), g); }
+#define BM_SET_B(p, b)	{ BM_SET_B_ARGB(((char*)p), b); }
+#define BM_SET_A(p, a)	{ BM_SET_A_ARGB(((char*)p), a); }
 
 // ===========================================
 // Mode: 0 = High memory
@@ -352,7 +347,7 @@ int bm_create( int bpp, int w, int h, void * data, int flags )
 	// Assert((bpp==32)||(bpp==8));
 	if(bpp != 16){
 		// software mode creates plain 8bpp frames too (anim playback)
-		Assert((flags & BMP_AABITMAP) || ((gr_screen.mode == GR_SOFTWARE) && (bpp == 8)));
+		Assert((flags & BMP_AABITMAP) || (bpp == 8));
 	} else {
 		Assert(bpp == 16);
 	}
@@ -819,11 +814,10 @@ uint bm_get_signature( int handle )
 
 extern int palman_is_nondarkening(int r,int g, int b);
 static void bm_convert_format( int bitmapnum, bitmap *bmp, ubyte bpp, ubyte flags )
-{	
-	int idx;	
-	int r, g, b, a;
+{
+	int idx;
 
-	if(Fred_running || Pofview_running || ((gr_screen.mode == GR_SOFTWARE) && (bmp->bpp == 8))){
+	if(Fred_running || Pofview_running || (bmp->bpp == 8)){
 		Assert(bmp->bpp == 8);
 
 		return;
@@ -841,24 +835,8 @@ static void bm_convert_format( int bitmapnum, bitmap *bmp, ubyte bpp, ubyte flag
 			
 			// if the pixel is transparent
 			if ( ((ushort*)bmp->data)[idx] == Gr_t_green.mask)	{
-				switch(Bm_pixel_format){
 				// 1555, all we need to do is zero the whole thing
-				case BM_PIXEL_FORMAT_ARGB:
-				case BM_PIXEL_FORMAT_ARGB_D3D:
-					((ushort*)bmp->data)[idx] = 0;
-					break;
-				// d3d format
-				case BM_PIXEL_FORMAT_D3D:									
-					r = g = b = a = 0;
-					r /= Gr_t_red.scale;
-					g /= Gr_t_green.scale;
-					b /= Gr_t_blue.scale;
-					a /= Gr_t_alpha.scale;
-					((ushort*)bmp->data)[idx] = (ushort)((a<<Gr_t_alpha.shift) | (r << Gr_t_red.shift) | (g << Gr_t_green.shift) |	(b << Gr_t_blue.shift));
-					break;
-				default:
-					Int3();
-				}
+				((ushort*)bmp->data)[idx] = 0;
 			}
 		}
 
@@ -931,8 +909,7 @@ void bm_lock_pcx( int handle, int bitmapnum, bitmap_entry *be, bitmap *bmp, ubyt
 
 	// some sanity checks on flags
 	Assert(!((flags & BMP_AABITMAP) && (flags & BMP_TEX_ANY)));						// no aabitmap textures
-	Assert(!((flags & BMP_TEX_XPARENT) && (flags & BMP_TEX_NONDARK)));			// can't be a transparent texture and a nondarkening texture 
-	Assert(!((flags & BMP_TEX_NONDARK) && (gr_screen.mode == GR_DIRECT3D)));	// D3D should never be trying to get nondarkening textures
+	Assert(!((flags & BMP_TEX_XPARENT) && (flags & BMP_TEX_NONDARK)));			// can't be a transparent texture and a nondarkening texture
 
 	if(bpp == 8){
 		int pcx_error=pcx_read_bitmap_8bpp( be->filename, data, palette );
@@ -948,7 +925,7 @@ void bm_lock_pcx( int handle, int bitmapnum, bitmap_entry *be, bitmap *bmp, ubyt
 		// BMP_AABITMAP at 8bpp means "raw indexes, hands off" — the click
 		// masks (X-m.pcx) are locked that way and their pixels are region
 		// ids, not colors
-		if(Fred_running || Pofview_running || ((gr_screen.mode == GR_SOFTWARE) && !(flags & BMP_AABITMAP))){
+		if(Fred_running || Pofview_running || !(flags & BMP_AABITMAP)){
 			bm_swizzle_8bit_for_fred(be, bmp, data, palette);
 		}
 	} else {	
@@ -1154,7 +1131,6 @@ void bm_lock_user( int handle, int bitmapnum, bitmap_entry *be, bitmap *bmp, uby
 		}
 		*/		
 		// software mode also creates plain 8bpp user bitmaps (anim frames)
-		Assert((flags & BMP_AABITMAP) || (gr_screen.mode == GR_SOFTWARE));
 		bmp->bpp = bpp;
 		bmp->flags = be->info.user.flags;
 		bmp->data = (uintptr_t)be->info.user.data;
@@ -1238,18 +1214,10 @@ bitmap * bm_lock( int handle, ubyte bpp, ubyte flags )
 
 //	flags &= (~BMP_RLE);
 
-	if(Fred_running || Pofview_running || (gr_screen.mode == GR_SOFTWARE)){
-		// software renderer: 8bpp is the norm; a few FS2-era paths
-		// (beam section info) lock at 16 and work via the 1555 guns
-		Assert( bpp == 8 || bpp == 16 );
-		Assert( (bm_bitmaps[bitmapnum].type == BM_TYPE_PCX) || (bm_bitmaps[bitmapnum].type == BM_TYPE_ANI) || (bm_bitmaps[bitmapnum].type == BM_TYPE_TGA) || (bm_bitmaps[bitmapnum].type == BM_TYPE_USER));
-	} else {
-		if(flags & BMP_AABITMAP){
-			Assert( bpp == 8 );
-		} else {
-			Assert( bpp == 16 );
-		}
-	}
+	// software renderer: 8bpp is the norm; a few FS2-era paths
+	// (beam section info) lock at 16 and work via the 1555 guns
+	Assert( bpp == 8 || bpp == 16 );
+	Assert( (bm_bitmaps[bitmapnum].type == BM_TYPE_PCX) || (bm_bitmaps[bitmapnum].type == BM_TYPE_ANI) || (bm_bitmaps[bitmapnum].type == BM_TYPE_TGA) || (bm_bitmaps[bitmapnum].type == BM_TYPE_USER));
 
 	be = &bm_bitmaps[bitmapnum];
 	bmp = &be->bm;
@@ -1277,7 +1245,7 @@ bitmap * bm_lock( int handle, ubyte bpp, ubyte flags )
 	// data).  Software translations bake the palette in, so a palette
 	// change must reload the bitmap (the swizzle stamps palette_checksum).
 	int pal_changed = 0;
-	if ( (gr_screen.mode == GR_SOFTWARE) && (bmp->data != 0) && (bmp->bpp == 8)
+	if ( (bmp->data != 0) && (bmp->bpp == 8)
 			&& !(flags & BMP_AABITMAP)
 			&& ((be->type == BM_TYPE_PCX) || (be->type == BM_TYPE_ANI))
 			&& (be->palette_checksum != gr_palette_checksum) )	{
@@ -1610,11 +1578,7 @@ void bm_page_in_texture( int bitmapnum, int nframes )
 
 		bm_bitmaps[n+i].preloaded = 1;
 
-		if ( D3D_enabled )	{
-			bm_bitmaps[n+i].used_flags = BMP_TEX_OTHER;
-		} else {			
-			bm_bitmaps[n+i].used_flags = 0;
-		}
+		bm_bitmaps[n+i].used_flags = 0;
 	}
 }
 
@@ -1628,11 +1592,7 @@ void bm_page_in_nondarkening_texture( int bitmapnum, int nframes )
 
 		bm_bitmaps[n+i].preloaded = 4;
 
-		if ( D3D_enabled )	{			
-			bm_bitmaps[n+i].used_flags = BMP_TEX_NONDARK;
-		} else {
-			bm_bitmaps[n+i].used_flags = 0;
-		}
+		bm_bitmaps[n+i].used_flags = 0;
 	}
 }
 
@@ -1647,12 +1607,7 @@ void bm_page_in_xparent_texture( int bitmapnum, int nframes)
 
 		bm_bitmaps[n+i].preloaded = 3;
 
-		if ( D3D_enabled )	{
-			// bm_bitmaps[n+i].used_flags = BMP_NO_PALETTE_MAP;
-			bm_bitmaps[n+i].used_flags = BMP_TEX_XPARENT;
-		} else {
-			bm_bitmaps[n+i].used_flags = 0;
-		}
+		bm_bitmaps[n+i].used_flags = 0;
 	}
 }
 
@@ -1665,12 +1620,8 @@ void bm_page_in_aabitmap( int bitmapnum, int nframes )
 		int n = bitmapnum % MAX_BITMAPS;
 
 		bm_bitmaps[n+i].preloaded = 2;
-	
-		if ( D3D_enabled )	{
-			bm_bitmaps[n+i].used_flags = BMP_AABITMAP;
-		} else {
-			bm_bitmaps[n+i].used_flags = 0;
-		}
+
+		bm_bitmaps[n+i].used_flags = 0;
 	}
 }
 
@@ -1697,9 +1648,6 @@ void bm_page_in_start()
 
 }
 
-extern void gr_d3d_preload_init();
-extern int gr_d3d_preload(int bitmap_num, int is_aabitmap );
-
 void bm_page_in_stop()
 {	
 	int i;	
@@ -1713,13 +1661,6 @@ void bm_page_in_stop()
 	#ifdef BMPMAN_NDEBUG
 	Bm_ram_freed = 0;
 	#endif
-
-	// VRAM preload is a Direct3D concept; software mode pages into RAM only
-	int d3d_preloading = (gr_screen.mode == GR_DIRECT3D);
-
-	if ( d3d_preloading )	{
-		gr_d3d_preload_init();
-	}
 
 	for (i = 0; i < MAX_BITMAPS; i++)	{
 		if ( bm_bitmaps[i].type != BM_TYPE_NONE )	{
@@ -1739,20 +1680,8 @@ void bm_page_in_stop()
 				}
 #endif
 
-				// if preloaded == 3, load it as an xparent texture				
-				if(bm_bitmaps[i].used_flags == BMP_AABITMAP){
-					bm_lock( bm_bitmaps[i].handle, 8, bm_bitmaps[i].used_flags );
-				} else {
-					bm_lock( bm_bitmaps[i].handle, (ubyte)((gr_screen.mode == GR_SOFTWARE) ? 8 : 16), bm_bitmaps[i].used_flags );
-				}
+				bm_lock( bm_bitmaps[i].handle, 8, bm_bitmaps[i].used_flags );
 				bm_unlock( bm_bitmaps[i].handle );
-
-				if ( d3d_preloading )	{
-					if ( !gr_d3d_preload(bm_bitmaps[i].handle, (bm_bitmaps[i].preloaded==2) ) )	{
-						mprintf(( "Out of VRAM.  Done preloading.\n" ));
-						d3d_preloading = 0;
-					}
-				}
 
 				n++;
 				#ifdef BMPMAN_NDEBUG
@@ -1808,8 +1737,6 @@ void bm_24_to_16(int bit_24, ushort *bit_16)
 	bm_set_components((ubyte*)bit_16, (ubyte*)&pixel[0], (ubyte*)&pixel[1], (ubyte*)&pixel[2], &alpha);	
 }
 
-extern int D3D_32bit;
-
 void (*bm_set_components)(ubyte *pixel, ubyte *r, ubyte *g, ubyte *b, ubyte *a) = NULL;
 
 void bm_set_components_argb(ubyte *pixel, ubyte *rv, ubyte *gv, ubyte *bv, ubyte *av)
@@ -1824,63 +1751,6 @@ void bm_set_components_argb(ubyte *pixel, ubyte *rv, ubyte *gv, ubyte *bv, ubyte
 	}
 }
 
-void bm_set_components_d3d(ubyte *pixel, ubyte *rv, ubyte *gv, ubyte *bv, ubyte *av)
-{
-	// rgba 
-	*((ushort*)pixel) |= (ushort)(( (int)*rv / Gr_current_red->scale ) << Gr_current_red->shift);
-	*((ushort*)pixel) |= (ushort)(( (int)*gv / Gr_current_green->scale ) << Gr_current_green->shift);
-	*((ushort*)pixel) |= (ushort)(( (int)*bv / Gr_current_blue->scale ) << Gr_current_blue->shift);
-	if(*av == 0){ 
-		*((ushort*)pixel) = (ushort)Gr_current_green->mask;
-	}
-}
-
-void bm_set_components_argb_d3d_16_screen(ubyte *pixel, ubyte *rv, ubyte *gv, ubyte *bv, ubyte *av)
-{
-	*((ushort*)pixel) |= (ushort)(( (int)*rv / Gr_current_red->scale ) << Gr_current_red->shift);
-	*((ushort*)pixel) |= (ushort)(( (int)*gv / Gr_current_green->scale ) << Gr_current_green->shift);
-	*((ushort*)pixel) |= (ushort)(( (int)*bv / Gr_current_blue->scale ) << Gr_current_blue->shift);
-	if(*av == 0){				
-		*((ushort*)pixel) = (ushort)Gr_current_green->mask;
-	}			
-}
-
-void bm_set_components_argb_d3d_32_screen(ubyte *pixel, ubyte *rv, ubyte *gv, ubyte *bv, ubyte *av)
-{
-	*((uint*)pixel) |= (uint)(( (int)*rv / Gr_current_red->scale ) << Gr_current_red->shift);
-	*((uint*)pixel) |= (uint)(( (int)*gv / Gr_current_green->scale ) << Gr_current_green->shift);
-	*((uint*)pixel) |= (uint)(( (int)*bv / Gr_current_blue->scale ) << Gr_current_blue->shift);
-	if(*av == 0){				
-		*((uint*)pixel) = (uint)Gr_current_green->mask;		
-	}
-}
-
-void bm_set_components_argb_d3d_16_tex(ubyte *pixel, ubyte *rv, ubyte *gv, ubyte *bv, ubyte *av)
-{
-	*((ushort*)pixel) |= (ushort)(( (int)*rv / Gr_current_red->scale ) << Gr_current_red->shift);
-	*((ushort*)pixel) |= (ushort)(( (int)*gv / Gr_current_green->scale ) << Gr_current_green->shift);
-	*((ushort*)pixel) |= (ushort)(( (int)*bv / Gr_current_blue->scale ) << Gr_current_blue->shift);
-	*((ushort*)pixel) &= ~(Gr_current_alpha->mask);
-	if(*av){
-		*((ushort*)pixel) |= (ushort)(Gr_current_alpha->mask);
-	} else {
-		*((ushort*)pixel) = 0;
-	}
-}
-
-void bm_set_components_argb_d3d_32_tex(ubyte *pixel, ubyte *rv, ubyte *gv, ubyte *bv, ubyte *av)
-{
-	*((ushort*)pixel) |= (ushort)(( (int)*rv / Gr_current_red->scale ) << Gr_current_red->shift);
-	*((ushort*)pixel) |= (ushort)(( (int)*gv / Gr_current_green->scale ) << Gr_current_green->shift);
-	*((ushort*)pixel) |= (ushort)(( (int)*bv / Gr_current_blue->scale ) << Gr_current_blue->shift);
-	*((ushort*)pixel) &= ~(Gr_current_alpha->mask);
-	if(*av){
-		*((ushort*)pixel) |= (ushort)(Gr_current_alpha->mask);
-	} else {
-		*((ushort*)pixel) = 0;
-	}
-}
-
 // for selecting pixel formats
 void BM_SELECT_SCREEN_FORMAT()
 {
@@ -1889,221 +1759,47 @@ void BM_SELECT_SCREEN_FORMAT()
 	Gr_current_blue = &Gr_blue;
 	Gr_current_alpha = &Gr_alpha;
 
-	// setup pointers
-	if(gr_screen.mode == GR_GLIDE){
-		bm_set_components = bm_set_components_argb;
-	} else if(gr_screen.mode == GR_DIRECT3D){
-		if(Bm_pixel_format == BM_PIXEL_FORMAT_D3D){
-			bm_set_components = bm_set_components_d3d;
-		} else {
-			if(D3D_32bit){
-				bm_set_components = bm_set_components_argb_d3d_32_screen;
-			} else {
-				bm_set_components = bm_set_components_argb_d3d_16_screen;
-			}
-		}
-	} else {
-		// software mode: retail never set the pointer here (16bpp locks were
-		// hardware-only); generic 1555 ARGB keeps those paths alive
-		bm_set_components = bm_set_components_argb;
-	}
+	// software mode: retail never set the pointer here (16bpp locks were
+	// hardware-only); generic 1555 ARGB keeps those paths alive
+	bm_set_components = bm_set_components_argb;
 }
 
 void BM_SELECT_TEX_FORMAT()
 {
-	Gr_current_red = &Gr_t_red; 
-	Gr_current_green = &Gr_t_green; 
-	Gr_current_blue = &Gr_t_blue; 
+	Gr_current_red = &Gr_t_red;
+	Gr_current_green = &Gr_t_green;
+	Gr_current_blue = &Gr_t_blue;
 	Gr_current_alpha = &Gr_t_alpha;
-
-	// setup pointers
-	if(gr_screen.mode == GR_GLIDE){
-		bm_set_components = bm_set_components_argb;
-	} else if(gr_screen.mode == GR_DIRECT3D){
-		if(Bm_pixel_format == BM_PIXEL_FORMAT_D3D){
-			bm_set_components = bm_set_components_d3d;
-		} else {
-			if(D3D_32bit){
-				bm_set_components = bm_set_components_argb_d3d_32_tex;
-			} else {
-				bm_set_components = bm_set_components_argb_d3d_16_tex;
-			}
-		}
-	}
 }
 
 void BM_SELECT_ALPHA_TEX_FORMAT()
 {
-	Gr_current_red = &Gr_ta_red; 
-	Gr_current_green = &Gr_ta_green; 
-	Gr_current_blue = &Gr_ta_blue; 
+	Gr_current_red = &Gr_ta_red;
+	Gr_current_green = &Gr_ta_green;
+	Gr_current_blue = &Gr_ta_blue;
 	Gr_current_alpha = &Gr_ta_alpha;
-
-	// setup pointers
-	if(gr_screen.mode == GR_GLIDE){
-		bm_set_components = bm_set_components_argb;
-	} else if(gr_screen.mode == GR_DIRECT3D){
-		if(Bm_pixel_format == BM_PIXEL_FORMAT_D3D){
-			bm_set_components = bm_set_components_d3d;
-		} else {
-			if(D3D_32bit){
-				bm_set_components = bm_set_components_argb_d3d_32_tex;
-			} else {
-				bm_set_components = bm_set_components_argb_d3d_16_tex;
-			}
-		}
-	}
 }
-
-// set the rgba components of a pixel, any of the parameters can be -1
-/*
-void bm_set_components(ubyte *pixel, ubyte *rv, ubyte *gv, ubyte *bv, ubyte *av)
-{
-	int bit_32 = 0;
-
-	// pick a byte size - 32 bits only if 32 bit mode d3d and screen format
-	if(D3D_32bit && (Gr_current_red == &Gr_red)){
-		bit_32 = 1;
-	}	
-	
-	if(bit_32){
-		*((uint*)pixel) |= (uint)(( (int)*rv / Gr_current_red->scale ) << Gr_current_red->shift);
-	} else {
-		*((ushort*)pixel) |= (ushort)(( (int)*rv / Gr_current_red->scale ) << Gr_current_red->shift);
-	}		
-	if(bit_32){
-		*((uint*)pixel) |= (uint)(( (int)*gv / Gr_current_green->scale ) << Gr_current_green->shift);
-	} else {
-		*((ushort*)pixel) |= (ushort)(( (int)*gv / Gr_current_green->scale ) << Gr_current_green->shift);
-	}		
-	if(bit_32){
-		*((uint*)pixel) |= (uint)(( (int)*bv / Gr_current_blue->scale ) << Gr_current_blue->shift);
-	} else {
-		*((ushort*)pixel) |= (ushort)(( (int)*bv / Gr_current_blue->scale ) << Gr_current_blue->shift);
-	}
-	
-	// NOTE - this is a semi-hack. For direct3d we don't use an alpha bit, so if *av == 0, we just set the whole pixel to be Gr_green.mask
-	//        ergo, we need to do this _last_
-	switch(Bm_pixel_format){
-	// glide has an alpha channel so we have to unset ir or set it each time
-	case BM_PIXEL_FORMAT_ARGB:
-		Assert(!bit_32);
-		*((ushort*)pixel) &= ~(0x8000);
-		if(*av){
-			*((ushort*)pixel) |= 0x8000;
-		}
-		break;
-	
-	// this d3d format has no alpha channel, so only make it "transparent", never make it "non-transparent"
-	case BM_PIXEL_FORMAT_D3D:			
-		Assert(!bit_32);
-		if(*av == 0){ 
-			*((ushort*)pixel) = (ushort)Gr_current_green->mask;
-		}
-		break;
-
-	// nice 1555 texture format
-	case BM_PIXEL_FORMAT_ARGB_D3D:						
-		// if we're writing to normal texture format
-		if(Gr_current_red == &Gr_t_red){					
-			Assert(!bit_32);
-			*((ushort*)pixel) &= ~(Gr_current_alpha->mask);
-			if(*av){
-				*((ushort*)pixel) |= (ushort)(Gr_current_alpha->mask);
-			} else {
-				*((ushort*)pixel) = 0;
-			}
-		}
-		// otherwise if we're writing to screen format, still do it the green mask way
-		else {			
-			if(*av == 0){
-				if(bit_32){
-					*((uint*)pixel) = (uint)Gr_current_green->mask;
-				} else {
-					*((ushort*)pixel) = (ushort)Gr_current_green->mask;
-				}
-			}
-		}			
-		break;
-	}	
-}
-*/
 
 // get the rgba components of a pixel, any of the parameters can be NULL
 void bm_get_components(ubyte *pixel, ubyte *r, ubyte *g, ubyte *b, ubyte *a)
 {
-	int bit_32 = 0;
-
-	// pick a byte size - 32 bits only if 32 bit mode d3d and screen format
-	if(D3D_32bit && (Gr_current_red == &Gr_red)){
-		bit_32 = 1;
-	}
-
 	if(r != NULL){
-		if(bit_32){
-			*r = ubyte(( (*((uint*)pixel) & Gr_current_red->mask)>>Gr_current_red->shift)*Gr_current_red->scale);
-		} else {
-			*r = ubyte(( ( ((ushort*)pixel)[0] & Gr_current_red->mask)>>Gr_current_red->shift)*Gr_current_red->scale);
-		}
+		*r = ubyte(( ( ((ushort*)pixel)[0] & Gr_current_red->mask)>>Gr_current_red->shift)*Gr_current_red->scale);
 	}
 	if(g != NULL){
-		if(bit_32){
-			*g = ubyte(( (*((uint*)pixel) & Gr_current_green->mask) >>Gr_current_green->shift)*Gr_current_green->scale);
-		} else {
-			*g = ubyte(( ( ((ushort*)pixel)[0] & Gr_current_green->mask) >>Gr_current_green->shift)*Gr_current_green->scale);
-		}
+		*g = ubyte(( ( ((ushort*)pixel)[0] & Gr_current_green->mask) >>Gr_current_green->shift)*Gr_current_green->scale);
 	}
 	if(b != NULL){
-		if(bit_32){
-			*b = ubyte(( (*((uint*)pixel) & Gr_current_blue->mask)>>Gr_current_blue->shift)*Gr_current_blue->scale);
-		} else {
-			*b = ubyte(( ( ((ushort*)pixel)[0] & Gr_current_blue->mask)>>Gr_current_blue->shift)*Gr_current_blue->scale);
-		}
+		*b = ubyte(( ( ((ushort*)pixel)[0] & Gr_current_blue->mask)>>Gr_current_blue->shift)*Gr_current_blue->scale);
 	}
 
 	// get the alpha value
-	if(a != NULL){		
+	if(a != NULL){
 		*a = 1;
 
-		switch(Bm_pixel_format){
-		// glide has an alpha channel so we have to unset ir or set it each time
-		case BM_PIXEL_FORMAT_ARGB:			
-			Assert(!bit_32);
-			if(!( ((ushort*)pixel)[0] & 0x8000)){
-				*a = 0;
-			} 
-			break;
-
-		// this d3d format has no alpha channel, so only make it "transparent", never make it "non-transparent"
-		case BM_PIXEL_FORMAT_D3D:
-			Assert(!bit_32);
-			if( *((ushort*)pixel) == Gr_current_green->mask){ 
-				*a = 0;
-			}
-			break;
-
-		// nice 1555 texture format mode
-		case BM_PIXEL_FORMAT_ARGB_D3D:	
-			// if we're writing to a normal texture, use nice alpha bits
-			if(Gr_current_red == &Gr_t_red){				
-				Assert(!bit_32);
-
-				if(!(*((ushort*)pixel) & Gr_current_alpha->mask)){
-					*a = 0;
-				}
-			}
-			// otherwise do it as normal
-			else {
-				if(bit_32){
-					if(*((int*)pixel) == Gr_current_green->mask){ 
-						*a = 0;
-					}
-				} else {
-					if(*((ushort*)pixel) == Gr_current_green->mask){ 
-						*a = 0;
-					}
-				}
-			}
+		// 1555 ARGB - the top bit is the alpha channel
+		if(!( ((ushort*)pixel)[0] & 0x8000)){
+			*a = 0;
 		}
 	}
 }

@@ -41,7 +41,6 @@ char  model_filename[_MAX_PATH];		// temp used to store filename
 char	debug_name[_MAX_PATH];
 int ss_warning_shown;		// have we shown the warning dialog concerning the subsystems?
 char	Global_filename[256];
-int Model_ram = 0;			// How much RAM the models use total
 #endif
 
 
@@ -74,10 +73,6 @@ static void model_unload(int modelnum)
 		return;
 	}
 
-#ifndef NDEBUG
-	Model_ram -= pm->ram_used;
-#endif
-	
 	if (pm->paths)	{
 		for (i=0; i<pm->n_paths; i++ )	{
 			for (j=0; j<pm->paths[i].nverts; j++ )	{
@@ -179,10 +174,6 @@ void model_init()
 		Int3();		// Model_init shouldn't be called twice!
 		return;
 	}
-
-#ifndef NDEBUG
-	Model_ram = 0;
-#endif
 
 	for (i=0;i<MAX_POLYGON_MODELS;i++) {
 		Polygon_models[i] = NULL;
@@ -1351,12 +1342,6 @@ int model_load(char *filename, int n_subsystems, model_subsystem *subsystems)
 	if ( !model_initted )
 		model_init();
 
-//	int Model_ram = 0;
-
-#ifndef NDEBUG
-	int ram_before = TotalRam;
-#endif
-
 	//Assert(strlen(filename) <= 12);
 
 	num = -1;
@@ -1548,14 +1533,6 @@ int model_load(char *filename, int n_subsystems, model_subsystem *subsystems)
 			}		
 		}
 	}
-
-#ifndef NDEBUG
-	int ram_after = TotalRam;
-
-	pm->ram_used = ram_after - ram_before;
-	Model_ram += pm->ram_used;
-	//mprintf(( "Model RAM = %d KB\n", Model_ram ));
-#endif
 
 	return pm->id;
 }
