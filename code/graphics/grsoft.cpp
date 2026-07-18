@@ -305,11 +305,17 @@ static void grx_sdl_present()
 
 	SDL_UpdateWindowSurface( win );
 
-	// TEMPORARY bring-up aid: FS2_FRAME_DUMP=<dir> writes every 60th frame
-	// as P6 PPM through the palette; delete when the mainhall is stable
+	// TEMPORARY bring-up aid: FS2_FRAME_DUMP=<dir> writes every Nth frame
+	// (FS2_FRAME_DUMP_STRIDE, default 60) as P6 PPM through the palette;
+	// delete when the mainhall is stable
 	static int frame_no = 0;
+	static int frame_stride = 0;
 	const char *dumpdir = getenv("FS2_FRAME_DUMP");
-	if ( dumpdir && (frame_no++ % 60) == 0 )	{
+	if ( frame_stride == 0 )	{
+		const char *s = getenv("FS2_FRAME_DUMP_STRIDE");
+		frame_stride = (s && atoi(s) > 0) ? atoi(s) : 60;
+	}
+	if ( dumpdir && (frame_no++ % frame_stride) == 0 )	{
 		char path[512];
 		snprintf(path, sizeof(path), "%s/frame%05d.ppm", dumpdir, frame_no);
 		FILE *out = fopen(path, "wb");
@@ -321,6 +327,23 @@ static void grx_sdl_present()
 				fputc(Soft_palette[px*3+1], out);
 				fputc(Soft_palette[px*3+2], out);
 			}
+			fclose(out);
+		}
+		// raw indexes + both palettes, to tell "blit wrote wrong indexes"
+		// from "display palette diverged from gr_palette"
+		snprintf(path, sizeof(path), "%s/frame%05d.pgm", dumpdir, frame_no);
+		out = fopen(path, "wb");
+		if (out)	{
+			fprintf(out, "P5\n%d %d\n255\n", Soft_buffer_w, Soft_buffer_h);
+			fwrite(Soft_buffer, 1, Soft_buffer_w * Soft_buffer_h, out);
+			fclose(out);
+		}
+		snprintf(path, sizeof(path), "%s/frame%05d.pal", dumpdir, frame_no);
+		out = fopen(path, "wb");
+		if (out)	{
+			extern ubyte gr_palette[768];
+			fwrite(Soft_palette, 1, 768, out);
+			fwrite(gr_palette, 1, 768, out);
 			fclose(out);
 		}
 	}

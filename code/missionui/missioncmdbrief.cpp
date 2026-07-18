@@ -472,6 +472,16 @@ void cmd_brief_init(int team)
 
 	Background_bitmap = bm_load(Cmd_brief_fname[gr_screen.res]);
 
+	// BarracksPalette/CommandBriefPalette (the load commented out above) never
+	// shipped; without a base palette the static Palette[] is all zeros and
+	// cmd_brief_new_stage overlays the ani's 128 entries onto black -- the
+	// background art then remaps to a blue wash.  As with the pilot-select
+	// screen, the background PCX carries the palette this screen needs.
+	if (Background_bitmap >= 0) {
+		bm_get_palette(Background_bitmap, Palette, Palette_name);
+		gr_set_palette(Palette_name, Palette, 1);
+	}
+
 	for (i=0; i<Cur_cmd_brief->num_stages; i++)
 		cmd_brief_ani_wave_init(i);
 

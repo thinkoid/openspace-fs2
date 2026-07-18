@@ -101,8 +101,11 @@ float fl_roundoff(float x, int multiple)
 //	Return random value in range 0.0..1.0- (1.0- means the closest number less than 1.0)
 float frand()
 {
+	// retail divided by (RAND_MAX + 1) with MSVC's RAND_MAX of 0x7fff; glibc's
+	// RAND_MAX is INT_MAX, so that sum overflows to INT_MIN and every frand()
+	// came out negative.  Mask to the 15 bits retail was tuned against.
 	float rval;
-	rval = ((float) myrand()) / (RAND_MAX + 1);
+	rval = ((float) (myrand() & 0x7fff)) / (0x7fff + 1);
 	return rval;
 }
 

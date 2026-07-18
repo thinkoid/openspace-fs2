@@ -1007,14 +1007,21 @@ void game_load_palette()
 	Assert( Mission_palette <= 98 );
 
 	// if ( The_mission.flags & MISSION_FLAG_SUBSPACE )	{
-		strcpy( palette_filename, NOX("gamepalette-subspace") );
+		// strcpy( palette_filename, NOX("gamepalette-subspace") );
 	// } else {
 		// sprintf( palette_filename, NOX("gamepalette%d-%02d"), HUD_config.color+1, Mission_palette+1 );
 	// }
 
+	// of the palette family above (3 hud colors x 99 mission palettes plus
+	// the subspace one), exactly one file shipped in the retail VPs.  Retail
+	// had commented the load out anyway -- hardware modes convert bitmaps
+	// through their own palettes -- but 8bpp software renders the whole
+	// mission through this palette, so load the one that exists.
+	strcpy( palette_filename, NOX("gamepalette1-01") );
+
 	mprintf(( "Loading palette %s\n", palette_filename ));
 
-	// palette_load_table(palette_filename);
+	palette_load_table(palette_filename);
 }
 
 void game_post_level_init()
@@ -1254,7 +1261,7 @@ int game_start_mission()
 	}
 
 	mprintf(( "=================== LOADING GAME PALETTE ================\n" ));
-	// game_load_palette();
+	game_load_palette();
 
 	load_post_level_init = time(NULL);
 	game_post_level_init();
@@ -1517,7 +1524,12 @@ void game_init()
 	os_config_write_uint(NOX("Version"), NOX("Build"), FS_VERSION_BUILD);
 
 	Use_joy_mouse = 0;		//os_config_read_uint( NULL, NOX("JoystickMovesCursor"), 1 );
-	//Use_palette_flash = os_config_read_uint( NULL, NOX("PaletteFlash"), 0 );
+	// revived: retail left this commented and the global stuck at 1, so the
+	// software renderer rewrote the whole display palette for sun glare and
+	// damage flashes (per-channel clamping turns the scene garish pastel).
+	// Hardware modes draw gf_flash as a subtle additive overlay instead, so
+	// retail never saw it.  Config-gated off by default, as intended here.
+	Use_palette_flash = os_config_read_uint( NULL, NOX("PaletteFlash"), 0 );
 	Use_low_mem = os_config_read_uint( NULL, NOX("LowMem"), 0 );
 
 #ifndef NDEBUG
@@ -3554,7 +3566,15 @@ int game_poll()
 {
 	int k, state;
 
-	if (!os_foreground()) {		
+	// TEMPORARY bring-up aid: FS2_NO_PAUSE=1 keeps the game running without
+	// focus so driven test sessions don't stall; delete with the other
+	// FS2_* debug hooks
+	static int no_pause = -1;
+	if ( no_pause == -1 )	{
+		no_pause = getenv("FS2_NO_PAUSE") ? 1 : 0;
+	}
+
+	if (!os_foreground() && !no_pause) {
 		game_stop_time();
 		os_sleep(100);
 		game_start_time();
