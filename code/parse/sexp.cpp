@@ -6353,12 +6353,9 @@ int sexp_is_tagged(int node)
 	if(Ships[sindex].objnum < 0){
 		return 0;
 	}
-	if(Ships[sindex].tag_left > 0.0f){
-		return 1;
-	}
 
-	// not tagged
-	return 0;
+	// covers both level-1 and level-2 (TAG-B) tags
+	return ship_is_tagged(&Objects[Ships[sindex].objnum]);
 }
 
 int sexp_num_kills(int node)
