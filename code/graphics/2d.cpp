@@ -26,6 +26,7 @@
 
 // Includes for different rendering systems
 #include "grsoft.h"
+#include "gropengl.h"
 
 screen gr_screen;
 
@@ -63,7 +64,11 @@ void gr_close()
 
 	palette_flush();
 
-	gr_soft_cleanup();
+	if ( gr_screen.mode == GR_OPENGL )	{
+		gr_opengl_cleanup();
+	} else {
+		gr_soft_cleanup();
+	}
 
 	gr_font_close();
 
@@ -282,7 +287,11 @@ int gr_init(int res, int mode, int depth, int fred_x, int fred_y)
 
 	// If already inited, shutdown the previous graphics
 	if ( Gr_inited )	{
-		gr_soft_cleanup();
+		if ( gr_screen.mode == GR_OPENGL )	{
+			gr_opengl_cleanup();
+		} else {
+			gr_soft_cleanup();
+		}
 	} else {
 		first_time = 1;
 	}
@@ -323,7 +332,8 @@ int gr_init(int res, int mode, int depth, int fred_x, int fred_y)
 	memset( &gr_screen, 0, sizeof(screen) );
 
 	gr_screen.signature = Gr_signature++;
-	gr_screen.mode = GR_SOFTWARE;		// the only renderer; the mode argument is vestigial
+	Assert( (mode == GR_SOFTWARE) || (mode == GR_OPENGL) );
+	gr_screen.mode = mode;
 	gr_screen.res = res;
 	gr_screen.max_w = max_w;
 	gr_screen.max_h = max_h;
@@ -338,8 +348,12 @@ int gr_init(int res, int mode, int depth, int fred_x, int fred_y)
 	gr_screen.clip_height = gr_screen.max_h;
 
 	// retail allowed software only for the tools (FRED/pofview);
-	// here it is the game renderer
-	gr_soft_init();
+	// here it is the default game renderer, with GL opt-in via -opengl
+	if ( gr_screen.mode == GR_OPENGL )	{
+		gr_opengl_init();
+	} else {
+		gr_soft_init();
+	}
 
 	memmove( Gr_current_palette, Gr_original_palette, 768 );
 	gr_set_palette_internal(Gr_current_palette_name, Gr_current_palette,0);	
@@ -371,8 +385,12 @@ void gr_force_windowed()
 {
 	if ( !Gr_inited )	return;
 
-	extern void gr_soft_force_windowed();
-	gr_soft_force_windowed();
+	if ( gr_screen.mode == GR_OPENGL )	{
+		gr_opengl_force_windowed();
+	} else {
+		extern void gr_soft_force_windowed();
+		gr_soft_force_windowed();
+	}
 
 	if ( Os_debugger_running )
 		os_sleep(1000);
@@ -383,8 +401,12 @@ void gr_activate(int active)
 {
 	if ( !Gr_inited ) return;
 
-	extern void gr_soft_activate(int active);
-	gr_soft_activate(active);
+	if ( gr_screen.mode == GR_OPENGL )	{
+		gr_opengl_activate(active);
+	} else {
+		extern void gr_soft_activate(int active);
+		gr_soft_activate(active);
+	}
 }
 
 // -----------------------------------------------------------------------
@@ -434,15 +456,24 @@ DCF(bmap, "")
 	}
 }
 
-// new bitmap functions
+// new bitmap functions.  Retail dispatched these by renderer mode (they are
+// not vtable entries -- gf_bitmap was commented out of the screen struct)
 void gr_bitmap(int x, int y)
 {
-	grx_bitmap(x, y);
+	if ( gr_screen.mode == GR_OPENGL )	{
+		gr_opengl_bitmap(x, y);
+	} else {
+		grx_bitmap(x, y);
+	}
 }
 
 void gr_bitmap_ex(int x, int y, int w, int h, int sx, int sy)
 {
-	grx_bitmap_ex(x, y, w, h, sx, sy);
+	if ( gr_screen.mode == GR_OPENGL )	{
+		gr_opengl_bitmap_ex(x, y, w, h, sx, sy);
+	} else {
+		grx_bitmap_ex(x, y, w, h, sx, sy);
+	}
 }
 
 // given endpoints, and thickness, calculate coords of the endpoint

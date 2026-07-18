@@ -8,31 +8,31 @@ sexp_dump = executable('sexp_dump',
     ['sexp_dump.cpp', 'stubs.cpp', 'gamestubs_gen.cpp', 'freespacestubs_gen.cpp'],
     include_directories: inc,
     link_with: foundation,
-    dependencies: [sdl2_dep, openal_dep])
+    dependencies: [sdl2_dep, openal_dep, gl_dep])
 
 vp_ls = executable('vp_ls',
     ['vp_ls.cpp', 'stubs.cpp', 'gamestubs_gen.cpp', 'freespacestubs_gen.cpp'],
     include_directories: inc,
     link_with: foundation,
-    dependencies: [sdl2_dep, openal_dep])
+    dependencies: [sdl2_dep, openal_dep, gl_dep])
 
 pof_dump = executable('pof_dump',
     ['pof_dump.cpp', 'stubs.cpp', 'gamestubs_gen.cpp', 'freespacestubs_gen.cpp'],
     include_directories: inc,
     link_with: foundation,
-    dependencies: [sdl2_dep, openal_dep])
+    dependencies: [sdl2_dep, openal_dep, gl_dep])
 
 math_test = executable('math_test',
     ['math_test.cpp', 'stubs.cpp', 'gamestubs_gen.cpp', 'freespacestubs_gen.cpp'],
     include_directories: inc,
     link_with: foundation,
-    dependencies: [sdl2_dep, openal_dep])
+    dependencies: [sdl2_dep, openal_dep, gl_dep])
 
 first_pixels = executable('first_pixels',
     ['first_pixels.cpp', 'stubs.cpp', 'gamestubs_gen.cpp', 'freespacestubs_gen.cpp'],
     include_directories: inc,
     link_with: foundation,
-    dependencies: [sdl2_dep, openal_dep])
+    dependencies: [sdl2_dep, openal_dep, gl_dep])
 
 test('math', math_test)
 
@@ -40,4 +40,4 @@ tmap_test = executable('tmap_test',
     ['tmap_test.cpp', 'stubs.cpp', 'gamestubs_gen.cpp', 'freespacestubs_gen.cpp'],
     include_directories: inc,
     link_with: foundation,
-    dependencies: [sdl2_dep, openal_dep])
+    dependencies: [sdl2_dep, openal_dep, gl_dep])

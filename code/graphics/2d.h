@@ -289,6 +289,7 @@ extern int Gr_mmx;
 // Call this at application startup
 
 #define GR_SOFTWARE					(100)		// The software renderer.
+#define GR_OPENGL						(104)		// OpenGL hardware renderer (retail's mode number)
 
 // resolution constants   - always keep resolutions in ascending order and starting from 0  
 #define GR_NUM_RESOLUTIONS			2

@@ -66,7 +66,9 @@ struct SDL_Window;
 SDL_Window *os_get_sdl_window();
 
 // Create (or resize) and show the main window.  Returns 0 on success.
-int os_create_window(int w, int h);
+// use_opengl asks for a GL-capable window (the GL backend creates its
+// context on it); the software renderer blits via the window surface.
+int os_create_window(int w, int h, int use_opengl = 0);
 
 
 // process management --------------------------------------------------------------

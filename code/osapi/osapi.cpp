@@ -118,7 +118,7 @@ SDL_Window *os_get_sdl_window()
 }
 
 // Create (or resize) and show the main window.  Returns 0 on success.
-int os_create_window(int w, int h)
+int os_create_window(int w, int h, int use_opengl)
 {
 	if ( !Os_inited )	{
 		return -1;
@@ -130,11 +130,12 @@ int os_create_window(int w, int h)
 		return 0;
 	}
 
-	// no SDL_WINDOW_OPENGL: the software renderer blits via the window
-	// surface, and the GL flag breaks headless (dummy-driver) runs
+	// SDL_WINDOW_OPENGL only when the GL backend asks for it: the software
+	// renderer blits via the window surface, and the GL flag breaks
+	// headless (dummy-driver) runs
 	sdl_window = SDL_CreateWindow( szWinTitle,
 								SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-								w, h, 0 );
+								w, h, use_opengl ? SDL_WINDOW_OPENGL : 0 );
 	if ( !sdl_window )	{
 		mprintf(( "SDL_CreateWindow failed: %s\n", SDL_GetError() ));
 		return -1;

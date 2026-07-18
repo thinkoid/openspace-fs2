@@ -37,6 +37,7 @@ cmdline_parm nomusic_arg("-nomusic", NULL);
 cmdline_parm pof_spew("-pofspew", NULL);
 cmdline_parm mouse_coords("-coords", NULL);
 cmdline_parm window_arg("-window", NULL);
+cmdline_parm opengl_arg("-opengl", NULL);
 
 int Cmdline_freespace_no_sound = 0;
 int Cmdline_freespace_no_music = 0;
@@ -47,6 +48,7 @@ int Cmdline_spew_pof_info = 0;
 int Cmdline_mouse_coords = 0;
 
 int Cmdline_window = 0;
+int Cmdline_opengl = 0;
 
 static cmdline_parm Parm_list(NULL, NULL);
 static int Parm_list_inited = 0;
@@ -291,6 +293,11 @@ int parse_cmdline(char *cmdline)
 	// windowed mode
 	if(window_arg.found()){
 		Cmdline_window = 1;
+	}
+
+	// OpenGL renderer
+	if(opengl_arg.found()){
+		Cmdline_opengl = 1;
 	}
 
 	return 1;

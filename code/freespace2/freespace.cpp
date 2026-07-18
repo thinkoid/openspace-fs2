@@ -1558,7 +1558,8 @@ void game_init()
 	// Those backends are gone; the software renderer at 640x480x8 is the
 	// mode, regardless of any leftover config value.
 	ptr = os_config_read_string(NULL, NOX("Videocard"), NULL);
-	mprintf(("videocard = %s (using software renderer)\n", ptr ? ptr : "<nothing>"));
+	mprintf(("videocard = %s (using %s renderer)\n", ptr ? ptr : "<nothing>",
+			Cmdline_opengl ? "OpenGL" : "software"));
 
 	// check for hi res pack file
 	int has_sparky_hi = 0;
@@ -1572,7 +1573,11 @@ void game_init()
 		mprintf(("No sparky_hi_fs2.vp in directory %s\n", dir));
 	}
 	// hi-res if the hi-res art pack is present, as retail did for hardware
-	gr_init(has_sparky_hi ? GR_1024 : GR_640, GR_SOFTWARE, 8);
+	if ( Cmdline_opengl )	{
+		gr_init(has_sparky_hi ? GR_1024 : GR_640, GR_OPENGL, 16);
+	} else {
+		gr_init(has_sparky_hi ? GR_1024 : GR_640, GR_SOFTWARE, 8);
+	}
 
 	// Set the gamma
 	ptr = os_config_read_string(NULL,NOX("Gamma"),NOX("1.80"));

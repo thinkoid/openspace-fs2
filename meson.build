@@ -8,6 +8,7 @@ add_project_arguments('-Wno-changes-meaning', language: 'cpp')
 
 sdl2_dep = dependency('sdl2')
 openal_dep = dependency('openal')
+gl_dep = dependency('gl')
 
 # Retail sources use flat includes (#include "parselo.h"); the include path
 # supplies the directories, as the original MSVC project files did.
@@ -163,6 +164,7 @@ foundation_src = files(
     'code/graphics/colors.cpp',
     'code/graphics/font.cpp',
     'code/graphics/gradient.cpp',
+    'code/graphics/gropengl.cpp',
     'code/graphics/grsoft.cpp',
     'code/graphics/grzbuffer.cpp',
     'code/graphics/line.cpp',
@@ -222,13 +224,13 @@ foundation_src = files(
 
 foundation = static_library('foundation', foundation_src,
     include_directories: inc,
-    dependencies: [sdl2_dep, openal_dep])
+    dependencies: [sdl2_dep, openal_dep, gl_dep])
 
 fs2 = executable('fs2',
     ['code/freespace2/freespace.cpp', 'tests/stubs.cpp', 'tests/gamestubs_gen.cpp'],
     include_directories: inc,
     link_with: foundation,
-    dependencies: [sdl2_dep, openal_dep])
+    dependencies: [sdl2_dep, openal_dep, gl_dep])
 
 cfilearchiver = executable('cfilearchiver',
     'code/cfilearchiver/cfilearchiver.cpp',

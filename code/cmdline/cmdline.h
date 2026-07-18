@@ -28,5 +28,6 @@ extern int Cmdline_spew_pof_info;
 extern int Cmdline_mouse_coords;
 
 extern int Cmdline_window;
+extern int Cmdline_opengl;
 
 #endif
