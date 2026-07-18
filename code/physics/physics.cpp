@@ -735,7 +735,7 @@ void physics_apply_whack(vector *impulse, vector *pos, physics_info *pi, matrix 
 		pi->afterburner_decay = timestamp( WEAPON_SHAKE_TIME );
 	}
 
-	vm_vec_scale_add2( &pi->vel, impulse, 1.0f / pi->mass );
+	vm_vec_scale_add2( &pi->vel, impulse, 1.0f / mass );
 	if (!(pi->flags & PF_USE_VEL) && (vm_vec_mag_squared(&pi->vel) > MAX_SHIP_SPEED*MAX_SHIP_SPEED)) {
 		// Get DaveA
 		nprintf(("Physics", "speed reset in physics_apply_whack [speed: %f]\n", vm_vec_mag(&pi->vel)));
