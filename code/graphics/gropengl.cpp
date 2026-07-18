@@ -101,6 +101,13 @@ int GL_square_textures = 0;
 int GL_textures_in = 0;
 int GL_textures_in_frame = 0;
 int GL_last_bitmap_id = -1;
+
+// rolling copy of the last finished frame (glCopyTexSubImage2D at flip);
+// gr_opengl_save_screen reads it because GL_FRONT is undefined under a
+// compositor.  Frozen while a saved screen is outstanding so the popup's
+// background can't be overwritten by its own frames
+static GLuint GL_screen_stash_tex = 0;
+static int GL_screen_stash_frozen = 0;
 int GL_last_detail = -1;
 int GL_last_bitmap_type = -1;
 int GL_last_section_x = -1;
@@ -214,12 +221,37 @@ void gr_opengl_flip()
 	} while (error != GL_NO_ERROR);
 #endif
 
-	// TEMPORARY bring-up aid: FS2_FRAME_DUMP=<dir> writes every 60th frame
-	// as P6 PPM, read back from the back buffer before the swap; same hook
-	// as the software renderer, delete when stable
+	// stash the finished frame GPU-side: save_screen reads this instead of
+	// GL_FRONT, whose contents are undefined under a compositor (the popup
+	// backgrounds came back black through XWayland)
+	if ( !GL_screen_stash_frozen )	{
+		if ( GL_screen_stash_tex == 0 )	{
+			glGenTextures( 1, &GL_screen_stash_tex );
+			glBindTexture( GL_TEXTURE_2D, GL_screen_stash_tex );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+			glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, gr_screen.max_w, gr_screen.max_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+		} else {
+			glBindTexture( GL_TEXTURE_2D, GL_screen_stash_tex );
+		}
+		glReadBuffer( GL_BACK );
+		glCopyTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, 0, 0, gr_screen.max_w, gr_screen.max_h );
+		// this bound its own texture behind the tcache's back
+		GL_last_bitmap_id = -1;
+	}
+
+	// TEMPORARY bring-up aid: FS2_FRAME_DUMP=<dir> writes every Nth frame
+	// (FS2_FRAME_DUMP_STRIDE, default 60) as P6 PPM, read back from the back
+	// buffer before the swap; same hook as the software renderer, delete
+	// when stable
 	static int frame_no = 0;
+	static int frame_stride = 0;
 	const char *dumpdir = getenv("FS2_FRAME_DUMP");
-	if ( dumpdir && (frame_no++ % 60) == 0 )	{
+	if ( frame_stride == 0 )	{
+		const char *s = getenv("FS2_FRAME_DUMP_STRIDE");
+		frame_stride = (s && atoi(s) > 0) ? atoi(s) : 60;
+	}
+	if ( dumpdir && (frame_no++ % frame_stride) == 0 )	{
 		int w = gr_screen.max_w, h = gr_screen.max_h;
 		ubyte *pixels = (ubyte *)malloc( w * h * 3 );
 		if ( pixels )	{
@@ -2120,9 +2152,19 @@ int gr_opengl_save_screen()
 
 	gr_opengl_set_state(TEXTURE_SOURCE_NO_FILTERING, ALPHA_BLEND_NONE, ZBUFFER_TYPE_NONE);
 
-	glReadBuffer(GL_FRONT);
-
-	glReadPixels(0, 0, gr_screen.max_w, gr_screen.max_h, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV, Gr_saved_screen_tmp);
+	// read the last finished frame from the flip-time stash (GL_FRONT is
+	// undefined under a compositor), and freeze it while the popup owns it
+	if ( GL_screen_stash_tex == 0 )	{
+		free(Gr_saved_screen_tmp);
+		free(Gr_saved_screen);
+		Gr_saved_screen = NULL;
+		mprintf(( "No screen stash yet!\n" ));
+		return -1;
+	}
+	glBindTexture( GL_TEXTURE_2D, GL_screen_stash_tex );
+	glGetTexImage( GL_TEXTURE_2D, 0, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV, Gr_saved_screen_tmp );
+	GL_last_bitmap_id = -1;
+	GL_screen_stash_frozen = 1;
 
 	// flip rows: GL reads bottom-up, the bitmap wants top-down
 	ubyte *sptr, *dptr;
@@ -2159,6 +2201,8 @@ void gr_opengl_restore_screen(int id)
 
 void gr_opengl_free_screen(int id)
 {
+	GL_screen_stash_frozen = 0;
+
 	if ( !Gr_saved_screen )	return;
 
 	bm_release(Gr_saved_screen_bitmap);
@@ -2337,6 +2381,13 @@ void gr_opengl_init()
 
 	Gr_current_red = &Gr_red;	Gr_current_green = &Gr_green;
 	Gr_current_blue = &Gr_blue;	Gr_current_alpha = &Gr_alpha;
+
+	// every bitmap is a textured poly under GL, so pixel producers that key
+	// off this (anim unpack, options detail previews) must pack with the
+	// texture guns.  Retail D3D set it for its 32-bit textured-bitmap mode;
+	// its 16-bit mode blitted surfaces in screen format instead -- we have
+	// no surface blits at all
+	Gr_bitmap_poly = 1;
 
 	gr_screen.bits_per_pixel = 16;
 	gr_screen.bytes_per_pixel = 2;

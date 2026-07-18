@@ -1120,18 +1120,30 @@ int unpack_frame_from_file(anim_instance *ai, ubyte *frame, int size, ubyte *pal
 void anim_set_palette(anim *ptr)
 {
 	int i, xparent_found = 0;
-	
-	// create the palette translation look-up table (restored: retail left an
-	// identity table + "TODO: actually convert" when hardware modes stopped
-	// needing it; the software renderer needs the real mapping)
+
+	// create the palette translation look-up table.  The 8bpp software
+	// renderer needs the real mapping into the current game palette, with
+	// 255 as its transparent marker (restored: retail left an identity
+	// table + "TODO: actually convert" when hardware modes stopped needing
+	// it).  Hardware modes need that identity table back: the 16bpp unpack
+	// looks the translated index up in the ani's OWN palette and detects
+	// transparency by RGB, so a game-palette index scrambles every color
 	for ( i = 0; i < 256; i++ ) {
-		if ( (ptr->palette[i*3] == ptr->xparent_r) && (ptr->palette[i*3+1] == ptr->xparent_g) && (ptr->palette[i*3+2] == ptr->xparent_b) ) {
-			ptr->palette_translation[i] = 255;
+		int is_xparent = (ptr->palette[i*3] == ptr->xparent_r) && (ptr->palette[i*3+1] == ptr->xparent_g) && (ptr->palette[i*3+2] == ptr->xparent_b);
+
+		if ( is_xparent )
 			xparent_found = 1;
-		} else	{
-			ptr->palette_translation[i] = (ubyte)palette_find( ptr->palette[i*3], ptr->palette[i*3+1], ptr->palette[i*3+2] );
+
+		if ( gr_screen.bits_per_pixel == 8 ) {
+			if ( is_xparent ) {
+				ptr->palette_translation[i] = 255;
+			} else {
+				ptr->palette_translation[i] = (ubyte)palette_find( ptr->palette[i*3], ptr->palette[i*3+1], ptr->palette[i*3+2] );
+			}
+		} else {
+			ptr->palette_translation[i] = (ubyte)i;
 		}
-	}	
+	}
 
 	if ( xparent_found ) {
 		ptr->flags |= ANF_XPARENT;

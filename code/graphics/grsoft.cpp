@@ -84,6 +84,8 @@ void gr_buffer_create( int w, int h, int bpp )
 }
 
 
+void grx_change_palette( ubyte *pal );
+
 void grx_set_palette_internal( ubyte * new_pal )
 {
 	// Make sure color 0 is black
@@ -122,8 +124,8 @@ void grx_set_palette_internal( ubyte * new_pal )
 
 
 
-memcpy( Soft_palette, new_pal, 768 );
-	Soft_lut_dirty = 1;
+	// display copy goes through the gamma ramp
+	grx_change_palette( new_pal );
 }
 
 
@@ -769,13 +771,10 @@ void gr8_set_gamma(float gamma)
 		Gr_gamma_lookup[i] = v;
 	}
 
-//	ubyte new_pal[768];
-//	if ( gr_screen.bits_per_pixel!=8 )	return;
-//
-//	for (i=0; i<768; i++ )	{
-//		new_pal[i] = ubyte(Gr_gamma_lookup[gr_palette[i]]);
-//	}
-//	grx_change_palette( new_pal );
+	// revived from the commented block that was here: re-push the current
+	// palette so the new table reaches the screen (the display copy is
+	// corrected inside grx_change_palette)
+	grx_change_palette( gr_palette );
 
 	gr_screen.signature = Gr_signature++;
 }
@@ -791,6 +790,10 @@ void gr_soft_init()
 
 	Palette_flashed = 0;
 	Palette_flashed_last_frame = 0;
+
+	// build the gamma table before the first palette write goes through
+	// grx_change_palette (gr_init pushes a palette before it sets gamma)
+	gr8_set_gamma( Gr_gamma );
 
 	// 1555 ARGB color guns for the 16bpp aux paths (bm_set_components etc.);
 	// retail software mode never set these — 16bpp locks were hardware-only
@@ -921,7 +924,15 @@ void gr_soft_cleanup()
 
 void grx_change_palette( ubyte * new_pal )
 {
-	memcpy( Soft_palette, new_pal, 768 );
+	// display-side gamma, the shape retail sketched in gr8_set_gamma's
+	// commented-out block: the logic palette (gr_palette) and every table
+	// derived from it stay linear; only the displayed copy is corrected --
+	// a software gamma ramp.  Retail hardware modes applied gamma on their
+	// side, which is why software always looked darker
+	int i;
+	for (i=0; i<768; i++ )	{
+		Soft_palette[i] = (ubyte)Gr_gamma_lookup[new_pal[i]];
+	}
 	Soft_lut_dirty = 1;
 }
 
