@@ -351,6 +351,12 @@ void hud_shield_equalize(object *objp, player *pl)
 	if(pl == NULL){
 		return;
 	}
+
+	// quick out if we have no shields, mainly to prevent the transfer
+	// sound when the player presses Q in a shieldless ship
+	if (objp->flags & OF_NO_SHIELDS){
+		return;
+	}
 	Assert(objp->type == OBJ_SHIP);
 	if(objp->type != OBJ_SHIP){
 		return;
