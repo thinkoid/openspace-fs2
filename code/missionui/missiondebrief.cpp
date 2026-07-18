@@ -1525,8 +1525,9 @@ void debrief_init()
 	}
 	*/
 
-	// start up the appropriate music
-	if (Campaign.next_mission == Campaign.current_mission) {
+	// start up the appropriate music.  outside a campaign next_mission always
+	// equals current_mission, so gate the failed-the-mission test on campaign mode
+	if ((Game_mode & GM_CAMPAIGN_MODE) && (Campaign.next_mission == Campaign.current_mission)) {
 		// you failed the mission because you suck, so you get the suck music
 		common_music_init(SCORE_DEBRIEF_FAIL);
 	} else if (mission_goals_met()) {
@@ -1537,7 +1538,7 @@ void debrief_init()
 		common_music_init(SCORE_DEBRIEF_AVERAGE);
 	}
 
-	if (Campaign.next_mission == Campaign.current_mission) {
+	if ((Game_mode & GM_CAMPAIGN_MODE) && (Campaign.next_mission == Campaign.current_mission)) {
 		// better luck next time, increase his retries
 		Player->failures_this_session++;
 	} else { 
