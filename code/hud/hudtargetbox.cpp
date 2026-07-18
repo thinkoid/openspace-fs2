@@ -1154,9 +1154,9 @@ void hud_render_target_debris(object *target_objp)
 		base_index = ship_info_base_lookup( debrisp->ship_info_index );
 
 	// print out ship class that debris came from
+	char temp_name[NAME_LENGTH];
 	char *printable_ship_class = Ship_info[base_index].name;
 	if ( strstr(Ship_info[base_index].name, NOX("#")) ) {
-		char temp_name[NAME_LENGTH];
 		strcpy(temp_name, Ship_info[base_index].name);
 		hud_end_string_at_first_hash_symbol(temp_name);
 		printable_ship_class = temp_name;
