@@ -30,7 +30,7 @@
 void delete_pilot_file( char *pilot_name, int single );		// manage_pilot.cpp
 
 // stats defines
-#define NUM_STAT_LINES 85
+#define NUM_STAT_LINES (21 + MAX_SHIP_TYPES)	// fixed lines plus one per ship class with kills
 #define STAT_COLUMN1_W 40
 #define STAT_COLUMN2_W 10
 
@@ -421,6 +421,10 @@ void barracks_init_stats(scoring_struct *stats)
 	for (i=0; i<Num_ship_types; i++) {
 		if (stats->kills[i]) {
 			Assert(Num_stat_lines < NUM_STAT_LINES);
+			// the Assert is a no-op in release builds
+			if (Num_stat_lines >= NUM_STAT_LINES) {
+				break;
+			}
 			Assert(strlen(Ship_info[i].name) + 1 < STAT_COLUMN1_W);
 			sprintf(Stat_labels[Num_stat_lines], NOX("%s:"), Ship_info[i].name);
 			sprintf(Stats[Num_stat_lines], "%d", stats->kills[i]);
