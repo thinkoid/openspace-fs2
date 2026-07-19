@@ -306,26 +306,36 @@ as with SEXP: **"produces a fully-populated `polymodel` (including the opaque
 post-processing (§5), all of `modelinterp.cpp`, `modelcollide.cpp`,
 `modeloctant.cpp` — is a geometry/tree consumer.
 
-### 7.2 What it depends on (and how to sever) — the hard part
+### 7.2 What it depends on (and how to sever)
 
-Unlike the SEXP reader (which touched *zero* game state), `read_model_file` has
-three real couplings into game systems, all inside otherwise-pure chunk cases:
+A close read (verified by grepping the function body) shows the coupling is
+**narrower than it first appears**. Only *one* chunk case reaches into a
+separate game subsystem:
 
-1. **Textures — `ID_TXTR` calls `bm_load`.** The file only names textures; a
-   pure reader should record the **names** (into `polymodel`) and defer binding.
-   Sever: split texture *naming* (reader) from texture *binding* (a post-load
-   consumer step, or a `bm_load` seam function the caller supplies).
-2. **Subsystem binding — `ID_SOBJ`/`ID_SPCL`/`ID_FUEL` call `do_new_subsystem`
-   and write into the caller's `model_subsystem *subsystems`.** This ship-table
-   binding is consumer logic, not file parsing. Sever: the reader can parse the
-   `$special`/`$engine_subsystem` props into the struct (or a neutral list) and
-   leave subsystem binding to the caller.
-3. **Turret firing points — `ID_TGUN`/`ID_TMIS` write into `subsystems[]`.** Same
-   shape: the reader produces the raw turret data; binding is the caller's.
+1. **Textures — `ID_TXTR` calls `bm_load` (bmpman).** *(the one real coupling)*
+   The file only names textures; a pure reader records the **names** and defers
+   binding. **Severed (stage 1, done):** `read_model_file` now stores names in
+   `polymodel.texture_file[][]`; `model_load_textures()` (beside `model_load`,
+   outside the reader) does the `bm_load` afterward. `read_model_file` no longer
+   references bmpman at all.
 
-These are exactly the seams to define. The reader's other dependencies are
-benign: `cfile` (the lexer/IO layer, shared), the `vecmat` helpers
-(`model_calc_bound_box`, `vm_*`), and `Error`/`Warning`/`Assert`.
+The other two apparent couplings are **not** reaches into a global game system —
+they write into the **caller-provided** `model_subsystem *subsystems`
+out-parameter, and already NULL-guard:
+
+- **Subsystem binding — `ID_SOBJ`/`ID_SPCL`/`ID_FUEL` → `do_new_subsystem`.**
+  `do_new_subsystem` returns immediately on `slist==NULL` ("For TestCode,
+  POFView, etc don't bother") and only fills the caller's array;
+  `set_subsystem_info` has zero external calls. This is an **output parameter**,
+  not a dependency — a lifted reader takes it (or NULL) like any out-param.
+- **Turret firing points — `ID_TGUN`/`ID_TMIS` → `subsystems[]`.** Same shape,
+  same NULL-guard; reads into a throwaway when there's no table.
+
+So severing subsystems/turrets would be churn for no purity gain (house rule:
+abstraction only when it removes real friction). The reader's remaining
+dependencies are all benign: `cfile` (the shared IO/lexer layer), the `vecmat`
+helpers (`model_calc_bound_box`, `vm_*`), and `Error`/`Warning`/`Assert`. After
+stage 1, **`read_model_file` is game-system-free** and ready to lift.
 
 ### 7.3 Proposed file layout (retail-idiomatic, minimal churn)
 
@@ -356,21 +366,20 @@ oracle — harmonize the two tools' output and diff.
 ### 7.5 Stages
 
 0. **Delineate** — this document. *(done)*
-1. **Sever the three seams** — turn `bm_load`/`do_new_subsystem`/turret writes
-   into caller-supplied seam calls or a deferred post-load step, *in place* in
-   `modelread.cpp`, verifying `pof_dump --full` stays byte-identical. Reversible;
-   no file moved yet. This is the real work — the SEXP carve had no equivalent.
+1. **Sever the texture seam** — defer `bm_load` out of the reader into
+   `model_load_textures()`, *in place* in `modelread.cpp`. *(done)* On closer
+   read this was the *only* seam needing work (§7.2); the reader is now
+   game-system-free. Verified: `pof_dump --full` and the summary byte-identical
+   over the whole corpus (176 models / 575,866 lines), game builds clean,
+   `bm_load` succeeds on all 1144 texture refs.
 2. **Physical split** — move `read_model_file` + chunk cases into
    `model/model_reader.cpp`, add to the meson target, verify the game builds and
-   `pof_dump --full` is byte-identical before/after.
+   `pof_dump --full` is byte-identical before/after. *(next)*
 3. **Cross-oracle against pcs2** — once pcs2 parses POFs, harmonize the dump
    formats and diff the two independent readers over the corpus.
 
-Stage 1 is the decision point: it changes how `modelread.cpp` binds textures and
-subsystems (living code touched by the game), so it wants the same care the SEXP
-stage-2 split got — one seam at a time, oracle green after each.
-
 ---
-*Status: delineation (stage 0) complete. The reader is understood end-to-end and
-the oracle (`pof_dump --full`) is built and green on the full retail corpus.
-Stage 1 (seam severing) is next; the physical split and pcs2 cross-oracle follow.*
+*Status: delineation (stage 0) and the texture-seam severing (stage 1) complete
+— `read_model_file` is now game-system-free, verified byte-identical over the
+full retail corpus via `pof_dump --full`. The physical split (stage 2) into
+`model/model_reader.cpp` is next; the pcs2 cross-oracle (stage 3) follows.*

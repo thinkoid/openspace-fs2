@@ -401,6 +401,7 @@ typedef struct polymodel {
 	int			n_textures;
 	int			original_textures[MAX_MODEL_TEXTURES];		// what gets read in from file
 	int			textures[MAX_MODEL_TEXTURES];					// what textures you draw with.  reset to original_textures by model_set_instance
+	char			texture_file[MAX_MODEL_TEXTURES][FILENAME_LEN];	// POF texture filenames; bound to handles by model_load_textures()
 
 	vector		autocenter;							// valid only if PM_FLAG_AUTOCEN is set
 	

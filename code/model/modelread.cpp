@@ -1139,17 +1139,12 @@ int read_model_file(polymodel * pm, char *filename, int n_subsystems, model_subs
 					char tmp_name[256];
 					cfread_string_len(tmp_name,127,fp);
 
-					if ( strstr(tmp_name, "thruster") || strstr(tmp_name, "invisible") )	{
-						// Don't load textures for thruster animations or invisible textures
-						pm->textures[i] = -1;
-					} else {
-						pm->textures[i] = bm_load( tmp_name );
-						if (pm->textures[i]<0)	{
-							Error( LOCATION, "Couldn't open texture '%s'\nreferenced by model '%s'\n", tmp_name, pm->filename );
-						}
-					}
-					pm->original_textures[i] = pm->textures[i];
-					//mprintf(0,"<%s>\n",name_buf);
+					// Record the texture name only.  Binding it to a bitmap-
+					// manager handle is deferred to model_load_textures() so the
+					// reader carries no bmpman dependency -- the sole game-system
+					// coupling read_model_file used to have.  See docs/pof-model.md.
+					strncpy( pm->texture_file[i], tmp_name, FILENAME_LEN-1 );
+					pm->texture_file[i][FILENAME_LEN-1] = '\0';
 				}
 
 				break;
@@ -1334,6 +1329,28 @@ int read_model_file(polymodel * pm, char *filename, int n_subsystems, model_subs
 
 
 
+// Bind the POF's texture names (recorded by read_model_file) to bitmap-manager
+// handles.  This is the consumer side of the texture seam: it is kept here,
+// beside model_load, rather than inside the reader, so read_model_file has no
+// bmpman dependency.  Logic is unchanged from the old inline ID_TXTR case.
+void model_load_textures(polymodel *pm)
+{
+	for (int i = 0; i < pm->n_textures; i++ )	{
+		char *tmp_name = pm->texture_file[i];
+
+		if ( strstr(tmp_name, "thruster") || strstr(tmp_name, "invisible") )	{
+			// Don't load textures for thruster animations or invisible textures
+			pm->textures[i] = -1;
+		} else {
+			pm->textures[i] = bm_load( tmp_name );
+			if (pm->textures[i]<0)	{
+				Error( LOCATION, "Couldn't open texture '%s'\nreferenced by model '%s'\n", tmp_name, pm->filename );
+			}
+		}
+		pm->original_textures[i] = pm->textures[i];
+	}
+}
+
 //returns the number of this model
 int model_load(char *filename, int n_subsystems, model_subsystem *subsystems)
 {
@@ -1386,6 +1403,11 @@ int model_load(char *filename, int n_subsystems, model_subsystem *subsystems)
 	if (!read_model_file(pm, filename, n_subsystems, subsystems))	{
 		return -1;
 	}
+
+	// bind texture names -> bitmap handles (deferred out of the reader; see
+	// model_load_textures).  Ordering matches retail: textures were bound during
+	// the read, before the post-processing below, and nothing below needs them.
+	model_load_textures(pm);
 
 //mprintf(( "Loading model '%s'\n", filename ));
 //key_getch();
