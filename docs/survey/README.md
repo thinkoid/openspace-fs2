@@ -68,10 +68,11 @@ The survey identifies their seams; the deep dives will cut along them.
 
 ### Known gaps and corrections
 
-- **AI is unsurveyed.** `code/ship/` holds two subsystems — the ship *entity*
-  (cluster 01) and the flight/order/goal **AI** (`aicode.cpp`, `aibig.cpp`,
-  `aigoals.cpp`, `aiturret.cpp`, ~17k). The AI is a high-value target (couples
-  to the SEXP VM) and needs its own survey pass.
+- **AI now surveyed** in cluster 01 (it lives in `code/ship/` alongside the
+  ship entity). Correction: there is **no `aiturret.cpp`** — turret AI is inside
+  `aicode.cpp` (14,786L). Inventory: `ai.cpp`, `aicode.cpp`, `aibig.cpp`,
+  `aigoals.cpp` (~18k). The SEXP↔AI bridge is `Sexp_ai_goal_links[]` →
+  `ai_add_ship_goal_sexp` → `ai_add_goal_sub_sexp` (relevant to the SEXP dive).
 - **Cutscenes are stubbed, not ported.** `movie_play()` is called but undefined
   project-wide; there is no ffmpeg/avcodec in the tree. `cutscene/` is a menu
   shell around a dead call — ffmpeg MVE decode remains future work.
@@ -86,5 +87,6 @@ Each subsystem entry carries: **Purpose**, **Entry points**, **Core state**,
 
 ---
 *Status: first pass complete — all 49 live subsystems mapped across clusters
-01–06. Open follow-ups: the AI survey (gap above), and the two flagged
-extraction deep dives (SEXP parser, POF parser). Board and conventions final.*
+01–06, plus the AI (cluster 01). Open follow-ups: the two flagged extraction
+deep dives (SEXP parser — see [../sexp-vm.md](../sexp-vm.md); POF parser). Board
+and conventions final.*
