@@ -318,8 +318,31 @@ int  sexp_parse(const char *text);   // buffer -> root node index, or -1
    parse oracle (the corpus is usable before cfile — loose `.fs2` files). This is
    where the parser earns independent test coverage the game never gave it.
 
-Stages 1-3 are a **decision point**: they mutate living code and the build.
-This document (stage 0) stands on its own regardless.
+Stage 2 is a **decision point**: it mutates living code and the build.
+
+### 6.5 Result of the prototype (stages 1 + 3, `tools/sexp_parse/`)
+
+The oracle was built (`tools/sexp_parse/`, [README](../tools/sexp_parse/README.md))
+by lifting the reader **verbatim** into a standalone unit and running it over the
+retail corpus. This delivered stage 3's oracle using a *copied* reader (the copy
+is the price of leaving `sexp.cpp` untouched; stage 2 de-duplicates it).
+
+**The seam is proven empirically:**
+
+- The binary links **only** `sexp_reader.o + main.o` — no game objects, no
+  parselo, no ship/object/weapon (`nm -u` confirms). Successful link *is* the
+  proof: a game-coupled reader could not link in isolation.
+- **41 missions, 6,745 SEXPs parsed, 0 failures.** Round-trip dumps match source
+  structure (strings, nesting, depth).
+- Peak pool usage **1469 / 2200 (67%)** in one mission — the retail sizing has
+  headroom. Max tree depth 5.
+
+What remains for a *full* carve is stage 2: relocate the reader into a shared
+`parse/sexp_reader.cpp` compiled into both the game and the tool (one source of
+truth), and confirm the game still builds and parses missions node-for-node
+identically.
 
 ---
-*Status: delineation complete (stage 0). Stages 1-3 pending go-ahead.*
+*Status: delineation (stage 0) + prototype/oracle (stages 1+3 via a copied
+reader) complete and passing on the full retail corpus. Stage 2 (physical split
+into a shared TU, de-duplicating the copy) pending go-ahead.*
