@@ -28,6 +28,23 @@ static const char *Sexp_tags[] = {
 
 static std::set<std::string> used_operators;
 
+// --trees: emit each parsed tree as a deterministic pre-order node dump
+// (self, then first-subtree deeper, then rest-sibling at the same level).
+// Each line records the node's type, subtype, flag bits, and text -- the full
+// reader output, so two runs diff byte-for-byte iff the trees are identical.
+static bool dump_trees = false;
+
+static void emit_tree(int n, int depth)
+{
+	if (n < 0)
+		return;
+	printf("%*s[%d,%d,%08x] %s\n", depth * 2, "",
+		SEXP_NODE_TYPE(n), Sexp_nodes[n].subtype,
+		(unsigned)(Sexp_nodes[n].type & 0xffff0000), Sexp_nodes[n].text);
+	emit_tree(Sexp_nodes[n].first, depth + 1);
+	emit_tree(Sexp_nodes[n].rest, depth);
+}
+
 static void collect_operators(int n)
 {
 	if (n < 0)
@@ -74,6 +91,10 @@ static int dump_file(char *filename)
 			int root = get_sexp_main();
 			if (root >= 0) {
 				collect_operators(root);
+				if (dump_trees) {
+					printf("# %s tree %d\n", filename, trees);
+					emit_tree(root, 0);
+				}
 				free_sexp2(root);	// one tree at a time keeps the 2200-node pool ample
 				trees++;
 			}
@@ -92,13 +113,20 @@ static char *mission_list[MAX_ORACLE_MISSIONS];
 
 int main(int argc, char *argv[])
 {
-	if (argc != 2) {
-		fprintf(stderr, "usage: sexp_dump <game-root>\n");
+	const char *game_root = NULL;
+	for (int i = 1; i < argc; i++) {
+		if (!strcmp(argv[i], "--trees"))
+			dump_trees = true;
+		else
+			game_root = argv[i];
+	}
+	if (game_root == NULL) {
+		fprintf(stderr, "usage: sexp_dump [--trees] <game-root>\n");
 		return 2;
 	}
 
 	char exe_path[CF_MAX_PATHNAME_LENGTH];
-	snprintf(exe_path, sizeof(exe_path), "%s/x", argv[1]);
+	snprintf(exe_path, sizeof(exe_path), "%s/x", game_root);
 	if (cfile_init(exe_path)) {
 		fprintf(stderr, "cfile_init failed for %s\n", argv[1]);
 		return 1;
@@ -116,8 +144,9 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	for (const std::string &op : used_operators)
-		printf("%s\n", op.c_str());
+	if (!dump_trees)
+		for (const std::string &op : used_operators)
+			printf("%s\n", op.c_str());
 
 	return total > 0 ? 0 : 1;
 }

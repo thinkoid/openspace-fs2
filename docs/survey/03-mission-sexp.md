@@ -15,7 +15,7 @@ the top-level state machine. See [README](README.md) for conventions.
 ### parse/sexp.cpp — Mission & SEXP VM (crown jewel) (~9,290 SLOC master)
 - **Purpose:** A complete embedded Lisp-ish scripting VM: parses `.fs2` SEXP text into a shared node-pool tree, then evaluates a 212-operator dispatch to drive mission goals, events, messages, training and AI orders.
 - **Entry points:**
-  - Parser: `parse/sexp.cpp: get_sexp_main()` (top-level, one expression) → `get_sexp()` (recursive atom/list reader). Interning helpers `identify_operator()`, `find_operator()`, `alloc_sexp()`, `find_free_sexp()`. Variable list reader `stuff_sexp_variable_list()`.
+  - Parser: `parse/sexp_reader.cpp: get_sexp_main()` (top-level, one expression) → `get_sexp()` (recursive atom/list reader); the reader + pool + locked booleans were **carved out of sexp.cpp into `sexp_reader.cpp`** (the SEAM below, now physically realized — see docs/sexp-vm.md §6.6). Interning helpers `identify_operator()`, `find_operator()` and variable list reader `stuff_sexp_variable_list()` stay in `sexp.cpp` with the operator/variable tables.
   - Evaluator: `eval_sexp()` (the giant switch, ~6808–7643). Arithmetic helpers `add_sexps/sub_sexps/mul_sexps/div_sexps/mod_sexps/rand_sexp` (~1980–2095), booleans `sexp_or/sexp_and/sexp_and_in_sequence/sexp_not` (~2100+), plus ~200 `sexp_*` operator implementations.
   - Vocabulary/metadata: `Operators[]` table (line 60), `query_operator_return_type()` (7694), `query_operator_argument_type()`, `check_sexp_syntax()` (795), `sexp_query_type_match()`.
   - Text emit (Fred/round-trip): `build_sexp_string()` (1838), `build_sexp_text_string()` (1784). Resolver `CTEXT()` (9003).

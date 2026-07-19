@@ -220,7 +220,8 @@ foundation_src = files(
     'code/localization/localize.cpp',
     'code/parse/encrypt.cpp',
     'code/parse/parselo.cpp',
-    'code/parse/sexp.cpp')
+    'code/parse/sexp.cpp',
+    'code/parse/sexp_reader.cpp')
 
 foundation = static_library('foundation', foundation_src,
     include_directories: inc,

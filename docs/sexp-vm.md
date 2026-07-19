@@ -310,15 +310,15 @@ int  sexp_parse(const char *text);   // buffer -> root node index, or -1
 1. **Non-invasive API** — introduce `sexp_node.h` and a `sexp_parse` wrapper
    over the existing functions, no code moved. Build stays green; proves the
    surface compiles standalone-ish. *Reversible.*
-2. **Physical split** — move the §6.1 functions into `sexp_reader.cpp`, add it to
-   the meson target, verify the full game still builds and a mission parses
-   identically (diff node trees before/after).
-3. **Standalone target + oracle** — a tiny `sexp_parse` test binary that reads
-   the `missions/` corpus SEXP blocks and dumps/round-trips node trees, run as a
-   parse oracle (the corpus is usable before cfile — loose `.fs2` files). This is
-   where the parser earns independent test coverage the game never gave it.
-
-Stage 2 is a **decision point**: it mutates living code and the build.
+2. **Physical split** — move the reader functions into `sexp_reader.cpp`, add it
+   to the meson target, verify the full game still builds and missions parse
+   identically (diff node trees before/after). *(done — see §6.6)*
+3. **Standalone target + oracle** — a parse oracle that reads the retail corpus
+   SEXP blocks and dumps node trees. Delivered first as the standalone
+   `tools/sexp_parse/` (copied reader, §6.5), then folded into the
+   foundation-linked `tests/sexp_dump --trees`, which runs the **real** reader
+   over the full VP corpus (§6.6). This is where the parser earns independent
+   test coverage the game never gave it.
 
 ### 6.5 Result of the prototype (stages 1 + 3, `tools/sexp_parse/`)
 
@@ -337,12 +337,30 @@ is the price of leaving `sexp.cpp` untouched; stage 2 de-duplicates it).
 - Peak pool usage **1469 / 2200 (67%)** in one mission — the retail sizing has
   headroom. Max tree depth 5.
 
-What remains for a *full* carve is stage 2: relocate the reader into a shared
-`parse/sexp_reader.cpp` compiled into both the game and the tool (one source of
-truth), and confirm the game still builds and parses missions node-for-node
-identically.
+### 6.6 Result of the physical split (stage 2)
+
+The reader was carved out of `sexp.cpp` into **`code/parse/sexp_reader.cpp`**, a
+pure verbatim relocation: `init_sexp`, `alloc_sexp`, `find_free_sexp`,
+`get_sexp`, `get_sexp_main`, plus the `Sexp_nodes[]` pool and the two locked
+booleans. The bodies are byte-identical; the calls the reader already made
+across function boundaries (`identify_operator`/`find_operator`, variable
+interning, `init_sexp_vars`, the parselo cursor) now cross a TU boundary, so the
+move adds **no indirection**. `sexp.cpp` keeps `eval_sexp`, the operator table
+and all handlers, `check_sexp_syntax`, and the variable machinery.
+
+This makes the game reader the **single source of truth**. The oracle followed
+it: `tests/sexp_dump` (foundation-linked, so it runs the *real* reader — real
+`Operators[]`, real parselo, real `@variable` interning) gained a `--trees` mode
+that dumps every parsed tree as a deterministic pre-order node record.
+
+**Verified identical:** `sexp_dump --trees ../gog` over the full VP corpus —
+**24,504 trees / 217,631 node lines** — is **byte-for-byte identical before and
+after the carve**, and both the `fs2` game and `sexp_dump` link clean. The
+standalone `tools/sexp_parse/` copy (its stage-1 job — proving the reader links
+*zero* game state — done and recorded in git history at `beb3f0b26`) was retired
+to keep one source of truth; the living oracle is now `sexp_dump --trees`.
 
 ---
-*Status: delineation (stage 0) + prototype/oracle (stages 1+3 via a copied
-reader) complete and passing on the full retail corpus. Stage 2 (physical split
-into a shared TU, de-duplicating the copy) pending go-ahead.*
+*Status: reader **carved and separated** (stages 0–3 complete). The reader lives
+in `code/parse/sexp_reader.cpp`, consumed by the game; verified node-for-node
+identical over the full retail VP corpus via `tests/sexp_dump --trees`.*
