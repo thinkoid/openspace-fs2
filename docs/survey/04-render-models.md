@@ -12,6 +12,11 @@ model loader. See [README](README.md) for conventions.
 > nothing else; everything past that is runtime consumer. The BSP bytecode is
 > copied verbatim, never rebuilt at load — so the seam runs exactly along
 > "copy `bsp_data`" vs "walk `bsp_data`".
+>
+> **Deep dive:** [pof-model.md](../pof-model.md) — full chunk-by-chunk reader
+> anatomy, the BSP byte layouts, the three consumer couplings to sever
+> (`bm_load`, `do_new_subsystem`, turret writes), and the staged carve plan.
+> Oracle: `tests/pof_dump --full` (real loader, 176 models / 0 failures).
 
 ---
 
