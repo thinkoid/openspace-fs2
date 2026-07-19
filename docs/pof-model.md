@@ -342,14 +342,16 @@ stage 1, **`read_model_file` is game-system-free** and ready to lift.
 Match the existing style (lowercase filenames, `char*`, C-ish idiom; a faithful
 lift, not a modern rewrite):
 
-- `model/modelread.cpp` — keeps `model_load` and the §5 post-processing, plus the
-  system's table (`Polygon_models[]`, `model_get`, etc.).
-- `model/model_reader.cpp` — **the carved unit**: `read_model_file` + the chunk
-  cases, producing a populated `polymodel`. Texture/subsystem/turret bindings
-  reached through a small seam (caller-supplied, or deferred to a post step).
+- `model/modelread.cpp` — keeps `model_load`, `model_load_textures`, the §5
+  post-processing, and the system's table (`Polygon_models[]`, `model_get`, etc.).
+- `model/pofparse.cpp` — **the carved unit**: `read_model_file` + the chunk
+  cases + the prop-parsing helpers (`get_user_prop_value`/`set_subsystem_info`/
+  `do_new_subsystem`) + `model_calc_bound_box`, producing a populated `polymodel`
+  and (optionally) filling the caller's `subsystems[]` out-param.
 
-The seam surface is narrower than it looks: three callbacks (or a deferred
-data list) for the three couplings above; everything else is plain struct-fill.
+Named `pofparse` (not `model_reader`) so it doesn't collide with `modelread`;
+the file is about parsing the POF format, matching the `pofer`/`pof_dump`
+naming already in the workspace.
 
 ### 7.4 The oracle (already built)
 
@@ -372,14 +374,18 @@ oracle — harmonize the two tools' output and diff.
    game-system-free. Verified: `pof_dump --full` and the summary byte-identical
    over the whole corpus (176 models / 575,866 lines), game builds clean,
    `bm_load` succeeds on all 1144 texture refs.
-2. **Physical split** — move `read_model_file` + chunk cases into
-   `model/model_reader.cpp`, add to the meson target, verify the game builds and
-   `pof_dump --full` is byte-identical before/after. *(next)*
+2. **Physical split** — move `read_model_file` + the chunk cases + the
+   prop-parsing helpers into `model/pofparse.cpp`, add to the meson target.
+   *(done)* Verified: `pof_dump --full` and the summary byte-identical over the
+   whole corpus (575,866 lines), game builds clean. `read_model_file` is now
+   declared in `modelsinc.h` and called by `model_load`; the one snag was
+   `get_submodel_delta_angle` (a rotation runtime helper that happened to sit
+   between the reader helpers) — moved back to `modelread.cpp`.
 3. **Cross-oracle against pcs2** — once pcs2 parses POFs, harmonize the dump
-   formats and diff the two independent readers over the corpus.
+   formats and diff the two independent readers over the corpus. *(next)*
 
 ---
-*Status: delineation (stage 0) and the texture-seam severing (stage 1) complete
-— `read_model_file` is now game-system-free, verified byte-identical over the
-full retail corpus via `pof_dump --full`. The physical split (stage 2) into
-`model/model_reader.cpp` is next; the pcs2 cross-oracle (stage 3) follows.*
+*Status: stages 0–2 complete. The POF reader is delineated, game-system-free,
+and physically carved into `code/model/pofparse.cpp` — verified byte-identical
+over the full retail corpus via `pof_dump --full` after each step. The pcs2
+cross-oracle (stage 3) is next, gated on pcs2's own parse being ready.*
