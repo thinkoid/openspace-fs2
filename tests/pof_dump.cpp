@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
+#include <stdarg.h>
 
 #include <algorithm>
 #include <string>
@@ -355,28 +357,11 @@ static void dump_model_full(char *name)
 	model_free_all();
 }
 
-// ---------------------------------------------------------------------------
-// --geom: the canonical geometry projection -- the surface a second POF
-// implementation gets compared against.
-//
-// Where --full mirrors retail's own bytecode (tree shape, vertex indices), this
-// resolves every polygon to plain coordinates and sorts them.  Both of those
-// are deliberate.  The BSP tree layout and the order its branches are visited
-// are decisions of the implementation that walks it, not properties of the
-// model: retail visits pre/back/on/front/post, pcs2 visits front/back/pre/post/
-// on, and they enumerate the same polygons in a different sequence.  Sorting
-// the formatted polygons removes that difference without hiding a real one --
-// a changed coordinate still changes a line.
-//
-// Not projected, because the retail loader is the only side that has it:
-// flat-polygon RGB (pcs2 drops the colour), and boundboxes.
-// ---------------------------------------------------------------------------
-
 // every vertex normal of the current submodel, flattened in vertex order --
 // the layout OP_DEFPOINTS stores them in, and what normnum indexes
 static std::vector<vector> Bsp_norms;
 
-static void geom_defpoints(const ubyte *p)
+static void read_defpoints(const ubyte *p)
 {
 	int nverts = rd_int(p + 8);
 	int offset = rd_int(p + 16);
@@ -394,37 +379,135 @@ static void geom_defpoints(const ubyte *p)
 	}
 }
 
-// +0 and -0 are the same point; which one a reader ends up holding depends on
-// whether it negated an axis on the way in, so it says nothing about the model.
-static float geom_zero(float f) { return f == 0.0f ? 0.0f : f; }
+// ---------------------------------------------------------------------------
+// --model: the unified comparison + interchange dump.  The format is specified
+// in pofer's doc/model-dump-spec.md and implemented independently there and in
+// libpof; the three converge on that text, not on each other's sources.
+//
+// The rule deciding every field: the dump is the polymodel -- every value this
+// loader retains from the file, after its own interpretation, and nothing else.
+// Where --geom sorted formatted strings, this sorts polygons by a key computed
+// from the data (the complete record, compared as values), so the order is a
+// property of the model rather than of a printf format.  All floats print as
+// %.9g, which round-trips a float32 exactly; -0 folds to +0 (the same number,
+// so a genuine equivalence class -- see the spec for why that is the only
+// canonicalisation allowed).
+// ---------------------------------------------------------------------------
 
-static void geom_append(std::vector<std::string> &out, int tex, int nv,
-	const ubyte *verts, int stride, bool textured)
+// A NaN or infinity would poison both the text and the sort key's total
+// order; no retail model contains one, so meeting one is corruption and the
+// dump must die, not print.
+static float canon(float f)
 {
-	char buf[256];
+	if (!isfinite(f)) {
+		fprintf(stderr, "pof_dump: non-finite float in model\n");
+		exit(3);
+	}
+	return f == 0.0f ? 0.0f : f;
+}
+
+static void app(std::string &line, const char *fmt, ...)
+{
+	char buf[512];
+	va_list args;
+	va_start(args, fmt);
+	vsnprintf(buf, sizeof(buf), fmt, args);
+	va_end(args);
+	line += buf;
+}
+
+static void app_f(std::string &line, float f)
+{
+	app(line, "%.9g", canon(f));
+}
+
+static void app_vec(std::string &line, const vector &v)
+{
+	app(line, "(%.9g %.9g %.9g)", canon(v.x), canon(v.y), canon(v.z));
+}
+
+static void put(const std::string &line)
+{
+	printf("%s\n", line.c_str());
+}
+
+// One polygon, carrying its own sort key.  The key holds every field of the
+// line, in the line's field order, as values -- kind, colour, count, face
+// normal/center/radius, then each corner.  A double holds an int and a float
+// exactly, so one vector compares the mixed record lexicographically.  Keying
+// the complete record makes ties free: records equal on it are byte-identical.
+struct canon_poly {
+	std::vector<double> key;
 	std::string line;
-	snprintf(buf, sizeof(buf), "    poly tex %d nv %d", tex, nv);
-	line = buf;
+
+	bool operator<(const canon_poly &o) const { return key < o.key; }
+};
+
+static void model_append(std::vector<canon_poly> &out, const ubyte *p, bool textured)
+{
+	vector norm = rd_vec(p + 8);
+	vector cen  = rd_vec(p + 20);
+	float  rad  = rd_float(p + 32);
+	int    nv   = rd_int(p + 36);
+
+	canon_poly poly;
+	poly.key.push_back(textured ? BOP_TMAPPOLY : BOP_FLATPOLY);
+
+	if (textured) {
+		int tmap = rd_int(p + 40);
+		poly.key.push_back(tmap);
+		app(poly.line, "      poly tex %d nv %d normal ", tmap, nv);
+	} else {
+		int r = p[40], g = p[41], b = p[42];
+		poly.key.push_back(r);
+		poly.key.push_back(g);
+		poly.key.push_back(b);
+		app(poly.line, "      poly flat %d %d %d nv %d normal ", r, g, b, nv);
+	}
+	poly.key.push_back(nv);
+
+	const float face[7] = { norm.x, norm.y, norm.z, cen.x, cen.y, cen.z, rad };
+	for (int i = 0; i < 7; i++)
+		poly.key.push_back(canon(face[i]));
+
+	app_vec(poly.line, norm);
+	poly.line += " center ";
+	app_vec(poly.line, cen);
+	poly.line += " radius ";
+	app_f(poly.line, rad);
+
+	const ubyte *verts = p + 44;
+	const int stride = textured ? 12 : 4;
 	for (int i = 0; i < nv; i++) {
 		const ubyte *v = verts + i * stride;
 		int vertnum = rd_short(v), normnum = rd_short(v + 2);
+		// an index the file got wrong reads as the origin, which is what
+		// retail's walkers do with it
 		vector pos = (vertnum >= 0 && vertnum < (int)Bsp_points.size())
 			? Bsp_points[vertnum] : vector();
 		vector nrm = (normnum >= 0 && normnum < (int)Bsp_norms.size())
 			? Bsp_norms[normnum] : vector();
-		float u = textured ? rd_float(v + 4) : 0.0f;
-		float w = textured ? rd_float(v + 8) : 0.0f;
-		snprintf(buf, sizeof(buf),
-			" (%.6g %.6g %.6g)(%.6g %.6g %.6g)(%.6g %.6g)",
-			geom_zero(pos.x), geom_zero(pos.y), geom_zero(pos.z),
-			geom_zero(nrm.x), geom_zero(nrm.y), geom_zero(nrm.z),
-			geom_zero(u), geom_zero(w));
-		line += buf;
+
+		const float corner[6] = { pos.x, pos.y, pos.z, nrm.x, nrm.y, nrm.z };
+		for (int k = 0; k < 6; k++)
+			poly.key.push_back(canon(corner[k]));
+
+		poly.line += ' ';
+		app_vec(poly.line, pos);
+		app_vec(poly.line, nrm);
+
+		if (textured) {
+			float u = rd_float(v + 4), w = rd_float(v + 8);
+			poly.key.push_back(canon(u));
+			poly.key.push_back(canon(w));
+			app(poly.line, "(%.9g %.9g)", canon(u), canon(w));
+		}
 	}
-	out.push_back(line);
+
+	out.push_back(poly);
 }
 
-static void geom_walk(const ubyte *p, std::vector<std::string> &out, int depth)
+static void model_walk(const ubyte *p, std::vector<canon_poly> &out, int depth)
 {
 	if (depth > 256)
 		return;
@@ -436,22 +519,18 @@ static void geom_walk(const ubyte *p, std::vector<std::string> &out, int depth)
 			return;
 
 		switch (chunk_type) {
-		case BOP_DEFPOINTS: geom_defpoints(p); break;
-		case BOP_FLATPOLY:
-			geom_append(out, -1, rd_int(p + 36), p + 44, 4, false);
-			break;
-		case BOP_TMAPPOLY:
-			geom_append(out, rd_int(p + 40), rd_int(p + 36), p + 44, 12, true);
-			break;
-		case BOP_BOUNDBOX: break;
+		case BOP_DEFPOINTS: read_defpoints(p); break;
+		case BOP_FLATPOLY:  model_append(out, p, false); break;
+		case BOP_TMAPPOLY:  model_append(out, p, true);  break;
+		case BOP_BOUNDBOX:  break;
 		case BOP_SORTNORM: {
 			int pre = rd_int(p + 44), back = rd_int(p + 40), on = rd_int(p + 52);
 			int front = rd_int(p + 36), post = rd_int(p + 48);
-			if (pre)   geom_walk(p + pre,   out, depth + 1);
-			if (back)  geom_walk(p + back,  out, depth + 1);
-			if (on)    geom_walk(p + on,    out, depth + 1);
-			if (front) geom_walk(p + front, out, depth + 1);
-			if (post)  geom_walk(p + post,  out, depth + 1);
+			if (pre)   model_walk(p + pre,   out, depth + 1);
+			if (back)  model_walk(p + back,  out, depth + 1);
+			if (on)    model_walk(p + on,    out, depth + 1);
+			if (front) model_walk(p + front, out, depth + 1);
+			if (post)  model_walk(p + post,  out, depth + 1);
 			break;
 		}
 		default:
@@ -461,31 +540,285 @@ static void geom_walk(const ubyte *p, std::vector<std::string> &out, int depth)
 	}
 }
 
-static void dump_model_geom(char *name)
+static void dump_model_model(char *name)
 {
+	// Pass 1: retail keeps turret data (ID_TGUN/ID_TMIS) in the caller's
+	// subsystem list, not in the polymodel, and matches entries by submodel
+	// name -- the game primes that list from ships.tbl.  Here the model's own
+	// submodel names prime it, so the first load only harvests them.
 	int num = model_load(name, 0, NULL);
 	if (num < 0) {
-		printf("geom %s LOAD-FAILED\n", fold_name(name).c_str());
+		printf("model %s LOAD-FAILED\n", fold_name(name).c_str());
 		return;
 	}
 	polymodel *pm = model_get(num);
 
-	printf("geom %s version %d\n", fold_name(name).c_str(), pm->version);
+	std::vector<std::string> subnames;
+	for (int i = 0; i < pm->n_models; i++)
+		subnames.push_back(pm->submodel[i].name);
+	model_free_all();
+
+	std::vector<model_subsystem> subs(subnames.size());
+	memset(subs.data(), 0, subs.size() * sizeof(model_subsystem));
+	for (size_t i = 0; i < subnames.size(); i++) {
+		strncpy(subs[i].subobj_name, subnames[i].c_str(), MAX_NAME_LEN - 1);
+		subs[i].subobj_num = -3;	// no ID_TGUN parent can match this
+		subs[i].turret_gun_sobj = -1;
+	}
+
+	num = model_load(name, (int)subs.size(), subs.data());
+	if (num < 0) {
+		printf("model %s LOAD-FAILED\n", fold_name(name).c_str());
+		return;
+	}
+	pm = model_get(num);
+
+	// An ID_SPCL point whose name matches a submodel's would overwrite that
+	// entry's subobj_num with -1 and could eat a turret arriving later in the
+	// chunk stream.  No retail model has such a collision (measured); a file
+	// that does must fail loudly, not dump a turret short.
+	for (size_t i = 0; i < subs.size(); i++)
+		if (subs[i].subobj_num == -1) {
+			fprintf(stderr, "pof_dump: SPCL name collides with submodel "
+				"\"%s\" in %s\n", subs[i].subobj_name, name);
+			exit(3);
+		}
+
+	std::string line;
+
+	printf("model %s version %d\n", fold_name(name).c_str(), pm->version);
+	printf("flags %d\n", pm->flags);
+	printf("radius %.9g\n", canon(pm->rad));
+
+	line = "min ";       app_vec(line, pm->mins);           put(line); line.clear();
+	line = "max ";       app_vec(line, pm->maxs);           put(line); line.clear();
+	line = "mass ";      app_f(line, pm->mass);             put(line); line.clear();
+	line = "mass_center "; app_vec(line, pm->center_of_mass); put(line); line.clear();
+
+	line = "moi ";
+	app_vec(line, pm->moment_of_inertia.rvec); line += ' ';
+	app_vec(line, pm->moment_of_inertia.uvec); line += ' ';
+	app_vec(line, pm->moment_of_inertia.fvec);
+	put(line); line.clear();
+
+	if (pm->flags & PM_FLAG_AUTOCEN) {
+		line = "autocenter ";
+		app_vec(line, pm->autocenter);
+		put(line); line.clear();
+	}
+
+	printf("details %d", pm->n_detail_levels);
+	for (int i = 0; i < pm->n_detail_levels; i++)
+		printf(" %d", pm->detail[i]);
+	printf("\n");
+
+	printf("debris %d", pm->num_debris_objects);
+	for (int i = 0; i < pm->num_debris_objects; i++)
+		printf(" %d", pm->debris_objects[i]);
+	printf("\n");
+
+	int nxc = pm->num_xc < 0 ? 0 : pm->num_xc;	// retail inits num_xc to -1
+	printf("cross_sections %d\n", nxc);
+	for (int i = 0; i < nxc; i++) {
+		app(line, "  xc %d depth ", i);
+		app_f(line, pm->xc[i].z);
+		line += " radius ";
+		app_f(line, pm->xc[i].radius);
+		put(line); line.clear();
+	}
+
+	printf("lights %d\n", pm->num_lights);
+	for (int i = 0; i < pm->num_lights; i++) {
+		app(line, "  light %d ", i);
+		app_vec(line, pm->lights[i].pos);
+		app(line, " type %d", pm->lights[i].type);
+		put(line); line.clear();
+	}
+
+	printf("split_planes %d", pm->num_split_plane);
+	for (int i = 0; i < pm->num_split_plane; i++)
+		printf(" %.9g", canon(pm->split_plane[i]));
+	printf("\n");
+
+	printf("textures %d\n", pm->n_textures);
+	for (int i = 0; i < pm->n_textures; i++)
+		printf("  tex %d \"%s\"\n", i, pm->texture_file[i]);
+
 	printf("submodels %d\n", pm->n_models);
 	for (int i = 0; i < pm->n_models; i++) {
 		bsp_info *sm = &pm->submodel[i];
-		printf("  sub %d \"%s\" parent %d\n", i, sm->name, sm->parent);
 
-		std::vector<std::string> polys;
+		printf("  sub %d \"%s\" parent %d\n", i, sm->name, sm->parent);
+		printf("    movement type %d axis %d\n",
+			sm->movement_type, sm->movement_axis);
+
+		line = "    radius ";  app_f(line, sm->rad);
+		line += " offset ";    app_vec(line, sm->offset);
+		line += " center ";    app_vec(line, sm->geometric_center);
+		put(line); line.clear();
+
+		line = "    min ";     app_vec(line, sm->min);
+		line += " max ";       app_vec(line, sm->max);
+		put(line); line.clear();
+
+		std::vector<canon_poly> polys;
 		if (sm->bsp_data && sm->bsp_data_size > 0) {
 			Bsp_points.clear();
 			Bsp_norms.clear();
-			geom_walk(sm->bsp_data, polys, 0);
+			model_walk(sm->bsp_data, polys, 0);
 		}
 		std::sort(polys.begin(), polys.end());
-		printf("  polys %d\n", (int)polys.size());
-		for (const std::string &s : polys)
-			printf("%s\n", s.c_str());
+		printf("    polys %d\n", (int)polys.size());
+		for (const canon_poly &poly : polys)
+			put(poly.line);
+	}
+
+	printf("guns %d\n", pm->n_guns);
+	for (int i = 0; i < pm->n_guns; i++) {
+		w_bank *b = &pm->gun_banks[i];
+		printf("  bank %d slots %d\n", i, b->num_slots);
+		for (int s = 0; s < b->num_slots; s++) {
+			app(line, "    slot %d point ", s);
+			app_vec(line, b->pnt[s]);
+			line += " normal ";
+			app_vec(line, b->norm[s]);
+			put(line); line.clear();
+		}
+	}
+
+	printf("missiles %d\n", pm->n_missiles);
+	for (int i = 0; i < pm->n_missiles; i++) {
+		w_bank *b = &pm->missile_banks[i];
+		printf("  bank %d slots %d\n", i, b->num_slots);
+		for (int s = 0; s < b->num_slots; s++) {
+			app(line, "    slot %d point ", s);
+			app_vec(line, b->pnt[s]);
+			line += " normal ";
+			app_vec(line, b->norm[s]);
+			put(line); line.clear();
+		}
+	}
+
+	// Emitted in base-submodel order, which is the order the primed list was
+	// built in; retail does not retain whether a turret came from ID_TGUN or
+	// ID_TMIS, so neither does the dump.
+	int n_turrets = 0;
+	for (size_t i = 0; i < subs.size(); i++)
+		if (subs[i].turret_num_firing_points > 0)
+			n_turrets++;
+	printf("turrets %d\n", n_turrets);
+	for (size_t i = 0; i < subs.size(); i++) {
+		model_subsystem *ss = &subs[i];
+		if (ss->turret_num_firing_points <= 0)
+			continue;
+		app(line, "  turret sub %d arm %d normal ",
+			ss->subobj_num, ss->turret_gun_sobj);
+		app_vec(line, ss->turret_norm);
+		app(line, " points %d", ss->turret_num_firing_points);
+		for (int s = 0; s < ss->turret_num_firing_points; s++) {
+			line += ' ';
+			app_vec(line, ss->turret_firing_point[s]);
+		}
+		put(line); line.clear();
+	}
+
+	printf("docks %d\n", pm->n_docks);
+	for (int i = 0; i < pm->n_docks; i++) {
+		dock_bay *d = &pm->docking_bays[i];
+		app(line, "  dock %d \"%s\" paths %d", i, d->name, d->num_spline_paths);
+		for (int s = 0; s < d->num_spline_paths; s++)
+			app(line, " %d", d->splines[s]);
+		app(line, " slots %d", d->num_slots);
+		put(line); line.clear();
+		for (int s = 0; s < d->num_slots; s++) {
+			app(line, "    slot %d point ", s);
+			app_vec(line, d->pnt[s]);
+			line += " normal ";
+			app_vec(line, d->norm[s]);
+			put(line); line.clear();
+		}
+	}
+
+	printf("thrusters %d\n", pm->n_thrusters);
+	for (int i = 0; i < pm->n_thrusters; i++) {
+		thruster_bank *t = &pm->thrusters[i];
+		printf("  bank %d slots %d\n", i, t->num_slots);
+		for (int s = 0; s < t->num_slots; s++) {
+			app(line, "    slot %d point ", s);
+			app_vec(line, t->pnt[s]);
+			line += " normal ";
+			app_vec(line, t->norm[s]);
+			line += " radius ";
+			app_f(line, t->radius[s]);
+			put(line); line.clear();
+		}
+	}
+
+	printf("eyes %d\n", pm->n_view_positions);
+	for (int i = 0; i < pm->n_view_positions; i++) {
+		eye *e = &pm->view_positions[i];
+		app(line, "  eye %d parent %d point ", i, e->parent);
+		app_vec(line, e->pnt);
+		line += " normal ";
+		app_vec(line, e->norm);
+		put(line); line.clear();
+	}
+
+	printf("shield verts %d tris %d\n", pm->shield.nverts, pm->shield.ntris);
+	for (int i = 0; i < pm->shield.nverts; i++) {
+		app(line, "  v %d ", i);
+		app_vec(line, pm->shield.verts[i].pos);
+		put(line); line.clear();
+	}
+	for (int i = 0; i < pm->shield.ntris; i++) {
+		shield_tri *t = &pm->shield.tris[i];
+		app(line, "  tri %d normal ", i);
+		app_vec(line, t->norm);
+		app(line, " verts %d %d %d neighbors %d %d %d",
+			t->verts[0], t->verts[1], t->verts[2],
+			t->neighbors[0], t->neighbors[1], t->neighbors[2]);
+		put(line); line.clear();
+	}
+
+	printf("paths %d\n", pm->n_paths);
+	for (int i = 0; i < pm->n_paths; i++) {
+		model_path *pa = &pm->paths[i];
+		printf("  path %d \"%s\" parent \"%s\" sub %d verts %d\n",
+			i, pa->name, pa->parent_name, pa->parent_submodel, pa->nverts);
+		for (int v = 0; v < pa->nverts; v++) {
+			app(line, "    vert %d ", v);
+			app_vec(line, pa->verts[v].pos);
+			line += " radius ";
+			app_f(line, pa->verts[v].radius);
+			app(line, " turrets %d", pa->verts[v].nturrets);
+			for (int k = 0; k < pa->verts[v].nturrets; k++)
+				app(line, " %d", pa->verts[v].turret_ids[k]);
+			put(line); line.clear();
+		}
+	}
+
+	// Insignia faces resolve their vertex indices to coordinates: retail does
+	// not retain the insignia vertex count, so the table itself cannot be
+	// dumped faithfully -- same projection rule as the polygons.
+	printf("insignia %d\n", pm->num_ins);
+	for (int i = 0; i < pm->num_ins; i++) {
+		insignia *in = &pm->ins[i];
+		app(line, "  ins %d detail %d offset ", i, in->detail_level);
+		app_vec(line, in->offset);
+		app(line, " faces %d", in->num_faces);
+		put(line); line.clear();
+		for (int f = 0; f < in->num_faces; f++) {
+			app(line, "    face %d", f);
+			for (int k = 0; k < 3; k++) {
+				int idx = in->faces[f][k];
+				vector pos = (idx >= 0 && idx < MAX_INS_VECS)
+					? in->vecs[idx] : vector();
+				app(line, " (%.9g %.9g %.9g %.9g %.9g)",
+					canon(pos.x), canon(pos.y), canon(pos.z),
+					canon(in->u[f][k]), canon(in->v[f][k]));
+			}
+			put(line); line.clear();
+		}
 	}
 
 	model_free_all();
@@ -514,21 +847,21 @@ static bool wanted(const std::string &name, const std::vector<std::string> &filt
 int main(int argc, char *argv[])
 {
 	bool full = false;
-	bool geom = false;
+	bool model = false;
 	const char *game_root = NULL;
 	std::vector<std::string> filters;	// optional: dump only these models
 	for (int i = 1; i < argc; i++) {
 		if (!strcmp(argv[i], "--full"))
 			full = true;
-		else if (!strcmp(argv[i], "--geom"))
-			geom = true;
+		else if (!strcmp(argv[i], "--model"))
+			model = true;
 		else if (game_root == NULL)
 			game_root = argv[i];
 		else
 			filters.push_back(argv[i]);
 	}
 	if (game_root == NULL) {
-		fprintf(stderr, "usage: pof_dump [--full|--geom] <game-root> [model.pof ...]\n");
+		fprintf(stderr, "usage: pof_dump [--full|--model] <game-root> [model.pof ...]\n");
 		return 2;
 	}
 
@@ -555,8 +888,8 @@ int main(int argc, char *argv[])
 	for (const std::string &name : full_names)
 		if (name.size() > 4 && !strcasecmp(name.c_str() + name.size() - 4, ".pof") &&
 		    wanted(name, filters)) {
-			if (geom)
-				dump_model_geom((char *)name.c_str());
+			if (model)
+				dump_model_model((char *)name.c_str());
 			else if (full)
 				dump_model_full((char *)name.c_str());
 			else

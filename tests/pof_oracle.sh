@@ -13,13 +13,16 @@
 # and an unpacked tree has lowercased ones, but the dump folds the name for
 # both display and sort order, so the two produce identical bytes.
 #
-# Three checks, cheapest first:
+# Four checks, cheapest first:
 #   1. the summary dump of all 176 models, compared line by line
 #   2. --full for eight models picked for feature coverage -- flat polygons
 #      survive in only 6 of the 176 retail models, so two of those are in the
 #      sample on purpose, and both POF versions (2116, 2117) are represented
 #   3. sha256 of --full over the whole corpus: no diff to read when it breaks,
 #      but the only check that covers every model's geometry
+#   4. sha256 of --model over the whole corpus: the cross-reader comparison
+#      format (pofer doc/model-dump-spec.md); pofer and libpof pin the same
+#      bytes, so this is the three-way agreement's retail anchor
 
 set -eu
 
@@ -88,6 +91,17 @@ else
     echo "       got  $got"
     echo "     (run pof_dump --full yourself to see where; the sample above"
     echo "      only covers 8 of the 176 models)"
+    rc=1
+fi
+
+got=$("$dump" --model "$root" 2>/dev/null | sha256sum | cut -d' ' -f1)
+want=$(cat "$oracle/pof-model.sha256")
+if [ "$got" = "$want" ]; then
+    echo "ok   model corpus sha256 $got"
+else
+    echo "FAIL model corpus sha256"
+    echo "       want $want"
+    echo "       got  $got"
     rc=1
 fi
 
