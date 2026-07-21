@@ -355,6 +355,142 @@ static void dump_model_full(char *name)
 	model_free_all();
 }
 
+// ---------------------------------------------------------------------------
+// --geom: the canonical geometry projection -- the surface a second POF
+// implementation gets compared against.
+//
+// Where --full mirrors retail's own bytecode (tree shape, vertex indices), this
+// resolves every polygon to plain coordinates and sorts them.  Both of those
+// are deliberate.  The BSP tree layout and the order its branches are visited
+// are decisions of the implementation that walks it, not properties of the
+// model: retail visits pre/back/on/front/post, pcs2 visits front/back/pre/post/
+// on, and they enumerate the same polygons in a different sequence.  Sorting
+// the formatted polygons removes that difference without hiding a real one --
+// a changed coordinate still changes a line.
+//
+// Not projected, because the retail loader is the only side that has it:
+// flat-polygon RGB (pcs2 drops the colour), and boundboxes.
+// ---------------------------------------------------------------------------
+
+// every vertex normal of the current submodel, flattened in vertex order --
+// the layout OP_DEFPOINTS stores them in, and what normnum indexes
+static std::vector<vector> Bsp_norms;
+
+static void geom_defpoints(const ubyte *p)
+{
+	int nverts = rd_int(p + 8);
+	int offset = rd_int(p + 16);
+	const ubyte *normcount = p + 20;
+	const ubyte *src = p + offset;
+
+	Bsp_points.assign(nverts, vector());
+	Bsp_norms.clear();
+	for (int n = 0; n < nverts; n++) {
+		Bsp_points[n] = rd_vec(src);
+		int nnorm = normcount[n];
+		for (int k = 0; k < nnorm; k++)
+			Bsp_norms.push_back(rd_vec(src + 12 * (k + 1)));
+		src += 12 * (nnorm + 1);
+	}
+}
+
+// +0 and -0 are the same point; which one a reader ends up holding depends on
+// whether it negated an axis on the way in, so it says nothing about the model.
+static float geom_zero(float f) { return f == 0.0f ? 0.0f : f; }
+
+static void geom_append(std::vector<std::string> &out, int tex, int nv,
+	const ubyte *verts, int stride, bool textured)
+{
+	char buf[256];
+	std::string line;
+	snprintf(buf, sizeof(buf), "    poly tex %d nv %d", tex, nv);
+	line = buf;
+	for (int i = 0; i < nv; i++) {
+		const ubyte *v = verts + i * stride;
+		int vertnum = rd_short(v), normnum = rd_short(v + 2);
+		vector pos = (vertnum >= 0 && vertnum < (int)Bsp_points.size())
+			? Bsp_points[vertnum] : vector();
+		vector nrm = (normnum >= 0 && normnum < (int)Bsp_norms.size())
+			? Bsp_norms[normnum] : vector();
+		float u = textured ? rd_float(v + 4) : 0.0f;
+		float w = textured ? rd_float(v + 8) : 0.0f;
+		snprintf(buf, sizeof(buf),
+			" (%.6g %.6g %.6g)(%.6g %.6g %.6g)(%.6g %.6g)",
+			geom_zero(pos.x), geom_zero(pos.y), geom_zero(pos.z),
+			geom_zero(nrm.x), geom_zero(nrm.y), geom_zero(nrm.z),
+			geom_zero(u), geom_zero(w));
+		line += buf;
+	}
+	out.push_back(line);
+}
+
+static void geom_walk(const ubyte *p, std::vector<std::string> &out, int depth)
+{
+	if (depth > 256)
+		return;
+
+	for (;;) {
+		int chunk_type = rd_int(p);
+		int chunk_size = rd_int(p + 4);
+		if (chunk_type == BOP_EOF)
+			return;
+
+		switch (chunk_type) {
+		case BOP_DEFPOINTS: geom_defpoints(p); break;
+		case BOP_FLATPOLY:
+			geom_append(out, -1, rd_int(p + 36), p + 44, 4, false);
+			break;
+		case BOP_TMAPPOLY:
+			geom_append(out, rd_int(p + 40), rd_int(p + 36), p + 44, 12, true);
+			break;
+		case BOP_BOUNDBOX: break;
+		case BOP_SORTNORM: {
+			int pre = rd_int(p + 44), back = rd_int(p + 40), on = rd_int(p + 52);
+			int front = rd_int(p + 36), post = rd_int(p + 48);
+			if (pre)   geom_walk(p + pre,   out, depth + 1);
+			if (back)  geom_walk(p + back,  out, depth + 1);
+			if (on)    geom_walk(p + on,    out, depth + 1);
+			if (front) geom_walk(p + front, out, depth + 1);
+			if (post)  geom_walk(p + post,  out, depth + 1);
+			break;
+		}
+		default:
+			return;
+		}
+		p += chunk_size;
+	}
+}
+
+static void dump_model_geom(char *name)
+{
+	int num = model_load(name, 0, NULL);
+	if (num < 0) {
+		printf("geom %s LOAD-FAILED\n", fold_name(name).c_str());
+		return;
+	}
+	polymodel *pm = model_get(num);
+
+	printf("geom %s version %d\n", fold_name(name).c_str(), pm->version);
+	printf("submodels %d\n", pm->n_models);
+	for (int i = 0; i < pm->n_models; i++) {
+		bsp_info *sm = &pm->submodel[i];
+		printf("  sub %d \"%s\" parent %d\n", i, sm->name, sm->parent);
+
+		std::vector<std::string> polys;
+		if (sm->bsp_data && sm->bsp_data_size > 0) {
+			Bsp_points.clear();
+			Bsp_norms.clear();
+			geom_walk(sm->bsp_data, polys, 0);
+		}
+		std::sort(polys.begin(), polys.end());
+		printf("  polys %d\n", (int)polys.size());
+		for (const std::string &s : polys)
+			printf("%s\n", s.c_str());
+	}
+
+	model_free_all();
+}
+
 // case-insensitive: does the model filename (with extension) match one of the
 // requested basenames (with or without .pof)?
 static bool wanted(const std::string &name, const std::vector<std::string> &filters)
@@ -378,18 +514,21 @@ static bool wanted(const std::string &name, const std::vector<std::string> &filt
 int main(int argc, char *argv[])
 {
 	bool full = false;
+	bool geom = false;
 	const char *game_root = NULL;
 	std::vector<std::string> filters;	// optional: dump only these models
 	for (int i = 1; i < argc; i++) {
 		if (!strcmp(argv[i], "--full"))
 			full = true;
+		else if (!strcmp(argv[i], "--geom"))
+			geom = true;
 		else if (game_root == NULL)
 			game_root = argv[i];
 		else
 			filters.push_back(argv[i]);
 	}
 	if (game_root == NULL) {
-		fprintf(stderr, "usage: pof_dump [--full] <game-root> [model.pof ...]\n");
+		fprintf(stderr, "usage: pof_dump [--full|--geom] <game-root> [model.pof ...]\n");
 		return 2;
 	}
 
@@ -416,7 +555,9 @@ int main(int argc, char *argv[])
 	for (const std::string &name : full_names)
 		if (name.size() > 4 && !strcasecmp(name.c_str() + name.size() - 4, ".pof") &&
 		    wanted(name, filters)) {
-			if (full)
+			if (geom)
+				dump_model_geom((char *)name.c_str());
+			else if (full)
 				dump_model_full((char *)name.c_str());
 			else
 				dump_model((char *)name.c_str());
