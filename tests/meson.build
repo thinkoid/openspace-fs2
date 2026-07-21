@@ -22,6 +22,18 @@ pof_dump = executable('pof_dump',
     link_with: foundation,
     dependencies: [sdl2_dep, openal_dep, gl_dep])
 
+# pof_dump is the POF oracle: retail's loader is the only authoritative reading
+# of the format, so its output is what a second implementation gets compared
+# against. Pinned in oracle/; the runner skips when no game install is around.
+test('pof-oracle', find_program('pof_oracle.sh'),
+    args: [
+        pof_dump.full_path(),
+        meson.current_source_dir() / 'oracle',
+        meson.project_source_root(),
+    ],
+    depends: pof_dump,
+    timeout: 300)
+
 math_test = executable('math_test',
     ['math_test.cpp', 'stubs.cpp', 'gamestubs_gen.cpp', 'freespacestubs_gen.cpp'],
     include_directories: inc,
