@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include <algorithm>
 #include <string>
@@ -24,6 +25,20 @@ static int capture_name(char *name_ext)
 	return 1;
 }
 
+// The model name is the only part of this dump that depends on where the data
+// came from: the VP archives keep the original mixed case ("BeamSaber.POF")
+// while an unpacked install has lowercased filenames.  Fold it so the dump --
+// and the order the models come out in -- is identical from either root, which
+// is what lets a second implementation reading loose files match this output.
+// model_load still gets the name as cfile reported it.
+static std::string fold_name(const std::string &s)
+{
+	std::string r(s);
+	for (size_t i = 0; i < r.size(); i++)
+		r[i] = tolower((unsigned char)r[i]);
+	return r;
+}
+
 static void dump_vec(const char *tag, vector *v)
 {
 	printf("  %s %.6g %.6g %.6g\n", tag, v->x, v->y, v->z);
@@ -33,12 +48,12 @@ static void dump_model(char *name)
 {
 	int num = model_load(name, 0, NULL);
 	if (num < 0) {
-		printf("== %s LOAD-FAILED\n", name);
+		printf("== %s LOAD-FAILED\n", fold_name(name).c_str());
 		return;
 	}
 	polymodel *pm = model_get(num);
 
-	printf("== %s version %d\n", name, pm->version);
+	printf("== %s version %d\n", fold_name(name).c_str(), pm->version);
 	printf("  submodels %d details %d debris %d\n",
 		pm->n_models, pm->n_detail_levels, pm->num_debris_objects);
 	printf("  rad %.6g core_rad %.6g mass %.6g\n", pm->rad, pm->core_radius, pm->mass);
@@ -195,12 +210,12 @@ static void dump_model_full(char *name)
 {
 	int num = model_load(name, 0, NULL);
 	if (num < 0) {
-		printf("=== %s LOAD-FAILED\n", name);
+		printf("=== %s LOAD-FAILED\n", fold_name(name).c_str());
 		return;
 	}
 	polymodel *pm = model_get(num);
 
-	printf("=== %s version %d\n", name, pm->version);
+	printf("=== %s version %d\n", fold_name(name).c_str(), pm->version);
 	printf("model:\n");
 	printf("  flags 0x%x%s%s\n", pm->flags,
 		(pm->flags & PM_FLAG_ALLOW_TILING) ? " tiling" : "",
@@ -391,8 +406,11 @@ int main(int argc, char *argv[])
 	Get_file_list_filter = capture_name;
 	cf_get_file_list_preallocated(1024, arr, list, CF_TYPE_MODELS, (char *)"*", CF_SORT_NONE);
 
-	// deterministic order regardless of VP index order
-	std::sort(full_names.begin(), full_names.end());
+	// deterministic order regardless of VP index order or filename case
+	std::sort(full_names.begin(), full_names.end(),
+		[](const std::string &a, const std::string &b) {
+			return fold_name(a) < fold_name(b);
+		});
 
 	int n = 0;
 	for (const std::string &name : full_names)
