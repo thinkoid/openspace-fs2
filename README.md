@@ -4,8 +4,9 @@ A retail-forward Linux port of the 1998 Volition FreeSpace 2 source — the 2002
 CVS drop, ported as-is: non-networked, non-multiplayer, single-player, the
 retail campaign with the retail SEXP vocabulary and nothing more.
 
-This is not a fork of fs2open, and deliberately so. The port starts from the
-pristine Volition import and moves forward one subsystem at a time, keeping
+This is <u>**NOT**</u> a port or fork of fs2open, and deliberately so. The
+port starts from the pristine Volition import and moves forward one subsystem
+at a time, keeping
 retail's own code — including its complete 8bpp software rasterizer, which now
 runs at 1024x768 on an SDL2 surface, something retail itself never shipped.
 An OpenGL backend (revived from Volition's own abandoned `gropengl.cpp`
