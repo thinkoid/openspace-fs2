@@ -1,0 +1,91 @@
+-*- mode: compilation -*-
+
+FS2 retail subsystem inventory — branch retail (663b3471b), 2026-07-16
+Tree: /home/lnicoara/build/mine.d/fs2.d/fs2/code — 56 subsystems, 403,852 lines (*.cpp/*.h)
+Verdicts: DELETE (out of scope) / PLATFORM (rewrite against SDL2/OpenAL/ffmpeg) /
+          PORT (portable game code, compiler-grind only) / TOOL
+Totals: DELETE ~104k lines (26%) | PLATFORM ~20k | PORT ~280k mostly-clean C++
+
+============================== DELETE — 85,041 whole-dir + 19,049 partial ==============================
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/network/multi_campaign.h:1: DELETE network — 61,314 lines, 60 files. All multiplayer: protocol, PXO, standalone server, ingame join. 15 winsock files. Tendrils: 60 gameplay files reference multi_*/GM_MULTIPLAYER — see CAUTIONS.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/directx/vasync.h:1: DELETE directx — 15,121 lines. Bundled DX5/6 SDK headers + COM vtable wrappers. Nothing to port; consumers (graphics/io/sound) lose these includes as their backends fall.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/glide/3dfx.h:1: DELETE glide — 2,430 lines. 3dfx Glide SDK headers for grglide backend.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/vcodec/codec1.h:1: DELETE vcodec — 2,097 lines. Multiplayer voice codec.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/inetfile/cftp.h:1: DELETE inetfile — 1,988 lines. FTP/HTTP fetch for PXO validation.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/demo/demo.h:1: DELETE demo — 1,117 lines. Gameplay demo record/playback (object-message capture); nonessential, resurrectable from the retail branch.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/exceptionhandler/exceptionhandler.h:1: DELETE exceptionhandler — 601 lines. Win32 SEH minidump writer.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/scramble/scramble.h:1: DELETE scramble — 373 lines. Standalone table-ENcryption tool (has main); the DEcryptor the game needs is parse/encrypt.cpp.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/graphics/grd3d.cpp:1: DELETE (partial) graphics D3D/DirectDraw/Glide backends — 13,298 lines: grd3d*, grdirectdraw*, grglide*.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/io/swff_lib.cpp:1: DELETE (partial) io SideWinder force-feedback SDK — 4,283 lines: swff_lib.cpp, sw_*.h*, joy_ff.* (SDL2 haptics later, if ever).
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/sound/rbaudio.cpp:1: DELETE (partial) sound midi*/rbaudio/dscap — 1,468 lines: MIDI sequencer (unused by FS2), redbook CD audio, DirectSound capture (multi voice).
+
+============================== PLATFORM — rewrite against the Linux stack ==============================
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/osapi/monopub.h:1: PLATFORM osapi — 2,781 lines. WinMain/window class/registry → SDL2 init + config file. Templates: reference/2018 osapi rework; upstream history 2002-2005.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/io/joy_ff.h:1: PLATFORM io — 11,401 lines gross. key.cpp/mouse.cpp/joy.cpp (DirectInput) → SDL2 events; timer.cpp (QPC/timeGetTime) → clock_gettime. NOTE keycontrol.cpp (2.5k lines) is game logic (bindings→actions), PORT not PLATFORM — it just lives here.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/sound/acm.h:1: PLATFORM sound — 10,294 lines gross. ds.cpp/ds3d.cpp (DirectSound/DS3D) → OpenAL; acm.cpp (Win32 ACM ADPCM decode) → own decoder; audiostr.cpp streaming rework. Retail data is WAV/ADPCM — no ogg needed.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/graphics/2d.h:1: PLATFORM graphics — 44,191 lines gross, keep ~30,893. KEEP the complete software renderer (grsoft.cpp + 2d/bitblt/font/line/circle/pixel/scaler/tmapper stack) and blit to an SDL2 surface/texture; 13 files carry _asm with NO C fallback (no NO_ASM guards in retail) — the span loops need C rewrites (crib upstream history). gropengl.cpp (~600 lines) is an embryo for a later GL backend.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/cutscene/cutscenes.h:1: PLATFORM cutscene — 834 lines. Menu + CD-validation portable; the MVE *decoder* is absent from the source drop → libavcodec shim (ffmpeg decodes Interplay MVE) or external player. Defer past first-playable.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/debugconsole/console.cpp:1: PLATFORM debugconsole — 799 lines. Win32 console window → stdout/simple overlay.
+
+============================== PORT — foundation (bring-up order) ==============================
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/globalincs/alphacolors.h:1: PORT globalincs — 3,615 lines. pstypes.h core types/macros, systemvars, version; crypt.cpp = cheat-string hashes (with cryptstring/). 2 _asm files.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/math/fix.h:1: PORT math — 6,309 lines. vecmat/floating/staticrand; fix.h fixed-point _asm → C. Pure code, unit-testable.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/parse/encrypt.h:1: PORT parse — 13,271 lines. parselo tokenizer, sexp.cpp evaluator (212 ops = the retail vocabulary, campaign uses 128), encrypt.cpp table decryptor. ORACLE: tables from gog/*.vp + missions/*.fs2 must parse identically.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/cfile/cfilearchive.h:1: PORT cfile — 4,299 lines. VP archive reader + file abstraction; 4 Win32 files (findfirst/mmap/paths) → std::filesystem (reference/2018 TODO had this planned). ORACLE: list/extract vs gog/*.vp.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/cfilearchiver/cfilearchiver.cpp:1: TOOL cfilearchiver — 282 lines. VP builder; port for test tooling.
+
+============================== PORT — data/media ==============================
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/bmpman/bmpman.h:1: PORT bmpman — 2,918 lines. Bitmap slot manager.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/palman/palman.h:1: PORT palman — 977 lines. Palette manager (software renderer needs it).
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/pcxutils/pcxutils.h:1: PORT pcxutils — 824 lines. PCX loader.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/tgautils/tgautils.h:1: PORT tgautils — 832 lines. TGA loader.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/anim/animplay.h:1: PORT anim — 2,991 lines. ANI decode/playback (windows.h hit is a comment only — clean).
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/localization/fhash.h:1: PORT localization — 2,076 lines. XSTR string tables.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/model/model.h:1: PORT model — 9,570 lines. POF load + subobject/BSP eval. ORACLE: pofer.
+
+============================== PORT — engine + gameplay ==============================
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/object/objcollide.h:1: PORT object — 8,830 lines. Object lists, collision pairs.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/physics/physics.h:1: PORT physics — 1,666 lines.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/render/3d.h:1: PORT render — 3,919 lines. 3d math pipeline: clip/project/instance.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/lighting/lighting.h:1: PORT lighting — 1,149 lines.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/particle/particle.h:1: PORT particle — 933 lines.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/debris/debris.h:1: PORT debris — 1,474 lines.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/fireball/fireballs.h:1: PORT fireball — 1,644 lines.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/asteroid/asteroid.h:1: PORT asteroid — 2,535 lines.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/nebula/neb.h:1: PORT nebula — 3,461 lines.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/starfield/nebula.h:1: PORT starfield — 2,517 lines.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/jumpnode/jumpnode.h:1: PORT jumpnode — 197 lines.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/observer/observer.h:1: PORT observer — 169 lines. Observer viewpoint object.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/cmeasure/cmeasure.h:1: PORT cmeasure — 659 lines. Countermeasures.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/ship/afterburner.h:1: PORT ship — 40,083 lines, the largest PORT unit: ship.cpp (282K) + THE ENTIRE AI (aicode.cpp 480K, aigoals, aibig, awacs) + shield/shipfx/shiphit/contrails. Zero Windows taint.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/weapon/beam.h:1: PORT weapon — 11,999 lines. beams/swarm/flak/emp/corkscrew/trails. Clean.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/mission/missionbriefcommon.h:1: PORT mission — 20,518 lines. Load/parse/goals/log/messages/training. missiongoals.cpp has a winsock tendril (multi goal sync) — ifdef site.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/hud/hudartillery.h:1: PORT hud — 26,428 lines, 33 files. Clean.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/radar/radar.h:1: PORT radar — 935 lines.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/freespace2/freespace.h:1: PORT freespace2 — 9,169 lines. Main loop + level paging; WinMain → SDL main; freespace.cpp has ISO-8859 bytes (sanitize encoding early); .rc/.ico dropped.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/gamesequence/gamesequence.h:1: PORT gamesequence — 1,114 lines. Game-state machine.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/gamesnd/eventmusic.h:1: PORT gamesnd — 2,706 lines. Sound/music tables + event music.
+
+============================== PORT — UI / meta ==============================
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/ui/uidefs.h:1: PORT ui — 7,232 lines. Widget toolkit (buttons/sliders/listbox) over gr_*.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/menuui/barracks.h:1: PORT menuui — 16,074 lines. Mainhall, barracks, techroom, ready room.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/missionui/chatbox.h:1: PORT missionui — 19,207 lines. Briefing/debrief/loadout/red-alert (chatbox.* is multi — delete within).
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/popup/popupdead.h:1: PORT popup — 2,248 lines.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/gamehelp/contexthelp.h:1: PORT gamehelp — 1,967 lines. F1 help overlay.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/playerman/managepilot.h:1: PORT playerman — 4,259 lines. Pilot files + player control.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/stats/medals.h:1: PORT stats — 2,977 lines. Stats/medals/rank; stats.cpp winsock tendril (PXO) — ifdef site.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/controlconfig/controlsconfig.h:1: PORT controlconfig — 3,894 lines. Binding tables + config UI.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/cmdline/cmdline.h:1: PORT cmdline — 783 lines.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/cryptstring/cryptstring.cpp:1: PORT cryptstring — 81 lines. Cheat-code string hashing (used by io/keycontrol.cpp + globalincs/crypt.cpp). KEEP — deleting it kills cheats, not networking.
+
+============================== CAUTIONS ==============================
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/ship/ship.cpp:1: CAUTION multiplayer tendrils — 60 files outside network/ call multi_*/check GM_MULTIPLAYER inline. Strategy: delete network/, add one stub header (no-op multi_* + Game_mode multi bit constant-false), let the optimizer strip; excise call sites gradually, not up front.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/graphics/grsoft.cpp:1: CAUTION _asm has no C fallback anywhere in retail (0 NO_ASM guards) — every asm site (graphics 13 files, math 2, globalincs 2, io/osapi 1 each) needs a C rewrite; upstream history has them all.
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/freespace2/freespace.cpp:1: CAUTION encoding — ISO-8859/control bytes in some sources (freespace.cpp at least); tools that skip "binary" files silently miss them. Sweep to UTF-8/ASCII first, or greps lie.

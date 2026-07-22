@@ -1,0 +1,244 @@
+-*- mode: compilation -*-
+
+fs2open FIX-MINE: retail bugs still live on master
+==================================================
+STATUS 2026-07-18: ALL of Tier 1 and Tier 2 below APPLIED as 20
+one-bug-one-commit changes, 5fd0b29fb..b287e865b on master (each
+commit cites its fs2open hash; every step build-verified, all targets;
+pushed by 2026-07-21, playtested only incidentally by the sessions
+since).  The SKIP/FLAGGED section remains
+unapplied by design.
+Mined 2026-07-18 from fs2open branch history 2002-07-01..2005-12-31
+(~2525 commits scanned by three parallel miners; every candidate diff
+checked against `retail` for is-it-actually-Volition's-bug and against
+master @ 5fd0b29fb for is-it-still-there; all anchors below re-verified
+by hand on master).  Campaign relevance checked against
+missions/sexp-used.txt (the retail-campaign SEXP inventory).
+
+fs2open commit hashes are on the `fs2open` branch; `git show <hash>`
+for the reference diff.  These are cherry-pick-the-IDEA items, not
+literal cherry-picks -- the fs2open commits usually carry SCP noise
+around the load-bearing lines.
+
+
+TIER 1 -- campaign-affecting, tiny, unambiguous
+-----------------------------------------------
+
+[1] fedebbd53 (2002-12-23 Goober5000) multi-ship sexps stop at first ship.
+    The campaign USES all five affected operators: protect-ship,
+    beam-protect-ship, ship-visible, ship-invulnerable, ship-guardian.
+    Two defects per function: a departed/destroyed ship in the argument
+    list aborts the WHOLE list (return instead of continue), and a
+    not-yet-arrived ship stops the loop (break after the parse-object
+    branch).  Fix: return->continue, drop the break, let the loop run.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/parse/sexp.cpp:5311: note: sexp_protect_ships: `return;` on departed/destroyed aborts whole list
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/parse/sexp.cpp:5330: note: `break;` after parse-object branch stops the loop
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/parse/sexp.cpp:5344: note: sexp_beam_protect_ships: same pattern
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/parse/sexp.cpp:5387: note: sexp_ships_visible: same pattern
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/parse/sexp.cpp:5433: note: sexp_ships_invulnerable: same pattern
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/parse/sexp.cpp:5475: note: sexp_ships_guardian: same pattern
+
+[2] 6f5ba639e (2004-02-14 Goober5000) never-warp copy-paste bug.
+    Campaign uses never-warp AND break-warp.  In the not-yet-arrived
+    (parse object) branch both arms assign P_SF_WARP_BROKEN; the else
+    arm must be P_SF_WARP_NEVER.  never-warp on a ship that hasn't
+    arrived yet silently degrades to repairable-broken.  One line.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/parse/sexp.cpp:4961: note: else arm should be P_SF_WARP_NEVER (both arms P_SF_WARP_BROKEN)
+
+[3] f350e0685 (2005-10-27) message-token stack smash, inverted test.
+    message_translate_tokens: the `#...#` branch has `if (toke1) break;`
+    -- inverted vs the correct `$...$` branch above it.  A message
+    containing `#` without a closing `#` runs strncpy(temp, text,
+    toke1 - text) with toke1 == NULL -> huge size -> char temp[40]
+    stack overrun; well-formed #tokens# break out instead of
+    translating.  Training messages are full of tokens.  One char:
+    `if (toke1)` -> `if (!toke1)`.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/mission/missiontraining.cpp:591: note: inverted `if (toke1)  // No second one?` then break
+
+[4] 8344fdd8d (2004-02-05 Goober5000) Personas[-1] out-of-bounds read.
+    message_play_anim: persona_index can stay -1 (message with a head
+    ANI but no persona -- the code even mprintf's about it) and is then
+    used to index Personas[].flags.  Wrong/garbage talking-head choice,
+    the old "wrong death head ani" symptom.  Fix: guard the block with
+    persona_index >= 0.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/mission/missionmessage.cpp:805: note: persona_index = m->persona_index; may be -1
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/mission/missionmessage.cpp:814: note: unguarded Personas[persona_index].flags
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/mission/missionmessage.cpp:824: note: second unguarded use
+
+[5] 7d050d1ac (2004-11-24 taylor) briefing stage compaction leaves
+    stale pointer duplicates.  brief_compact_stages shifts live stages
+    down over false-formula ones but never clears the vacated tail
+    slots -- they keep old copies of live new_text/icons/lines
+    pointers; later cleanup can double-free.  Fix: memset the tail
+    [num_stages..original count).
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/missionui/missionbrief.cpp:743: note: brief_compact_stages -- shift loop leaves stale tail copies
+
+[6] d66f548fa (2005-05-30) zero-stage briefing renders previous
+    mission's text.  brief_render calls brief_render_text /
+    brief_voice_play unconditionally; with 0 stages the stale
+    Num_brief_text_lines from the previous mission bleeds through.
+    Fix: guard with Briefing->num_stages > 0 (the sibling guards
+    already exist at :904 and :1411 -- this site was just missed).
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/missionui/missionbrief.cpp:1063: note: brief_render_text call lacks num_stages guard
+
+[7] 5131e7dcd (2002-12-03 DTP) player-entry-delay carries across
+    missions.  Entry_delay_time is only assigned inside
+    if (optional_string("+Player Entry Delay:")); missions without the
+    token inherit the previous mission's delay.  Fix: else reset to 0.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/mission/missionparse.cpp:457: note: assignment only under optional_string, no else reset (global at :83)
+
+[8] a411961c9 (2003-01-17 Goober5000, debris part only) dangling stack
+    pointer in the debris target box.  temp_name is scoped to the if
+    block; printable_ship_class points at it and is used after the
+    block.  Only bites for ship-copy classes (name with '#') -- the
+    campaign has those (e.g. weakened trainer variants).  Fix: hoist
+    the buffer to function scope (cf. the ship variant at :745 which
+    already does it right).  Ignore the rest of the commit (big
+    #-truncation refactor).
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/hud/hudtargetbox.cpp:1159: note: char temp_name[NAME_LENGTH] scoped inside if block
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/hud/hudtargetbox.cpp:1162: note: printable_ship_class = temp_name; escapes the scope
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/hud/hudtargetbox.cpp:1165: note: used here after scope ends
+
+[9] 263f2b7c6 (2005-01-11) physics_apply_whack ignores its mass
+    parameter.  Divides by pi->mass instead of the passed mass; the
+    docked-ship caller passes combined assembly mass, so docked ships
+    (support ship rearm!) get an over-strong velocity kick from hits.
+    One line: pi->mass -> mass.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/physics/physics.cpp:738: note: 1.0f / pi->mass should use the mass parameter
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/ship/shiphit.cpp:1338: note: the caller that passes combined docked mass
+
+[10] 01f831c6f (2005-08-25) dying ships with dead engines keep
+    fighting.  process_subobjects forces fighters/bombers with
+    destroyed engines into SM_ATTACK_FOREVER with no SF_DYING check --
+    ships in their death roll (including the player) keep targeting
+    and firing.  One line: && !(shipp->flags & SF_DYING).
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/ship/aicode.cpp:10717: note: SIF_FIGHTER|SIF_BOMBER branch lacks SF_DYING guard
+
+[11] 84ba4e2d0 (2002-07-20 DTP) empty secondary bank's fire_wait
+    leaks into the next bank.  When a bank runs dry and auto-cycles,
+    the NEXT bank's fire stamp is set from the emptied weapon's
+    fire_wait (wrong-variable class).  Slow-missile bank empties ->
+    fast bank locked out for the slow weapon's full delay.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/ship/ship.cpp:4961: note: next_secondary_fire_stamp set from wrong bank's fire_wait on auto-cycle
+
+
+TIER 2 -- real retail bugs, low/latent campaign impact
+------------------------------------------------------
+
+[12] 0ce01a077 (2003-01-08 Goober5000) non-campaign (simulator room)
+    missions always get FAIL debrief music + bogus failure-counter
+    bump: `Campaign.next_mission == Campaign.current_mission` is true
+    outside campaign mode.  Fix: add GM_CAMPAIGN_MODE guard at both
+    sites.  RELEVANT SOON: simulator-room combat mission is on our
+    NEXT list.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/missionui/missiondebrief.cpp:1529: note: needs Game_mode & GM_CAMPAIGN_MODE guard
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/missionui/missiondebrief.cpp:1540: note: same
+
+[13] b07017dfa (2002-12-24 Goober5000, is-iff part) is-iff sexp hangs
+    the game: `continue` skips the n = CDR(n) at loop bottom -- any
+    gone ship after the first spins forever.  Campaign never uses
+    is-iff, but it's a hang-class bug and a two-line while->for fix.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/parse/sexp.cpp:4013: note: continue skips CDR advance -> infinite loop
+
+[14] d1a7051b6 (2005-01-17) damage-popup stack overflow with >12
+    damaged subsystems.  hud_subsys_list[SUBSYSTEM_MAX=12] filled per
+    damaged subsystem INSTANCE, unbounded except a release-noop
+    Assert.  Latent in stock campaign (player flies fighters).
+    Fix: bound the append.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/hud/hud.cpp:1425: note: hud_subsys_list[num++] unbounded past SUBSYSTEM_MAX
+
+[15] c9ecc594c (2005-10-02) is_support_allowed doesn't check the
+    player ship's model has a DOCK_TYPE_REARM dockpoint; requesting
+    support without one CTDs down the rearm path.  Edge case (stock
+    fighters have the point).
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/ship/ship.cpp:7927: note: add model_find_dock_index(..., DOCK_TYPE_REARM) < 0 -> return 0
+
+[16] 2be5cedfa (2005-04-21) overlapping strncpy UB: pilot read passes
+    p->squad_filename into player_set_squad_bitmap which strncpy's it
+    onto itself.  Valgrind-clean fix: read into a temp.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/playerman/managepilot.cpp:396: note: reads into p->squad_filename then passes it to...
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/playerman/managepilot.cpp:1112: note: ...this strncpy(p->squad_filename, fname, ...) -- src==dst
+
+[17] 2845421e2 (2004-02-10 Goober5000) barracks stats overflow:
+    NUM_STAT_LINES=85, one line appended per ship class with kills,
+    release build unguarded (Assert only).  Needs a pilot with kills
+    in ~64 distinct classes -- latent but real.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/menuui/barracks.cpp:33: note: NUM_STAT_LINES 85
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/menuui/barracks.cpp:307: note: Assert-only bound on the append loop
+
+[18] fa8fde678 (2003-06-25) Weapon_energy_cheat never reset on mission
+    end -- cheat persists across missions.  Trivial; cheat-only.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/hud/hudets.cpp:38: note: the global; no reset anywhere on mission end
+
+[19] 974a939d4 (2003-03-17) Q (equalize shields) on a shieldless ship
+    still plays the transfer sound.  Cosmetic; add OF_NO_SHIELDS
+    early-out.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/hud/hudshield.cpp:340: note: hud_shield_equalize lacks OF_NO_SHIELDS guard
+
+[20] 14bc599f3 (2002-11-19) is-tagged misses level-2 (TAG-B) tags:
+    checks tag_left only; retail's own ship_is_tagged() checks both.
+    Campaign doesn't use is-tagged.  One line: call ship_is_tagged().
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/parse/sexp.cpp:6368: note: tag_left only; should call ship_is_tagged()
+
+
+SKIP / FLAGGED -- do not port (or not now)
+------------------------------------------
+
+- 77db45827 rand re-roll: BEHAVIOR CHANGE.  Retail caches the rand
+  sexp result; campaign missions were tuned against cached semantics
+  (SCP later added rand-multiple as a separate operator).  Never port.
+- b8e521773 order sexp: retail ships a `return 0;` STUB
+  (/home/lnicoara/build/mine.d/fs2.d/fs2/code/parse/sexp.cpp:5741)
+  with the helper hud_query_order_issued sitting unused.  Campaign
+  never uses `order`, so wiring it up is implementing a feature, not
+  fixing a bug.  Park.
+- d3f7db383 talking-head anim_free ref-count fix: real retail
+  leak/crash class but changes anim_free's return contract and adds a
+  HUD-gauge gate -- medium entanglement, revisit with the ANI work.
+- 481dcf346/478d504f0 anim corrupt-file Asserts -> graceful abort:
+  robustness for corrupt/mod anis only; stock campaign never trips it.
+- 2520b3279 weapon_range ignored by fighter AI + lead indicator:
+  VERIFIED NO-OP for retail data -- stock weapons.tbl never sets
+  $Weapon Range (default is effectively infinite).  Real
+  inconsistency vs retail's own turret code; park.
+- b00f5f9a5 cfile fixed-buffer hardening: legit class, but a
+  signature-changing 9-file refactor.  Do our own pass if cfile ever
+  shows a real overrun.
+- 1a70dcbd4 exited-ship crash (Assert/ship_name_lookup misuse): real
+  crash class but heavily entangled with Goober's set-scanned/cargo
+  rework; would need clean-room extraction.  Second look someday.
+
+FAMOUS-BUT-BOGUS (fs2open regressions, NOT retail bugs -- master is
+already correct; recorded so we don't chase them again):
+- b0e1aac70 hud_config uninitialized pointer -- retail already uses a
+  value-type color; the pointer was an fs2open transient.
+- eb8ee38f0/1c73dc4cf "insidious beam bug" -- Bobboau's SCP
+  shield_factor beam-penetration code; retail beam.cpp has none of it.
+- 2d20fa0cc warp-effect-always-knossos -- SCP regression; retail/master
+  already pick KNOSSOS vs WARP correctly.
+- 742c4c148 initial-status hull/shield -- caused by SCP commenting out
+  retail init for change-ship-class; master keeps retail code.
+- eca3de01e ai_select_primary_weapon null deref -- introduced by SCP's
+  AI rewrite; retail version never derefs other_objp.
+- 4ee06b9d7 pilot-select cancel corrupting pilot -- patches SCP's
+  write-on-close pilot code; retail close only reads.

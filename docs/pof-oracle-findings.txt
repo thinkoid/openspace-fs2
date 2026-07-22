@@ -1,0 +1,1076 @@
+-*- mode: compilation -*-
+
+POF ORACLE — findings from steps 1–3 (2026-07-21)
+=================================================
+
+Plan (agreed, in order):
+  1. carve libpof out of pofview into its own repo          DONE
+  2. fs2-side POF dump from retail's loader; make canonical DONE
+  3. libpof dump in the same format; differential test      MACHINERY DONE,
+                                                            2 defects found,
+                                                            1 decided-not-done
+  4. finish pofer against the oracle                        DONE -- 176/176
+                                                            byte-identical
+
+The oracle is retail's own loader (modelread/pofparse) driven by
+tests/pof_dump.cpp inside the fs2 build. It is never carved out; the game
+already builds, so it just loads and dumps. libpof (PCS2-derived) is the thing
+under test. pofer stays independent, a third opinion, finished last.
+
+
+DECIDED, NOT YET IMPLEMENTED — libpof must stop fabricating normals
+--------------------------------------------------------------------
+
+    Decision taken 2026-07-21: a read-only library reports what the file says.
+    libpof normalises at load and must stop; the work is separating the
+    normalisation from the bounds pass it currently shares. Step 4 strengthened
+    the case -- pofer, an independent reader, agrees with retail exactly on
+    these normals, so libpof is the only one of the three that disagrees.
+    Nothing is pinned for libpof until this lands.
+
+
+/home/lnicoara/build/mine.d/fs2.d/libpof/src/model/pmf_pof.cc:372: LoadFromPOF ends with transform(identity, {}) — normalises every normal
+/home/lnicoara/build/mine.d/fs2.d/libpof/src/model/types.cc:122: jt->norm = geom::safe_unit_from(transform * jt->norm) — the actual data loss
+/home/lnicoara/build/mine.d/fs2.d/libpof/src/model/types.cc:104: same for the per-polygon normal
+/home/lnicoara/build/mine.d/fs2.d/libpof/src/geometry/vec3d.hh:124: safe_unit_from — magnitude < 1e-5 collapses the vector to exactly zero
+
+    libpof reports normals the file does not contain. Retail POFs genuinely
+    store non-unit normals: t-laser.pof has 5 of 24 at magnitude ~0.692, and
+    subspacenode.pof's are ~1e-8, which safe_unit_from turns into exact zeros.
+    Verified by parsing the file's normal table directly: the oracle's value is
+    at normal indices 10 and 11; libpof's value is absent from the file.
+
+    Identity leaves positions untouched, which is why positions matched
+    exactly and only normals diverged.
+
+    Blast radius over the 8 sample models: 1393 of 1793 polygons (78%),
+    all 8 models affected. Applying libpof's own safe_unit_from rule to both
+    sides collapses the residual to last-digit flips that trace to double
+    rounding in the comparison script (dump prints %.6g, script re-normalises
+    the truncated value) — NOT to libpof. So one root cause explains every
+    real difference; there is no second defect underneath.
+
+    Why it cannot simply be deleted: that same transform pass computes the
+    bounding boxes, the subobject radius and header.max_radius
+    (/home/lnicoara/build/mine.d/fs2.d/libpof/src/model/types.cc:95-121).
+    The normalisation has to be separated from the bounds pass.
+
+    The call: a read-only library should report what the file says and let
+    pofview normalise at render time — Quick3D's shaders normalise anyway. But
+    it changes library semantics and affects the viewer, so it was left alone.
+
+
+FIXED
+-----
+
+/home/lnicoara/build/mine.d/fs2.d/libpof/src/pof/handler.cc:661: LoadPOF ended with `version = 2117;`, overwriting what the file declared
+/home/lnicoara/build/mine.d/fs2.d/libpof/src/pof/handler.hh:93: handler_t::version — public, correct during the parse, clobbered at the end
+/home/lnicoara/build/mine.d/fs2.d/libpof/src/model/file.hh:75: model_t::GetVersion() — added; model_t previously discarded the version entirely
+
+    PCS2-the-editor behaviour: whatever it loaded, it would save back as the
+    newest format. Stranded in the load path when the writers were removed.
+    t-laser.pof declares 2116 (verified in the bytes: PSPO 44 08 00 00);
+    libpof reported 2117. The only in-parse consumer is handler.cc:272, which
+    runs inside the loop above the clobber, so dropping it changes nothing.
+    Fixed in libpof 72e9980.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/tests/pof_dump.cpp:34: fold_name — the model name was the only root-dependent field in the dump
+
+    gog/ (VP archives) reports BeamSaber.POF, rundir/ (unpacked) reports
+    beamsaber.pof. Same 176 models, same every field, but the list sorts by
+    name, so the whole file reordered — a 1597-line diff against the pinned
+    oracle that was pure reordering, no regression. An oracle that depends on
+    which copy of the game you point at is not an oracle. Fixed in fs2
+    9d7a4f137; both roots now byte-identical in every mode.
+
+
+DESIGN NOTES — why --geom exists and what it does not compare
+------------------------------------------------------------
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/tests/pof_dump.cpp:194: retail visits BSP branches pre/back/on/front/post
+/home/lnicoara/build/mine.d/fs2.d/libpof/src/bsp/funcs.cc:115: libpof visits front/back/prelist/postlist/online
+
+    Same polygons, different sequence. Any order-dependent comparison is dead
+    on arrival, so --geom sorts the formatted polygon lines. Sorting removes
+    the ordering difference without hiding a real one: a changed coordinate
+    still changes a line.
+
+/home/lnicoara/build/mine.d/fs2.d/libpof/src/bsp/funcs.cc:7: POFTranslate — libpof mirrors X on every point and normal as it parses (PCS2 convention)
+/home/lnicoara/build/mine.d/fs2.d/libpof/tests/pof_dump.cc:65: the mirror is undone on the way out so the dump speaks the file's coordinates
+
+    Signed zero fell out of this: the file holds +0.0, the mirror makes -0.0,
+    the identity transform's `+ 0.0` flips it back to +0.0 (IEEE: -0 + 0 = +0),
+    and un-mirroring makes it -0.0 again. Both sides now fold -0 to +0.
+
+    NOT projected, because only the retail side keeps them: flat-polygon RGB
+    (libpof sets texture_id -1 and drops the colour) and boundboxes.
+
+
+ORACLE SURFACES NOW PINNED (fs2)
+--------------------------------
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/tests/oracle/pof-dump.txt:1: summary of all 176 models, line-diffed
+/home/lnicoara/build/mine.d/fs2.d/fs2/tests/oracle/pof-full-sample.txt:1: --full for 8 models, 753K, line-diffed
+/home/lnicoara/build/mine.d/fs2.d/fs2/tests/oracle/pof-full.sha256:1: sha256 of --full over all 176 models
+/home/lnicoara/build/mine.d/fs2.d/fs2/tests/pof_oracle.sh:1: the runner; meson test name is `pof-oracle`
+/home/lnicoara/build/mine.d/fs2.d/fs2/tests/meson.build:38: test() registration
+
+    The 8 sample models were chosen on measured feature coverage, not taste:
+    flat polygons survive in only 6 of the 176 retail models, so t-laser.pof
+    (12 flats) and subspacenode.pof (88 flats) are in deliberately. Both POF
+    versions are represented. Full list, which must stay in step with the
+    pinned file, is in pof_oracle.sh:
+
+        t-laser cmeasure01 spacehunk subspacenode
+        cargo03 support02 fighter2s-03 fighter13
+
+    Verified the test can fail: skips 77 with no install, returns 1 on a
+    corrupt checksum, returns 1 on a one-digit change to a single vertex
+    coordinate. Whole run under a second. Corpus checksum:
+    065b4347e71be24d23fb2920e0885892764bf8fa853724b41ffd43af59dcb8f4
+
+
+WINDOWS-ISM — case-insensitive filenames (flagged, nothing changed)
+-------------------------------------------------------------------
+
+    503 case-folding compares (stricmp/strcasecmp/strnicmp/strncasecmp) across
+    fs2 code/. Worst: parse/sexp.cpp 88, localization/localize.cpp 57,
+    ship/ship.cpp 51, weapon/weapons.cpp 30, mission/missionparse.cpp 29,
+    parse/parselo.cpp 22. code/cfile/ itself has ONE — so this is not one
+    containment point doing the work, it is the same workaround re-done at
+    every call site that touches a name.
+
+    Caveat: not all 503 are filenames. SEXP operator names and ship/weapon
+    class tokens are folded too, and that is a parser choice, not a filesystem
+    one. Separating the two populations is the first step of any cleanup; they
+    may want opposite treatments. Full note in memory:
+    openspace-case-insensitivity.
+
+    The pattern worth generalising is "normalise once at the edge" — what
+    fold_name does — not "fold at every comparison".
+
+
+REPO STATE AT PARK
+------------------
+
+    libpof   ssh://git@codeberg.org/thinkoid/libpof.git  + odroid backup
+             master @ 72e9980. 331 commits: it is a clone of pofview's, so the
+             PCS2 lineage is unbroken and git log on any surviving file still
+             reaches the 2010 checkin. 3/3 tests green.
+             fa864ad carve, 4237394 -fsigned-char on the dep, 72e9980 dumper.
+             PUSHED through 4237394; 72e9980 UNPUSHED.
+
+    pofview  master @ f5865af. Library sources, tests and PCS2's 35 wx icons
+             removed; subprojects/libpof.wrap points at the codeberg ssh URL.
+             No automated tests by design — it is the presentation layer.
+             Verified by fresh-cloning it and letting the wrap pull libpof.
+             PUSHED through d8154b9; f5865af (icon removal) UNPUSHED.
+
+    fs2      master @ 79004bae8. 9d7a4f137 root-independence, af1f69d31 pinned
+             oracle + test, 79004bae8 --geom. All UNPUSHED, on top of the
+             pre-existing unpushed backlog. 2/2 tests green.
+
+    pofer    untouched, still ssh://git@codeberg.org/thinkoid/pofer.git.
+             Complete parser, no output: main() at pof.cc:811 builds the pof_t
+             and throws it away. Step 4 = give it the dump. Its own defects,
+             found by reading, listed below.
+
+
+POFER — defects to fix in step 4 (all found by reading, none fixed)
+-------------------------------------------------------------------
+
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:349: pow(pof.mass, 2 / 3) — integer division, exponent is 0, so `a` is always 4.65
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:23: under NDEBUG, #define ASSERT(x) x turns ASSERT(0) into a no-op
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:19: #include <GL/gl.h> — entirely unused
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:163: BOX_DEF fills bsp.boxes, which postprocess never copies out
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:658: 'PATH' parsed into discarded locals
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:769: 'INSG' reads an int and seeks back — insignia skipped entirely
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:811: main builds the pof_t and discards it — the missing dump
+
+    The mass bug is latent: guarded by file_version < 2009, and retail POFs
+    are 2116/2117. The NDEBUG one matters more — the default: unknown-chunk
+    case and the 'OHDR' case silently continue, and an oracle that quietly
+    skips what it does not understand is worse than no oracle.
+
+
+================================================================================
+STEP 4 — pofer finished and checked against the oracle (2026-07-21)
+================================================================================
+
+    RESULT: pofer's --geom is byte-identical to retail's over all 176 models,
+    128693 lines, zero diff. It matches on the non-unit normals the file
+    actually stores -- the thing libpof fabricates over -- because it does not
+    touch them.
+
+    Plan status is now: 1 DONE, 2 DONE, 3 machinery done + one decision taken
+    but not yet implemented (see OPEN above), 4 DONE.
+
+
+DEFECTS FIXED — measured, not guessed
+-------------------------------------
+
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:321: poly normals were never rebased onto the model-wide normal array
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:291: base_normal, the missing counterpart to base_vertex
+
+    Vertices got rebased when a subobject's BSP was merged into the model;
+    normals did not. Every subobject past the first indexed into some other
+    subobject's normals. Reverting just this hunk and re-running the corpus:
+    88333 of 122535 polygon lines wrong (72%).
+
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:283: the submodel offset is no longer baked into vertex positions
+
+    postprocess did `v += subobj.off` on every vertex. Retail keeps them
+    subobject-relative, and the transform cannot be undone in the dump: adding
+    a float offset and subtracting it back is not the identity, so no amount
+    of care downstream recovers the original. Reverting just this hunk: 47471
+    of 122535 polygon lines wrong (39%). pof_t still carries `off` and
+    `real_off`, so assembling the model into one frame is still possible --
+    it is now the caller's business, which is where it belongs.
+
+    Same principle as the libpof decision: report what the file says.
+
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:191: SORTNORM followed only front and back; now all five lists
+
+    NOT a fix that changes retail output -- measured, and worth stating
+    precisely. All 99318 sortnorm nodes in the 176 models do carry nonzero
+    pre/on/post offsets, but each points at a bare EOF chunk (a typical node
+    reads pre 18472 back 9992 on 18488 front 88 post 18480 -- three
+    consecutive 8-byte terminators). The FS2 BSP compiler emitted the fields
+    and never used them. Front/back-only output is byte-identical to the fixed
+    output on this corpus. Fixed anyway, plus a zero-offset guard: a zero
+    offset used to mean re-entering the same chunk forever.
+
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:40: ASSERT no longer stops checking under NDEBUG
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:363: 'OHDR' used to fall through into 'HDR2'
+
+    `#define ASSERT(x) x` kept the side effect -- the reads live inside the
+    assertion -- but dropped the check, so under NDEBUG the unknown-chunk and
+    'OHDR' cases silently continued. A dumper that carries on past what it did
+    not understand reports a model that is not the one on disk.
+
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:432: pow(mass, 2/3) -> 2.0/3.0 (integer division; exponent was 0)
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:114: normal counts read as unsigned char, not plain (signed) char
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:103: a second POINT_DEF now replaces the first, as retail's readers assume
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:81: BSP recursion depth capped at 256, mirroring retail's walkers
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:305: BOX_DEF boxes are copied out; pof_t::boxes used to be permanently empty
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:856: 'INSG' read an int and seeked back over it -- a no-op dressed as a parse
+
+    All latent on retail data: mass is guarded by version < 2009 and retail
+    POFs are 2116/2117; no vertex carries more than 127 normals; no subobject
+    has two POINT_DEFs. Fixed because the corpus is not the format.
+
+    Deliberately still not parsed: paths and insignia. pof_t has nowhere to put
+    them, and --geom does not carry them, so nothing here would check them.
+    'PATH' is still walked rather than skipped, which does check that this
+    reader agrees with the file about the chunk's shape.
+
+
+THE DUMP
+--------
+
+/home/lnicoara/build/mine.d/fs2.d/pofer/dump.cc:112: dump_geometry -- the whole of the new output
+/home/lnicoara/build/mine.d/fs2.d/pofer/dump.cc:79: format_poly -- flat polys print tex -1 and zero uv, as the oracle does
+/home/lnicoara/build/mine.d/fs2.d/pofer/dump.cc:63: at() -- an out-of-range index reads as the origin, matching the oracle
+/home/lnicoara/build/mine.d/fs2.d/pofer/dump.cc:54: zero() -- folds -0 to +0
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:916: main takes --geom and any number of models
+
+    Kept in its own translation unit: pof.cc stays the parser, dump.cc is the
+    report. The Makefile globs *.cc, so it needed no change for this.
+
+    pofer needs no coordinate fix-up on the way out, unlike libpof -- it never
+    mirrored X in the first place. That is why this matched on the first run.
+
+
+PINNED, AND THE CHECK
+---------------------
+
+/home/lnicoara/build/mine.d/fs2.d/pofer/oracle/check.sh:1: the runner; `make check`
+/home/lnicoara/build/mine.d/fs2.d/pofer/oracle/pof-geom-sample.txt:1: 8 models, 1891 lines, line-diffed
+/home/lnicoara/build/mine.d/fs2.d/pofer/oracle/pof-geom.sha256:1: fe696cb030deed563cfa96cba169bf6d6576de831d0d62b1f0c268858227500d
+/home/lnicoara/build/mine.d/fs2.d/pofer/Makefile:40: the check target
+
+    Same shape as the fs2 oracle: a small diffable sample plus a whole-corpus
+    checksum. Same 8 models, chosen there on measured feature coverage.
+
+    The pinned bytes are pofer's own output, but they were not blessed from
+    pofer -- every byte was first verified equal to retail's. pofer therefore
+    keeps its independence: `make check` needs no fs2 build, only an unpacked
+    install (POF_MODELS_DIR, or a sibling rundir/). No install -> skip 77.
+
+    One trap worth recording: the oracle orders models by lowercased name
+    compared BYTEWISE, and a shell `sort` under a UTF-8 locale does not. Two
+    retail models are mixed-case (EMPulse.pof, Platform2T-01.pof) and locale
+    collation also reorders capital01/capital01a and t-laser. Getting this
+    wrong produces a 5256-line diff that looks like a geometry bug and is not.
+    check.sh lowercases and sorts under LC_ALL=C.
+
+    Verified the check fails when it should, using the reverted-fix binaries
+    rather than a hand-edited file: no models 77, no binary 77, normal-rebase
+    bug 1, baked-offset bug 1. Whole run about 40s.
+
+
+WHERE THE THREE READERS NOW STAND
+---------------------------------
+
+    retail (fs2/tests/pof_dump.cpp)  the oracle, pinned
+    pofer                            byte-identical to it, 176/176, pinned
+    libpof                           positions exact; normals fabricated on
+                                     78% of polygons by the load-time
+                                     normalise -- decision taken, not yet
+                                     implemented (see OPEN, top of file)
+
+    pofer agreeing exactly is a real result for libpof's open item, not just
+    for pofer: two independent readers now say the file stores non-unit
+    normals. libpof is the only one of the three that disagrees.
+
+========================================================================
+STEP 5 -- A VIEWER ON TOP OF POFER (2026-07-21)
+========================================================================
+
+    Goal: look at a model as pofer read it. Done by teaching pofer to print
+    a drawable dump and pofview to read one, rather than by putting a GUI
+    into a 6-file CLI tool or a second reader into pofview.
+
+    Nothing in the oracle path moved. `make check` is green before and
+    after, sample and corpus both.
+
+--- pofer: the --mesh dump
+
+/home/lnicoara/build/mine.d/fs2.d/pofer/dump.cc:120: dump_mesh
+    The --geom projection plus the four things a renderer needs and a
+    comparison must not have: submodel placement, detail level, texture
+    names, framing radius. Plus `source`, the absolute path it was read
+    from, so a dump that gets moved can still find its bitmaps.
+
+/home/lnicoara/build/mine.d/fs2.d/pofer/dump.cc:59: digits_t
+    THE ONE REAL TRAP. --geom prints %.6g; that is the oracle's format and
+    is not ours to change. A dump that is read back must not.
+
+    Measured: capital01.pof has submodel offsets up to 1066. At six
+    significant figures the offset resolves to 0.01, and the viewer adds a
+    rounded offset to a rounded vertex. Result was 1271 of 4347 corners
+    landing somewhere libpof did not put them -- a pure artefact of the
+    print. At %.9g (round-trips a float exactly) it is 0 of 4347.
+
+    subspacenode.pof hid this: radius 696 but a single submodel at offset
+    zero, so nothing was ever added and it compared clean at %.6g.
+
+/home/lnicoara/build/mine.d/fs2.d/pofer/dump.cc:107: print_polys
+    Extracted from dump_geometry so both dumps emit polygons one way.
+
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:916: main
+    --mesh alongside --geom; both may be given.
+
+--- pofview: reading one
+
+/home/lnicoara/build/mine.d/fs2.d/pofview/src/viewer/mesh_dump.cc:23: to_view
+    libpof negates X on every position, normal and subobject offset
+    (subprojects/libpof/src/bsp/funcs.cc:10, POFTranslate). That is not
+    decoration: POF winds its faces for a left-handed world, and the
+    single-axis mirror is what turns them into the counter-clockwise order
+    Quick3D calls front-facing. Without it models render inside-out.
+
+    So the mesh reader does it too -- but at the VIEWER's edge, where a
+    display convention belongs, not inside whatever read the file. Same
+    principle as the libpof normals decision, applied to the other half.
+
+/home/lnicoara/build/mine.d/fs2.d/pofview/src/viewer/mesh_dump.cc:46: is_drawn
+    detail == 0 and not "-destroyed" is the same subset build_groups walks
+    for a libpof load, said in the terms a dump has. pofer already
+    propagates detail to children (pof.cc:258-277) and already accumulates
+    offsets through parents (pof.cc:553-556), so the viewer walks no tree.
+
+    Not academic: fighter2s-03's LOD 0 is subobject 5, not 0. Drawing
+    everything would stack four LODs and four debris chunks.
+
+/home/lnicoara/build/mine.d/fs2.d/pofview/src/viewer/mesh_dump.cc:96
+    A --geom file is refused, not drawn. It has no placement and no detail
+    levels; drawing it would show a heap and call it a model.
+
+/home/lnicoara/build/mine.d/fs2.d/pofview/src/viewer/pof_geometry.hh:44: group_builder_t
+    The interleaved layout -- pos(3) norm(3) uv(2) -- is now written in one
+    place instead of two. It has to match what set_data declares to
+    Quick3D, and there are now two loaders that could get it wrong.
+
+--- what was measured
+
+    Throwaway harness: load the .pof through libpof and the .mesh through
+    the new reader, compare both as multisets of corners (the projection
+    sorts its polygons, libpof emits them in BSP-walk order, so sequence
+    comparison is meaningless), at the dump's own precision.
+
+    All 176 models, 201336 corners:
+
+        position + uv differing        0        (0%)
+        whole corner differing    121899       (61%)
+
+    Zero on position is the verification: the mesh path puts every vertex
+    where libpof puts it. The 61% is entirely normals -- libpof
+    normalising vectors the file stores un-normalised. Per model it ranges
+    from subspacenode at 408/408 (its normals are ~1e-8, all zeroed) to
+    capital01 at 848/4347.
+
+    Corpus-wide 61% supersedes the 78% figure, which was over 8 samples.
+
+--- notes
+
+    - The comparison is at %.6g, not bitwise: the dump is text.
+    - Two earlier comparison attempts were wrong and were thrown away --
+      bitwise (ignores that --geom sorts) and set-difference at full float
+      precision (ignores that the dump is printed). Both reported 100%
+      differing, which is what a broken oracle looks like.
+
+========================================================================
+STEP 6 -- WHAT RETAIL DOES WITH A NON-UNIT NORMAL (2026-07-21)
+========================================================================
+
+    Question left open by step 5: is libpof's normalisation merely wrong
+    as reporting, or does it change how a ship looks?
+
+    ANSWER: it changes how a ship looks. Retail uses the stored magnitude
+    as a per-vertex light multiplier. This is not slop in the data; it is
+    authored shading.
+
+--- the chain, retail source
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/model/modelinterp.cpp:387
+    Interp_norms[next_norm] = src;
+        A raw pointer into the model's BSP bytes. No copy, no normalise.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/model/modelinterp.cpp:469
+    Interp_lighting->b[norm] =
+        light_apply(Interp_verts[vertnum], Interp_norms[norm], Interp_light);
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/lighting/lighting.cpp:612
+    ltmp = -vm_vec_dot(&Static_light[idx]->local_vec, norm)
+           * Static_light[idx]->intensity * Reflective_light;
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/lighting/lighting.cpp:649
+    dot = vm_vec_dot(&to_light, norm);      // dynamic lights, same
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/math/vecmat.cpp:262
+    vm_vec_dotprod = x*x + y*y + z*z.  No normalisation.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/lighting/lighting.cpp:170
+    light_rotate: vm_vec_rotate(&l->local_vec, &l->vec, &Light_matrix)
+        Retail rotates the LIGHTS into model space, precisely so the
+        model's own vectors are used untouched. The normal is never
+        transformed, so nothing normalises it on the way either.
+
+    => the diffuse term scales linearly with |norm|. A normal of length
+       0.692 gives that vertex 69.2% of the light a unit normal would.
+
+--- how much of the corpus this touches
+
+    389844 normals across the 176 models:
+
+        unit                        183607   47.1%   libpof: no change
+        near-zero (<1e-5)              816    0.2%   libpof: -> (0,0,0)
+        everything else             205421   52.7%   libpof: RESCALED UP
+
+    The middle band is not clustered just under 1:
+
+        0.0-0.1   1206        0.5-0.6    5994
+        0.1-0.2   1335        0.6-0.7   10248
+        0.2-0.3   2071        0.7-0.8   16349
+        0.3-0.4   3125        0.8-0.9   30781
+        0.4-0.5   4664        0.9-1.0  129648
+
+    ~75000 below 0.9; 1206 below 0.1 -- vertices retail draws all but
+    unlit that libpof lights fully.
+
+--- the one part that is accidentally right
+
+    safe_unit_from's `magnitude < 1e-5 -> zero vector` clamp
+    (geometry/vec3d.hh:124) is the crudest thing in it and the only part
+    that does not change appearance: subspacenode's ~1.5e-8 normals dot
+    to zero in retail too. It is the ORDINARY faces that get wrecked.
+
+--- consequence
+
+    The pending libpof fix is not hygiene. It is a rendering bug that
+    brightens 52.7% of every retail model's vertices.
+
+    Also: fs2/tests/pof_dump.cpp should grow --mesh, so retail's own
+    reading can be put on screen next to libpof's.
+
+========================================================================
+STEP 7 -- THE NORMALISATION FIX, AND WHAT IT EXPOSED (2026-07-21)
+========================================================================
+
+--- the fix
+
+/home/lnicoara/build/mine.d/fs2.d/libpof/src/model/types.cc:104
+/home/lnicoara/build/mine.d/fs2.d/libpof/src/model/types.cc:122
+    it->norm = transform * it->norm;        (was safe_unit_from(...))
+    jt->norm = transform * jt->norm;        (was safe_unit_from(...))
+
+    Applying the matrix is still right: every transform this can be given
+    is orthogonal -- identity, rotation, mirror -- and for an orthogonal
+    matrix the inverse transpose is the matrix itself, so length survives.
+
+    There was nothing to "separate from the bounds pass" after all. The
+    only caller of model_t::transform in the entire tree is the load
+    (pmf_pof.cc:370) and it passes IDENTITY, so safe_unit_from(transform *
+    norm) was never part of a transform. It was a bare rescale.
+
+--- RESULT: all three readers now agree byte for byte
+
+    libpof pof-dump vs pofer --geom, all 176 models, 128693 lines:
+        diff lines: 0
+        sha256 fe696cb030deed563cfa96cba169bf6d6576de831d0d62b1f0c268858227500d
+        == pofer/oracle/pof-geom.sha256, which was verified against retail
+
+    Viewer path (build_groups vs mesh_dump), 176 models / 201336 corners:
+        position+UV differing   0
+        whole corner differing  0
+
+    libpof's 3 unit tests green.
+
+--- a comparison trap, again: signed zero
+
+    First run after the fix showed 3513 of 201336 corners still differing,
+    in 79 models. Not data: pofer's dumps fold -0 to +0 (dump.cc `zero`),
+    the viewer then negates X for the mirror, and -1 * 0.0 = -0.0. So one
+    side printed "0" and the other "-0" under %.6g. Every other bit was
+    identical. The harness had to fold too. THIRD time signed zero has
+    produced a fake diff in this project.
+
+--- WHAT THE QUESTION EXPOSED: normals were the symptom
+
+    "Why is the model not a complete set of data? Why the remedial
+    normalisations?" -- and the answer is that it IS complete, and the
+    remediation is misplaced editor heritage.
+
+    POF already stores, per file: HDR2 max_radius, min/max bounding, mass,
+    mass centre, moment of inertia; per OBJ2 subobject: radius, bounding
+    box, geometric centre; per BSP node: bounding boxes; and the normals.
+    Nothing needs deriving at load.
+
+    model_t::transform is an EDITOR operation -- move geometry, then the
+    stored bounds are stale, so recompute; a BSP recompiler wants
+    canonical normals, so normalise. Defensible after an edit. libpof
+    calls it once, at load, with identity, on data nobody has edited.
+
+    So the pass ALSO overwrites authored values with recomputed ones:
+
+        types.cc:96-100   subobject bounding_box_min/max_point, radius
+        types.cc:117-121  header.max_radius, header.min/max_bounding
+        file.cc:181-183   resets all three before the walk
+
+    Measured, pofer (file's HDR2 radius) vs libpof GetMaxRadius():
+
+        15 of 176 models disagree
+        debris01     file 4.1764   libpof 2.1120   (49.4% off)
+        bomber2s-01  file 13.6248  libpof 20.0490
+        capital2v-01 file 1608.92  libpof 1606.13
+
+    Both directions, so it is not a systematic bias -- it is a different
+    quantity. NEXT QUESTION is therefore sharper than the old one: not
+    "separate the normalise from the bounds pass" but "should a read-only
+    load recompute bounds AT ALL, when the file states them?"
+
+--- not touched, deliberately
+
+    The other safe_unit_from sites are the same principle applied to data
+    pofview does not draw; left for a separate pass:
+        types.cc:178 turret norm      types.cc:190 eye norm
+        types.cc:222 thrust glow      types.cc:249,250 insignia generator
+        types.cc:304 shield triangle  types.cc:320 hardpoint norm
+    thrust_glow_t is the delicate one: it DERIVES radius from the normal's
+    length before normalising (types.cc:219-229).
+
+--- expected visual effect: none, yet
+
+    Quick3D's shaders normalise the interpolated normal, so pofview will
+    look the same. The data is now right; showing retail's shading needs
+    the viewer to use the magnitude as a brightness term. That is a
+    viewer decision, not a library one. (Shader behaviour asserted from
+    common practice, NOT verified here.)
+
+========================================================================
+STEP 8 -- EXCISION, AND RETAIL LIGHTING IN THE VIEWER (2026-07-21)
+========================================================================
+
+--- libpof: the whole pass excised, not just the normalise
+
+    Committed 655ef2a "Stop remediating the model at load".
+    20 insertions, 514 deletions across 6 files.
+
+/home/lnicoara/build/mine.d/fs2.d/libpof/src/model/pmf_pof.cc:372
+    The transform(identity, {}) call is gone, and with it:
+      - model_t::transform                       (file.cc, 62 lines)
+      - src/model/types.cc                       (DELETED, 351 lines,
+                                                  19 per-type transform
+                                                  methods and nothing else)
+      - the _override / _overridden fields       (types.hh)
+
+    The naming told the story: header.max_radius_override held the FILE's
+    value, header.max_radius held the RECOMPUTED one, and
+    max_radius_overridden meant "the author's radius disagrees with the
+    geometry" -- an editor warning light. Nothing outside libpof ever read
+    those flags; libpof computed them and dropped them.
+
+    Verified after: geometry byte-identical to the pinned oracle (176
+    models, 128693 lines, sha256 fe696cb0...); viewer path 201336 corners
+    with 0 position and 0 normal differences; 15 models whose radius
+    disagreed with the file -> 0; libpof tests 3/3; pofview builds.
+
+--- pofview: retail's lighting, and only retail's
+
+/home/lnicoara/build/mine.d/fs2.d/pofview/src/viewer/shading.cc
+    lighting_t::apply is light_apply()'s LM_BRIGHTEN path with the sun
+    loop unrolled to the one sun a viewer has. Retail's order is kept --
+    ambient, then the sun if positive, then the clamp -- so a face turned
+    away sits at ambient rather than black, and nothing exceeds 0.75.
+
+    Constants from fs2 code/lighting/lighting.cpp:64-74:
+        Ambient_light     0.15    (AMBIENT_LIGHT_DEFAULT)
+        Reflective_light  0.75    (REFLECTIVE_LIGHT_DEFAULT)
+        clamp             0.75    (0.75..1 belongs to dynamic lights)
+
+    PER VERTEX, NOT PER FRAGMENT. FS2 interpolates the brightness across
+    the triangle, not the normal, so this runs where corners are built
+    and travels as a vertex colour. A shader dotting an interpolated
+    normal would be a different picture.
+
+/home/lnicoara/build/mine.d/fs2.d/pofview/src/viewer/pof_geometry.hh:44
+    Vertex layout pos(3) norm(3) uv(2) -> + colour(4), stride 32 -> 48.
+    One place, because group_builder_t is the single writer for both
+    loaders. Main.qml lost its three DirectionalLights and PointLight;
+    the material is PrincipledMaterial with lighting: NoLighting and
+    vertexColorsEnabled.
+
+--- A TRAP AVOIDED: the tech room is NOT the reference
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/menuui/techmenu.cpp:534
+    FS2's own model viewer sets up a directional light (dir +Y, intensity
+    0.85) and then renders with MR_NO_LIGHTING.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/model/modelinterp.cpp:458
+    if (Interp_flags & MR_NO_LIGHTING) Interp_list[i]->b = 191;
+
+    So the tech room is FLAT SHADED at 191/255 and its light setup is
+    vestigial. I nearly reported it as canonical. The reference for how a
+    ship is lit is the mission path -- suns from the starfield,
+    starfield.cpp:540 -- which is what shading.cc reproduces.
+
+    Also settled there: light_add_directional stores -dir under
+    LM_BRIGHTEN (lighting.cpp:217) and light_apply negates the dot again,
+    so the visible term is +dot(sun_direction, norm).
+
+--- verified by looking
+
+    grim screenshots, river/wayland. With NoLighting and zero scene
+    lights, any shading at all must come from the vertex colours; the
+    model is plainly not flat -- bright above, near-ambient underneath,
+    as sun_direction predicts.
+
+    Both loaders render the same picture: the .pof (libpof) and the
+    .mesh (pofer) renders of fighter2s-03 differ by 6 bytes = 2 pixels of
+    450000 in the model region, each about 22 levels, on an antialiased
+    edge. Frame-to-frame AA jitter between two runs, not data.
+
+--- notes
+
+    - pofview's docs/img screenshots still show the old studio lighting.
+    - subprojects/libpof.wrap points at codeberg; 655ef2a is local-only,
+      so a clean build of pofview needs libpof pushed. The local checkout
+      has its origin repointed at ../libpof as a workaround.
+
+------------------------------------------------------------------------
+CORRECTION to STEP 8's "not touched, deliberately" list
+------------------------------------------------------------------------
+
+    That list was written BEFORE the full excision and is stale. All
+    seven safe_unit_from call sites lived inside the ::transform methods,
+    so deleting src/model/types.cc took every one of them:
+
+        turret_t, eye_pos_t, thrust_glow_t, insig_generator_t (x2),
+        shield_triangle_t, hardpoint_t
+
+    Verified: grep -rn safe_unit_from over libpof src/, tests/ and
+    pofview src/ returns exactly one line, the definition at
+    /home/lnicoara/build/mine.d/fs2.d/libpof/src/geometry/vec3d.hh:122
+    Nothing calls it.
+
+    thrust_glow_t's radius-from-normal-length rescale went too, and that
+    is a gain rather than a loss: at load it was radius *= sqrt(1) -- no
+    change -- while normalising the glow normal. Now both the normal and
+    the radius are the file's.
+
+    At load the only thing still done to a normal is POFTranslate, the X
+    mirror (pmf_pof.cc), which is the coordinate convention and not a
+    rescale.
+
+    OPEN, small: safe_unit_from itself is now dead. It is not a neutral
+    primitive like mag() or dot() -- "normalise, but silently return the
+    zero vector below 1e-5" is a POLICY, and it is the policy this whole
+    thread established as wrong for a reader. Leaving it in the header
+    invites its reuse.
+
+========================================================================
+STEP 9 -- POLYGON PLANARITY, AND A RENDERING GAP (2026-07-21)
+========================================================================
+
+    Arose from the question "is the stored corner order a rendering
+    optimisation?" -- asked against a proposal to canonicalise polygons
+    by rotating each to its lexicographically least starting corner.
+
+    THE PROPOSAL WAS WRONG. Measured over the 176 retail models:
+
+        polygons                       122535
+          triangles                    101669
+          quads                         19959
+          5..15 corners                   907
+        non-planar beyond 0.1% of own extent
+                                         3478   (16.7% of n-gons)
+
+    For a planar polygon the starting corner is free: any fan pivot
+    describes the same surface. For a NON-PLANAR one it is not --
+    fanning from corner 0 versus corner 1 gives different triangles and
+    a different surface. So the starting corner is load-bearing data for
+    one polygon in six. Rotating it would have changed the model and
+    made genuinely different shapes compare equal.
+
+    => --geom preserving corner order is CORRECT, not accidental, and
+       the "unclosed degree of freedom" I claimed is not one.
+
+    Caveat on the measurement: the plane was fitted through the first
+    three corners, so polygons whose first three are near-collinear read
+    high (the 107% worst case in bomber09 is almost certainly that). A
+    best-fit plane would give a cleaner number, not a different verdict.
+
+--- the gap this exposed
+
+/home/lnicoara/build/mine.d/fs2.d/pofview/src/viewer/pof_geometry.cc:94
+    build_groups fan-triangulates from corner 0:
+        push_vertex(verts[0]); push_vertex(verts[k]); push_vertex(verts[k+1])
+
+    Retail does not triangulate at all. Its software rasteriser scanline
+    fills the projected n-gon (g3_draw_poly / modelinterp). For a planar
+    polygon the two agree; for the ~3478 non-planar ones pofview is
+    drawing a surface FreeSpace 2 never drew.
+
+    Small, real, and previously invisible. NOT chased. Recording it
+    because it is exactly the kind of thing that is obvious once
+    measured and invisible forever otherwise.
+
+    Note the same choice is in mesh_dump.cc's reader, so both loaders
+    share it -- which is why the two paths still agree with each other.
+
+========================================================================
+STEP 10 -- WHY SIX DIGITS AND NINE, PRECISELY (2026-07-21)
+========================================================================
+
+/home/lnicoara/build/mine.d/fs2.d/pofer/dump.cc:59  digits_t
+    compared { "(%.6g %.6g %.6g)", "(%.6g %.6g)" }   -- the oracle format
+    exact    { "(%.9g %.9g %.9g)", "(%.9g %.9g)" }   -- the mesh dump
+
+    Six is not "roughly float precision" and nine is not padding. They
+    are the two standard constants for IEEE binary32, and they answer
+    OPPOSITE questions:
+
+        FLT_DIG          6 = floor(23 * log10 2)
+            any 6-digit DECIMAL survives decimal -> float -> decimal
+            unchanged. For data that STARTS as decimal: how much can be
+            safely put into a float.
+
+        FLT_DECIMAL_DIG  9 = ceil(1 + 24 * log10 2)
+            every distinct FLOAT prints distinctly and reads back
+            bit-identical. For data that STARTS as float: how much is
+            needed to reconstruct it.
+
+    printf's %g defaults to 6 significant digits, which is why 6 feels
+    like "the" float precision -- it is printf's default and it happens
+    to equal FLT_DIG. It is the wrong one of the two for a dump that
+    gets read back, because POF coordinates start as floats.
+
+--- measured, on the real coordinates
+
+    Sampled distinct float32 coordinates from 40 models' mesh dumps:
+
+        distinct values                    151845
+        fail to round-trip through %.6g    145611   (95.9%)
+        fail to round-trip through %.9g         0
+
+    Not edge cases. Nearly every coordinate in these models. Six digits
+    suffice to RECOGNISE a coordinate and not to RECONSTRUCT it.
+
+--- consequence, already seen
+
+    capital01 carries submodel offsets to 1066, where six significant
+    figures resolve to about 0.01. Round the offset and the vertex
+    separately, then add them downstream, and 1271 of 4347 corners land
+    somewhere the model does not put them (step 5). At nine digits, 0.
+
+    So --geom at 6 is fit for its actual job -- deciding whether two
+    readers found the same polygon -- and unfit for anything read back.
+    --mesh at 9 is lossless.
+
+    Worth admitting: the right precision for --mesh was arrived at by
+    discovering a bug, not by deciding. The six in --geom is inherited
+    from what fs2/tests/pof_dump.cpp happened to print, and is the one
+    remaining place where an implementation's default, rather than a
+    decision about what model equality means, defines the comparison.
+
+========================================================================
+STEP 11 -- ORDERING: WHERE CANONICALISATION BELONGS (2026-07-21)
+========================================================================
+
+    All of this came out of one question: "suppose retail parses in the
+    same order as pofer -- would the dump be identical?"
+
+--- MEASURED: yes. The sort absorbs exactly one reader.
+
+    Scratch POF_NOSORT switch added to BOTH dumpers (reverted after):
+      /home/lnicoara/build/mine.d/fs2.d/fs2/tests/pof_dump.cpp:485
+      /home/lnicoara/build/mine.d/fs2.d/pofer/dump.cc:139
+
+    Unsorted, all 176 models, 128693 lines:  0 diff lines.
+
+    HONEST CAVEAT: that is not a property of the format. pofer was
+    deliberately given the retail DUMPER's walk when it was written. What
+    it establishes is that the sort currently absorbs exactly one
+    reader's divergence -- libpof's front,back,pre,post,on.
+
+    Invocation note: fs2's dumper goes through cfile and takes a GAME
+    ROOT, not a path:  pof_dump --geom rundir [model.pof ...]
+
+--- RETAIL HAS NO SINGLE TRAVERSAL ORDER
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/code/model/modelinterp.cpp:741
+    model_interp_sortnorm:
+        if (g3_check_normal_facing(...))  back, on, front   // facing
+        else                              front, on, back
+
+    The RENDER walk flips per node, per frame, by which side of the split
+    plane the eye is on. That is the painter's algorithm -- the reason a
+    sort-by-normal tree exists at all in a renderer with no depth buffer.
+    model_collide_sortnorm uses a fixed order; pof_dump mirrors THAT one.
+
+    So traversal order is not a property of the model, nor even of a
+    reader: it is a property of a reader's PURPOSE, and one of retail's
+    own orders changes as the camera moves.
+
+    => "mandate a traversal order in the spec" is now REJECTED. Retail
+       could not satisfy it, and it would force every reader to carry a
+       dump-specific walk distinct from its working one. The sort is
+       order-agnostic and survives readers whose order legitimately
+       varies. I proposed mandating it and was wrong.
+
+--- THE DEFECT: the canonical order is defined by the SERIALISATION
+
+    Both dumpers sort the FORMATTED STRING, so the order is a function of
+    the print format. Same polygons, different sequence:
+
+        cargo03        71 polys   --geom vs --mesh order: differs at 20
+        fighter2s-03  580 polys   differs at 210
+        capital01    2239 polys   differs at 0
+        t-laser        12 polys   same
+        support02     362 polys   differs at 10
+
+    4 of 5 sampled models. Purely because six- and nine-digit strings
+    collate differently. It also couples the two dumpers through their
+    printf strings: they must FORMAT identically in order to SORT
+    identically.
+
+--- CANDIDATE ANSWER (the user's)
+
+    Leave the parsers alone; each keeps whatever walk suits it. Define,
+    for the sole purpose of dumping, a total order on a submodel's
+    polygons computed FROM THE DATA:
+
+      - it is a VIEW (vector of indices/pointers) sorted by a comparator
+        that reads values. The model is const. NOTHING is mutated,
+        reordered or rewritten within a record.
+      - the key is the COMPLETE RECORD: every corner's position, normal
+        and uv, in stored corner order, compared as values not text.
+      - ties are free: records equal on a full key are indistinguishable.
+        A PARTIAL key (first corner, centroid, hash) breaks this -- ties
+        become material and resolve by the view's construction order,
+        i.e. the traversal order we are quotienting away. Fails silently,
+        and only on models with coincident faces.
+      - SUBMODELS ARE NOT REORDERED. Their index is referenced: parent,
+        LOD list, debris list, eye sobj_number, turret physical_parent.
+        File (OBJ2 chunk) order is already reader-independent.
+
+    Buys: order invariant under precision/syntax/field set; --geom
+    becomes a relational PROJECTION of --mesh (same rows, fewer columns);
+    migration verifiable because a precision change reorders nothing;
+    dumpers decouple (agree on a key in a spec, not a printf string).
+
+--- WHEN CANONICALISING IS LEGITIMATE AT ALL
+
+/home/lnicoara/build/mine.d/fs2.d/pofer/dump.cc:57  zero()
+    Both dumpers fold -0 to +0 on every printed value. That IS the
+    serialiser altering a value. Decided: it is fine, and the reason is
+    categorical rather than a matter of degree:
+
+      -0.0 and +0.0 DENOTE THE SAME NUMBER (IEEE: they compare equal).
+      Choosing +0 picks a representative of a REAL equivalence class.
+      That is what canonicalisation means.
+
+      0.692 and 1.0 denote DIFFERENT numbers. libpof asserted an
+      equivalence that does not hold. That is data loss.
+
+    RULE: canonicalising within a real equivalence class is legitimate;
+    inventing an equivalence is not.
+
+    Open caveat: "real" is scoped to how the data is used. +-0 differ
+    under 1/x, atan2, copysign and byte comparison; none arise for POF
+    geometry. Whether scoping an equivalence to current use is sound
+    practice or a landmine is RFC question 6.
+
+--- THE RFC
+
+/home/lnicoara/build/mine.d/fs2.d/pofer/doc/comparison-format-rfc.md
+    239 lines. Written for an outside expert. Commits 6bb3f04 (initial)
+    and 8491212 (this material folded in). Linked from pofer's README.
+
+    Six questions; the live ones are (1) is the candidate answer the
+    right shape, (2) is there a principled way to derive what may be
+    quotiented -- we learned both answers by MEASURING, (4) how to
+    migrate a pinned oracle safely, (6) the +-0 scoping question.
+
+--- OPEN DECISION, NOT TAKEN: pin libpof against the oracle
+
+    NOT "make libpof the oracle" -- my earlier phrasing was sloppy and
+    wrong. Retail is the oracle. The pinned value is a fact about the
+    corpus (sha256 fe696cb0...) whose provenance is retail's loader;
+    pofer's oracle/check.sh documents that provenance in its header. A
+    repo pinning it asserts "I still agree with retail", the way a crypto
+    library ships NIST test vectors without becoming the standard.
+
+    FOR: libpof's three unit tests (vec3d, nul-strings, bsp-reader) do
+    not touch the retail corpus. We just removed 514 lines from it
+    including the normalisation pass. A regression would be silent; its
+    correctness currently rests on one hand-run comparison.
+
+    AGAINST: a third copy of the same constant, nothing enforcing the
+    three stay equal, and the RFC may change the format and invalidate
+    all three at once (= RFC question 4).
+
+    My recommendation was to pin anyway. NOT DECIDED.
+
+STEP 12 -- THE MODEL DUMP: ONE FORMAT, THREE READERS, BYTE-IDENTICAL (2026-07-21)
+=================================================================================
+
+The --geom/--mesh duality is dead. The RFC was answered in-house: spec written
+first, then retail, then pofer, then libpof, each implementing the spec text
+with no shared code. pofer matched retail BYTE-IDENTICAL ON THE FIRST DIFF;
+libpof's oracle test passed ON ITS FIRST RUN. Three-way agreement over all 176
+models: 159,596 lines, sha256 0b9e0b703f248459dca6e7ac7b79080f82a344fda4
+b5cef44fb5c5f239ecee20 (one string; wrapped here only for the margin).
+
+The spec (the artifact the RFC's Q1 worried about):
+/home/lnicoara/build/mine.d/fs2.d/pofer/doc/model-dump-spec.md:1: the format
+  Principle: THE DUMP IS THE POLYMODEL -- every value retail's loader retains
+  from the file, after the loader's own interpretation, nothing derived, and
+  nothing retail doesn't keep. That one sentence decided every inclusion
+  question (SPCL specials out, split planes in; children links out; thruster
+  props out, wash chunk-order-independent...).
+  User's decisions folded in: %.9g everywhere (their Q1 answer), comparison
+  covers everything (their Q2 answer), migration bridge deferred (their call;
+  spec 8 records it stays possible from git history).
+  Ordering: polygons only, sorted by the COMPLETE RECORD AS VALUES (kind,
+  colour, nv, face normal/center/radius, corners) -- the user's candidate
+  answer from the RFC, verbatim. Everything else keeps file order because its
+  indices are load-bearing. -0 folds to +0 in text and key (the one sanctioned
+  canonicalisation). NaN/Inf = hard abort; corpus measured clean of both.
+
+Retail implementation:
+/home/lnicoara/build/mine.d/fs2.d/fs2/tests/pof_dump.cpp:568: dump_model_model
+  --geom mode DELETED (its only consumer was pofer's old pin); --full and the
+  summary stay (fs2-internal regression floor, their pins untouched and still
+  green). Turret capture: retail keeps TGUN/TMIS in the CALLER'S subsystem
+  list, so pof_dump primes one with the model's own submodel names (two-pass
+  load) and lets retail's own parse fill it -- pof_dump plays the role of
+  ships.tbl. Tripwire aborts if an SPCL name ever collides with a submodel
+  name (measured: zero in corpus).
+/home/lnicoara/build/mine.d/fs2.d/fs2/tests/pof_oracle.sh:24: now four
+  checks; the fourth pins --model over the corpus.
+
+CORPUS FACTS the new coverage surfaced (all cross-checked against a raw-file
+python scan, every total exact):
+  - lights: 91 models carry 1,078 HDR2 muzzle lights. PCS2 had dropped them
+    entirely ("i'd do muzzle_light for FS2 - but it's useless" -- types.hh).
+  - split planes: 70 across 30 models (SPCL $split names; z only).
+  - turrets: 655 raw banks, 650 retained -- FIVE banks are duplicate-parent
+    doubles (capital2v-01 one, cruiser2t-01 four: turret07-10 each have TWO
+    banks) and retail's retention is last-writer-wins per subsystem. The
+    Leviathan's flak turrets ship with a dead first bank. In-game, same.
+  - flat polys: 755, colours now dumped (poly flat R G B) and RENDERED --
+    t-laser draws in its authored red; the old format printed tex -1 and the
+    viewer drew grey.
+  - movement type 0 (POS): 39 submodels -- libpof's MNONE=(-1 and 0 folded)
+    enum mapping was measurably lossy; now stores the file's own ints.
+  - eyes: max 1 per model (80 models with 1), retail allows MAX_EYES=10;
+    pofer now reads n.
+
+pofer:
+/home/lnicoara/build/mine.d/fs2.d/pofer/dump.cc:1: dump_model + spec's
+  interpretation rules (movement fixups, dock $name, path $-strip + last-match
+  resolve, split filter). --geom/--mesh deleted.
+/home/lnicoara/build/mine.d/fs2.d/pofer/pof.cc:741: PATH now retained
+  (was walk-only); INSG now parsed (was skipped); EYE reads n eyes (was
+  asserting n<=1); ACEN sets has_autocenter.
+/home/lnicoara/build/mine.d/fs2.d/pofer/oracle/check.sh:1: re-pinned on
+  --model; sample grew to nine models (cruiser2t-01 added for turrets incl.
+  the dup-bank case, docks, paths, splits). make check green.
+  TRAP unchanged: bytewise-lowercased corpus ordering (EMPulse, Platform2T).
+
+libpof (the reader that keeps earning the project's existence):
+/home/lnicoara/build/mine.d/fs2.d/libpof/src/model/dump.cc:1: model_t::dump,
+  third implementation; un-mirrors PCS2's X negation on the way out (min/max
+  swap on X, MOI untouched, u/v untouched, SPCL z untouched).
+  Retention grown to reach the format -- every one of these was libpof
+  silently discarding file data:
+/home/lnicoara/build/mine.d/fs2.d/libpof/src/model/types.hh:43: poly_t
+  gains file center/radius + flat RGB (PCS2 dropped the colour; centeroid,
+  derived and consumer-less, deleted);
+  :64 sobj_t movement_type/axis now the file's ints (enums MNONE/ROTATE/MV_*
+  deleted -- 39 corpus submodels proved the fold lossy);
+  :257 shield keeps the vertex table + index triangles + NEIGHBORS (PCS2
+  resolved corners and threw the rest away);
+  :333 pvert_t gains per-vert turret id lists; header gains obj_flags +
+  lights.
+/home/lnicoara/build/mine.d/fs2.d/libpof/src/bsp/funcs.cc:38: translator
+  fills center/radius/rgb it used to skip. Corner order: never reordered by
+  libpof (walk order only), confirmed -- no un-reversal needed.
+/home/lnicoara/build/mine.d/fs2.d/libpof/tests/pof_oracle.sh:1: THE PIN.
+  meson test pof-oracle, skips 77 without an install. 4/4 green. The step-11
+  open decision ("pin libpof?") RESOLVED ITSELF: the differential test is the
+  pin, and the migration we feared re-pinning through happened in the same
+  change.
+
+pofview:
+/home/lnicoara/build/mine.d/fs2.d/pofview/src/viewer/model_dump.cc:1:
+  mesh_dump renamed + rewritten for the model format (git mv, history kept).
+  Offsets are now the submodel's OWN (the file's), accumulated down the
+  parent chain in the reader; drawn set derived from details[0]'s subtree +
+  the -destroyed name filter (per-submodel detail is gone from the dump --
+  it was pofer-derived, not file data). Old geom/mesh dumps refused with
+  "re-dump with pof --model". source line gone (a comparison format cannot
+  state machine paths); bitmaps searched beside the dump.
+/home/lnicoara/build/mine.d/fs2.d/pofview/src/viewer/pof_geometry.cc:37:
+  group_builder_t::add gained a colour overload; flat polys draw rgb x
+  retail brightness.
+  VERIFIED: fighter01 (textured path), capital01 (offset accumulation to
+  1066; pixel-identical to the libpof path from the same camera -- TRIS 1449
+  VERTS 881 both), t-laser (flat red). The "blob" scare was the Orion viewed
+  dead astern by the default camera; the libpof render is the same blob.
+
+SPEC CAVEATS recorded for honesty:
+  - Turret gun/missile distinction is NOT retained by retail, so not dumped.
+  - Turret cross-chunk ordering assumes TGUN-banks-then-TMIS-banks matches
+    file chunk order (true corpus-wide; a TMIS-before-TGUN file with a shared
+    base could disagree).
+  - Unreferenced DEFPOINTS entries and the PINF banner remain uncovered.
+  - RFC Q2 (principled derivation of quotientable structure) and Q6 (scoping
+    an equivalence to use) stay open; spec takes working positions.
+
+STATE: all four repos dirty, UNCOMMITTED, awaiting the user's word. Suites:
+fs2 pof-oracle 1/1 (4 checks), pofer make check green, libpof 4/4, pofview
+builds + 3 visual verifications. The old pins live in git history; the old
+--geom sha fe696cb0... appears in this file's earlier steps for the record.
