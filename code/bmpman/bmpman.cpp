@@ -1621,7 +1621,11 @@ void bm_page_in_aabitmap( int bitmapnum, int nframes )
 
 		bm_bitmaps[n+i].preloaded = 2;
 
-		bm_bitmaps[n+i].used_flags = 0;
+		// page-in must unpack with the same flags the HUD locks with, or
+		// bm_page_in_stop caches a palette-translated unpack that the
+		// aabitmap blitter then reads as alpha levels (the D3D branch of
+		// the retail conditional was the correct one)
+		bm_bitmaps[n+i].used_flags = BMP_AABITMAP;
 	}
 }
 
