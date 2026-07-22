@@ -5064,20 +5064,7 @@ int main(int argc, char *argv[])
 	}
 
 
-	// WinMain got the arguments as a single string; rebuild one for the
-	// retail parser (which strtok's it in place)
-	char cmdline[1024] = "";
-	for (int i = 1; i < argc; i++)	{
-		if ( strlen(cmdline) + strlen(argv[i]) + 2 > sizeof(cmdline) )	{
-			break;
-		}
-		if ( i > 1 )	{
-			strcat(cmdline, " ");
-		}
-		strcat(cmdline, argv[i]);
-	}
-
-	parse_cmdline(cmdline);
+	parse_cmdline(argc, argv);
 
 	init_cdrom();
 	game_init();

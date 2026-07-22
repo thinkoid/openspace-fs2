@@ -10,7 +10,7 @@
 #ifndef FS_CMDLINE_HEADER_FILE
 #define FS_CMDLINE_HEADER_FILE
 
-int parse_cmdline(char *cmdline);
+int parse_cmdline(int argc, char **argv);
 
 // COMMAND LINE SETTINGS
 // This section is for reference by all the *_init() functions. For example, the sound init function
