@@ -20,6 +20,23 @@ are recorded (shipped behavior wins over authorial intent). The port's running
 log lives in [docs/notes.md](docs/notes.md); analysis notes with `file:line`
 anchors sit beside it (Emacs `compilation-mode` files).
 
+## Two projects, one lineage
+
+The Linux port is complete, and it is not the end of the line — it is the end
+of *a* line. As of 2026-07-22 this repository hosts two related projects:
+
+- **The retail Linux port** — the completed work described above. It stays
+  alive and takes work in its own direction: playtesting, wrinkle fixes,
+  whatever serves the authentic retail game.
+- **The Godot migration** — a new project that starts from the port: the
+  retail simulation, kept authoritative as a C++ library, hosted behind a
+  modern engine boundary. The plan lives in
+  [docs/godot-migration-plan.md](docs/godot-migration-plan.md).
+
+Cousins, not siblings: neither line feeds the other by default, and neither
+outranks the other. The lineage runs retail 2002 → Linux port 2026 → Godot
+host, in one continuous history.
+
 ## Branches
 
 - `retail` — `663b3471b`, the 2002 Volition warpcore CVS import. Pristine,
