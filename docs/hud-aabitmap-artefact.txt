@@ -1,0 +1,66 @@
+HUD afterburner/weapon-energy gauge artefact — software rasterizer (2026-07-22)
+Compare: GL screenshot (ok) vs software screenshot (grey/black banding in gauges).
+Compile-mode notes; paths relative to the repo root.
+
+Symptom
+  The afterburner energy gauge (left arc, box 274,424 + 86x96 @1024) and the
+  weapon energy gauge (right arc, 666,424) render as bands of wrong colors:
+  grey (91,99,107), black, and fake greens.  Measured grey pixels sit exactly
+  inside those two boxes, symmetric on both arcs.  The weapons panel
+  (bottom-right) shows the same corruption flavor (green blobs).
+
+Root cause chain
+
+code/bmpman/bmpman.cpp:1624: BUG - bm_page_in_aabitmap() sets used_flags = 0.
+  Retail read:  if (D3D_enabled) used_flags = BMP_AABITMAP; else used_flags = 0;
+  The dead-subsystem sweep (5b2148062, D3D removal) collapsed the conditional
+  to the WRONG (Glide-era) branch.  Retail Glide/D3D escaped the consequences
+  because hardware tcache locks at 16 bpp (bpp mismatch forces a clean
+  reload); our 8 bpp software renderer locks at 8 bpp, so no reload ever.
+
+code/bmpman/bmpman.cpp:1683: bm_page_in_stop() -> bm_lock(handle, 8, used_flags=0).
+  Level load unpacks every HUD aabitmap ANI as a REGULAR bitmap: 8bpp
+  do_xlate path palette-translates pixels through the ANI's own palette into
+  gamepalette1-01 indices.
+
+code/bmpman/bmpman.cpp:1248: bm_lock() reload test ignores lock flags.
+  Cache key is (data!=NULL, bpp, pal_changed, ...) - never the aabitmap-ness
+  of the cached unpack.  The later HUD draw's bm_lock(8, BMP_AABITMAP) sees
+  8bpp data present and returns the palette-translated pixels as-is.  The
+  pal_changed test even excludes BMP_AABITMAP locks, so the poison survives
+  palette changes for the rest of the process lifetime.
+
+code/graphics/bitblt.cpp:184: gr8_aabitmap_ex() blends via lookup[(c<<8)|dest].
+  Table is Current_alphacolor->table.lookup, ubyte[16][256]: c is supposed to
+  be a 4-bit coverage level.  Poisoned data delivers game-palette indices
+  instead; measured translation of the ANI grey ramp (energy2.ani pal):
+  1..14 -> 74,77,79,82,88,91,95,100,161,103,56,58,58,254.  All >15 ->
+  reads run off the table into neighboring Alphacolors slots -> deterministic
+  garbage per (c,dest): the grey/black/fake-green bands.
+
+Evidence
+  - Screen grey = (91,99,107) = gamepalette1-01[216]; the ANI art greys
+    (91,91,91)/(107,107,107) translate to indices 88/91 etc; all observed
+    band colors are stable per source value, as an OOB-but-deterministic
+    read predicts.
+  - energy2.ani / 2_energy2.ani frames contain only values 0..14 (decoded
+    offline): the art is clean; the corruption is introduced by the unpack.
+  - GL run log: "Reloading 2_energy2.ani from bitdepth 8 to bitdepth 16"
+    = the escape hatch. SW run log: "Reloading ... to remap palette" only.
+  - A fresh AC_TYPE_HUD table under gamepalette1-01 can only produce ramp
+    greens (indices 20..31) or black for any (row,dest) - simulated
+    offline; grey output from the blend table itself is impossible, which
+    is what pinned the poisoned-source diagnosis.
+
+Fix (one line)
+code/bmpman/bmpman.cpp:1624: used_flags = BMP_AABITMAP;  (restore the D3D branch unconditionally)
+  Software runtime consumers lock aabitmaps with BMP_AABITMAP
+  (graphics/bitblt.cpp:40, graphics/scaler.cpp:619); everything else locks
+  with 0, so the other bm_page_in_* variants' used_flags = 0 are already
+  correct for the software renderer - only the aabitmap variant is wrong.
+
+Optional hardening (belt and braces, not required for the artefact)
+code/bmpman/bmpman.cpp:1256: add an aabitmap_changed reload condition:
+  reload when (flags ^ cached-lock-flags) & BMP_AABITMAP, using the
+  used_flags stamped at the end of bm_lock.  Makes the cache self-healing
+  against any future flag-mismatched lock ordering.
