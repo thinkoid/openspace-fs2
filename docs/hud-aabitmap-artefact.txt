@@ -1,3 +1,5 @@
+-*- mode: compilation -*-
+
 HUD afterburner/weapon-energy gauge artefact — software rasterizer (2026-07-22)
 Compare: GL screenshot (ok) vs software screenshot (grey/black banding in gauges).
 Compile-mode notes; paths relative to the repo root.
