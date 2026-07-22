@@ -234,6 +234,16 @@ fs2 = executable('fs2',
     link_with: foundation,
     dependencies: [sdl2_dep, openal_dep, gl_dep])
 
+# deploy the game binary into the sibling rundir on every build (it must be
+# a copy: /proc/self/exe resolves symlinks and the game chdirs to the result);
+# quietly skipped when no ../rundir exists (e.g. a bare clone)
+rundir = meson.project_source_root() / '..' / 'rundir'
+custom_target('fs2-deploy',
+    input: fs2,
+    output: 'fs2-deploy.stamp',
+    command: ['sh', '-c', 'test -d ' + rundir + ' && cp -f @INPUT@ ' + rundir + '/fs2; touch @OUTPUT@'],
+    build_by_default: true)
+
 cfilearchiver = executable('cfilearchiver',
     'code/cfilearchiver/cfilearchiver.cpp',
     include_directories: inc)
