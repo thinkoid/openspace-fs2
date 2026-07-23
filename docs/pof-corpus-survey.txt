@@ -1,0 +1,103 @@
+POF retail corpus survey -- grounding for the pof->GLB converter
+Surveyed 2026-07-23: all 176 POFs in gog/sparky_fs2.vp (the only VP that
+carries models). Code anchors are into this repo; model-dump anchors
+(NAME.model) assume dumps regenerated into a scratch directory with
+
+    ../vpx.py unpack ../gog/sparky_fs2.vp <dir>     # or vpx.py get, per file
+    pofer/pof --model NAME.pof > NAME.model
+
+== CORPUS SHAPE ==
+
+../gog/sparky_fs2.vp:1: 176 models, one archive, two versions, zero parse failures
+    sparky_fs2.vp only; 108 files v2117, 68 files v2116. pofer --model parses
+    all 176 in 1.7s. Ships 62, weapons ~20, asteroids/debris 27, cargo 10,
+    the rest installations, gates, escape pods, sentries, test junk
+    (spherec, unknownship, subspacenode).
+
+code/model/pofparse.cc:836: the only 2116->2117 delta retail cares about
+    FUEL thruster banks gain a properties string ($engine_subsystem=...) at
+    2117. Everything else in the reader is gated far lower (1900..2014).
+    The converter needs exactly one version branch.
+
+== CHUNK CENSUS (the converter's full scope) ==
+
+../gog/sparky_fs2.vp:1: 16 chunk types exist in retail, and no more
+    universal: HDR2 TXTR OBJ2 SPCL PINF          (176/176)
+    common:    FUEL 115  PATH 106  DOCK 95  EYE 80
+    armed:     TGUN 56   SHLD 46   GPNT 35  MPNT 34  TMIS 10
+    rare:      INSG 24   ACEN 22
+    Post-retail chunks (GLOW, SLDC...) do not exist in this corpus. PINF is
+    modeller tool info; retail skips it -- converter records it in the
+    manifest, nothing more.
+
+== TEXTURES ==
+
+code/model/modelread.cc:270: two texture names are engine keywords, not files
+    Any TXTR name containing "thruster" or "invisible" is deliberately not
+    loaded -- thrusters get the engine's animated glow, invisible gets no
+    texture. The converter must reproduce this classification, not treat
+    them as missing maps.
+
+../gog/sparky_fs2.vp:2: texture coverage is complete
+    666 unique texture names referenced; 661 resolve to data/maps/*.pcx.
+    The 5 exceptions: thruster01/02/03, invisible (keywords above), and
+    nbackblue1 (referenced by spherec, a test model; the file exists as
+    data/effects/nbackblue1.pcx). No genuinely missing texture in retail.
+
+== SUBMODELS AND ARTICULATION ==
+
+code/model/model.hh:37: the movement-axis encoding is a trap
+    MOVEMENT_AXIS_X=0, MOVEMENT_AXIS_Z=1, MOVEMENT_AXIS_Y=2 -- Y and Z are
+    swapped relative to the naive reading. 757 movable submodels in the
+    corpus: axis 2 (Y, turret heading) 588, axis 0 (X) 112, axis 1 (Z) 57.
+    Get this wrong and every turret in Godot pitches instead of yaws.
+
+code/model/model.hh:30: three movement types occur, one is inert
+    type 2 ROT_SPECIAL (turrets)     670 instances
+    type 1 ROT (dishes, panels...)    48 instances
+    type 0 POS                        39 instances -- almost all on
+    "-destroyed" turret variants. CONFIRMED INERT: no runtime consumer;
+    everything in modelread.cc keys on MOVEMENT_TYPE_ROT only, and
+    modelread.cc:1438 even manufactures POS at runtime by clearing the ROT
+    bit ("&= ~MOVEMENT_TYPE_ROT" on a value, not a flag -- turning 1 into
+    0). Type 2 turrets move via the subsystem/TGUN path, not movement_type.
+    The converter should carry POS as data but expect no motion from it.
+
+fighter01.model:26: no fighter or bomber hull articulates
+    All 21 fighters are movement type -1 throughout (bombers articulate only
+    their turrets). Articulation lives in 57 models: capitals, cruisers,
+    corvettes, freighters, platforms, utility ships. The inspection slice's
+    "articulate every movable submodel" step is unexercisable on a fighter.
+
+fighter01.model:9: hierarchy is shallow and conventions are uniform
+    Max depth 3 (hull -> turret base -> turret arm); 55 flat, 77 two-level,
+    44 three-level models. Conventions: detail levels as sibling roots
+    suffixed a/b/c/d; debris as root-level submodels named debrisNN;
+    destroyed turret variants "turretNN-destroyed" swapped in on subsystem
+    death; per-LOD thruster child submodels.
+
+fighter01.model:10: detail/debris spread
+    detail levels: 4 LODs x112 models, 3 x50, 1 x12, 0 x2 (pure debris
+    models); debris pieces 0..26 (capital2s-01 the outlier at 26).
+
+== SLICE CANDIDATE ==
+
+fighter01.model:1: fighter01 (GTF Ulysses) confirmed for the slice
+    v2117, 13 submodels: 4 LOD hulls + 2 thruster children each on a/b/c +
+    3 debris. Chunks: TXTR HDR2 OBJ2 SPCL GPNT MPNT DOCK FUEL SHLD EYE INSG
+    PATH PINF -- gunpoints, missile points, shield mesh, insignia, eye,
+    dock, paths all present. Exercises everything except articulation,
+    TGUN/TMIS, ACEN.
+
+science01.model:1: science01 (GTSC Faustus) is the articulation companion
+    v2116 (covers the other version), 29 submodels, one type-1 rotating
+    solar panel (science01a-solar1, axis 1), TGUN present. Together with
+    the Ulysses: 15 of 16 chunk types and both versions. Still uncovered:
+    ACEN, TMIS, destroyed-variant turrets, radar dishes -- all arrive with
+    any capital (capital01 has radardish + arms + destroyed variants).
+
+== TRIVIA ==
+
+../gog/sparky_fs2.vp:3: Volition shipped their VSS turds
+    18 vssver.scc Visual SourceSafe cache files are packed into the VP,
+    one per data directory. Harmless, funny, ignore.
