@@ -176,7 +176,13 @@ constexpr int GL_UNSIGNED_INT = 5125;
 
 // material for a texture slot: named after the texture, no image yet (the
 // texture pipeline is a later phase); flat-colored polys get a factor-only
-// material keyed by -(0x1000000 | rgb) so distinct colors stay distinct
+// material keyed by -(0x1000000 | rgb) so distinct colors stay distinct.
+//
+// When images do get wired in: texture names containing "thruster" or
+// "invisible" are engine keywords, not files (modelread.cc:270) -- retail
+// never loads them as maps; thrusters get the animated glow and invisible
+// gets no texture. Every other retail texture name resolves to a
+// data/maps/*.pcx (docs/pof-corpus-survey.txt).
 int
 material(gltf_t &g, const std::vector< std::string > &textures, int key,
          const pof::model::poly_t &poly)
@@ -317,7 +323,18 @@ mesh(gltf_t &g, const pof::model::sobj_t &sobj,
 
 // one glTF node per subobject, same index; POF offsets are parent-relative
 // already, so they map directly to node translations. The POF facts a viewer
-// wants but glTF has no slot for ride in "extras".
+// wants but glTF has no slot for ride in "extras", carried verbatim in
+// retail's encoding (docs/pof-corpus-survey.txt):
+//
+//   movement_type  -1 none; 1 rotates at runtime (dishes, panels); 2 turret,
+//                  which moves through the subsystem/TGUN path and NOT this
+//                  field; 0 exists in the corpus but is runtime-inert.
+//   movement_axis  -1 none, 0 X, 1 Z, 2 Y -- Y and Z are SWAPPED relative
+//                  to the naive reading (model.hh:37). 2 is turret heading;
+//                  decode it wrong and every turret pitches instead of yaws.
+//
+// These are POF-frame axes; whoever animates from extras must send the axis
+// through the same map as the geometry (to_godot above).
 void
 node(gltf_t &g, const pof::model::sobj_t &sobj, int mesh_ix,
      const std::string &children)
