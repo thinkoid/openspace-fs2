@@ -23,10 +23,12 @@ libpof_dep = dependency('libpof')
 
 # The tree is split by role: src/ compiles the whole ported corpus into the
 # `foundation` library; bin/ declares the shippable toplevel executables that
-# link it; tools/ and tests/ own their own families. Order matters -- src
-# exports `foundation` and the entry-point sources, tests exports `game_stubs`,
-# both of which bin consumes, so bin comes last.
+# link it; tools/ and tests/ own their own families. Order is by dependency:
+#   src   exports `foundation` and the two entry-point sources
+#   tools defines pof2glb, which tests' GLB check runs
+#   tests exports `game_stubs`; its GLB check consumes pof2glb + pof_dump
+#   bin   consumes `foundation`, the entry points, and `game_stubs` -- last
 subdir('src')
-subdir('tests')
 subdir('tools')
+subdir('tests')
 subdir('bin')

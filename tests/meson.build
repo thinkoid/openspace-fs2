@@ -39,6 +39,20 @@ test('pof-oracle', find_program('pof_oracle.sh'),
     depends: pof_dump,
     timeout: 300)
 
+# The migration's GLB emitter (../tools/pof2glb) checked against the same
+# oracle: emit the inspection-slice models, then cross-check structure,
+# hierarchy, triangle counts and winding-vs-normals with check_glb.py. Needs an
+# *unpacked* install (pof2glb reads loose files); skips otherwise.
+test('glb-check', find_program('glb_check.sh'),
+    args: [
+        pof2glb.full_path(),
+        pof_dump.full_path(),
+        meson.current_source_dir() / 'check_glb.py',
+        meson.project_source_root(),
+    ],
+    depends: [pof2glb, pof_dump],
+    timeout: 120)
+
 math_test = executable('math_test',
     ['math_test.cc', 'stubs.cc', 'gamestubs_gen.cc', 'freespacestubs_gen.cc'],
     include_directories: inc,
