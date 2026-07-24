@@ -5,7 +5,11 @@
 # The POF->GLB converter reads models through libpof (vendored as a submodule
 # at subprojects/libpof, acquired in the root meson.build), never through a
 # second POF parser. libpof is C++23; the override keeps the game on C++17.
+# stb_image_write (third-party/stb) transcodes the maps to TGA; its unused
+# static helpers are silenced, and it wants libm.
 pof2glb = executable('pof2glb',
     'pof2glb.cc',
-    dependencies: libpof_dep,
+    include_directories: include_directories('../third-party/stb'),
+    dependencies: [libpof_dep, meson.get_compiler('cpp').find_library('m')],
+    cpp_args: ['-Wno-unused-function', '-Wno-unused-parameter'],
     override_options: ['cpp_std=c++23'])

@@ -67,6 +67,29 @@ test('tres-check', find_program('tres_check.sh'),
     depends: [pof2glb, pof_dump],
     timeout: 120)
 
+# pcx_dump is the texture oracle: retail's PCX decoder is authoritative, so its
+# 8bpp output pins pof2glb's hand-rolled decoder. Same foundation link as the
+# other oracles (it calls pcx_read_bitmap_8bpp through cfile).
+pcx_dump = executable('pcx_dump',
+    ['pcx_dump.cc', 'stubs.cc', 'gamestubs_gen.cc', 'freespacestubs_gen.cc'],
+    include_directories: inc,
+    link_with: foundation,
+    dependencies: [sdl2_dep, openal_dep, gl_dep])
+
+# pof2glb transcodes each retail PCX map to a TGA; tex-check decodes the same
+# maps through pcx_dump (retail's reader) and check_tex.py compares the two
+# pixel-for-pixel, including the green colour-key. Makes the hand-rolled decoder
+# safe. Same unpacked-install gate as glb-check/tres-check.
+test('tex-check', find_program('tex_check.sh'),
+    args: [
+        pof2glb.full_path(),
+        pcx_dump.full_path(),
+        meson.current_source_dir() / 'check_tex.py',
+        meson.project_source_root(),
+    ],
+    depends: [pof2glb, pcx_dump],
+    timeout: 120)
+
 math_test = executable('math_test',
     ['math_test.cc', 'stubs.cc', 'gamestubs_gen.cc', 'freespacestubs_gen.cc'],
     include_directories: inc,

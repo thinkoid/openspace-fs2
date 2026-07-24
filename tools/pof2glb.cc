@@ -9,12 +9,19 @@
 //   pof2glb <model.pof> [<out.glb>]
 //   pof2glb --summary <model.pof>
 //
-// Current state: emits geometry, hierarchy and named materials into the GLB,
-// and the FS2-specific ship data (weapon/thruster/dock/path points, turrets,
-// subsystems, shield) into a Godot .tres beside it (tools/ship_data.gd is the
-// schema). Textures and the manifest land next.
+// Current state: emits geometry, hierarchy and textured materials into the
+// GLB (retail PCX maps transcoded to TGA beside it, in textures/), and the
+// FS2-specific ship data (weapon/thruster/dock/path points, turrets,
+// subsystems, shield) into a Godot .tres (tools/ship_data.gd is the schema).
+// The manifest lands next.
 
 #include <model/file.hh>
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
+#include <dirent.h>
+#include <sys/stat.h>
 
 #include <algorithm>
 #include <cctype>
@@ -134,17 +141,24 @@ struct gltf_t
     std::string materials;
     std::string accessors;
     std::string views;
+    std::string images;     // one per transcoded TGA
+    std::string gtextures;  // glTF texture: sampler + image source, 1:1 images
 
     bin_t bin;
 
     int n_meshes = 0;
     int n_accessors = 0;
     int n_views = 0;
+    int n_images = 0;
 
     long n_triangles = 0;
 
     // texture_id -> material index (flat-colored polys keyed by -1-rgb below)
     std::map< int, int > material_of;
+
+    // POF texture slot -> glTF image/texture index, -1 for keyword or missing
+    // maps (filled by emit_textures before any material is built)
+    std::vector< int > image_of;
 
     int view(std::size_t off, std::size_t len, int target)
     {
@@ -178,15 +192,11 @@ constexpr int GL_ELEMENT_ARRAY_BUFFER = 34963;
 constexpr int GL_FLOAT = 5126;
 constexpr int GL_UNSIGNED_INT = 5125;
 
-// material for a texture slot: named after the texture, no image yet (the
-// texture pipeline is a later phase); flat-colored polys get a factor-only
-// material keyed by -(0x1000000 | rgb) so distinct colors stay distinct.
-//
-// When images do get wired in: texture names containing "thruster" or
-// "invisible" are engine keywords, not files (modelread.cc:270) -- retail
-// never loads them as maps; thrusters get the animated glow and invisible
-// gets no texture. Every other retail texture name resolves to a
-// data/maps/*.pcx (docs/pof-corpus-survey.txt).
+// material for a texture slot: named after the texture and pointing at the
+// transcoded TGA (emit_textures resolved the slot to g.image_of[key], or -1
+// when the map is a keyword/missing, in which case the material stays a
+// name-only stub). Flat-colored polys get a factor-only material keyed by
+// -(0x1000000 | rgb) so distinct colors stay distinct.
 int
 material(gltf_t &g, const std::vector< std::string > &textures, int key,
          const pof::model::poly_t &poly)
@@ -195,9 +205,17 @@ material(gltf_t &g, const std::vector< std::string > &textures, int key,
     if (!fresh)
         return it->second;
 
-    if (key >= 0)
-        jf(g.materials, "{\"name\":\"%s\",\"doubleSided\":false},",
-           jstr(textures[key]).c_str());
+    if (key >= 0) {
+        const int img = key < int(g.image_of.size()) ? g.image_of[key] : -1;
+        if (img >= 0)
+            jf(g.materials,
+               "{\"name\":\"%s\",\"doubleSided\":false,\"pbrMetallicRoughness\""
+               ":{\"baseColorTexture\":{\"index\":%d}}},",
+               jstr(textures[key]).c_str(), img);
+        else
+            jf(g.materials, "{\"name\":\"%s\",\"doubleSided\":false},",
+               jstr(textures[key]).c_str());
+    }
     else
         jf(g.materials,
            "{\"name\":\"flat-%02x%02x%02x\",\"pbrMetallicRoughness\":"
@@ -362,6 +380,218 @@ node(gltf_t &g, const pof::model::sobj_t &sobj, int mesh_ix,
     if (!sobj.properties.empty())
         jf(g.nodes, ",\"properties\":\"%s\"", jstr(sobj.properties).c_str());
     g.nodes += "}},";
+}
+
+// ---- textures: PCX -> TGA --------------------------------------------
+//
+// Retail texture maps are 256-colour RLE PCX under data/maps (cfile.cc:45),
+// referenced from the POF TXTR chunk by bare, extension-less basename. Godot
+// cannot read PCX, so each is transcoded to an (uncompressed) TGA in a
+// textures/ dir beside the GLB, and the material points at it.
+//
+// The decode is hand-rolled: pof2glb stays libpof + stb and does NOT link the
+// port's foundation/cfile. PCX is a frozen format, so the only risk that buys
+// is a decode bug -- pinned shut by tests/pcx_dump, which reads the same maps
+// through retail's authoritative pcx_read_bitmap_8bpp (pcxutils.cc:87) and the
+// tex-check gate compares the two pixel-for-pixel. The one FS2 semantic, the
+// green colour-key, is retail's and is replicated in the expand loop below.
+
+std::string
+lower(std::string s)
+{
+    for (char &c : s)
+        c = char(std::tolower((unsigned char) c));
+    return s;
+}
+
+std::uint16_t
+le16(const std::uint8_t *p)
+{
+    return std::uint16_t(p[0] | (p[1] << 8));
+}
+
+// Decode a 256-colour RLE PCX into top-down RGBA. Mirrors retail's
+// pcx_read_bitmap_8bpp row/col/count structure (pcxutils.cc:141-169) so the
+// index stream is read identically -- padding columns beyond the image width
+// are still consumed, and RLE runs carry across row boundaries -- then expands
+// the indices through the tail palette. Returns false on a malformed header.
+bool
+decode_pcx(const std::string &path, int &w, int &h,
+           std::vector< std::uint8_t > &rgba)
+{
+    std::FILE *f = std::fopen(path.c_str(), "rb");
+    if (!f)
+        return false;
+
+    std::fseek(f, 0, SEEK_END);
+    const long sz = std::ftell(f);
+    std::fseek(f, 0, SEEK_SET);
+    if (sz < 128 + 768) {
+        std::fclose(f);
+        return false;
+    }
+
+    std::vector< std::uint8_t > buf(sz);
+    const bool read = std::fread(buf.data(), 1, sz, f) == std::size_t(sz);
+    std::fclose(f);
+    if (!read)
+        return false;
+
+    const std::uint8_t *hd = buf.data();
+    // 256-colour RLE PCX only: Manufacturer 10, Encoding 1, 8bpp, 1 plane
+    // (the same gate retail applies, pcxutils.cc:115-117).
+    if (hd[0] != 10 || hd[2] != 1 || hd[3] != 8 || hd[65] != 1)
+        return false;
+
+    w = le16(hd + 8) - le16(hd + 4) + 1;   // Xmax - Xmin + 1
+    h = le16(hd + 10) - le16(hd + 6) + 1;  // Ymax - Ymin + 1
+    const int bpl = le16(hd + 66);         // BytesPerLine
+    if (w <= 0 || h <= 0 || bpl < w)
+        return false;
+
+    // Palette: the last 768 bytes, retail's seek of -768 from EOF
+    // (pcxutils.cc:129 -- it trusts the layout, not the 0x0C marker byte).
+    const std::uint8_t *pal = buf.data() + sz - 768;
+
+    std::vector< std::uint8_t > idx(std::size_t(w) * h);
+    const std::uint8_t *in = buf.data() + 128;
+    const std::uint8_t *end = buf.data() + sz;
+    int count = 0;
+    std::uint8_t data = 0;
+
+    for (int row = 0; row < h; ++row) {
+        std::uint8_t *out = idx.data() + std::size_t(row) * w;
+        for (int col = 0; col < bpl; ++col) {
+            if (count == 0) {
+                if (in >= end)
+                    return false;
+                data = *in++;
+                if ((data & 0xC0) == 0xC0) {
+                    count = data & 0x3F;
+                    if (in >= end)
+                        return false;
+                    data = *in++;
+                }
+                else
+                    count = 1;
+            }
+            if (col < w)
+                *out++ = data;
+            --count;
+        }
+    }
+
+    // Expand to RGBA with retail's green colour-key: a palette entry of
+    // exactly (0,255,0) is transparent (alpha 0), everything else opaque
+    // (pcxutils.cc:266-274). No magic index -- it is purely the palette RGB.
+    rgba.resize(std::size_t(w) * h * 4);
+    for (std::size_t i = 0; i < std::size_t(w) * h; ++i) {
+        const std::uint8_t *c = pal + std::size_t(idx[i]) * 3;
+        const bool key = c[0] == 0 && c[1] == 255 && c[2] == 0;
+        rgba[i * 4 + 0] = c[0];
+        rgba[i * 4 + 1] = c[1];
+        rgba[i * 4 + 2] = c[2];
+        rgba[i * 4 + 3] = key ? 0 : 255;
+    }
+    return true;
+}
+
+// Texture names containing "thruster" or "invisible" are engine keywords, not
+// files -- retail never loads them (modelread.cc:270): thrusters get the
+// animated glow, invisible gets no texture. The match is case-sensitive, as
+// retail's strstr is: a capitalised name is not a keyword there, and shipped
+// behavior wins (docs/godot-migration-plan.md).
+bool
+is_keyword_texture(const std::string &name)
+{
+    return name.find("thruster") != std::string::npos ||
+        name.find("invisible") != std::string::npos;
+}
+
+// Lowercased-name -> on-disk-name index of a directory, so a POF's mixed-case
+// TXTR basename resolves to the actual file the way retail's case-insensitive
+// cfile does on a case-sensitive filesystem. Empty if the dir won't open.
+std::map< std::string, std::string >
+index_dir(const std::string &dir)
+{
+    std::map< std::string, std::string > m;
+    if (DIR *d = opendir(dir.c_str())) {
+        while (dirent *e = readdir(d))
+            m.emplace(lower(e->d_name), e->d_name);
+        closedir(d);
+    }
+    return m;
+}
+
+// "a/b/c.pof" -> "a/b"; no slash -> "."
+std::string
+dir_of(const std::string &p)
+{
+    const std::size_t s = p.find_last_of('/');
+    return s == std::string::npos ? "." : p.substr(0, s);
+}
+
+// Transcode every referenced map to <out_dir>/textures/<name>.tga and record,
+// per POF texture slot, the glTF image it resolved to (or -1 for a keyword or
+// a map missing from disk -- those slots keep a name-only material). Duplicate
+// names collapse to one image. maps_dir is the model's sibling data/maps.
+void
+emit_textures(gltf_t &g, const std::vector< std::string > &textures,
+              const std::string &maps_dir, const std::string &out_dir)
+{
+    g.image_of.assign(textures.size(), -1);
+
+    const auto maps = index_dir(maps_dir);
+    std::map< std::string, int > tex_ix;   // lowercased basename -> image index
+    bool made_dir = false;
+
+    for (std::size_t slot = 0; slot < textures.size(); ++slot) {
+        const std::string &nm = textures[slot];
+        if (is_keyword_texture(nm))
+            continue;
+
+        const std::string key = lower(nm);
+        if (auto it = tex_ix.find(key); it != tex_ix.end()) {
+            g.image_of[slot] = it->second;   // duplicate slot, same image
+            continue;
+        }
+
+        const auto hit = maps.find(key + ".pcx");
+        if (hit == maps.end()) {
+            std::fprintf(stderr, "pof2glb: texture '%s' not found in %s\n",
+                         nm.c_str(), maps_dir.c_str());
+            continue;
+        }
+
+        int w, h;
+        std::vector< std::uint8_t > rgba;
+        if (!decode_pcx(maps_dir + "/" + hit->second, w, h, rgba)) {
+            std::fprintf(stderr, "pof2glb: cannot decode %s\n",
+                         hit->second.c_str());
+            continue;
+        }
+
+        if (!made_dir) {
+            mkdir((out_dir + "/textures").c_str(), 0755);   // EEXIST is fine
+            made_dir = true;
+        }
+
+        const std::string tga = key + ".tga";
+        stbi_write_tga_with_rle = 0;   // uncompressed: the gate reads it back
+        if (!stbi_write_tga((out_dir + "/textures/" + tga).c_str(), w, h, 4,
+                            rgba.data())) {
+            std::fprintf(stderr, "pof2glb: cannot write %s\n", tga.c_str());
+            continue;
+        }
+
+        const int ix = g.n_images++;
+        jf(g.images, "{\"uri\":\"textures/%s\"},", jstr(tga).c_str());
+        jf(g.gtextures, "{\"sampler\":0,\"source\":%d},", ix);
+        tex_ix[key] = ix;
+        g.image_of[slot] = ix;
+        std::printf("  %s -> textures/%s (%dx%d)\n", nm.c_str(), tga.c_str(), w,
+                    h);
+    }
 }
 
 // ---- Godot .tres ship data -------------------------------------------
@@ -712,12 +942,17 @@ write_glb(const std::string &path, const std::string &json, bin_t &bin)
 
 bool
 convert(pof::model::model_t &model, const std::string &name,
-        const std::string &out_path)
+        const std::string &src_path, const std::string &out_path)
 {
     const auto &subobjects = model.get_subobjects();
     const auto &textures = model.get_textures();
 
     gltf_t g;
+
+    // Transcode the maps first: this fills g.image_of, which material() reads
+    // as it builds each draw call below. data/maps is the model's sibling
+    // (cfile.cc:45/48), the TGAs land beside the GLB we are about to write.
+    emit_textures(g, textures, dir_of(src_path) + "/../maps", dir_of(out_path));
 
     // children lists first: parent -> "i,j,k," in subobject order
     std::vector< std::string > children(subobjects.size());
@@ -755,6 +990,18 @@ convert(pof::model::model_t &model, const std::string &name,
     json += ",\"materials\":[";
     json += g.materials;
     close_list(json, ']');
+
+    // Textures share one default sampler; each glTF texture is 1:1 with an
+    // image (its external TGA uri). Omitted entirely when no map resolved.
+    if (g.n_images > 0) {
+        json += ",\"samplers\":[{}]";
+        json += ",\"textures\":[";
+        json += g.gtextures;
+        close_list(json, ']');
+        json += ",\"images\":[";
+        json += g.images;
+        close_list(json, ']');
+    }
 
     json += ",\"accessors\":[";
     json += g.accessors;
@@ -883,5 +1130,5 @@ main(int argc, char **argv)
     const std::string out_path =
         argc - arg == 2 ? argv[arg + 1] : name + ".glb";
 
-    return convert(model, name, out_path) ? 0 : 1;
+    return convert(model, name, path, out_path) ? 0 : 1;
 }

@@ -128,17 +128,20 @@ Landed on `godot` (converter half of steps 1, 5–6; the Godot scene is still to
 come):
 
 - **`tools/pof2glb.cc`** emits, from one invocation, the `.glb` (geometry,
-  hierarchy, named materials) **and** a `.tres` ship-data resource beside it —
+  hierarchy, textured materials), a `textures/` dir of the ship's maps
+  transcoded from PCX to TGA, **and** a `.tres` ship-data resource beside it —
   weapon banks, turrets, thrusters, docks, eyes, paths, subsystems, and the
   shield mesh. `tools/ship_data.gd` is the resource schema (the contract the
   `.tres` targets; the inspection project will keep a copy at its `res://` root).
-- **Verification.** `meson test glb-check` and `tres-check` cross-check both
-  outputs against `pof_dump --model` through the axis map (`tests/check_glb.py`,
-  `check_tres.py`). Both bite: the GLB check hard-fails on reversed winding, the
-  `.tres` check hard-fails when any coordinate breaks the `(x, y, −z)` map. Every
-  `.tres` coordinate is validated by a *second, independent* path — the dump
-  un-mirrors X off libpof's memory frame, the emitter runs it through
-  `to_godot()` — so agreement pins the axis map end to end.
+- **Verification.** `meson test glb-check`, `tres-check` and `tex-check`
+  cross-check the outputs against retail oracles (`tests/check_glb.py`,
+  `check_tres.py`, `check_tex.py`). All bite: the GLB check hard-fails on
+  reversed winding, the `.tres` check hard-fails when any coordinate breaks the
+  `(x, y, −z)` map, the texture check hard-fails on any pixel diverging from
+  retail's decode. Every `.tres` coordinate is validated by a *second,
+  independent* path — the dump un-mirrors X off libpof's memory frame, the
+  emitter runs it through `to_godot()` — so agreement pins the axis map end to
+  end; every texture pixel is validated against retail's own `pcx_read_bitmap_8bpp`.
 
 Semantic facts the emitter had to honor (also at the bite sites in source):
 
@@ -152,6 +155,27 @@ Semantic facts the emitter had to honor (also at the bite sites in source):
 - **Path parents resolve by name.** A path's parent is a submodel *name*;
   retail drops a leading `$` and takes the last case-insensitive match (−1 if
   none). The `.tres` carries that resolved `sub` index.
+
+Textures (queue item 3):
+
+- **PCX decode is hand-rolled, not linked.** `pof2glb` stays `libpof` + `stb`
+  and decodes 256-colour RLE PCX itself rather than linking the foundation's
+  `pcxutils` (which would drag in cfile + SDL/OpenAL/GL + the stub apparatus).
+  PCX is a frozen format, so the only risk that buys is a decode bug — closed by
+  `tex-check`: `tests/pcx_dump` decodes the same maps through retail's
+  authoritative `pcx_read_bitmap_8bpp` and `check_tex.py` compares pixel-for-pixel.
+- **The green colour-key is dormant on ship maps.** Retail treats a palette
+  entry of exactly `(0,255,0)` as transparent (`pcxutils.cc:266-274`), and the
+  emitter + checker both replicate it — but *no* slice map, and none of 120
+  sampled `data/maps` PCX, actually uses it (it belongs to HUD/effects art). So
+  `tex-check` verifies the key never fires *spuriously* (alpha is compared, and
+  is 255 everywhere on real data); the key *firing* is proven only by a
+  synthetic pixel in the bite test, not by corpus data.
+- **Keyword maps are skipped.** Texture names containing `thruster`/`invisible`
+  are engine keywords, not files (`modelread.cc:270`); the match is
+  case-sensitive as retail's `strstr` is. Those slots get a name-only material,
+  no image. Every other name resolves case-insensitively (retail's cfile
+  Windows-ism) to a `data/maps/*.pcx`, the model's sibling directory.
 
 ## Where this work lives
 
