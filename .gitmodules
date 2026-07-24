@@ -1,0 +1,3 @@
+[submodule "subprojects/libpof"]
+	path = subprojects/libpof
+	url = ../libpof

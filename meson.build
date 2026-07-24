@@ -235,4 +235,16 @@ cfilearchiver = executable('cfilearchiver',
     'code/cfilearchiver/cfilearchiver.cc',
     include_directories: inc)
 
+# The POF->GLB converter (docs/godot-migration-plan.md) reads models through
+# libpof (vendored as a submodule at subprojects/libpof), never through a
+# second POF parser. libpof is C++23; the override keeps the game itself on
+# the project's C++17.
+subproject('libpof')
+libpof_dep = dependency('libpof')
+
+pof2glb = executable('pof2glb',
+    'tools/pof2glb/pof2glb.cc',
+    dependencies: libpof_dep,
+    override_options: ['cpp_std=c++23'])
+
 subdir('tests')
