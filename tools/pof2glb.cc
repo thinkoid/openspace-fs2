@@ -9,11 +9,15 @@
 //   pof2glb <model.pof> [<out.glb>]
 //   pof2glb --summary <model.pof>
 //
-// Current state: emits geometry, hierarchy and named materials; textures,
-// the ship-data .tres and the manifest land next.
+// Current state: emits geometry, hierarchy and named materials into the GLB,
+// and the FS2-specific ship data (weapon/thruster/dock/path points, turrets,
+// subsystems, shield) into a Godot .tres beside it (tools/ship_data.gd is the
+// schema). Textures and the manifest land next.
 
 #include <model/file.hh>
 
+#include <algorithm>
+#include <cctype>
 #include <cstdarg>
 #include <cstdint>
 #include <cstdio>
@@ -360,6 +364,315 @@ node(gltf_t &g, const pof::model::sobj_t &sobj, int mesh_ix,
     g.nodes += "}},";
 }
 
+// ---- Godot .tres ship data -------------------------------------------
+//
+// The FS2-specific half of the model -- weapon muzzles, turrets, thrusters,
+// docks, eyes, paths, subsystems, shield -- that glTF has no slot for, written
+// as a Godot text resource beside the GLB. tools/ship_data.gd is its schema;
+// the pipeline shape is docs/godot-migration-plan.md ("POF is not merely a
+// mesh"). Every coordinate goes through to_godot(), the same axis map as the
+// geometry (docs/pof-corpus-survey.txt) -- nothing here re-derives coordinates.
+
+// one Godot Vector3 literal, mapped to Godot's frame
+void
+gv3(std::string &s, const geom::vec_t &v)
+{
+    const geom::vec_t g = to_godot(v);
+    jf(s, "Vector3(%.9g, %.9g, %.9g)", g[0], g[1], g[2]);
+}
+
+// PackedVector3Array literal from a run of points, each mapped
+void
+packed_points(std::string &s, const geom::vec_array_t &pts)
+{
+    s += "PackedVector3Array(";
+    for (std::size_t i = 0; i < pts.size(); ++i) {
+        const geom::vec_t g = to_godot(pts[i]);
+        jf(s, "%s%.9g, %.9g, %.9g", i ? ", " : "", g[0], g[1], g[2]);
+    }
+    s += ")";
+}
+
+void
+packed_int(std::string &s, const std::vector< int > &xs)
+{
+    s += "PackedInt32Array(";
+    for (std::size_t i = 0; i < xs.size(); ++i)
+        jf(s, "%s%d", i ? ", " : "", xs[i]);
+    s += ")";
+}
+
+void
+packed_float(std::string &s, const std::vector< float > &xs)
+{
+    s += "PackedFloat32Array(";
+    for (std::size_t i = 0; i < xs.size(); ++i)
+        jf(s, "%s%.9g", i ? ", " : "", xs[i]);
+    s += ")";
+}
+
+// a hardpoint array (muzzle/dock slots) as the paired "points"/"normals" keys
+void
+hardpoints(std::string &s, const pof::model::hardpoint_array_t &hp)
+{
+    geom::vec_array_t pts, norms;
+    for (const auto &h : hp) {
+        pts.push_back(h.point);
+        norms.push_back(h.norm);
+    }
+    s += "\"points\": ";
+    packed_points(s, pts);
+    s += ", \"normals\": ";
+    packed_points(s, norms);
+}
+
+bool
+iequals(const std::string &a, const std::string &b)
+{
+    if (a.size() != b.size())
+        return false;
+    for (std::size_t i = 0; i < a.size(); ++i)
+        if (std::tolower((unsigned char) a[i]) !=
+            std::tolower((unsigned char) b[i]))
+            return false;
+    return true;
+}
+
+// A property string's value for `key`, up to end of line. Retail's own reader
+// (get_user_prop_value) is fussier; this is only the human dock label, which
+// nothing keys on, so the simple form is deliberate.
+std::string
+prop_value(const std::string &props, const std::string &key)
+{
+    std::size_t p = props.find(key);
+    if (p == std::string::npos)
+        return "";
+    p += key.size();
+    while (p < props.size() && (props[p] == '=' || props[p] == ' '))
+        ++p;
+    const std::size_t e = props.find_first_of("\r\n", p);
+    return props.substr(p, e == std::string::npos ? std::string::npos : e - p);
+}
+
+bool
+write_tres(pof::model::model_t &model, const std::string &name,
+           const std::string &path)
+{
+    const auto &hdr = model.get_header();
+    const auto &subs = model.get_subobjects();
+
+    std::string s;
+    s += "[gd_resource type=\"Resource\" script_class=\"ShipData\" "
+         "load_steps=2 format=3]\n\n";
+    s += "[ext_resource type=\"Script\" path=\"res://ship_data.gd\" "
+         "id=\"1_shipdata\"]\n\n";
+    s += "[resource]\n";
+    s += "script = ExtResource(\"1_shipdata\")\n";
+
+    jf(s, "source_pof = \"%s\"\n", jstr(name).c_str());
+    jf(s, "pof_version = %d\n", model.GetVersion());
+    jf(s, "radius = %.9g\n", hdr.max_radius);
+    jf(s, "mass = %.9g\n", hdr.mass);
+    s += "mass_center = ";
+    gv3(s, hdr.mass_center);
+    s += "\n";
+
+    // The axis map crosses the file's min/max corners on X, so the transformed
+    // corners are no longer the frame's min/max -- recompute component-wise.
+    {
+        const geom::vec_t a = to_godot(hdr.min_bounding);
+        const geom::vec_t b = to_godot(hdr.max_bounding);
+        jf(s, "bbox_min = Vector3(%.9g, %.9g, %.9g)\n", std::min(a[0], b[0]),
+           std::min(a[1], b[1]), std::min(a[2], b[2]));
+        jf(s, "bbox_max = Vector3(%.9g, %.9g, %.9g)\n", std::max(a[0], b[0]),
+           std::max(a[1], b[1]), std::max(a[2], b[2]));
+    }
+
+    s += "detail_levels = ";
+    packed_int(s, hdr.detail_levels);
+    s += "\ndebris_pieces = ";
+    packed_int(s, hdr.debris_pieces);
+    s += "\n";
+
+    // Weapon muzzles: gun banks then missile banks, retail's own split.
+    for (int wtype = 0; wtype < 2; ++wtype) {
+        jf(s, "%s = [", wtype ? "missile_banks" : "gun_banks");
+        bool first = true;
+        for (const auto &bank : model.get_weapons()) {
+            if (bank.type != (wtype ? MISSILE : GUN))
+                continue;
+            s += first ? "{" : ", {";
+            first = false;
+            hardpoints(s, bank.muzzles);
+            s += "}";
+        }
+        s += "]\n";
+    }
+
+    // Turrets, one per base submodel: retail merges the gun/missile banks
+    // last-wins and drops the chunk provenance (dump.cc; survey), so the .tres
+    // carries the merged form -- the thing the game actually turns.
+    {
+        struct merged_t
+        {
+            int arm;
+            geom::vec_t norm;
+            geom::vec_array_t points;
+        };
+        std::map< int, merged_t > merged;
+        for (const auto &t : model.get_turrets())
+            merged[t.parent] = { t.physical_parent, t.norm, t.fire_points };
+
+        s += "turrets = [";
+        bool first = true;
+        for (const auto &[base, t] : merged) {
+            jf(s, "%s{\"base\": %d, \"arm\": %d, \"normal\": ",
+               first ? "" : ", ", base, t.arm);
+            first = false;
+            gv3(s, t.norm);
+            s += ", \"fire_points\": ";
+            packed_points(s, t.points);
+            s += "}";
+        }
+        s += "]\n";
+    }
+
+    s += "thrusters = [";
+    {
+        bool first = true;
+        for (const auto &bank : model.get_thrusters()) {
+            geom::vec_array_t pts, norms;
+            std::vector< float > radii;
+            for (const auto &gp : bank.glow_points) {
+                pts.push_back(gp.pos);
+                norms.push_back(gp.norm);
+                radii.push_back(gp.radius);
+            }
+            s += first ? "{\"points\": " : ", {\"points\": ";
+            first = false;
+            packed_points(s, pts);
+            s += ", \"normals\": ";
+            packed_points(s, norms);
+            s += ", \"radii\": ";
+            packed_float(s, radii);
+            jf(s, ", \"properties\": \"%s\"}", jstr(bank.properties).c_str());
+        }
+    }
+    s += "]\n";
+
+    s += "docks = [";
+    {
+        bool first = true;
+        for (const auto &d : model.get_docking()) {
+            const std::string nm = prop_value(d.properties, "$name");
+            jf(s, "%s{\"name\": \"%s\", \"paths\": ", first ? "" : ", ",
+               jstr(nm).c_str());
+            first = false;
+            packed_int(s, d.paths);
+            s += ", ";
+            hardpoints(s, d.dockpoints);
+            s += "}";
+        }
+    }
+    s += "]\n";
+
+    s += "eyes = [";
+    {
+        bool first = true;
+        for (const auto &e : model.get_eyes()) {
+            jf(s, "%s{\"parent\": %d, \"point\": ", first ? "" : ", ",
+               e.sobj_number);
+            first = false;
+            gv3(s, e.sobj_offset);
+            s += ", \"normal\": ";
+            gv3(s, e.norm);
+            s += "}";
+        }
+    }
+    s += "]\n";
+
+    // AI paths: parent is a submodel *name*; resolve it to an index the way
+    // retail does (drop a leading '$', last case-insensitive name match, -1
+    // if none) so the .tres carries the resolved `sub` the game uses.
+    s += "paths = [";
+    {
+        bool first = true;
+        for (const auto &pth : model.get_paths()) {
+            std::string parent = pth.parent;
+            if (!parent.empty() && parent[0] == '$')
+                parent.erase(0, 1);
+            int sub = -1;
+            for (std::size_t j = 0; j < subs.size(); ++j)
+                if (iequals(subs[j].name, parent))
+                    sub = int(j);
+
+            geom::vec_array_t pts;
+            std::vector< float > radii;
+            for (const auto &vert : pth.verts) {
+                pts.push_back(vert.pos);
+                radii.push_back(vert.radius);
+            }
+
+            jf(s, "%s{\"name\": \"%s\", \"parent\": \"%s\", \"sub\": %d, "
+                  "\"points\": ",
+               first ? "" : ", ", jstr(pth.name).c_str(),
+               jstr(parent).c_str(), sub);
+            first = false;
+            packed_points(s, pts);
+            s += ", \"radii\": ";
+            packed_float(s, radii);
+            s += "}";
+        }
+    }
+    s += "]\n";
+
+    // Subsystem/special points: emitted straight from the SPCL chunk. Retail
+    // resolves these against ships.tbl and the pof_dump oracle drops them
+    // (dump.cc), so this field alone has no oracle -- tests/check_tres.py says
+    // as much rather than pretend coverage.
+    s += "subsystems = [";
+    {
+        bool first = true;
+        for (const auto &sp : model.get_specials()) {
+            jf(s, "%s{\"name\": \"%s\", \"properties\": \"%s\", \"point\": ",
+               first ? "" : ", ", jstr(sp.name).c_str(),
+               jstr(sp.properties).c_str());
+            first = false;
+            gv3(s, sp.point);
+            jf(s, ", \"radius\": %.9g}", sp.radius);
+        }
+    }
+    s += "]\n";
+
+    // Shield: a flat vertex table and triangles indexing it, both file data
+    // (no BSP walk). Vertex/normal coordinates map; the index triples do not.
+    const auto &shield = model.get_shield();
+    s += "shield_verts = ";
+    packed_points(s, shield.verts);
+    s += "\nshield_tris = [";
+    {
+        bool first = true;
+        for (const auto &tri : shield.tris) {
+            s += first ? "{\"normal\": " : ", {\"normal\": ";
+            first = false;
+            gv3(s, tri.norm);
+            jf(s, ", \"verts\": PackedInt32Array(%d, %d, %d), "
+                  "\"neighbors\": PackedInt32Array(%d, %d, %d)}",
+               tri.verts[0], tri.verts[1], tri.verts[2], tri.neighbors[0],
+               tri.neighbors[1], tri.neighbors[2]);
+        }
+    }
+    s += "]\n";
+
+    std::FILE *out = std::fopen(path.c_str(), "wb");
+    if (!out) {
+        std::fprintf(stderr, "pof2glb: cannot write %s\n", path.c_str());
+        return false;
+    }
+    const bool ok = std::fwrite(s.data(), 1, s.size(), out) == s.size();
+    return std::fclose(out) == 0 && ok;
+}
+
 // ---- GLB container ---------------------------------------------------
 
 bool
@@ -461,6 +774,19 @@ convert(pof::model::model_t &model, const std::string &name,
     std::printf("%s: %zu nodes, %d meshes, %zu materials, %ld triangles\n",
                 out_path.c_str(), subobjects.size(), g.n_meshes,
                 g.material_of.size(), g.n_triangles);
+
+    // The ship-data .tres rides beside the GLB, same stem (the plan's tree:
+    // Ulysses.glb + UlyssesShipData.tres). Derive its path from the GLB's.
+    std::string tres_path = out_path;
+    if (tres_path.size() >= 4 && tres_path.substr(tres_path.size() - 4) == ".glb")
+        tres_path.replace(tres_path.size() - 4, 4, ".tres");
+    else
+        tres_path += ".tres";
+
+    if (!write_tres(model, name, tres_path))
+        return false;
+
+    std::printf("%s: ship data\n", tres_path.c_str());
     return true;
 }
 

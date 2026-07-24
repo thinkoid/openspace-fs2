@@ -53,6 +53,20 @@ test('glb-check', find_program('glb_check.sh'),
     depends: [pof2glb, pof_dump],
     timeout: 120)
 
+# The same converter's .tres ship-data output (weapon/thruster/dock/path
+# points, turrets, eyes, shield), cross-checked against pof_dump --model
+# through the axis map by check_tres.py. Separate from glb-check so a mesh
+# regression and a ship-data regression fail apart. Same unpacked-install gate.
+test('tres-check', find_program('tres_check.sh'),
+    args: [
+        pof2glb.full_path(),
+        pof_dump.full_path(),
+        meson.current_source_dir() / 'check_tres.py',
+        meson.project_source_root(),
+    ],
+    depends: [pof2glb, pof_dump],
+    timeout: 120)
+
 math_test = executable('math_test',
     ['math_test.cc', 'stubs.cc', 'gamestubs_gen.cc', 'freespacestubs_gen.cc'],
     include_directories: inc,

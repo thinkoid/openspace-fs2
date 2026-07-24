@@ -122,6 +122,37 @@ is trustworthy, scaling to the full retail corpus is mechanical.
 **Exit:** the model is visually correct and every relevant POF datum is present,
 inspectable, and oracle-checked.
 
+### Slice progress
+
+Landed on `godot` (converter half of steps 1, 5–6; the Godot scene is still to
+come):
+
+- **`tools/pof2glb.cc`** emits, from one invocation, the `.glb` (geometry,
+  hierarchy, named materials) **and** a `.tres` ship-data resource beside it —
+  weapon banks, turrets, thrusters, docks, eyes, paths, subsystems, and the
+  shield mesh. `tools/ship_data.gd` is the resource schema (the contract the
+  `.tres` targets; the inspection project will keep a copy at its `res://` root).
+- **Verification.** `meson test glb-check` and `tres-check` cross-check both
+  outputs against `pof_dump --model` through the axis map (`tests/check_glb.py`,
+  `check_tres.py`). Both bite: the GLB check hard-fails on reversed winding, the
+  `.tres` check hard-fails when any coordinate breaks the `(x, y, −z)` map. Every
+  `.tres` coordinate is validated by a *second, independent* path — the dump
+  un-mirrors X off libpof's memory frame, the emitter runs it through
+  `to_godot()` — so agreement pins the axis map end to end.
+
+Semantic facts the emitter had to honor (also at the bite sites in source):
+
+- **Turrets are merged.** Retail keeps one turret per base submodel, last gun/
+  missile bank winning, and drops which chunk it came from (`dump.cc`); the
+  `.tres` carries that merged form, not libpof's raw banks.
+- **Subsystems have no oracle.** Retail converts SPCL points against `ships.tbl`
+  and `pof_dump` keeps only `$split` z, so the `.tres` `subsystems` array is
+  emitted straight from libpof and is *unverified* against the oracle —
+  `check_tres.py` says so rather than pretend coverage.
+- **Path parents resolve by name.** A path's parent is a submodel *name*;
+  retail drops a leading `$` and takes the last case-insensitive match (−1 if
+  none). The `.tres` carries that resolved `sub` index.
+
 ## Where this work lives
 
 - `master` — the retail Linux port, its own line, formatted uniformly at the
