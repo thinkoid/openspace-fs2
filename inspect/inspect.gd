@@ -59,9 +59,13 @@ func _ready() -> void:
         _fatal("usage: godot --path inspect -- [fly] /abs/path/to/ship.glb")
         return
     # mode word instead of a scene argument: `-- fly <glb>` hands off to the
-    # flyable scene, so a reused viewer command can't land in the wrong room
+    # flyable scene and `-- mission <tres>` to the mission scene, so a
+    # reused viewer command can't land in the wrong room
     if args[0] == "fly":
         get_tree().change_scene_to_file.call_deferred("res://fly.tscn")
+        return
+    if args[0] == "mission":
+        get_tree().change_scene_to_file.call_deferred("res://mission.tscn")
         return
     var glb_path: String = args[0]
     var tres_path := glb_path.get_basename() + ".tres"

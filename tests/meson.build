@@ -136,6 +136,18 @@ test('shiptbl-check', find_program('shiptbl_check.sh'),
     depends: [shiptbl2tres],
     timeout: 120)
 
+# The mission gate: all 41 retail missions through retail's parse_main
+# (../tools/mission2tres, Fred_running) vs an independent python read of
+# each .fs2's #Objects -- strict bijection, float32-exact.
+test('mission-check', find_program('mission_check.sh'),
+    args: [
+        mission2tres.full_path(),
+        meson.current_source_dir() / 'check_mission.py',
+        meson.project_source_root(),
+    ],
+    depends: [mission2tres],
+    timeout: 300)
+
 # The flight gate: the trace from physics_dump vs flight_model.gd's replay,
 # frame by frame within float-width tolerances. Needs no game install --
 # the oracle is the ported retail code itself.

@@ -419,8 +419,49 @@ ships.tbl (`tools/shiptbl2tres`, `meson test shiptbl-check`):
   5 retail ships carry lateral `max_vel` (slide); `FlightModel` zeroes
   those with an honest warning until a slide slice earns its keep.
 
-Still ahead on the training-mission road: mission-file loading (the SEXP
-parse oracle already waits in `missions/`), then the training directives.
+Missions (`tools/mission2tres`, `meson test mission-check`,
+`inspect/mission.tscn`):
+
+- **A mission read by its one authoritative reader.** `mission2tres` runs
+  retail's `parse_main` under `Fred_running` — the editor's mode, where
+  every mission object is created regardless of arrival cues and player
+  starts carry `OF_PLAYER_SHIP` — and emits the ship layout
+  (name/class/POF stem/team/position/orientation/player-start) as a
+  `MissionData` `.tres`. The init recipe grew three entries beyond
+  shiptbl2tres's: `obj_init` (ship_create walks `obj_used_list`),
+  `ai_init` + `ai_level_init` (each ship claims an AI slot), and FRED's
+  own `mission_brief_common_init` (the briefing parser stuffs into
+  preallocated buffers). One foundation change:
+  `debug_int3` honors `FS2_INT3_CONTINUE` — retail's `Int3()` was a
+  *continuable* breakpoint, and `ship_make_create_time_unique` trips a
+  diagnostic one legitimately when 50+ ships materialize in one
+  millisecond, exactly as real FRED does and survives. The game keeps
+  fail-fast. (Retail bug noted in passing: `show_ship_subsys_count`
+  indexes `Ships[objp->type]` where it means `objp->instance` — harmless,
+  it only feeds a high-water stat.)
+- **All 41 campaign missions, gated.** `check_mission.py` re-reads each
+  `.fs2`'s `#Objects` independently and demands a strict bijection with
+  the `.tres`. Tolerances are tight but not zero, for a measured reason:
+  the `.tres` carries the **engine's** placement, and retail post-passes
+  the parse — initially-docked ships realign to dock-point geometry,
+  matrices re-orthogonalize — drifting ≤3e-5 position / ≤4e-6 orientation
+  from the text in 11 of 41 missions. The gate sits ~30× above that
+  drift and orders below any real transform error. Bites: a shifted
+  position and a flipped player-start flag both red.
+- **`-- mission <tres>` is the third mode.** `mission.tscn` spawns every
+  ship from its converted GLB (by POF stem, beside the mission `.tres`),
+  puts the player in the player-start ship under `FlightModel` with
+  ships.tbl parameters, chase/cockpit camera, and holds the rest at
+  station. Training-1: you are Alpha 1 in a GTF Myrmidon
+  (`fighter2t-05`), the Instructor off your port bow, four GTDR Amazon
+  drones waiting downrange. No AI, no events yet — every ship the mission
+  knows is present (FRED's view); arrival timing belongs to the events
+  slice.
+
+Still ahead on the training-mission road: the events/directives slice
+(arrival cues, the SEXP evaluator, Sensky's messages) and the game HUD
+(radar, target box, directives list) — at which point Training-1 is not
+just a place but a lesson.
 
 ## Where this work lives
 

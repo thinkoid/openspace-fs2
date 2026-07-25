@@ -41,3 +41,12 @@ shiptbl2tres = executable('shiptbl2tres',
     include_directories: inc,
     link_with: foundation,
     dependencies: [sdl2_dep, openal_dep, gl_dep])
+
+# mission2tres runs retail's parse_main over a .fs2 under Fred_running (all
+# objects created, cues ignored, player starts = OBJ_START) and emits the
+# mission's ship layout for the Godot side.
+mission2tres = executable('mission2tres',
+    ['mission2tres.cc'] + oracle_stubs,
+    include_directories: inc,
+    link_with: foundation,
+    dependencies: [sdl2_dep, openal_dep, gl_dep])

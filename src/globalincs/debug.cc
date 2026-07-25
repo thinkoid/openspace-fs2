@@ -48,6 +48,16 @@ Warning(const char *filename, int line, const char *format, ...)
 void
 debug_int3()
 {
+    // Retail's Int3() was a continuable debugger breakpoint; some call
+    // sites break and carry on after it (ship_make_create_time_unique
+    // trips it legitimately when 50+ ships materialize in one millisecond,
+    // which FRED-style bulk creation does). The game keeps fail-fast;
+    // tools that replicate FRED's bulk paths opt into retail's continuable
+    // semantics via the environment.
+    if (getenv("FS2_INT3_CONTINUE")) {
+        fprintf(stderr, "Int3 (continuing: FS2_INT3_CONTINUE is set)\n");
+        return;
+    }
     abort();
 }
 
