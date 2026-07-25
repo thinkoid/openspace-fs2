@@ -8,8 +8,8 @@
 #     godot --path inspect res://fly.tscn -- /abs/path/to/ship.glb
 #
 # Controls:  Up/Down    pitch (stick-style: Up pushes the nose down)
-#            Left/Right turn (banks into the turn by itself, as retail does)
-#            Q/E        roll   A/Z  throttle up/down   0  cut throttle
+#            Left/Right turn, direction-true (auto-banks into the turn)
+#            Q/E        roll left/right   A/Z  throttle   0  cut throttle
 #            V          chase <-> cockpit (the POF eye point; retail's view)
 #            R reset    H help   Esc quit
 #
@@ -84,10 +84,14 @@ func _fatal(msg: String) -> void:
 func _physics_process(delta: float) -> void:
     if fm == null:   # _fatal quits deferred; don't simulate meanwhile
         return
+    # Signs, from retail's frame (+X starboard, positive heading yaws right,
+    # positive bank rolls LEFT): pitch is stick-true (Up pushes the nose
+    # down), turn and roll are direction-true (Left turns left, Q rolls
+    # left) -- user-calibrated 2026-07-25.
     var ci := {
         "pitch": _axis(KEY_UP, KEY_DOWN),
-        "heading": _axis(KEY_LEFT, KEY_RIGHT),
-        "bank": _axis(KEY_E, KEY_Q),
+        "heading": _axis(KEY_RIGHT, KEY_LEFT),
+        "bank": _axis(KEY_Q, KEY_E),
         "forward": throttle,
     }
     fm.read_flying_controls(ci, delta)
