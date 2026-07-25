@@ -10,6 +10,7 @@
 # Controls:  Up/Down    pitch (stick-style: Up pushes the nose down)
 #            Left/Right turn (banks into the turn by itself, as retail does)
 #            Q/E        roll   A/Z  throttle up/down   0  cut throttle
+#            V          chase <-> cockpit (the POF eye point; retail's view)
 #            R reset    H help   Esc quit
 #
 # The flight parameters are FlightModel.FIGHTER (synthetic; ships.tbl is a
@@ -29,6 +30,15 @@ var throttle := 0.0
 var cam: Camera3D
 var hud: Label
 
+# cockpit view rides the POF eye point: parent-relative (the .tres's one
+# non-model-frame field), anchored to the parent submodel's node so it moves
+# with articulation. Retail flies from here, HUD over empty space -- FS2 has
+# no cockpit geometry, so the hull is hidden exactly as retail hides it.
+var view_chase := true
+var eye_parent: Node3D = null
+var eye_point := Vector3.ZERO
+var eye_normal := Vector3.FORWARD
+
 func _ready() -> void:
     var args := OS.get_cmdline_user_args()
     if args.is_empty():
@@ -46,6 +56,18 @@ func _ready() -> void:
     add_child(ship)
 
     fm = FlightClass.new()
+
+    if ship.data.eyes.size() > 0:
+        var e: Dictionary = ship.data.eyes[0]
+        eye_parent = ship.sub_node(e["parent"])
+        eye_point = e["point"]
+        eye_normal = e["normal"]
+    else:
+        # no EYE chunk (capitals, drones): synthesize a nose view on the
+        # hull centerline
+        eye_point = Vector3(0.0, 0.0, ship.data.bbox_min.z)
+    if eye_parent == null:
+        eye_parent = ship
 
     _setup_camera()
     _setup_lights()
@@ -86,7 +108,7 @@ func _physics_process(delta: float) -> void:
     _update_camera(delta)
     hud.text = "speed %5.1f   throttle %3d%%\n%s" % [
         fm.fspeed, int(throttle * 100.0),
-        "arrows fly, Q/E roll, A/Z throttle, 0 cut, R reset, Esc quit"]
+        "arrows fly, Q/E roll, A/Z throttle, 0 cut, V view, R reset, Esc quit"]
 
 # +1 when `pos` is held, -1 for `neg` -- keyboard stick
 static func _axis(pos: Key, neg: Key) -> float:
@@ -103,6 +125,9 @@ func _unhandled_input(event: InputEvent) -> void:
             throttle = clampf(throttle - 0.1, -1.0, 1.0)
         KEY_0:
             throttle = 0.0
+        KEY_V:
+            view_chase = not view_chase
+            ship.model.visible = view_chase
         KEY_R:
             fm = FlightClass.new()
             throttle = 0.0
@@ -117,8 +142,16 @@ func _setup_camera() -> void:
     add_child(cam)
     cam.position = Vector3(0, 4, 20)
 
-# chase: settle toward a point behind and above the ship, always look ahead
+# chase: settle toward a point behind and above the ship, always look ahead.
+# cockpit: rigid on the eye point, sighting along the eye normal.
 func _update_camera(delta: float) -> void:
+    if not view_chase:
+        var g := eye_parent.global_transform
+        var pos := g * eye_point
+        var dir := (g.basis * eye_normal).normalized()
+        cam.global_position = pos
+        cam.look_at(pos + dir * 100.0, ship.basis.y)
+        return
     var r: float = maxf(ship.data.radius, 1.0)
     var target: Vector3 = ship.position \
         + ship.basis * Vector3(0.0, r * 0.6, r * 2.2)
