@@ -220,5 +220,10 @@ func _setup_hud() -> void:
     var layer := CanvasLayer.new()
     add_child(layer)
     hud = Label.new()
-    hud.position = Vector2(12, 12)
+    hud.position = Vector2(16, 12)
+    # legible on a big display: larger type, shadowed against bright hulls
+    hud.add_theme_font_size_override("font_size", 22)
+    hud.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+    hud.add_theme_constant_override("shadow_offset_x", 2)
+    hud.add_theme_constant_override("shadow_offset_y", 2)
     layer.add_child(hud)
