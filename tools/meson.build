@@ -21,3 +21,14 @@ pof2glb = executable('pof2glb',
     dependencies: [libpof_dep, meson.get_compiler('cpp').find_library('m')],
     cpp_args: ['-Wno-unused-function', '-Wno-unused-parameter'],
     override_options: ['cpp_std=c++23'])
+
+# vpstage extracts the conversion inputs (models + maps) from the retail VP
+# archives into a loose staging tree + staging.manifest.json (origin archive,
+# offsets, digests). The extraction goes through retail's own cfile -- the
+# authoritative VP reader -- so it links the foundation and the stub
+# apparatus exactly like the oracle dumpers in ../tests do.
+vpstage = executable('vpstage',
+    ['vpstage.cc', pof2glb_version] + oracle_stubs,
+    include_directories: inc,
+    link_with: foundation,
+    dependencies: [sdl2_dep, openal_dep, gl_dep])

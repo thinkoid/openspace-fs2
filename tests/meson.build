@@ -1,11 +1,8 @@
-# Point-1 oracle and unit tests.  stubs.cpp carries temporary definitions for
+# Point-1 oracle and unit tests.  stubs.cc carries temporary definitions for
 # game globals the foundation references but whose owning subsystems are not
-# ported yet; entries get deleted as the real code comes in.
-
-# The game binary (../bin) links the same two stub files -- it is built against
-# unported gameplay too. Exported so bin/meson.build doesn't reach across the
-# tree for them; see the wart note there.
-game_stubs = files('stubs.cc', 'gamestubs_gen.cc')
+# ported yet; entries get deleted as the real code comes in. The stub file
+# lists (game_stubs, oracle_stubs) are exported from the root meson.build --
+# tools/ builds before this dir and links them too (vpstage).
 
 # sexp.cpp's evaluator half references gameplay code that is not ported yet;
 # gamestubs_gen.cpp fills those symbols with traps (see its header comment).
@@ -117,6 +114,20 @@ test('tres-load-check', find_program('tres_load_check.sh'),
     ],
     depends: [pof2glb],
     timeout: 120)
+
+# The VP staging gate: vpstage extracts models + maps from the pristine VPs
+# via retail's cfile; check_staging.py verifies digests (hashlib), raw
+# offset-slices from the archives (bypassing cfile), and byte-equality with
+# the unpacked install; then the slice converts identically from both trees.
+test('vpstage-check', find_program('vpstage_check.sh'),
+    args: [
+        vpstage.full_path(),
+        pof2glb.full_path(),
+        meson.current_source_dir() / 'check_staging.py',
+        meson.project_source_root(),
+    ],
+    depends: [vpstage, pof2glb],
+    timeout: 300)
 
 # The corpus gate: every retail model (176) through pof2glb, cross-checked
 # with check_glb + check_tres + check_manifest. Wide where the slice gates

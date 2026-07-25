@@ -21,12 +21,19 @@ inc = include_directories('src')
 subproject('libpof')
 libpof_dep = dependency('libpof')
 
+# Temporary stub definitions for game globals whose owning subsystems are not
+# ported yet (see tests/stubs.cc). Exported from the root so every role can
+# link them regardless of subdir order: game_stubs for the game binary,
+# oracle_stubs (+freespace side) for the foundation-linked tools and dumpers.
+game_stubs = files('tests/stubs.cc', 'tests/gamestubs_gen.cc')
+oracle_stubs = game_stubs + files('tests/freespacestubs_gen.cc')
+
 # The tree is split by role: src/ compiles the whole ported corpus into the
 # `foundation` library; bin/ declares the shippable toplevel executables that
 # link it; tools/ and tests/ own their own families. Order is by dependency:
 #   src   exports `foundation` and the two entry-point sources
-#   tools defines pof2glb, which tests' GLB check runs
-#   tests exports `game_stubs`; its GLB check consumes pof2glb + pof_dump
+#   tools defines pof2glb + vpstage; tests' gates run both
+#   tests defines the oracle dumpers and every gate
 #   bin   consumes `foundation`, the entry points, and `game_stubs` -- last
 subdir('src')
 subdir('tools')

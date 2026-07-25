@@ -308,6 +308,32 @@ The corpus gate (`meson test corpus-check`):
   gate passes `--allow-warnings` for it alone — digests still verify, and
   removing the allowance was the gate's bite (175/176 → red).
 
+VP staging (`tools/vpstage`, `meson test vpstage-check`):
+
+- **Extraction is retail's own.** `vpstage <vp-root> <out>` stages every
+  model and map out of the pristine `.vp` archives *through retail's cfile*
+  — the authoritative VP reader, so archive precedence and the member
+  actually staged are the game's answers, not a reimplementation's. Staged
+  names are lowercased (the TOCs carry mixed case — `ast01.POF` — that
+  case-insensitive retail never notices and a case-sensitive pipeline
+  would). All 864 files (176 models + 688 maps) come from `sparky_fs2.vp`.
+- **The manifest's source-archive slot is now filled.**
+  `staging.manifest.json` records per file: staged path, size, SHA-256, the
+  originating archive (digested once) and the member's offset within it.
+  Timestamp-free and sorted — same VPs, same manifest, byte for byte.
+- **Verified three independent ways** by `check_staging.py`: hashlib
+  recomputes every digest; each member is **sliced raw out of the archive**
+  at the recorded offset and byte-compared (an extraction check that never
+  touches cfile, so a cfile bug and a bookkeeping bug can't cover for each
+  other); and every staged file must byte-match the unpacked install. Then
+  the slice ships convert from the staged tree and must produce
+  **byte-identical GLB + `.tres`** to a rundir conversion — the pipeline
+  gives the same answer whichever door the data comes through. Proven
+  bites: a tampered digest, a tampered offset, and a corrupted staged file
+  (which trips all three checks at once) all red.
+- **SHA-256 moved to `tools/sha256.hh`**, shared by both manifest writers;
+  the slice manifest-check pinned the move (digests unchanged).
+
 ## Where this work lives
 
 - `master` — the retail Linux port, its own line, formatted uniformly at the
