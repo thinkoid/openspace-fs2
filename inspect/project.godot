@@ -1,0 +1,20 @@
+; FS2 inspection project -- the eyeball end of the conversion pipeline
+; (docs/godot-migration-plan.md, "Verification"). Run with:
+;
+;     godot --path inspect -- /abs/path/to/ship.glb
+;
+; Loads the GLB (and its sibling .tres) at RUNTIME -- GLTFDocument +
+; ResourceLoader on absolute paths, deliberately bypassing Godot's import
+; pipeline so the converter's raw output is what gets judged.
+
+config_version=5
+
+[application]
+
+config/name="FS2 Inspect"
+run/main_scene="res://inspect.tscn"
+config/features=PackedStringArray("4.7")
+
+[rendering]
+
+renderer/rendering_method="mobile"

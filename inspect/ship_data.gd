@@ -5,10 +5,10 @@
 # by tools/pof2glb.cc as a .tres beside the .glb; the inspection scene, and
 # later the game, load it typed.
 #
-# This file is the *contract* the emitter targets, versioned next to it. It is
-# not itself generated -- the .tres files are (gitignored). The inspection
-# Godot project keeps a copy of this script at its res:// root so `res://
-# ship_data.gd` below resolves.
+# This file is the *contract* the emitter targets. It is not itself generated
+# -- the .tres files are (gitignored). It lives at the inspection project's
+# res:// root, the single canonical, so the `res://ship_data.gd` ext_resource
+# every emitted .tres carries resolves when loaded under --path inspect.
 #
 # COORDINATES. Every point, normal and offset here is in Godot's frame: +Y up,
 # -Z forward, the same frame as the sibling GLB. pof2glb.cc's to_godot() puts

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Check pof2glb's transcoded TGA maps for the inspection-slice models against
+# Check pof2glb's transcoded PNG maps for the inspection-slice models against
 # retail's authoritative PCX decode, via check_tex.py. pof2glb hand-rolls its
 # PCX decoder (it stays libpof + stb, never links the foundation); this gate is
 # what makes that safe -- pcx_dump decodes the same maps through retail's
@@ -47,7 +47,7 @@ for m in $slice; do
     fi
 
     mkdir -p "$tmp/$m/idx"
-    # pof2glb writes <stem>.glb + <stem>.tres + textures/<map>.tga together.
+    # pof2glb writes <stem>.glb + <stem>.tres + textures/<map>.png together.
     "$pof2glb" "$pof" "$tmp/$m/$m.glb" > /dev/null
 
     # The maps retail would actually load: the TXTR list minus the thruster/

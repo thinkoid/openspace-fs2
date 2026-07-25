@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-# Compare pof2glb's transcoded TGA maps against retail's authoritative PCX
+# Compare pof2glb's transcoded PNG maps against retail's authoritative PCX
 # decode. pcx_dump wrote, per texture, an .idx of retail's raw 8-bit indices +
 # palette (through pcx_read_bitmap_8bpp). Here we expand those indices through
 # the green colour-key (pcxutils.cc:266-274) -- an independent third
 # implementation of the rule -- and check the result pixel-for-pixel against
-# pof2glb's TGA. Bites on any decode or key divergence. Pure stdlib.
+# pof2glb's PNG. Bites on any decode or key divergence. Pure stdlib -- the PNG
+# read is hand-rolled on zlib (chunk walk + scanline unfiltering), which keeps
+# it independent of stb's writer.
 #
 #   check_tex.py <textures-dir> <idx-dir> <name> [name ...]
 
 import struct
 import sys
+import zlib
 
 
 def read_idx(path):
@@ -31,33 +34,56 @@ def expand(w, h, idx, pal):
     return bytes(out)
 
 
-def read_tga(path):
+def read_png(path):
     with open(path, "rb") as f:
         d = f.read()
-    idlen, cmaptype, imgtype = d[0], d[1], d[2]
-    w = d[12] | (d[13] << 8)
-    h = d[14] | (d[15] << 8)
-    bpp = d[16]
-    desc = d[17]
-    if imgtype != 2 or bpp != 32:
-        raise SystemExit(
-            f"{path}: expected uncompressed 32-bit TGA, got "
-            f"imgtype={imgtype} bpp={bpp}")
-    off = 18 + idlen  # truecolor: no colour map to skip
-    px = d[off:off + w * h * 4]
-    # TGA truecolor bytes are BGRA; rows run bottom-up unless descriptor bit 5
-    # (0x20) marks top-down. Normalise to top-down RGBA to match retail.
-    top_down = bool(desc & 0x20)
-    rows = []
+    if d[:8] != b"\x89PNG\r\n\x1a\n":
+        raise SystemExit(f"{path}: not a PNG")
+    pos, idat = 8, b""
+    w = h = None
+    while pos < len(d):
+        (clen,) = struct.unpack(">I", d[pos:pos + 4])
+        ctype = d[pos + 4:pos + 8]
+        body = d[pos + 8:pos + 8 + clen]
+        pos += 12 + clen  # length + type + body + crc
+        if ctype == b"IHDR":
+            w, h, depth, color, _, _, interlace = struct.unpack(
+                ">IIBBBBB", body)
+            if depth != 8 or color != 6 or interlace != 0:
+                raise SystemExit(
+                    f"{path}: expected 8-bit RGBA non-interlaced, got "
+                    f"depth={depth} color={color} interlace={interlace}")
+        elif ctype == b"IDAT":
+            idat += body
+        elif ctype == b"IEND":
+            break
+    raw = zlib.decompress(idat)
+    # Undo the per-scanline filters (PNG spec 4.5.2: 0 none, 1 sub, 2 up,
+    # 3 average, 4 paeth); rows are top-down RGBA already, matching retail.
+    stride = w * 4
+    out = bytearray()
+    prev = bytes(stride)
     for row in range(h):
-        src = row if top_down else (h - 1 - row)
-        line = px[src * w * 4:(src + 1) * w * 4]
-        conv = bytearray(w * 4)
-        for x in range(w):
-            b, g, r, a = line[x * 4:x * 4 + 4]
-            conv[x * 4:x * 4 + 4] = bytes((r, g, b, a))
-        rows.append(bytes(conv))
-    return w, h, b"".join(rows)
+        ft = raw[row * (stride + 1)]
+        line = bytearray(raw[row * (stride + 1) + 1:(row + 1) * (stride + 1)])
+        for i in range(stride):
+            a = line[i - 4] if i >= 4 else 0   # left, same channel
+            b = prev[i]                        # up
+            c = prev[i - 4] if i >= 4 else 0   # upper-left
+            if ft == 1:
+                line[i] = (line[i] + a) & 0xFF
+            elif ft == 2:
+                line[i] = (line[i] + b) & 0xFF
+            elif ft == 3:
+                line[i] = (line[i] + (a + b) // 2) & 0xFF
+            elif ft == 4:
+                p = a + b - c
+                pa, pb, pc = abs(p - a), abs(p - b), abs(p - c)
+                pr = a if pa <= pb and pa <= pc else (b if pb <= pc else c)
+                line[i] = (line[i] + pr) & 0xFF
+        out += line
+        prev = line
+    return w, h, bytes(out)
 
 
 def main():
@@ -68,9 +94,9 @@ def main():
         low = nm.lower()
         w, h, idx, pal = read_idx(f"{idx_dir}/{low}.idx")
         ref = expand(w, h, idx, pal)
-        tw, th, got = read_tga(f"{tex_dir}/{low}.tga")
+        tw, th, got = read_png(f"{tex_dir}/{low}.png")
         if (tw, th) != (w, h):
-            print(f"  FAIL {nm}: TGA {tw}x{th} vs retail {w}x{h}")
+            print(f"  FAIL {nm}: PNG {tw}x{th} vs retail {w}x{h}")
             ok = False
             continue
         if got != ref:
@@ -78,7 +104,7 @@ def main():
                 if got[i:i + 4] != ref[i:i + 4]:
                     px, py = (i // 4) % w, (i // 4) // w
                     print(f"  FAIL {nm}: pixel ({px},{py}) "
-                          f"tga={tuple(got[i:i + 4])} "
+                          f"png={tuple(got[i:i + 4])} "
                           f"retail={tuple(ref[i:i + 4])}")
                     break
             ok = False

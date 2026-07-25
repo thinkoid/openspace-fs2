@@ -124,28 +124,40 @@ inspectable, and oracle-checked.
 
 ### Slice progress
 
-Landed on `godot` (converter half of steps 1, 5–6; the Godot scene is still to
-come):
+Landed on `godot` (converter half of steps 1, 5–6, plus the inspection
+scene):
 
 - **`tools/pof2glb.cc`** emits, from one invocation, the `.glb` (geometry,
   hierarchy, textured materials), a `textures/` dir of the ship's maps
-  transcoded from PCX to TGA, a `.tres` ship-data resource beside it —
+  transcoded from PCX to PNG, a `.tres` ship-data resource beside it —
   weapon banks, turrets, thrusters, docks, eyes, paths, subsystems, and the
   shield mesh — **and** a `.manifest.json` accounting for the conversion:
   every source file and output with its SHA-256, the converter version, and
-  any warnings. `tools/ship_data.gd` is the resource schema (the contract the
-  `.tres` targets; the inspection project will keep a copy at its `res://` root).
-- **Verification.** `meson test glb-check`, `tres-check`, `tex-check` and
-  `manifest-check` cross-check the outputs against independent oracles
-  (`tests/check_glb.py`, `check_tres.py`, `check_tex.py`, `check_manifest.py`).
+  any warnings. `inspect/ship_data.gd` is the resource schema (the contract
+  the `.tres` targets), living at the inspection project's `res://` root — the
+  single canonical, which the `.tres`'s `ext_resource` reference resolves to.
+- **`inspect/`** is the inspection Godot project: `godot --path inspect --
+  /abs/ship.glb` loads a converted ship at *runtime* (GLTFDocument +
+  ResourceLoader on absolute paths, no import pipeline — what renders is the
+  converter's raw output), articulates the `movement_type 1` submodels about
+  their mapped axes, and overlays every `.tres` fact on the hull: weapon
+  muzzles, turrets, thrusters, docks, eyes, AI paths, subsystem radii, the
+  shield mesh, and a bounds/axes display whose "nose −Z" tripod is the
+  axis-map eyeball aid.
+- **Verification.** `meson test glb-check`, `tres-check`, `tex-check`,
+  `manifest-check` and `tres-load-check` cross-check the outputs against
+  independent oracles (`tests/check_glb.py`, `check_tres.py`, `check_tex.py`,
+  `check_manifest.py`, `check_tres_load.gd`).
   All bite: the GLB check hard-fails on reversed winding, the `.tres` check
   hard-fails when any coordinate breaks the `(x, y, −z)` map, the texture
   check hard-fails on any pixel diverging from retail's decode, the manifest
-  check hard-fails on any digest diverging from python `hashlib`'s. Every
-  `.tres` coordinate is validated by a *second, independent* path — the dump
-  un-mirrors X off libpof's memory frame, the emitter runs it through
-  `to_godot()` — so agreement pins the axis map end to end; every texture
-  pixel is validated against retail's own `pcx_read_bitmap_8bpp`.
+  check hard-fails on any digest diverging from python `hashlib`'s, and the
+  `.tres` load check hard-fails when the real engine rejects the file or the
+  loaded resource breaks the schema. Every `.tres` coordinate is validated by
+  a *second, independent* path — the dump un-mirrors X off libpof's memory
+  frame, the emitter runs it through `to_godot()` — so agreement pins the
+  axis map end to end; every texture pixel is validated against retail's own
+  `pcx_read_bitmap_8bpp`.
 
 Semantic facts the emitter had to honor (also at the bite sites in source):
 
@@ -206,6 +218,42 @@ Manifest (queue item 4):
   reads loose files, so the manifest records file paths + digests; tying those
   back to the originating `.vp` archive belongs to the later VP-staging layer
   (the "Other formats" table), whose manifest will carry origin + checksums.
+
+Inspection scene (queue item 5):
+
+- **Loading is runtime, and that decided the texture format.** The scene
+  loads through `GLTFDocument.append_from_file` + `ResourceLoader`, not the
+  editor import pipeline — so it judges the converter's raw output. The cost
+  surfaced immediately: Godot's *runtime* glTF path parses external images by
+  mimetype and accepts only PNG/JPEG (`gltf_document.cpp:2186`; measured — a
+  `.tga` uri imports fine in the editor and errors at runtime). The planned
+  TGA→PNG flip stopped being optional; `pof2glb` now writes PNG and
+  `check_tex.py` grew a hand-rolled stdlib PNG reader (zlib + chunk walk +
+  scanline unfiltering), still independent of stb's writer. Proven to bite:
+  one pixel poked through a stdlib re-encode fails at exactly that pixel.
+- **POF extras come from the GLB's JSON chunk, not importer metadata.** Node
+  extras survive `glTF → scene` only under the import pipeline; at runtime
+  the deterministic source is the file itself. The scene reads the JSON chunk
+  directly (glTF 2.0 §4.4) — and since `pof2glb` writes one glTF node per
+  subobject at the same index, `nodes[i]` *is* submodel `i`, which is also
+  how `.tres` submodel indices resolve to scene nodes (by name).
+- **Movement axes cross the same map as the geometry.** `movement_axis` is
+  POF-frame with Y/Z swapped in the encoding (`model.hh:37`); the scene maps
+  `0→(−1,0,0)`, `1→(0,0,−1)`, `2→(0,1,0)` — the axis-map traps compound, and
+  the Faustus panels are the live specimen (4 movables across its LODs).
+- **Eyes anchor under their parent submodel.** Eye offsets are the one
+  `.tres` field that is parent-relative, not model-frame, so their markers
+  ride the parent's scene node. Turret fire points likewise anchor under the
+  `arm` submodel — but the slice has no turrets, so that branch has never
+  drawn (honest gap; the first capship converted is its trial).
+- **`tres-load-check` closes the text-only gap.** `tres-check` proves every
+  number with a *text* parser; `check_tres_load.gd` (headless
+  `godot --script`, `--path` at `inspect/` so `res://ship_data.gd` resolves)
+  proves the real VariantParser accepts the file and the loaded resource
+  walks like the schema. One engine fact it must absorb: the emitter's
+  `%.9g` floats can land as int-looking literals and load as `int`, so
+  numeric checks accept both. Proven to bite three ways: a mangled `Vector3`
+  literal, a renamed dict key, and a swapped `ext_resource` script all red.
 
 ## Where this work lives
 

@@ -3,3 +3,4 @@ subprojects/.wraplock
 *.glb
 *.tres
 *.manifest.json
+.godot/

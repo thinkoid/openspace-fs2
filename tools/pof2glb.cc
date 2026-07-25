@@ -10,9 +10,9 @@
 //   pof2glb --summary <model.pof>
 //
 // Emits geometry, hierarchy and textured materials into the GLB (retail PCX
-// maps transcoded to TGA beside it, in textures/), the FS2-specific ship data
+// maps transcoded to PNG beside it, in textures/), the FS2-specific ship data
 // (weapon/thruster/dock/path points, turrets, subsystems, shield) into a
-// Godot .tres (tools/ship_data.gd is the schema), and a <stem>.manifest.json
+// Godot .tres (inspect/ship_data.gd is the schema), and a <stem>.manifest.json
 // recording sources, digests, converter version and warnings.
 
 #include <model/file.hh>
@@ -339,7 +339,7 @@ struct gltf_t
     std::string materials;
     std::string accessors;
     std::string views;
-    std::string images;     // one per transcoded TGA
+    std::string images;     // one per transcoded PNG
     std::string gtextures;  // glTF texture: sampler + image source, 1:1 images
 
     bin_t bin;
@@ -391,7 +391,7 @@ constexpr int GL_FLOAT = 5126;
 constexpr int GL_UNSIGNED_INT = 5125;
 
 // material for a texture slot: named after the texture and pointing at the
-// transcoded TGA (emit_textures resolved the slot to g.image_of[key], or -1
+// transcoded PNG (emit_textures resolved the slot to g.image_of[key], or -1
 // when the map is a keyword/missing, in which case the material stays a
 // name-only stub). Flat-colored polys get a factor-only material keyed by
 // -(0x1000000 | rgb) so distinct colors stay distinct.
@@ -580,12 +580,16 @@ node(gltf_t &g, const pof::model::sobj_t &sobj, int mesh_ix,
     g.nodes += "}},";
 }
 
-// ---- textures: PCX -> TGA --------------------------------------------
+// ---- textures: PCX -> PNG --------------------------------------------
 //
 // Retail texture maps are 256-colour RLE PCX under data/maps (cfile.cc:45),
 // referenced from the POF TXTR chunk by bare, extension-less basename. Godot
-// cannot read PCX, so each is transcoded to an (uncompressed) TGA in a
-// textures/ dir beside the GLB, and the material points at it.
+// cannot read PCX, so each is transcoded to a PNG in a textures/ dir beside
+// the GLB, and the material points at it. PNG and not TGA because the target
+// is RUNTIME loading (the inspection scene, later the game): Godot's editor
+// import pipeline reads TGA, but GLTFDocument at runtime parses external
+// images by mimetype and accepts only PNG/JPEG (gltf_document.cpp:2186) --
+// measured, a .tga uri loads under import and errors at runtime.
 //
 // The decode is hand-rolled: pof2glb stays libpof + stb and does NOT link the
 // port's foundation/cfile. PCX is a frozen format, so the only risk that buys
@@ -737,11 +741,11 @@ base_of(const std::string &p)
     return s == std::string::npos ? p : p.substr(s + 1);
 }
 
-// Transcode every referenced map to <out_dir>/textures/<name>.tga and record,
+// Transcode every referenced map to <out_dir>/textures/<name>.png and record,
 // per POF texture slot, the glTF image it resolved to (or -1 for a keyword or
 // a map missing from disk -- those slots keep a name-only material). Duplicate
 // names collapse to one image. maps_dir is the model's sibling data/maps.
-// Each map consumed goes into the manifest's sources, each TGA written into
+// Each map consumed goes into the manifest's sources, each PNG written into
 // its outputs; a map that fails to resolve or decode becomes a warning there.
 void
 emit_textures(gltf_t &g, manifest_t &m,
@@ -786,21 +790,20 @@ emit_textures(gltf_t &g, manifest_t &m,
             made_dir = true;
         }
 
-        const std::string tga = key + ".tga";
-        stbi_write_tga_with_rle = 0;   // uncompressed: the gate reads it back
-        if (!stbi_write_tga((out_dir + "/textures/" + tga).c_str(), w, h, 4,
-                            rgba.data())) {
-            warn(m, "cannot write %s", tga.c_str());
+        const std::string png = key + ".png";
+        if (!stbi_write_png((out_dir + "/textures/" + png).c_str(), w, h, 4,
+                            rgba.data(), w * 4)) {
+            warn(m, "cannot write %s", png.c_str());
             continue;
         }
-        add_output(m, out_dir, "textures/" + tga);
+        add_output(m, out_dir, "textures/" + png);
 
         const int ix = g.n_images++;
-        jf(g.images, "{\"uri\":\"textures/%s\"},", jstr(tga).c_str());
+        jf(g.images, "{\"uri\":\"textures/%s\"},", jstr(png).c_str());
         jf(g.gtextures, "{\"sampler\":0,\"source\":%d},", ix);
         tex_ix[key] = ix;
         g.image_of[slot] = ix;
-        std::printf("  %s -> textures/%s (%dx%d)\n", nm.c_str(), tga.c_str(), w,
+        std::printf("  %s -> textures/%s (%dx%d)\n", nm.c_str(), png.c_str(), w,
                     h);
     }
 }
@@ -809,7 +812,7 @@ emit_textures(gltf_t &g, manifest_t &m,
 //
 // The FS2-specific half of the model -- weapon muzzles, turrets, thrusters,
 // docks, eyes, paths, subsystems, shield -- that glTF has no slot for, written
-// as a Godot text resource beside the GLB. tools/ship_data.gd is its schema;
+// as a Godot text resource beside the GLB. inspect/ship_data.gd is its schema;
 // the pipeline shape is docs/godot-migration-plan.md ("POF is not merely a
 // mesh"). Every coordinate goes through to_godot(), the same axis map as the
 // geometry (docs/pof-corpus-survey.txt) -- nothing here re-derives coordinates.
@@ -1164,7 +1167,7 @@ convert(pof::model::model_t &model, const std::string &name,
 
     // Transcode the maps first: this fills g.image_of, which material() reads
     // as it builds each draw call below. data/maps is the model's sibling
-    // (cfile.cc:45/48), the TGAs land beside the GLB we are about to write.
+    // (cfile.cc:45/48), the PNGs land beside the GLB we are about to write.
     emit_textures(g, m, textures, dir_of(src_path) + "/../maps",
                   dir_of(out_path));
 
@@ -1206,7 +1209,7 @@ convert(pof::model::model_t &model, const std::string &name,
     close_list(json, ']');
 
     // Textures share one default sampler; each glTF texture is 1:1 with an
-    // image (its external TGA uri). Omitted entirely when no map resolved.
+    // image (its external PNG uri). Omitted entirely when no map resolved.
     if (g.n_images > 0) {
         json += ",\"samplers\":[{}]";
         json += ",\"textures\":[";

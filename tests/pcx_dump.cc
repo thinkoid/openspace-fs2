@@ -2,7 +2,7 @@
 // the port's authoritative pcx_read_bitmap_8bpp (pcxutils.cc:87) and dump the
 // raw 8-bit indices + 768-byte palette. tests/check_tex.py expands these
 // through the green colour-key and compares the result to pof2glb's own
-// hand-rolled TGA, pinning the converter's decode + key against retail
+// hand-rolled PNG, pinning the converter's decode + key against retail
 // pixel-for-pixel -- the same role pof_dump plays for geometry.
 //
 //   pcx_dump <game-root> <out-dir> <texture-name> [<texture-name> ...]

@@ -76,7 +76,7 @@ pcx_dump = executable('pcx_dump',
     link_with: foundation,
     dependencies: [sdl2_dep, openal_dep, gl_dep])
 
-# pof2glb transcodes each retail PCX map to a TGA; tex-check decodes the same
+# pof2glb transcodes each retail PCX map to a PNG; tex-check decodes the same
 # maps through pcx_dump (retail's reader) and check_tex.py compares the two
 # pixel-for-pixel, including the green colour-key. Makes the hand-rolled decoder
 # safe. Same unpacked-install gate as glb-check/tres-check.
@@ -98,6 +98,21 @@ test('manifest-check', find_program('manifest_check.sh'),
     args: [
         pof2glb.full_path(),
         meson.current_source_dir() / 'check_manifest.py',
+        meson.project_source_root(),
+    ],
+    depends: [pof2glb],
+    timeout: 120)
+
+# The same .tres loaded through the REAL engine (godot --headless --script,
+# --path at inspect/ so res://ship_data.gd resolves) and validated against the
+# schema by check_tres_load.gd. tres-check proves the numbers with a text
+# parser; this proves Godot's VariantParser accepts the file at all. Skips
+# without godot on PATH, plus the usual unpacked-install gate.
+test('tres-load-check', find_program('tres_load_check.sh'),
+    args: [
+        pof2glb.full_path(),
+        meson.current_source_dir() / 'check_tres_load.gd',
+        meson.project_source_root(),
         meson.project_source_root(),
     ],
     depends: [pof2glb],
