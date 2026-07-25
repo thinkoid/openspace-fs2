@@ -143,7 +143,9 @@ scene):
   their mapped axes, and overlays every `.tres` fact on the hull: weapon
   muzzles, turrets, thrusters, docks, eyes, AI paths, subsystem radii, the
   shield mesh, and a bounds/axes display whose "nose −Z" tripod is the
-  axis-map eyeball aid.
+  axis-map eyeball aid. **Visually signed off 2026-07-25** (both slice
+  ships): UV origin, materials and articulation confirmed by eye — the
+  slice's last open verification, closing queue items 1–5.
 - **Verification.** `meson test glb-check`, `tres-check`, `tex-check`,
   `manifest-check` and `tres-load-check` cross-check the outputs against
   independent oracles (`tests/check_glb.py`, `check_tres.py`, `check_tex.py`,
