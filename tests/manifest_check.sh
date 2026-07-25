@@ -32,7 +32,7 @@ fi
 echo "game root: $root"
 
 # the same inspection slice as the other gates
-slice="fighter01 science01"
+slice="fighter01 science01 capital01"
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT

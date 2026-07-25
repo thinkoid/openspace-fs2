@@ -95,6 +95,14 @@ func _ready() -> void:
         var n := _sub_node(i)
         if n:
             n.visible = false
+    # "-destroyed" turret variants are siblings of the live turrets, swapped
+    # in by retail when one dies (docs/pof-corpus-survey.txt) -- never both
+    # at once, so the wrecks stay hidden here.
+    for i in node_names.size():
+        if str(node_names[i]).ends_with("-destroyed"):
+            var n := _sub_node(i)
+            if n:
+                n.visible = false
     _set_detail(0)
 
     _collect_movables()
@@ -160,10 +168,18 @@ func _set_detail(ix: int) -> void:
 
 # ---- movables ---------------------------------------------------------
 #
-# movement_type 1 = rotates at runtime (dishes, panels; the Faustus solar
-# panel is the slice's specimen). Type 2 (turret) moves through the
-# subsystem/TGUN path, NOT this field, and 0 is runtime-inert -- both stay
-# still here, same as retail (docs/pof-corpus-survey.txt).
+# The extras carry the FILE's movement encoding, where 1 is the only live
+# value -- no POF stores type 2; retail manufactures ROT_SPECIAL from type-1
+# submodels *named* turret*/gun*/cannon* at load and strips thrusters and
+# non-subsystem rotators (docs/pof-corpus-survey.txt, libpof dump.cc
+# loaded_movement). This scene deliberately spins every file-type-1 movable,
+# turrets included: retail would never free-spin a turret, but inspection
+# wants each declared axis visibly exercised -- bases yaw, arms pitch, the
+# Faustus panel and the Orion radar dishes turn. 0 is runtime-inert and -1
+# is none; both stay still. The spin is a full unclamped revolution, so
+# turret barrels sweep through their own base -- expected: retail clamps the
+# arm to the turret's $fov arc, this scene does not (eyeballed on the Orion,
+# accepted; the axis itself is what is under inspection).
 
 func _collect_movables() -> void:
     for i in node_extras.size():

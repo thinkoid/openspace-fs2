@@ -19,6 +19,15 @@
 #      this is the guard that keeps it that way. See tools/pof2glb.cc's mesh()
 #      comment and docs/pof-corpus-survey.txt.
 #
+#      The comparison is FIDELITY, not unanimity: the proxy here is the mean
+#      *vertex* normal (the GLB carries no face normals), and retail data has
+#      polygons whose smoothed vertex normals point against their own facet --
+#      capital01 has exactly 4, all in debris meshes, while the winding itself
+#      is corner-order-consistent 2932/2932 against the stored *face* normals
+#      (measured both ways). So the expected disagreement count is computed
+#      per submodel from the dump with the same proxy and must match exactly;
+#      a real winding regression flips the agreeing majority and dies.
+#
 # Axis map: the dump prints FILE-frame offsets; pof2glb emits (x, y, -z) of
 # them (libpof mirrors X on parse, the memory->glTF rotation mirrors it back,
 # and only Z is left negated -- the net FILE->glTF is (x, y, -z)). No external
@@ -66,14 +75,14 @@ def acc_data(ix, fmt):
     return struct.unpack_from(f'<{n}{fmt}', bin_data, v['byteOffset'])
 
 # ---- parse the model dump ----
-subs = []   # (name, parent, offset, npolys, ntris)
-polys_of = {}
+subs = []   # (name, parent, offset, npolys, ntris, expected_disagree)
 cur = None
+triple = re.compile(r'\(([-+0-9.eE ]+)\)')
 for line in open(model_path):
     m = re.match(r'  sub (\d+) "([^"]+)" parent (-?\d+)', line)
     if m:
         cur = int(m.group(1))
-        subs.append([m.group(2), int(m.group(3)), None, 0, 0])
+        subs.append([m.group(2), int(m.group(3)), None, 0, 0, 0])
         continue
     m = re.match(r'    radius \S+ offset \((\S+) (\S+) (\S+)\)', line)
     if m and cur is not None and subs[cur][2] is None:
@@ -83,6 +92,25 @@ for line in open(model_path):
     if m and cur is not None:
         subs[cur][3] += 1
         subs[cur][4] += int(m.group(1)) - 2
+        # fan the poly in its stored corner order and count triangles whose
+        # geometric normal opposes the mean vertex normal -- the expected
+        # disagreements for this submodel (same proxy as the GLB side below).
+        # Line layout: normal (..) center (..) then (pos)(vnorm)(uv) per
+        # vertex; uv is 2-wide, so 3-float groups are pos/vnorm alternating.
+        t = [tuple(float(x) for x in g.split())
+             for g in triple.findall(line) if len(g.split()) == 3]
+        verts, vnorms = t[2::2], t[3::2]
+        A = verts[0]
+        for i in range(2, len(verts)):
+            B, C = verts[i - 1], verts[i]
+            u = [B[k] - A[k] for k in range(3)]
+            v = [C[k] - A[k] for k in range(3)]
+            f = (u[1]*v[2] - u[2]*v[1], u[2]*v[0] - u[0]*v[2],
+                 u[0]*v[1] - u[1]*v[0])
+            mn = [vnorms[0][k] + vnorms[i - 1][k] + vnorms[i][k]
+                  for k in range(3)]
+            if sum(f[k] * mn[k] for k in range(3)) < 0:
+                subs[cur][5] += 1
 
 # ---- node hierarchy, names, offsets ----
 nodes = doc['nodes']
@@ -93,7 +121,7 @@ for pix, n in enumerate(nodes):
     for c in n.get('children', []):
         child_parent[c] = pix
 
-for i, (name, parent, off, npolys, ntris) in enumerate(subs):
+for i, (name, parent, off, npolys, ntris, xdis) in enumerate(subs):
     n = nodes[i]
     if n['name'] != name: die(f'node {i} name {n["name"]} != {name}')
     got_parent = child_parent.get(i, -1)
@@ -105,15 +133,15 @@ for i, (name, parent, off, npolys, ntris) in enumerate(subs):
         die(f'node {i} translation {t} != {want}')
 
 # ---- per-mesh triangle counts + winding vs normals ----
-tot_tris = agree = disagree = 0
-for i, (name, parent, off, npolys, ntris) in enumerate(subs):
+tot_tris = agree = disagree = tot_expected = 0
+for i, (name, parent, off, npolys, ntris, xdis) in enumerate(subs):
     n = nodes[i]
     if npolys == 0:
         if 'mesh' in n: die(f'node {i} has a mesh but no polys in the dump')
         continue
     mesh = doc['meshes'][n['mesh']]
     if mesh['name'] != name: die(f'mesh name mismatch on node {i}')
-    got = 0
+    got = mesh_disagree = 0
     for prim in mesh['primitives']:
         ix = acc_data(prim['indices'], 'I')
         pos = acc_data(prim['attributes']['POSITION'], 'f')
@@ -127,20 +155,24 @@ for i, (name, parent, off, npolys, ntris) in enumerate(subs):
             ux, uy, uz = bx-ax, by-ay, bz-az
             vx, vy, vz = cx-ax, cy-ay, cz-az
             fx, fy, fz = uy*vz-uz*vy, uz*vx-ux*vz, ux*vy-uy*vx
-            # against the mean vertex normal
+            # against the mean vertex normal -- same proxy as the dump side
             mx = sum(nrm[3*k] for k in (a, b, c))
             my = sum(nrm[3*k+1] for k in (a, b, c))
             mz = sum(nrm[3*k+2] for k in (a, b, c))
             d = fx*mx + fy*my + fz*mz
             if d > 0: agree += 1
-            elif d < 0: disagree += 1
+            elif d < 0: mesh_disagree += 1
     if got != ntris: die(f'node {i} ({name}): {got} triangles vs dump {ntris}')
+    # fidelity, not unanimity: the emitted disagreements must be exactly the
+    # source's own (retail debris carries facet-opposing vertex normals; see
+    # header). Any converter winding slip changes these counts and dies here.
+    if mesh_disagree != xdis:
+        die(f'winding: {name}: {mesh_disagree} triangles disagree with their '
+            f'vertex normals, source says {xdis}')
+    disagree += mesh_disagree
+    tot_expected += xdis
     tot_tris += got
 
-# glTF fronts are CCW, so a correctly-emitted fan agrees with its stored normal;
-# any disagreement means the winding flipped somewhere.
-if disagree:
-    die(f'winding: {disagree}/{tot_tris} triangles disagree with their normals')
-
 print(f'OK: {len(nodes)} nodes, {tot_tris} triangles, '
-      f'winding vs normals: {agree} agree / {disagree} disagree')
+      f'winding vs normals: {agree} agree / {disagree} disagree '
+      f'(source expects {tot_expected})')

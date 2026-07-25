@@ -63,6 +63,16 @@ code/model/model.hh:30: three movement types occur, one is inert
     0). Type 2 turrets move via the subsystem/TGUN path, not movement_type.
     The converter should carry POS as data but expect no motion from it.
 
+    MEASURED LATER (capital01, then all 176 raw files): the census above is
+    retail's LOADED view. The FILES never store 2 -- raw census is type 1
+    x807 (axis 2 x616, 0 x118, 1 x73), type 0 x39, else -1. ROT_SPECIAL is
+    manufactured at load: a type-1 submodel named turret*/gun*/cannon* is
+    promoted to 2, thrusters and non-subsystem rotators stripped to -1
+    (pofparse; libpof replicates it in dump.cc loaded_movement to stay
+    oracle-identical). Anything consuming the file value (pof2glb extras)
+    must replay that name-based reclassification to know what retail would
+    actually free-rotate.
+
 fighter01.model:26: no fighter or bomber hull articulates
     All 21 fighters are movement type -1 throughout (bombers articulate only
     their turrets). Articulation lives in 57 models: capitals, cruisers,

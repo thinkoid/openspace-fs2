@@ -33,7 +33,7 @@ echo "game root: $root"
 
 # Same inspection slice as glb_check.sh: fighter01 (Ulysses) + science01
 # (Faustus, rotating solar panel) -- both POF versions, real subobject rotation.
-slice="fighter01 science01"
+slice="fighter01 science01 capital01"
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT

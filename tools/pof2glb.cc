@@ -72,10 +72,25 @@ jf(std::string &s, const char *fmt, ...)
 
     va_list ap;
     va_start(ap, fmt);
-    vsnprintf(buf, sizeof buf, fmt, ap);
+    const int n = vsnprintf(buf, sizeof buf, fmt, ap);
     va_end(ap);
 
-    s += buf;
+    if (n < int(sizeof buf)) {
+        s += buf;
+        return;
+    }
+
+    // Payloads can exceed the stack buffer -- a capship hull mesh feeds its
+    // whole primitives list through one %s (capital01 was the first to
+    // overflow, truncating the GLB's JSON mid-key). Reformat at full length;
+    // never truncate silently.
+    std::string big(std::size_t(n) + 1, '\0');
+    va_start(ap, fmt);
+    vsnprintf(big.data(), big.size(), fmt, ap);
+    va_end(ap);
+    big.pop_back();
+
+    s += big;
 }
 
 // escape for a JSON string literal: quotes, backslashes, control characters
@@ -518,8 +533,12 @@ mesh(gltf_t &g, const pof::model::sobj_t &sobj,
         // The map to Godot is a pure rotation of libpof's memory frame, so
         // it cannot flip winding -- but the stored corner order is already
         // clockwise against the stored normals there (measured over the
-        // whole of fighter01 and science01: unanimous). glTF fronts are
-        // counter-clockwise, so each fan is emitted mirrored.
+        // whole of fighter01, science01 and capital01: unanimous vs the
+        // stored FACE normals). glTF fronts are counter-clockwise, so each
+        // fan is emitted mirrored. Retail's *vertex* normals are less tidy:
+        // capital01 has 4 debris polygons whose smoothed vertex normals
+        // oppose their own facet -- data, preserved verbatim; check_glb.py
+        // pins the emitted winding per mesh against that same source count.
         for (std::size_t i = 2; i < poly.verts.size(); ++i) {
             p.indices.push_back(p.corner(poly.verts[0]));
             p.indices.push_back(p.corner(poly.verts[i]));
@@ -543,12 +562,20 @@ mesh(gltf_t &g, const pof::model::sobj_t &sobj,
 
 // one glTF node per subobject, same index; POF offsets are parent-relative
 // already, so they map directly to node translations. The POF facts a viewer
-// wants but glTF has no slot for ride in "extras", carried verbatim in
-// retail's encoding (docs/pof-corpus-survey.txt):
+// wants but glTF has no slot for ride in "extras", carried verbatim in the
+// FILE's encoding (docs/pof-corpus-survey.txt):
 //
-//   movement_type  -1 none; 1 rotates at runtime (dishes, panels); 2 turret,
-//                  which moves through the subsystem/TGUN path and NOT this
-//                  field; 0 exists in the corpus but is runtime-inert.
+//   movement_type  -1 none; 1 rotates; 0 occurs (39x, "-destroyed"
+//                  variants) but is runtime-inert. The file NEVER stores 2:
+//                  ROT_SPECIAL (turret) exists only in retail's LOADED view,
+//                  manufactured by name at load time -- a type-1 submodel
+//                  named turret*/gun*/cannon* is promoted to 2, thrusters
+//                  and non-subsystem rotators are stripped to -1 (pofparse;
+//                  replicated in libpof's dump.cc loaded_movement, measured
+//                  0 raw twos across all 176 models). A consumer deciding
+//                  what rotates FREELY at runtime must replay that
+//                  reclassification; the raw 1 here only says the file
+//                  declared an axis.
 //   movement_axis  -1 none, 0 X, 1 Z, 2 Y -- Y and Z are SWAPPED relative
 //                  to the naive reading (model.hh:37). 2 is turret heading;
 //                  decode it wrong and every turret pitches instead of yaws.

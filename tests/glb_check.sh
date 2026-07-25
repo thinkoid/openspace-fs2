@@ -33,7 +33,7 @@ echo "game root: $root"
 # The inspection slice (docs/pof-corpus-survey.txt): fighter01 (Ulysses, v2117)
 # + science01 (Faustus, v2116, rotating solar panel) -- 15/16 chunk types, both
 # POF versions, and real subobject rotation between them.
-slice="fighter01 science01"
+slice="fighter01 science01 capital01"
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT

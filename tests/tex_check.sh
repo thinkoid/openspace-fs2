@@ -31,9 +31,10 @@ fi
 
 echo "game root: $root"
 
-# Same inspection slice as the other gates: fighter01 (Ulysses) + science01
-# (Faustus). Both carry a keyword map (thruster01) plus real PCX maps.
-slice="fighter01 science01"
+# Same inspection slice as the other gates: fighter01 (Ulysses), science01
+# (Faustus) and capital01 (GTD Orion, the turreted capship). All carry a
+# keyword map plus real PCX maps.
+slice="fighter01 science01 capital01"
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT

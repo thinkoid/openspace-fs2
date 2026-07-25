@@ -257,6 +257,35 @@ Inspection scene (queue item 5):
   numeric checks accept both. Proven to bite three ways: a mangled `Vector3`
   literal, a renamed dict key, and a swapped `ext_resource` script all red.
 
+The capship (capital01, GTD Orion — third slice ship):
+
+- **Joining the slice closed the chunk census at 16/16** (ACEN, TMIS,
+  destroyed-turret variants, radar dishes — everything the fighter/science
+  pair left uncovered) and immediately flushed two latent facts the small
+  ships could never tickle.
+- **`jf()` silently truncated at 512 bytes.** The Orion's multi-material
+  hull feeds its whole primitives list through one `%s`, overflowing the
+  stack buffer and cutting the GLB's JSON mid-key — caught by `check_glb.py`
+  the first time it parsed the output. `jf` now measures and reformats at
+  full length; it never truncates.
+- **Winding is checked as fidelity, not unanimity.** Corner order is
+  consistent against the stored *face* normals 2932/2932 on the Orion too —
+  but retail's smoothed *vertex* normals oppose their own facet on exactly 4
+  debris polygons, and vertex normals are all the GLB carries. So
+  `check_glb.py` now computes the expected per-mesh disagreement count from
+  the dump with the same proxy and demands an exact match — proven to bite
+  both ways (a spurious flip and a "fixed" retail flip both die).
+- **No POF file stores movement type 2.** Raw census over all 176 models:
+  type 1 ×807, inert 0 ×39, never 2. Retail *manufactures* ROT_SPECIAL at
+  load by name (`turret*`/`gun*`/`cannon*` promoted, thrusters and
+  non-subsystem rotators stripped — `loaded_movement` in libpof's dump
+  replicates it). The GLB extras carry the file value; any consumer deciding
+  what retail would free-rotate must replay that reclassification. The
+  inspection scene knowingly spins every file-type-1 movable anyway — bases
+  yaw, arms pitch — because seeing each declared axis move is the point.
+- **`-destroyed` turret wrecks hide at load.** They are siblings of the live
+  turrets, swapped in on subsystem death; the scene never shows both.
+
 ## Where this work lives
 
 - `master` — the retail Linux port, its own line, formatted uniformly at the
