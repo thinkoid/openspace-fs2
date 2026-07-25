@@ -90,6 +90,19 @@ test('tex-check', find_program('tex_check.sh'),
     depends: [pof2glb, pcx_dump],
     timeout: 120)
 
+# The converter's manifest, verified by re-deriving every SHA-256 with python
+# hashlib -- an independent implementation, so this doubles as the oracle for
+# pof2glb's hand-rolled digest -- plus a convert-twice byte-compare pinning
+# the manifest's reproducibility. Same unpacked-install gate.
+test('manifest-check', find_program('manifest_check.sh'),
+    args: [
+        pof2glb.full_path(),
+        meson.current_source_dir() / 'check_manifest.py',
+        meson.project_source_root(),
+    ],
+    depends: [pof2glb],
+    timeout: 120)
+
 math_test = executable('math_test',
     ['math_test.cc', 'stubs.cc', 'gamestubs_gen.cc', 'freespacestubs_gen.cc'],
     include_directories: inc,

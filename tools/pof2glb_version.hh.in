@@ -1,0 +1,5 @@
+// Template for meson's vcs_tag(): @VCS_TAG@ becomes `git describe` output at
+// build time, so the manifest's converter version tracks the actual commit
+// (a trailing '+' marks a dirty tree). Never edit the generated header.
+#pragma once
+#define POF2GLB_VERSION "@VCS_TAG@"

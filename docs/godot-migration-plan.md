@@ -129,19 +129,23 @@ come):
 
 - **`tools/pof2glb.cc`** emits, from one invocation, the `.glb` (geometry,
   hierarchy, textured materials), a `textures/` dir of the ship's maps
-  transcoded from PCX to TGA, **and** a `.tres` ship-data resource beside it —
+  transcoded from PCX to TGA, a `.tres` ship-data resource beside it —
   weapon banks, turrets, thrusters, docks, eyes, paths, subsystems, and the
-  shield mesh. `tools/ship_data.gd` is the resource schema (the contract the
+  shield mesh — **and** a `.manifest.json` accounting for the conversion:
+  every source file and output with its SHA-256, the converter version, and
+  any warnings. `tools/ship_data.gd` is the resource schema (the contract the
   `.tres` targets; the inspection project will keep a copy at its `res://` root).
-- **Verification.** `meson test glb-check`, `tres-check` and `tex-check`
-  cross-check the outputs against retail oracles (`tests/check_glb.py`,
-  `check_tres.py`, `check_tex.py`). All bite: the GLB check hard-fails on
-  reversed winding, the `.tres` check hard-fails when any coordinate breaks the
-  `(x, y, −z)` map, the texture check hard-fails on any pixel diverging from
-  retail's decode. Every `.tres` coordinate is validated by a *second,
-  independent* path — the dump un-mirrors X off libpof's memory frame, the
-  emitter runs it through `to_godot()` — so agreement pins the axis map end to
-  end; every texture pixel is validated against retail's own `pcx_read_bitmap_8bpp`.
+- **Verification.** `meson test glb-check`, `tres-check`, `tex-check` and
+  `manifest-check` cross-check the outputs against independent oracles
+  (`tests/check_glb.py`, `check_tres.py`, `check_tex.py`, `check_manifest.py`).
+  All bite: the GLB check hard-fails on reversed winding, the `.tres` check
+  hard-fails when any coordinate breaks the `(x, y, −z)` map, the texture
+  check hard-fails on any pixel diverging from retail's decode, the manifest
+  check hard-fails on any digest diverging from python `hashlib`'s. Every
+  `.tres` coordinate is validated by a *second, independent* path — the dump
+  un-mirrors X off libpof's memory frame, the emitter runs it through
+  `to_godot()` — so agreement pins the axis map end to end; every texture
+  pixel is validated against retail's own `pcx_read_bitmap_8bpp`.
 
 Semantic facts the emitter had to honor (also at the bite sites in source):
 
@@ -176,6 +180,32 @@ Textures (queue item 3):
   case-sensitive as retail's `strstr` is. Those slots get a name-only material,
   no image. Every other name resolves case-insensitively (retail's cfile
   Windows-ism) to a `data/maps/*.pcx`, the model's sibling directory.
+
+Manifest (queue item 4):
+
+- **SHA-256 is hand-rolled, the PCX bargain again.** A frozen algorithm
+  (FIPS 180-4) is not worth a dependency; `check_manifest.py` recomputes every
+  digest with python's `hashlib` — an independent implementation — so the gate
+  is also the oracle for the converter's own. Proven to bite: one flipped bit
+  in the initial hash state fails all 18 slice digests.
+- **The manifest is deliberately timestamp-free.** Same inputs through the
+  same converter produce a byte-identical manifest, so regeneration is
+  diffable — `manifest_check.sh` converts each slice model twice and compares
+  the manifests byte-for-byte, turning principle 4 ("automate the pipeline")
+  into a failing test.
+- **The converter version comes from git at build time.** meson `vcs_tag`
+  re-runs `git describe --always --dirty=+` on every build, so the recorded
+  version can never go stale the way a configure-time constant would; a dirty
+  tree is marked with a trailing `+`.
+- **Warnings are part of the record.** A map that fails to resolve or decode
+  still converts the rest of the ship, but the loss lands in the manifest's
+  `warnings` — and the gate fails on any warning, so a slice conversion must
+  be lossless. Output paths are relative to the manifest, so a converted tree
+  relocates wholesale.
+- **The "source archive" slot waits for VP staging.** Conversion currently
+  reads loose files, so the manifest records file paths + digests; tying those
+  back to the originating `.vp` archive belongs to the later VP-staging layer
+  (the "Other formats" table), whose manifest will carry origin + checksums.
 
 ## Where this work lives
 
