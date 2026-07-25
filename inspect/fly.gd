@@ -32,12 +32,16 @@ var hud: Label
 func _ready() -> void:
     var args := OS.get_cmdline_user_args()
     if args.is_empty():
-        _fatal("usage: godot --path inspect res://fly.tscn -- /abs/ship.glb")
+        _fatal("usage: godot --path inspect -- fly /abs/ship.glb")
         return
 
+    # last arg is the GLB: tolerates both the `-- fly <glb>` dispatch from
+    # inspect.gd and a direct `res://fly.tscn -- <glb>` invocation
+    var glb: String = args[args.size() - 1]
+
     ship = ShipClass.new()
-    if not ship.load_ship(args[0]):
-        _fatal("cannot load ship: " + args[0])
+    if not ship.load_ship(glb):
+        _fatal("cannot load ship: " + glb)
         return
     add_child(ship)
 
@@ -49,7 +53,7 @@ func _ready() -> void:
     _setup_hud()
 
     print("fly: %s under FIGHTER params -- %d free rotators"
-        % [args[0].get_file(), ship.rotators().size()])
+        % [glb.get_file(), ship.rotators().size()])
 
 func _fatal(msg: String) -> void:
     printerr("fly: " + msg)
