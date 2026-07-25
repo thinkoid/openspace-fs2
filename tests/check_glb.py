@@ -78,6 +78,9 @@ def acc_data(ix, fmt):
 subs = []   # (name, parent, offset, npolys, ntris, expected_disagree)
 cur = None
 triple = re.compile(r'\(([-+0-9.eE ]+)\)')
+
+def f32(x):   # the float32 the dump's %.9g decimal denotes, as a double
+    return struct.unpack('<f', struct.pack('<f', x))[0]
 for line in open(model_path):
     m = re.match(r'  sub (\d+) "([^"]+)" parent (-?\d+)', line)
     if m:
@@ -88,28 +91,39 @@ for line in open(model_path):
     if m and cur is not None and subs[cur][2] is None:
         subs[cur][2] = tuple(float(m.group(i)) for i in (1, 2, 3))
         continue
-    m = re.match(r'      poly tex -?\d+ nv (\d+)', line)
+    # textured polys print "poly tex N", flat-shaded ones "poly flat R G B"
+    # (effect models -- warphole, subspacenode, t-laser -- are all-flat, and
+    # flat polys turn up inside otherwise-textured debris too)
+    m = re.match(r'      poly (?:tex -?\d+|flat \d+ \d+ \d+) nv (\d+)', line)
     if m and cur is not None:
         subs[cur][3] += 1
         subs[cur][4] += int(m.group(1)) - 2
-        # fan the poly in its stored corner order and count triangles whose
-        # geometric normal opposes the mean vertex normal -- the expected
-        # disagreements for this submodel (same proxy as the GLB side below).
-        # Line layout: normal (..) center (..) then (pos)(vnorm)(uv) per
+        # Count the fan triangles whose geometric normal opposes the mean
+        # vertex normal -- the expected disagreements for this submodel.
+        # This REPLAYS the GLB-side computation below bit-for-bit: same
+        # frame (file -> glTF (x, y, -z)), same emitted corner order
+        # (v0, v[i], v[i-1] -- pof2glb mirrors each fan), same summation
+        # order. Anything less exact flips sign on near-degenerate slivers
+        # (bomber05 has a tri whose dot sits within an ulp of zero).
+        # Line layout: normal (..) center (..) then (pos)(vnorm)[(uv)] per
         # vertex; uv is 2-wide, so 3-float groups are pos/vnorm alternating.
-        t = [tuple(float(x) for x in g.split())
+        # The dump's %.9g decimals identify a float32 exactly but parse to a
+        # *different* nearest-double -- snap through float32 so the doubles
+        # here are the same ones the GLB side unpacks (bomber05's sliver sits
+        # at d~1e-13; the ~1e-10 parse skew is enough to flip its sign).
+        t = [tuple(f32(float(x)) for x in g.split())
              for g in triple.findall(line) if len(g.split()) == 3]
-        verts, vnorms = t[2::2], t[3::2]
-        A = verts[0]
-        for i in range(2, len(verts)):
-            B, C = verts[i - 1], verts[i]
-            u = [B[k] - A[k] for k in range(3)]
-            v = [C[k] - A[k] for k in range(3)]
-            f = (u[1]*v[2] - u[2]*v[1], u[2]*v[0] - u[0]*v[2],
-                 u[0]*v[1] - u[1]*v[0])
-            mn = [vnorms[0][k] + vnorms[i - 1][k] + vnorms[i][k]
-                  for k in range(3)]
-            if sum(f[k] * mn[k] for k in range(3)) < 0:
+        gv = [(p[0], p[1], -p[2]) for p in t[2::2]]   # positions, glTF frame
+        gn = [(n[0], n[1], -n[2]) for n in t[3::2]]   # vertex normals, ditto
+        for i in range(2, len(gv)):
+            a, b, c = gv[0], gv[i], gv[i - 1]         # emitted order
+            ux, uy, uz = b[0]-a[0], b[1]-a[1], b[2]-a[2]
+            vx, vy, vz = c[0]-a[0], c[1]-a[1], c[2]-a[2]
+            fx, fy, fz = uy*vz-uz*vy, uz*vx-ux*vz, ux*vy-uy*vx
+            mx = sum(n[0] for n in (gn[0], gn[i], gn[i - 1]))
+            my = sum(n[1] for n in (gn[0], gn[i], gn[i - 1]))
+            mz = sum(n[2] for n in (gn[0], gn[i], gn[i - 1]))
+            if fx*mx + fy*my + fz*mz < 0:
                 subs[cur][5] += 1
 
 # ---- node hierarchy, names, offsets ----

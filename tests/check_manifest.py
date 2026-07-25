@@ -5,11 +5,14 @@
 # every digest here. Output paths resolve relative to the manifest itself,
 # the property that makes a converted tree relocatable.
 #
-#   check_manifest.py <manifest.json>
+#   check_manifest.py [--allow-warnings] <manifest.json>
 #
 # A clean conversion has no warnings; any recorded warning is a FAIL here --
 # the slice gate demands lossless conversion, while the tool itself only
-# records what happened.
+# records what happened. --allow-warnings keeps the digest verification but
+# tolerates recorded warnings: the corpus gate passes it for spherec alone,
+# whose nbackblue1 map lives in data/effects, not data/maps -- the one
+# sanctioned warning in retail (docs/pof-corpus-survey.txt).
 
 import hashlib
 import json
@@ -23,7 +26,11 @@ def sha256(path):
 
 
 def main():
-    mpath = sys.argv[1]
+    args = sys.argv[1:]
+    allow_warnings = '--allow-warnings' in args
+    if allow_warnings:
+        args.remove('--allow-warnings')
+    mpath = args[0]
     mdir = os.path.dirname(mpath) or '.'
     with open(mpath) as f:
         m = json.load(f)
@@ -61,12 +68,17 @@ def main():
             bad += 1
 
     for w in m.get('warnings', []):
-        print(f'FAIL: conversion warning: {w}')
-        bad += 1
+        if allow_warnings:
+            print(f'note: allowed warning: {w}')
+        else:
+            print(f'FAIL: conversion warning: {w}')
+            bad += 1
 
     if bad == 0:
         n = len(m['sources']) + len(m['outputs'])
-        print(f'OK: version {m["version"]}, {n} digests verified, no warnings')
+        w = len(m.get('warnings', []))
+        tail = f'{w} allowed warnings' if w else 'no warnings'
+        print(f'OK: version {m["version"]}, {n} digests verified, {tail}')
     return 1 if bad else 0
 
 

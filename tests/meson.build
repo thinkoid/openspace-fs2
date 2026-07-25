@@ -118,6 +118,21 @@ test('tres-load-check', find_program('tres_load_check.sh'),
     depends: [pof2glb],
     timeout: 120)
 
+# The corpus gate: every retail model (176) through pof2glb, cross-checked
+# with check_glb + check_tres + check_manifest. Wide where the slice gates
+# are deep; ~40s. spherec's known missing-map warning is the one allowance.
+test('corpus-check', find_program('corpus_check.sh'),
+    args: [
+        pof2glb.full_path(),
+        pof_dump.full_path(),
+        meson.current_source_dir() / 'check_glb.py',
+        meson.current_source_dir() / 'check_tres.py',
+        meson.current_source_dir() / 'check_manifest.py',
+        meson.project_source_root(),
+    ],
+    depends: [pof2glb, pof_dump],
+    timeout: 600)
+
 math_test = executable('math_test',
     ['math_test.cc', 'stubs.cc', 'gamestubs_gen.cc', 'freespacestubs_gen.cc'],
     include_directories: inc,

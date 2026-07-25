@@ -286,6 +286,28 @@ The capship (capital01, GTD Orion — third slice ship):
 - **`-destroyed` turret wrecks hide at load.** They are siblings of the live
   turrets, swapped in on subsystem death; the scene never shows both.
 
+The corpus gate (`meson test corpus-check`):
+
+- **All 176 retail models, every run.** Convert + `check_glb` +
+  `check_tres` + `check_manifest` per model, ~35 s. Wide where the slice
+  gates are deep; tex/tres-load/reproducibility stay slice-only (a godot
+  boot or a pcx_dump sweep per model would cost minutes for coverage the
+  slice already pins).
+- **What going wide caught, immediately:** the dump prints flat-shaded
+  polygons as `poly flat R G B` — the checker's `poly tex` parse missed
+  them, so all-flat effect models (warphole, subspacenode, t-laser) and
+  flat-bearing debris read as poly-less. And bomber05 carries a collinear
+  sliver whose winding dot sits within an ulp of zero: the dump-side replay
+  must snap its parsed decimals **through float32** — `%.9g` identifies a
+  float32 exactly but parses to a *different* nearest-double, and that
+  ~1e-10 skew flips the sign of a d≈1e-13 triangle. The expected-disagree
+  computation now replays the GLB side bit-for-bit (same frame, corner
+  order, summation order, float32-snapped inputs): 176/176 exact.
+- **spherec is the one sanctioned warning.** A retail test model whose
+  `nbackblue1` map lives in `data/effects`, not `data/maps` (survey); the
+  gate passes `--allow-warnings` for it alone — digests still verify, and
+  removing the allowance was the gate's bite (175/176 → red).
+
 ## Where this work lives
 
 - `master` — the retail Linux port, its own line, formatted uniformly at the
