@@ -115,6 +115,27 @@ test('tres-load-check', find_program('tres_load_check.sh'),
     depends: [pof2glb],
     timeout: 120)
 
+# physics_dump is the flight-model oracle: retail's physics_sim over a
+# scripted control sequence; inspect/flight_model.gd must reproduce the
+# trace (flight-check below).
+physics_dump = executable('physics_dump',
+    ['physics_dump.cc', 'stubs.cc', 'gamestubs_gen.cc', 'freespacestubs_gen.cc'],
+    include_directories: inc,
+    link_with: foundation,
+    dependencies: [sdl2_dep, openal_dep, gl_dep])
+
+# The flight gate: the trace from physics_dump vs flight_model.gd's replay,
+# frame by frame within float-width tolerances. Needs no game install --
+# the oracle is the ported retail code itself.
+test('flight-check', find_program('flight_check.sh'),
+    args: [
+        physics_dump.full_path(),
+        meson.current_source_dir() / 'check_flight.gd',
+        meson.project_source_root(),
+    ],
+    depends: [physics_dump],
+    timeout: 120)
+
 # The game-side consumption gate: every model assembled as a Ship
 # (inspect/ship.gd) in one headless engine boot; its replay of retail's
 # load-time movement reinterpretation is diffed per submodel against

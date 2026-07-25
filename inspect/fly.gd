@@ -1,0 +1,169 @@
+# -*- mode: gdscript -*-
+#
+# The first flyable scene: a Ship under keyboard control, moved by
+# FlightModel -- retail's own integrator, oracle-pinned by flight-check --
+# with a chase camera and a starfield for motion reference. First waypoint
+# on the road to flying the first training mission.
+#
+#     godot --path inspect res://fly.tscn -- /abs/path/to/ship.glb
+#
+# Controls:  Up/Down    pitch (stick-style: Up pushes the nose down)
+#            Left/Right turn (banks into the turn by itself, as retail does)
+#            Q/E        roll   A/Z  throttle up/down   0  cut throttle
+#            R reset    H help   Esc quit
+#
+# The flight parameters are FlightModel.FIGHTER (synthetic; ships.tbl is a
+# later slice), whatever ship model is loaded. The model flies in FS2's
+# frame; only the visual transform crosses into Godot's, through the same
+# (x, y, -z) map as the geometry (tools/pof2glb.cc "the axis map").
+extends Node3D
+
+# preloaded rather than by class_name: the global class registry is not
+# primed on a cold headless run (no .godot cache), preload always resolves
+const ShipClass := preload("res://ship.gd")
+const FlightClass := preload("res://flight_model.gd")
+
+var ship: Node3D      # ShipClass instance
+var fm                # FlightClass instance
+var throttle := 0.0
+var cam: Camera3D
+var hud: Label
+
+func _ready() -> void:
+    var args := OS.get_cmdline_user_args()
+    if args.is_empty():
+        _fatal("usage: godot --path inspect res://fly.tscn -- /abs/ship.glb")
+        return
+
+    ship = ShipClass.new()
+    if not ship.load_ship(args[0]):
+        _fatal("cannot load ship: " + args[0])
+        return
+    add_child(ship)
+
+    fm = FlightClass.new()
+
+    _setup_camera()
+    _setup_lights()
+    _setup_starfield()
+    _setup_hud()
+
+    print("fly: %s under FIGHTER params -- %d free rotators"
+        % [args[0].get_file(), ship.rotators().size()])
+
+func _fatal(msg: String) -> void:
+    printerr("fly: " + msg)
+    get_tree().quit(1)
+
+func _physics_process(delta: float) -> void:
+    if fm == null:   # _fatal quits deferred; don't simulate meanwhile
+        return
+    var ci := {
+        "pitch": _axis(KEY_UP, KEY_DOWN),
+        "heading": _axis(KEY_LEFT, KEY_RIGHT),
+        "bank": _axis(KEY_E, KEY_Q),
+        "forward": throttle,
+    }
+    fm.read_flying_controls(ci, delta)
+    fm.sim(delta)
+
+    # FS2 frame -> Godot frame at the visual boundary only
+    ship.position = Vector3(fm.pos.x, fm.pos.y, -fm.pos.z)
+    ship.basis = Basis(
+        Vector3(fm.rvec.x, fm.rvec.y, -fm.rvec.z),
+        Vector3(fm.uvec.x, fm.uvec.y, -fm.uvec.z),
+        -Vector3(fm.fvec.x, fm.fvec.y, -fm.fvec.z))
+
+    # the free rotators turn (dishes, panels -- loaded ROT only; the rate is
+    # inspection-flavor, retail's per-subsystem turn rate is ships.tbl data)
+    for r in ship.rotators():
+        r["node"].rotate_object_local(r["axis"], 0.5 * delta)
+
+    _update_camera(delta)
+    hud.text = "speed %5.1f   throttle %3d%%\n%s" % [
+        fm.fspeed, int(throttle * 100.0),
+        "arrows fly, Q/E roll, A/Z throttle, 0 cut, R reset, Esc quit"]
+
+# +1 when `pos` is held, -1 for `neg` -- keyboard stick
+static func _axis(pos: Key, neg: Key) -> float:
+    return (1.0 if Input.is_key_pressed(pos) else 0.0) \
+        - (1.0 if Input.is_key_pressed(neg) else 0.0)
+
+func _unhandled_input(event: InputEvent) -> void:
+    if not (event is InputEventKey and event.pressed):
+        return
+    match event.keycode:
+        KEY_A:
+            throttle = clampf(throttle + 0.1, -1.0, 1.0)
+        KEY_Z:
+            throttle = clampf(throttle - 0.1, -1.0, 1.0)
+        KEY_0:
+            throttle = 0.0
+        KEY_R:
+            fm = FlightClass.new()
+            throttle = 0.0
+        KEY_H:
+            hud.visible = not hud.visible
+        KEY_ESCAPE:
+            get_tree().quit()
+
+func _setup_camera() -> void:
+    cam = Camera3D.new()
+    cam.far = 20000.0
+    add_child(cam)
+    cam.position = Vector3(0, 4, 20)
+
+# chase: settle toward a point behind and above the ship, always look ahead
+func _update_camera(delta: float) -> void:
+    var r: float = maxf(ship.data.radius, 1.0)
+    var target: Vector3 = ship.position \
+        + ship.basis * Vector3(0.0, r * 0.6, r * 2.2)
+    var k := 1.0 - exp(-6.0 * delta)
+    cam.position = cam.position.lerp(target, k)
+    cam.look_at(ship.position + ship.basis * Vector3(0, 0, -r * 4.0), ship.basis.y)
+
+func _setup_lights() -> void:
+    var key := DirectionalLight3D.new()
+    key.rotation_degrees = Vector3(-35.0, 40.0, 0.0)
+    add_child(key)
+    var env := Environment.new()
+    env.background_mode = Environment.BG_COLOR
+    env.background_color = Color(0.02, 0.02, 0.04)
+    env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+    env.ambient_light_color = Color(0.25, 0.25, 0.3)
+    var we := WorldEnvironment.new()
+    we.environment = env
+    add_child(we)
+
+# a shell of unshaded points, far enough to read as stars, near enough to
+# give roll/turn parallax
+func _setup_starfield() -> void:
+    var mm := MultiMesh.new()
+    mm.transform_format = MultiMesh.TRANSFORM_3D
+    var s := SphereMesh.new()
+    s.radius = 4.0
+    s.height = 8.0
+    s.radial_segments = 4
+    s.rings = 2
+    var mat := StandardMaterial3D.new()
+    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    mat.albedo_color = Color(0.9, 0.9, 1.0)
+    s.material = mat
+    mm.mesh = s
+    mm.instance_count = 800
+    var rng := RandomNumberGenerator.new()
+    rng.seed = 0x46533200  # deterministic sky ("FS2\0")
+    for i in mm.instance_count:
+        var dir := Vector3(rng.randfn(), rng.randfn(), rng.randfn()).normalized()
+        var t := Transform3D(Basis(), dir * rng.randf_range(2500.0, 4000.0))
+        mm.set_instance_transform(i, t)
+    var mmi := MultiMeshInstance3D.new()
+    mmi.multimesh = mm
+    add_child(mmi)
+
+func _setup_hud() -> void:
+    var layer := CanvasLayer.new()
+    add_child(layer)
+    hud = Label.new()
+    hud.position = Vector2(12, 12)
+    layer.add_child(hud)

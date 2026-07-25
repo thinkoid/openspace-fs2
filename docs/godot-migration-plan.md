@@ -358,6 +358,40 @@ Game-side consumption (`inspect/ship.gd`, `meson test ship-load-check`):
   `$special=subsystem`), so that branch is faithful to pofparse but pinned
   by no data.
 
+Flight (`inspect/flight_model.gd`, `inspect/fly.tscn`,
+`meson test flight-check`) — first waypoint toward flying the first
+training mission:
+
+- **The flight feel is retail's own integrator, not an approximation.**
+  `flight_model.gd` ports `physics_sim` + `physics_read_flying_controls`
+  (and the vecmat primitives they lean on: `apply_physics`,
+  `velocity_ramp` with its close-to-goal hack, `sincos_2_matrix`,
+  `vm_orthogonalize_matrix`'s exact cross order, BANK_WHEN_TURN's coupled
+  `delta_bank`) function-for-function, same names, same phase structure.
+  Scope is the `PF_ACCELERATES` path — no slide/afterburner/reduced-damp/
+  shockwave/warp until a slice needs them. The model flies in FS2's own
+  frame; only the visual transform crosses to Godot, through the same
+  `(x, y, −z)` map as the geometry.
+- **Oracle-pinned by trace diff.** `tests/physics_dump` runs the ported
+  retail C++ over a scripted 540-frame flight (throttle ramp, pitch pulse,
+  hard auto-banking turn, roll, reverse, coast) and prints the full state
+  `%.9g`; `check_flight.gd` replays the same inputs through the GDScript
+  port. Measured divergence: position 2.3e-4 world units, orientation
+  6e-7, velocity 9e-5 — pure float32-vs-double residue, 200× under the
+  tolerances, while the bites (rotdamp 0.35→0.36; flipped BANK_WHEN_TURN
+  sign) blow through at 26× and 3000× over. The tolerance band separates
+  float drift from semantic error by four orders of magnitude.
+- **`fly.tscn` is the first flyable scene.** A `Ship` under keyboard
+  control (arrows/Q/E/A/Z, stick-style pitch), chase camera, deterministic
+  starfield for motion parallax. The Faustus flies with 1 free rotator —
+  retail's loaded view through `Ship.rotators()` — where the inspection
+  scene shows 4 file-view movables: the reclassification, live.
+- **Parameters are a synthetic fighter** (`FlightModel.FIGHTER`, mirrored
+  in `physics_dump.cc` — the contract is the pair), NOT ships.tbl: table
+  parsing is its own slice on the training-mission road, along with
+  mission-file loading (the SEXP parse oracle already waits in
+  `missions/`).
+
 ## Where this work lives
 
 - `master` — the retail Linux port, its own line, formatted uniformly at the
