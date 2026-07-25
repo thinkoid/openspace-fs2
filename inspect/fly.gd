@@ -38,6 +38,7 @@ var view_chase := true
 var eye_parent: Node3D = null
 var eye_point := Vector3.ZERO
 var eye_normal := Vector3.FORWARD
+var ship_label := ""
 
 func _ready() -> void:
     var args := OS.get_cmdline_user_args()
@@ -57,6 +58,19 @@ func _ready() -> void:
 
     fm = FlightClass.new()
 
+    # real numbers when available: shiptbl2tres's ship_params.tres beside
+    # the GLB (retail's parse_shiptbl, oracle-checked by shiptbl-check),
+    # keyed by POF stem; the synthetic FIGHTER otherwise
+    var params_path := glb.get_base_dir() + "/ship_params.tres"
+    var stem := glb.get_file().get_basename().to_lower()
+    if FileAccess.file_exists(params_path):
+        var sp: Resource = ResourceLoader.load(params_path)
+        if sp and sp.ships.has(stem):
+            fm.set_params(sp.ships[stem], ship.data.mass)
+            ship_label = "%s (ships.tbl)" % sp.ships[stem]["name"]
+    if ship_label.is_empty():
+        ship_label = "%s (synthetic params)" % stem
+
     if ship.data.eyes.size() > 0:
         var e: Dictionary = ship.data.eyes[0]
         eye_parent = ship.sub_node(e["parent"])
@@ -74,8 +88,8 @@ func _ready() -> void:
     _setup_starfield()
     _setup_hud()
 
-    print("fly: %s under FIGHTER params -- %d free rotators"
-        % [glb.get_file(), ship.rotators().size()])
+    print("fly: %s as %s -- %d free rotators"
+        % [glb.get_file(), ship_label, ship.rotators().size()])
 
 func _fatal(msg: String) -> void:
     printerr("fly: " + msg)
@@ -110,8 +124,8 @@ func _physics_process(delta: float) -> void:
         r["node"].rotate_object_local(r["axis"], 0.5 * delta)
 
     _update_camera(delta)
-    hud.text = "speed %5.1f   throttle %3d%%\n%s" % [
-        fm.fspeed, int(throttle * 100.0),
+    hud.text = "%s\nspeed %5.1f   throttle %3d%%\n%s" % [
+        ship_label, fm.fspeed, int(throttle * 100.0),
         "arrows fly, Q/E roll, A/Z throttle, 0 cut, V view, R reset, Esc quit"]
 
 # +1 when `pos` is held, -1 for `neg` -- keyboard stick

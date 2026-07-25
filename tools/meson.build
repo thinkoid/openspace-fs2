@@ -32,3 +32,12 @@ vpstage = executable('vpstage',
     include_directories: inc,
     link_with: foundation,
     dependencies: [sdl2_dep, openal_dep, gl_dep])
+
+# shiptbl2tres runs retail's weapon_init + ship_init (the real parse_shiptbl)
+# and emits the flight-parameter subset of Ship_info as a Godot .tres --
+# ships.tbl read by its one authoritative reader, like vpstage's cfile.
+shiptbl2tres = executable('shiptbl2tres',
+    ['shiptbl2tres.cc'] + oracle_stubs,
+    include_directories: inc,
+    link_with: foundation,
+    dependencies: [sdl2_dep, openal_dep, gl_dep])

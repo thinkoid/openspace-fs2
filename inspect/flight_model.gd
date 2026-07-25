@@ -31,6 +31,29 @@ const FIGHTER := {
 
 var p := FIGHTER
 
+# Adopt a ships.tbl entry (a ShipParams dict from shiptbl2tres, retail's
+# own parse) in place of the synthetic FIGHTER. pof_mass is the POF's --
+# retail computes mass = POF mass * tbl density (ship.cc:1300); nothing in
+# the PF_ACCELERATES path reads it, but the record stays faithful.
+func set_params(tbl: Dictionary, pof_mass: float) -> void:
+    var mv: Vector3 = tbl["max_vel"]
+    if mv.x > 0.0 or mv.y > 0.0:
+        # 5 retail ships can slide; the slide branch is out of scope until
+        # a slice needs it (see header), so their lateral axes go inert
+        push_warning("FlightModel: slide not implemented, zeroing lateral max_vel")
+        mv.x = 0.0
+        mv.y = 0.0
+    p = {
+        "mass": pof_mass * tbl["density"],
+        "max_vel": mv,
+        "max_rear_vel": tbl["max_rear_vel"],
+        "max_rotvel": tbl["max_rotvel"],
+        "forward_accel_time_const": tbl["forward_accel"],
+        "forward_decel_time_const": tbl["forward_decel"],
+        "side_slip_time_const": tbl["damp"],
+        "rotdamp": tbl["rotdamp"],
+    }
+
 # state -- physics_info's living fields, FS2 frame throughout
 var pos := Vector3.ZERO
 var rvec := Vector3.RIGHT              # orient rows

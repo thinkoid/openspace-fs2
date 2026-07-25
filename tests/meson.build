@@ -124,6 +124,18 @@ physics_dump = executable('physics_dump',
     link_with: foundation,
     dependencies: [sdl2_dep, openal_dep, gl_dep])
 
+# The ships.tbl gate: retail's parse_shiptbl (via ../tools/shiptbl2tres)
+# vs an independent python read of the same table text, exact on
+# float32-snapped values, plus a run-twice byte-compare.
+test('shiptbl-check', find_program('shiptbl_check.sh'),
+    args: [
+        shiptbl2tres.full_path(),
+        meson.current_source_dir() / 'check_shiptbl.py',
+        meson.project_source_root(),
+    ],
+    depends: [shiptbl2tres],
+    timeout: 120)
+
 # The flight gate: the trace from physics_dump vs flight_model.gd's replay,
 # frame by frame within float-width tolerances. Needs no game install --
 # the oracle is the ported retail code itself.

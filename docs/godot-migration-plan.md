@@ -387,10 +387,40 @@ training mission:
   retail's loaded view through `Ship.rotators()` — where the inspection
   scene shows 4 file-view movables: the reclassification, live.
 - **Parameters are a synthetic fighter** (`FlightModel.FIGHTER`, mirrored
-  in `physics_dump.cc` — the contract is the pair), NOT ships.tbl: table
-  parsing is its own slice on the training-mission road, along with
-  mission-file loading (the SEXP parse oracle already waits in
-  `missions/`).
+  in `physics_dump.cc` — the contract is the pair) *for the oracle*; real
+  ships fly on ships.tbl numbers (next block).
+
+ships.tbl (`tools/shiptbl2tres`, `meson test shiptbl-check`):
+
+- **The table is read by its one authoritative reader.** `shiptbl2tres`
+  runs retail's `weapon_init` + `ship_init` (the real `parse_shiptbl`) and
+  emits the `physics_ship_init` subset of all 113 `Ship_info` entries as a
+  `ship_params.tres` (`inspect/ship_params.gd` schema), keyed by lowercased
+  POF stem — including retail-derived values like
+  `max_rotvel = 2π/rotation_time`. Getting the parse to run outside the
+  game took three measured facts: `lcl_init(-1)` Int3s without an OS
+  registry (pass `LCL_ENGLISH`), weapon parsing touches bmpman's
+  timer-based bookkeeping (`timer_init`), and `Fred_running = 1` takes the
+  editor's own parse-only path (no bitmap loads) with two `gr_screen`
+  color-storing function pointers stubbed to no-ops.
+- **Two parsers over the same bytes.** `check_shiptbl.py` re-reads the
+  table text independently (python regex per field, the 2π/rotation_time
+  derivation replicated in retail's float32 arithmetic, `PI =
+  3.141592654f`) and the slice ships' fields must agree **exactly** on
+  float32-snapped values — no tolerances. Plus a run-twice byte-compare.
+  Proven bites: a tampered `rotdamp` and a 5th-decimal change to python's
+  PI both red. (First bite attempt was a lesson: perturbations below
+  float32 resolution don't perturb.)
+- **The fly scene uses the real numbers.** `fly.gd` picks up
+  `ship_params.tres` beside the GLB and the HUD names the ship; the
+  synthetic FIGHTER remains the fallback and the flight-oracle contract.
+  The real Ulysses corrected the synthetic guesses: `max_vel` 70 (not 65),
+  `max_rear_vel` **0** — it cannot reverse — and yaw is its fastest axis.
+  5 retail ships carry lateral `max_vel` (slide); `FlightModel` zeroes
+  those with an honest warning until a slide slice earns its keep.
+
+Still ahead on the training-mission road: mission-file loading (the SEXP
+parse oracle already waits in `missions/`), then the training directives.
 
 ## Where this work lives
 
