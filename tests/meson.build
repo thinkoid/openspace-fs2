@@ -115,6 +115,21 @@ test('tres-load-check', find_program('tres_load_check.sh'),
     depends: [pof2glb],
     timeout: 120)
 
+# The game-side consumption gate: every model assembled as a Ship
+# (inspect/ship.gd) in one headless engine boot; its replay of retail's
+# load-time movement reinterpretation is diffed per submodel against
+# pof_dump --model, corpus-wide. Skips without godot or the install.
+test('ship-load-check', find_program('ship_load_check.sh'),
+    args: [
+        pof2glb.full_path(),
+        pof_dump.full_path(),
+        meson.current_source_dir() / 'check_ship_load.gd',
+        meson.project_source_root(),
+        meson.project_source_root(),
+    ],
+    depends: [pof2glb, pof_dump],
+    timeout: 600)
+
 # The VP staging gate: vpstage extracts models + maps from the pristine VPs
 # via retail's cfile; check_staging.py verifies digests (hashlib), raw
 # offset-slices from the archives (bypassing cfile), and byte-equality with

@@ -334,6 +334,30 @@ VP staging (`tools/vpstage`, `meson test vpstage-check`):
 - **SHA-256 moved to `tools/sha256.hh`**, shared by both manifest writers;
   the slice manifest-check pinned the move (digests unchanged).
 
+Game-side consumption (`inspect/ship.gd`, `meson test ship-load-check`):
+
+- **`Ship` assembles a converted ship the way retail loads one.** Where the
+  inspection scene deliberately spins every file-declared axis, `Ship`
+  replays retail's load-time movement reinterpretation from the GLB extras:
+  a type-1 submodel named `turret*`/`gun*`/`cannon*` becomes ROT_SPECIAL
+  (AI-driven, never free-spinning), a `thruster*` loses its rotation,
+  `$special=no_rotate` opts out, and a rotator that is not a subsystem goes
+  inert — including retail's `get_user_prop_value` parsing (case-sensitive
+  key match, case-insensitive value compare, C-`isspace` skipping). It
+  hides LOD1+/debris/`-destroyed` wrecks and exposes the game-shaped views:
+  `rotators()` (loaded ROT, axes in the Godot frame), `turrets()` with
+  base/arm nodes resolved, `sub_node()`.
+- **The replay is oracle-pinned corpus-wide.** One headless engine boot
+  assembles all 176 models and diffs the replayed `(type, axis)` per
+  submodel against `pof_dump --model`'s loaded values — retail's own C++
+  answers: **2903/2903 submodels match**, and every submodel's scene node
+  resolves by name (no glTF-name sanitization losses anywhere in the
+  corpus). Proven bites: breaking the turret promotion or the
+  `$special=subsystem` compare each go red with per-submodel diagnostics.
+- **HONEST GAP:** no retail model carries `$special=no_rotate` (88 use
+  `$special=subsystem`), so that branch is faithful to pofparse but pinned
+  by no data.
+
 ## Where this work lives
 
 - `master` — the retail Linux port, its own line, formatted uniformly at the
