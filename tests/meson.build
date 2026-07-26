@@ -182,6 +182,16 @@ test('weapons-check', find_program('weapons_check.sh'),
     ],
     timeout: 60)
 
+# The waypoint-AI gate: flying, retail's arrival test (aicode.cc:4717),
+# LOG_WAYPOINTS_DONE stamping, and are-waypoints-done-delay semantics
+# (sexp.cc:3543) of inspect/waypoint_ai.gd.
+test('waypoints-check', find_program('waypoints_check.sh'),
+    args: [
+        meson.current_source_dir() / 'check_waypoints.gd',
+        meson.project_source_root(),
+    ],
+    timeout: 60)
+
 # The game-side consumption gate: every model assembled as a Ship
 # (inspect/ship.gd) in one headless engine boot; its replay of retail's
 # load-time movement reinterpretation is diffed per submodel against

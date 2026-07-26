@@ -6,12 +6,14 @@
 # with this scene as its world -- training messages and directives render,
 # T/H targeting feeds the `targeted` predicate and the target monitor,
 # LCtrl fires the gun (Weapons: bolts, hulls, the destroyed registry that
-# answers is-destroyed-delay and hits-left). Training-1 puts you in Alpha
-# 1's Myrmidon with the Instructor off your port bow;
+# answers is-destroyed-delay and hits-left), and ships with orders FLY
+# them (WaypointAI: waypoint paths, the LOG_WAYPOINTS_DONE stamps that
+# are-waypoints-done-delay reads, add-goal steering the Instructor from
+# path to path). Training-1 puts you in Alpha 1's Myrmidon with the
+# Instructor pulling away to his first waypoint;
 # tests/weapons-range.fs2 is the live-fire proving ground. Still ahead:
-# the waypoint-AI sliver (are-waypoints-done-delay), the full game HUD.
-# Ships hold station; every ship the mission knows is present (FRED's
-# view).
+# the full game HUD. Every ship the mission knows is present (FRED's
+# view); ships without orders hold station.
 #
 #     godot --path inspect -- mission /abs/path/to/<mission>.tres
 #
@@ -26,6 +28,7 @@ const FlightClass := preload("res://flight_model.gd")
 const VMClass := preload("res://sexp_vm.gd")
 const TargetingClass := preload("res://targeting.gd")
 const WeaponsClass := preload("res://weapons.gd")
+const WaypointAIClass := preload("res://waypoint_ai.gd")
 
 var mission: Resource
 var player_ship: Node3D
@@ -57,6 +60,21 @@ const PLAYER_GUN := "Subach HL-7"
 const GUN_FALLBACK := {"velocity": 450.0, "damage": 15.0,
                        "lifetime": 2.0, "fire_wait": 0.2}
 
+# ---- the waypoint-AI sliver: ships with orders move ----
+var nav                           # WaypointAIClass instance
+var ai_logged := {}               # degraded/no-op verbs, logged once
+
+# AI_GOAL_* bits (aigoals.hh) as the .tres ai_goals carry them ->
+# this world's verbs; guard degrades to stay-still (guard flight is a
+# later slice), ignore is a no-op here (nobody attacks anybody)
+const AI_VERBS := {
+    1 << 3:  "waypoints-once",    # AI_GOAL_WAYPOINTS: repeat degrades
+    1 << 4:  "waypoints-once",    # AI_GOAL_WAYPOINTS_ONCE
+    1 << 10: "stay-still",        # AI_GOAL_GUARD, degraded
+    1 << 20: "stay-still",        # AI_GOAL_STAY_STILL
+    1 << 21: "stay-still",        # AI_GOAL_PLAY_DEAD
+}
+
 # ---- the events engine and its world ----
 var vm                            # VMClass instance
 var ship_entries := {}            # name -> mission ships entry (FS2 frame)
@@ -82,13 +100,13 @@ const BINDINGS := {
 
 # actions whose slices haven't landed yet: eval true (retail returns 1
 # from side-effect ops), logged once so the TODO list writes itself
-const STUB_ACTIONS := ["add-goal", "protect-ship", "unprotect-ship",
+const STUB_ACTIONS := ["protect-ship", "unprotect-ship",
     "ship-guardian", "ship-no-guardian", "flash-hud-gauge",
     "cap-waypoint-speed", "key-reset-multiple", "hud-disable",
     "training-context", "set-training-context-fly-path"]
 
 # predicates whose slices haven't landed: eval false, logged once
-const STUB_PREDICATES := ["are-waypoints-done-delay", "special-check",
+const STUB_PREDICATES := ["special-check",
     "percent-ships-destroyed", "is-subsystem-destroyed-delay",
     "waypoints-done-delay"]
 
@@ -212,6 +230,27 @@ func _ready() -> void:
                          bool(e.get("invulnerable", false)))
     _setup_bolt_mesh()
 
+    # the AI sliver: ships with initial orders fly them (the
+    # Instructor's waypoints) at their own table numbers; ships without
+    # orders stay inert exactly as before
+    nav = WaypointAIClass.new()
+    nav.set_lists(mission.waypoints)
+    for name in ship_nodes:
+        if name == player_entry["name"]:
+            continue
+        var e: Dictionary = ship_entries[name]
+        if e["ai_goals"].is_empty():
+            continue
+        var speed := 50.0
+        var turn := 1.0
+        if sp and sp.ships.has(e["pof"]):
+            speed = sp.ships[e["pof"]]["max_vel"].z
+            turn = sp.ships[e["pof"]]["max_rotvel"].y
+        nav.register(name, e["pos"], e["fvec"], speed, turn,
+                     ship_nodes[name].data.radius)
+        var g := _top_goal(e["ai_goals"])
+        _ai_command(name, int(g["mode"]), String(g["target"]))
+
     print("mission: \"%s\" -- %d/%d ships placed, player %s, %d events"
         % [mission.mission_name, placed, mission.ships.size(),
            player_entry["name"], vm.events.size()])
@@ -265,6 +304,12 @@ func _physics_process(delta: float) -> void:
         var muzzle: Vector3 = fm.pos \
             + fm.fvec * (player_ship.data.radius + 2.0)
         weapons.try_fire(vm.ms, muzzle, fm.fvec, fm.vel)
+
+    # the movers move first, so this frame's collisions and SEXP
+    # answers see fresh positions
+    for c in nav.step(delta, vm.mt_fix):
+        print("waypoints done: %s, %s" % [c["ship"], c["path"]])
+    _update_ai_ships()
 
     var positions := {}
     for name in ship_nodes:
@@ -507,15 +552,73 @@ func _pos_of(pname: String) -> Vector3:
     var e: Dictionary = ship_entries.get(pname, {})
     return e["pos"] if e.has("pos") else Vector3.INF
 
-# a kill: the ship leaves the scene, the target cycle, and the world's
-# answers -- the destroyed registry (stamped in weapons.step) is what
-# is-destroyed-delay reads from here on
+# a kill: the ship leaves the scene, the target cycle, the AI, and the
+# world's answers -- the destroyed registry (stamped in weapons.step) is
+# what is-destroyed-delay reads from here on
 func _kill_ship(name: String) -> void:
     if ship_nodes.has(name):
         ship_nodes[name].queue_free()
         ship_nodes.erase(name)
     targeting.remove(name)
+    nav.ships.erase(name)
     print("destroyed: ", name)
+
+# retail keeps MAX_AI_GOALS prioritized slots; this world flies one
+# order at a time, the highest-priority initial goal
+func _top_goal(goals: Array) -> Dictionary:
+    var best := {}
+    for g in goals:
+        if best.is_empty() or int(g["priority"]) > int(best["priority"]):
+            best = g
+    return best
+
+func _ai_command(name: String, mode: int, target: String) -> void:
+    var verb: String = AI_VERBS.get(mode, "")
+    if verb == "":
+        if not ai_logged.has(mode):
+            ai_logged[mode] = true
+            print("ai: goal bit %d unsupported, %s holds station"
+                  % [mode, name])
+        return
+    if mode == 1 << 10 and not ai_logged.has("guard"):
+        ai_logged["guard"] = true
+        print("ai: ai-guard degrades to stay-still (guard flight is a "
+              + "later slice)")
+    if not nav.command(name, verb, target):
+        print("ai: cannot command %s %s %s" % [name, verb, target])
+
+# add-goal's decoded form (sexp_add_goal -> ai_add_goal_sub_sexp): the
+# goal sublist's head op is the verb, its first argument the target
+func _add_goal(ship: String, gop: String, target: String) -> void:
+    match gop:
+        "ai-waypoints-once", "ai-waypoints":
+            if not nav.command(ship, "waypoints-once", target):
+                print("ai: add-goal cannot start %s on %s" % [ship, target])
+        "ai-stay-still", "ai-play-dead":
+            nav.command(ship, "stay-still")
+        "ai-guard":
+            _ai_command(ship, 1 << 10, "")
+        _:
+            if not ai_logged.has(gop):
+                ai_logged[gop] = true
+                print("ai: add-goal %s is a no-op in this world" % gop)
+
+# mirror the movers: entries carry the live position (distance, the
+# weapons step, the target box all read it), nodes carry the visual
+func _update_ai_ships() -> void:
+    for name in nav.ships:
+        var st: Dictionary = nav.ships[name]
+        if st["mode"] == "still" or not ship_nodes.has(name):
+            continue
+        ship_entries[name]["pos"] = st["pos"]
+        var f: Vector3 = st["fvec"]
+        var r: Vector3 = Vector3.UP.cross(f)
+        if r.length_squared() < 1e-9:
+            r = Vector3.RIGHT       # flying straight up: pick a wing
+        r = r.normalized()
+        var n: Node3D = ship_nodes[name]
+        n.position = g_pos(st["pos"])
+        n.basis = g_basis(r, f.cross(r), f)
 
 func sexp_op(op: String, n, v) -> int:
     match op:
@@ -589,6 +692,20 @@ func sexp_op(op: String, n, v) -> int:
             tc_speed_set_ms = -1
             return 1
 
+        "are-waypoints-done-delay": # sexp.cc:3543 via the nav log
+            return nav.are_waypoints_done_delay(
+                v.ctext(n), v.ctext(n["rest"]), v.num(n["rest"]["rest"]),
+                v.mt_fix, weapons.destroyed)
+
+        "add-goal":                 # sexp_add_goal; the world flies the
+            # sliver's verbs, degrades or no-ops the rest (logged)
+            var goal = n["rest"]["first"]
+            var gtarget := ""
+            if goal["rest"] != null:
+                gtarget = v.ctext(goal["rest"])
+            _add_goal(v.ctext(n), goal["text"], gtarget)
+            return 1
+
         "is-destroyed-delay":       # sexp.cc:3314 via the destroyed
             # registry (wing names are the wings refinement: an unknown
             # name is simply never destroyed)
@@ -654,7 +771,8 @@ func _update_target_box() -> void:
     var dist := int((_pos_of(targeting.target) - fm.pos).length())
     var hull: int = weapons.hits_left(targeting.target)
     target_box.text = "%s\n%s\nrange %5d   speed %3d   hull %3d%%" \
-        % [e["name"], e["ship_class"], dist, 0, maxi(hull, 0)]
+        % [e["name"], e["ship_class"], dist,
+           int(nav.speed_of(targeting.target)), maxi(hull, 0)]
 
     var gpos := g_pos(e["pos"])
     if cam.is_position_behind(gpos):

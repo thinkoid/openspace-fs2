@@ -573,13 +573,49 @@ mission) consumes this next.
   camera — hull % draining in the target box, directives going [done],
   `goal COMPLETE: Clear the range`.
 
-Still ahead on the training-mission road: the waypoint-AI sliver
-(are-waypoints-done-delay — the Instructor MOVES in Training-1, and the
-lesson chain gates on it) and the game HUD (radar, directives gauge
-proper) — at which point Training-1 is not just a place but a lesson.
-The evaluator itself still wants a differential gate (a retail
-event-trace dump against the VM's replay, physics_dump-style) once the
-world predicates firm up.
+**Facts established by the waypoint-AI sliver:**
+
+- `inspect/waypoint_ai.gd` owns the mechanism: ships fly waypoint
+  paths, stand still, or play dead; completing a path stamps a
+  LOG_WAYPOINTS_DONE-shaped log (LAST waypoint only, aicode.cc:4763)
+  that `are-waypoints-done-delay` reads. Retail-exact: the arrival test
+  (aicode.cc:4717 — within MIN_DIST 5.0 + sqrt(radius), padded by the
+  frame's travel, plus the swept segment so no ship steps over a
+  waypoint), case-insensitive log names (missionlog.cc:423), the
+  predicate's fix math and its destroyed-only-checked-when-not-done
+  quirk (sexp.cc:3562, retail's own comment flags it). Deliberate
+  approximation: the flying itself — the forward vector turns at the
+  ship's table yaw rate toward the waypoint at table cruise speed
+  (max_vel.z) instead of retail's full rotational-physics stack; same
+  waypoints, same order, believable motion. On completion the ship
+  cruises straight (retail resets to default behavior; the next
+  add-goal lands within the 500 ms event cadence).
+- `add-goal` is REAL for the sliver's verbs: ai-waypoints-once /
+  ai-waypoints start a path, ai-stay-still / ai-play-dead park,
+  ai-guard degrades to stay-still (logged once), the rest no-op
+  (logged once). Initial $AI Goals from the .tres drive ships at
+  spawn — highest-priority goal wins (retail keeps prioritized slots;
+  this world flies one order at a time).
+- Movers update their mission entry's position in place, so distance,
+  the weapons collision sweep, and the target box (live speed now) all
+  read fresh positions; a kill also removes the ship from the AI.
+- Gate: `waypoints-check`, headless — a dogleg path (the turn limiter
+  has to work), arrival, single log stamp, re-command mid-life,
+  stay-still, predicate semantics; bitten three ways (reversed turn:
+  12 fails; stamp-on-every-waypoint; `>=`→`>` fix boundary). BITE
+  LESSON: a negative MIN_DIST perturbation does NOT bite — the swept
+  test squares the radius, and the frame-travel padding makes arrival
+  robust by design; bite the log shape instead. Suite 16 gates.
+- Live proof in Training-1 at 5x clock: "waypoints done: Instructor,
+  Waypoint path 1" on the console, the Instructor visibly departed,
+  the directives chain advanced. The remaining stub log is down to
+  `special-check` and `ship-guardian`.
+
+Still ahead on the training-mission road: the game HUD (radar,
+directives gauge proper) — at which point Training-1 is not just a
+place but a lesson. The evaluator itself still wants a differential
+gate (a retail event-trace dump against the VM's replay,
+physics_dump-style) once the world predicates firm up.
 
 ## Where this work lives
 
