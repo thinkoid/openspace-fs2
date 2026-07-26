@@ -60,14 +60,16 @@ func _init() -> void:
     check("log names case-insensitive",
           nav.done_time("RUNNER", "test PATH"), 5 * 65536)
     check("statue never moved", nav.ships["Statue"]["pos"], statue_pos)
-    check("finished runner cruises", nav.ships["Runner"]["mode"], "cruise")
+    check("finished runner parks", nav.ships["Runner"]["mode"], "still")
 
-    # a cruising ship keeps moving straight (retail resets to default
-    # behavior; the next add-goal lands within the event cadence)
+    # a finished ship STAYS PARKED -- the next add-goal may be minutes
+    # away (lesson-gated), and a ship that cruised meanwhile would
+    # leave the training area (the Instructor did, at 75 m/s)
     var after_done: Vector3 = nav.ships["Runner"]["pos"]
     nav.step(0.1, 5 * 65536)
-    check("cruise keeps flying",
-          nav.ships["Runner"]["pos"] != after_done, true)
+    check("parked ship stays put",
+          nav.ships["Runner"]["pos"], after_done)
+    check("parked speed is zero", nav.speed_of("Runner"), 0.0)
 
     # add-goal mid-life: a second path flies from its own first point
     check("re-command onto second path",

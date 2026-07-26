@@ -23,9 +23,11 @@
 # (max_vel.z, retail's current_max_speed -- waypoint_speed_cap stays a
 # stub). Believable motion that hits the same waypoints in the same
 # order; the maneuvering polish belongs to a real AI slice if one is
-# ever needed. On finishing a path the ship CRUISES straight (retail
-# resets to default AI behavior) -- Training-1 hands the Instructor his
-# next path within the 500 ms event cadence anyway.
+# ever needed. On finishing a path the ship PARKS: retail completes
+# the goal and an orderless ship idles, and the next add-goal may be
+# MINUTES away, gated on the player's own lesson progress -- a ship
+# that kept cruising meanwhile would leave the training area entirely
+# (measured: the Instructor did exactly that at 75 m/s).
 class_name WaypointAI
 extends RefCounted
 
@@ -84,9 +86,6 @@ func step(delta: float, mt_fix: int) -> Array:
         var s: Dictionary = ships[name]
         if s["mode"] == "still":
             continue
-        if s["mode"] == "cruise":
-            s["pos"] += s["fvec"] * s["speed"] * delta
-            continue
 
         var wp: Vector3 = lists[s["path"]][s["idx"]]
 
@@ -117,7 +116,7 @@ func step(delta: float, mt_fix: int) -> Array:
                 done.append({"ship": name, "path": s["path"],
                              "time": mt_fix})
                 completions.append({"ship": name, "path": s["path"]})
-                s["mode"] = "cruise"
+                s["mode"] = "still"
     return completions
 
 func speed_of(name: String) -> float:
