@@ -42,10 +42,14 @@ trap 'rm -rf "$tmp"' EXIT
 
 total=0
 failed=0
-for f in "$root"/data/missions/*.fs2; do
+# the corpus plus the repo's own synthetic proving ground (weapons-range
+# beside the checkers) -- cfile opens a path with a separator directly,
+# so it converts in place, no staging into the install
+for f in "$root"/data/missions/*.fs2 "$(dirname "$checker")"/*.fs2; do
+    [ -f "$f" ] || continue
     m=$(basename "$f")
     total=$((total + 1))
-    if ! "$tool" "$root" "$m" "$tmp/$m.tres" > "$tmp/$m.log" 2>&1; then
+    if ! "$tool" "$root" "$f" "$tmp/$m.tres" > "$tmp/$m.log" 2>&1; then
         echo "FAIL $m: mission2tres ($(tail -1 "$tmp/$m.log"))"
         failed=$((failed + 1))
         continue

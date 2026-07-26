@@ -48,6 +48,16 @@ func clear() -> void:
     target = ""
     since_ms = -1
 
+# a destroyed ship leaves the cycle and drops the lock (retail's
+# hud_target_next skips dead objects; the target box goes empty)
+func remove(name: String) -> void:
+    for i in ships.size():
+        if ships[i]["name"] == name:
+            ships.remove_at(i)
+            break
+    if target == name:
+        clear()
+
 # sexp_targeted's testable core: right name, held long enough. The caller
 # handles the ship-will-never-arrive KNOWN_FALSE case (not reachable while
 # every ship stands at t=0) and the subsystem arg (stubbed).

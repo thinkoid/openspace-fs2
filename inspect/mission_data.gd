@@ -16,6 +16,7 @@
 #     "pos": Vector3,
 #     "rvec": Vector3, "uvec": Vector3, "fvec": Vector3,
 #     "player_start": bool,
+#     "invulnerable": bool,    # +Flags "invulnerable" -- weapons spare it
 #     "ai_goals": Array }      # initial orders, decoded by retail:
 #                              # { "mode": int (AI_GOAL_* bit, aigoals.hh),
 #                              #   "submode": int, "priority": int,

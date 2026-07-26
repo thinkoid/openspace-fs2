@@ -283,10 +283,13 @@ main(int argc, char *argv[])
                  o.orient.fvec.x, o.orient.fvec.y, o.orient.fvec.z);
         t += buf;
         // player starts carry OF_PLAYER_SHIP under Fred_running
-        // (missionparse.cc:1234)
+        // (missionparse.cc:1234); "invulnerable" lands on the object at
+        // ship creation (missionparse.cc:1275) -- the weapons slice must
+        // honor it or the player can shoot the Instructor dead
         snprintf(buf, sizeof buf,
-                 "\"player_start\": %s,\n",
-                 (o.flags & OF_PLAYER_SHIP) ? "true" : "false");
+                 "\"player_start\": %s,\n\"invulnerable\": %s,\n",
+                 (o.flags & OF_PLAYER_SHIP) ? "true" : "false",
+                 (o.flags & OF_INVULNERABLE) ? "true" : "false");
         t += buf;
 
         // the ship's OWN initial orders ($AI Goals sexps are CONSUMED at

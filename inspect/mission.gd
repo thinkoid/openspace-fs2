@@ -4,11 +4,14 @@
 # spawned as real Ships, the player in the player-start ship under
 # FlightModel, the mission's events running in SexpVM (retail's evaluator)
 # with this scene as its world -- training messages and directives render,
-# T/H targeting feeds the `targeted` predicate and the target monitor.
-# Training-1 puts you in Alpha 1's Myrmidon with the Instructor off your
-# port bow. Still ahead: weapons (is-destroyed-delay), the waypoint-AI
-# sliver (are-waypoints-done-delay), the full game HUD. Ships hold
-# station; every ship the mission knows is present (FRED's view).
+# T/H targeting feeds the `targeted` predicate and the target monitor,
+# LCtrl fires the gun (Weapons: bolts, hulls, the destroyed registry that
+# answers is-destroyed-delay and hits-left). Training-1 puts you in Alpha
+# 1's Myrmidon with the Instructor off your port bow;
+# tests/weapons-range.fs2 is the live-fire proving ground. Still ahead:
+# the waypoint-AI sliver (are-waypoints-done-delay), the full game HUD.
+# Ships hold station; every ship the mission knows is present (FRED's
+# view).
 #
 #     godot --path inspect -- mission /abs/path/to/<mission>.tres
 #
@@ -22,6 +25,7 @@ const ShipClass := preload("res://ship.gd")
 const FlightClass := preload("res://flight_model.gd")
 const VMClass := preload("res://sexp_vm.gd")
 const TargetingClass := preload("res://targeting.gd")
+const WeaponsClass := preload("res://weapons.gd")
 
 var mission: Resource
 var player_ship: Node3D
@@ -39,6 +43,19 @@ var target_marker: Label
 var ship_label := ""
 
 var targeting                     # TargetingClass instance
+
+# ---- weapons: the gun, its bolts, the hull ledger ----
+var weapons                       # WeaponsClass instance
+var ship_nodes := {}              # name -> placed Ship node (live only)
+var bolt_nodes := []              # visuals pooled to weapons.projectiles
+var bolt_mesh: Mesh
+
+# the player's gun. Loadout ($Primary Banks) extraction is a refinement;
+# until then the trainer's Subach, its ballistics from ship_params.tres
+# (weapons.tbl through retail's weapon_init), these numbers the fallback
+const PLAYER_GUN := "Subach HL-7"
+const GUN_FALLBACK := {"velocity": 450.0, "damage": 15.0,
+                       "lifetime": 2.0, "fire_wait": 0.2}
 
 # ---- the events engine and its world ----
 var vm                            # VMClass instance
@@ -70,9 +87,9 @@ const STUB_ACTIONS := ["add-goal", "protect-ship", "unprotect-ship",
     "training-context", "set-training-context-fly-path"]
 
 # predicates whose slices haven't landed: eval false, logged once
-const STUB_PREDICATES := ["is-destroyed-delay", "hits-left",
-    "are-waypoints-done-delay", "special-check", "percent-ships-destroyed",
-    "is-subsystem-destroyed-delay", "waypoints-done-delay"]
+const STUB_PREDICATES := ["are-waypoints-done-delay", "special-check",
+    "percent-ships-destroyed", "is-subsystem-destroyed-delay",
+    "waypoints-done-delay"]
 
 var view_chase := true
 var eye_parent: Node3D = null
@@ -117,6 +134,7 @@ func _ready() -> void:
         add_child(s)
         s.position = g_pos(e["pos"])
         s.basis = g_basis(e["rvec"], e["uvec"], e["fvec"])
+        ship_nodes[e["name"]] = s
         placed += 1
 
         if e["player_start"]:
@@ -165,6 +183,25 @@ func _ready() -> void:
     targeting = TargetingClass.new()
     targeting.setup(mission.ships, player_entry["name"])
 
+    # the gun and the hull ledger: POF bounding sphere from the loaded
+    # model, $Hitpoints from ship_params; a ship without its GLB never
+    # registers -- hits-left answers NAN for it, retail's not-arrived case
+    weapons = WeaponsClass.new()
+    var gun: Dictionary = GUN_FALLBACK
+    if sp and sp.weapons.has(PLAYER_GUN):
+        gun = sp.weapons[PLAYER_GUN]
+    weapons.setup(gun)
+    for name in ship_nodes:
+        if name == player_entry["name"]:
+            continue
+        var e: Dictionary = ship_entries[name]
+        var hull := 100.0
+        if sp and sp.ships.has(e["pof"]):
+            hull = sp.ships[e["pof"]]["hull"]
+        weapons.add_ship(name, ship_nodes[name].data.radius, hull,
+                         bool(e.get("invulnerable", false)))
+    _setup_bolt_mesh()
+
     print("mission: \"%s\" -- %d/%d ships placed, player %s, %d events"
         % [mission.mission_name, placed, mission.ships.size(),
            player_entry["name"], vm.events.size()])
@@ -200,7 +237,22 @@ func _physics_process(delta: float) -> void:
         else:
             tc_speed_set_ms = -1
 
+    # the trigger: LCtrl held fires at the gun's cadence, bolts from just
+    # past the nose so the shooter's own sphere never eats them
+    if Input.is_key_pressed(KEY_CTRL):
+        var muzzle: Vector3 = fm.pos \
+            + fm.fvec * (player_ship.data.radius + 2.0)
+        weapons.try_fire(vm.ms, muzzle, fm.fvec, fm.vel)
+
+    var positions := {}
+    for name in ship_nodes:
+        positions[name] = ship_entries[name]["pos"]
+    for h in weapons.step(delta, vm.ms, vm.mt_fix, positions):
+        if h["killed"]:
+            _kill_ship(h["name"])
+
     vm.frame(delta)
+    _update_bolts()
     _update_messages()
     _update_directives()
     _update_target_box()
@@ -273,6 +325,33 @@ func _update_camera(delta: float) -> void:
     cam.look_at(player_ship.position
         + player_ship.basis * Vector3(0, 0, -r * 4.0), player_ship.basis.y)
 
+# bolt visuals: one shared elongated unshaded mesh, a node pool sized to
+# weapons.projectiles each frame -- the sim owns the bolts, these mirror
+func _setup_bolt_mesh() -> void:
+    var box := BoxMesh.new()
+    box.size = Vector3(0.4, 0.4, 12.0)
+    var mat := StandardMaterial3D.new()
+    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    mat.albedo_color = Color(1.0, 0.35, 0.25)
+    box.material = mat
+    bolt_mesh = box
+
+func _update_bolts() -> void:
+    while bolt_nodes.size() < weapons.projectiles.size():
+        var b := MeshInstance3D.new()
+        b.mesh = bolt_mesh
+        add_child(b)
+        bolt_nodes.append(b)
+    while bolt_nodes.size() > weapons.projectiles.size():
+        bolt_nodes.pop_back().queue_free()
+    for i in bolt_nodes.size():
+        var p: Dictionary = weapons.projectiles[i]
+        var b: MeshInstance3D = bolt_nodes[i]
+        b.position = g_pos(p["pos"])
+        var dir := g_pos(p["vel"]).normalized()
+        var up := Vector3.UP if absf(dir.y) < 0.99 else Vector3.BACK
+        b.basis = Basis.looking_at(dir, up)
+
 func _setup_lights() -> void:
     var key := DirectionalLight3D.new()
     key.rotation_degrees = Vector3(-35.0, 40.0, 0.0)
@@ -335,7 +414,7 @@ func _setup_hud() -> void:
     help.grow_vertical = Control.GROW_DIRECTION_BEGIN
     help.offset_left = 16
     help.offset_bottom = -12
-    help.text = "arrows fly, Q/E roll, A/Z throttle, 0 cut, T/H target, M match, V view, R reset, F1 hud, Esc quit"
+    help.text = "arrows fly, Q/E roll, A/Z throttle, 0 cut, T/H target, M match, LCtrl fire, V view, R reset, F1 hud, Esc quit"
     hud.add_child(help)
 
     # the target monitor's data, lower-left (retail's corner)
@@ -386,8 +465,20 @@ func _setup_hud() -> void:
 func _pos_of(pname: String) -> Vector3:
     if pname == player_entry["name"]:
         return fm.pos
+    if weapons.destroyed.has(pname):   # gone: distance goes NAN, retail's
+        return Vector3.INF             # failed ship_name_lookup
     var e: Dictionary = ship_entries.get(pname, {})
     return e["pos"] if e.has("pos") else Vector3.INF
+
+# a kill: the ship leaves the scene, the target cycle, and the world's
+# answers -- the destroyed registry (stamped in weapons.step) is what
+# is-destroyed-delay reads from here on
+func _kill_ship(name: String) -> void:
+    if ship_nodes.has(name):
+        ship_nodes[name].queue_free()
+        ship_nodes.erase(name)
+    targeting.remove(name)
+    print("destroyed: ", name)
 
 func sexp_op(op: String, n, v) -> int:
     match op:
@@ -461,6 +552,19 @@ func sexp_op(op: String, n, v) -> int:
             tc_speed_set_ms = -1
             return 1
 
+        "is-destroyed-delay":       # sexp.cc:3314 via the destroyed
+            # registry (wing names are the wings refinement: an unknown
+            # name is simply never destroyed)
+            var names := []
+            var m = n["rest"]
+            while m != null:
+                names.append(v.ctext(m))
+                m = m["rest"]
+            return weapons.is_destroyed_delay(names, v.num(n), v.mt_fix)
+
+        "hits-left":                # sexp.cc:3835
+            return weapons.hits_left(v.ctext(n))
+
         "has-arrived-delay":        # every ship stands at t=0 (Fred's view;
             # arrival cues are the wings refinement) -- true after the delay
             return v.KNOWN_TRUE if v.f2i(v.mt_fix) >= v.num(n) else 0
@@ -502,8 +606,8 @@ func _update_messages() -> void:
     msg_label.text = "\n\n".join(live)
 
 # the target monitor's data half (retail's is lower-left bitmap art):
-# name, class, range, speed, hull. Inert ships: speed 0, hull 100% until
-# the weapons slice. The marker brackets the target in the 3D view.
+# name, class, range, speed, hull -- hull is live from the weapons ledger.
+# Inert ships: speed 0. The marker brackets the target in the 3D view.
 func _update_target_box() -> void:
     if targeting.target == "":
         target_box.text = ""
@@ -511,8 +615,9 @@ func _update_target_box() -> void:
         return
     var e: Dictionary = ship_entries[targeting.target]
     var dist := int((_pos_of(targeting.target) - fm.pos).length())
+    var hull: int = weapons.hits_left(targeting.target)
     target_box.text = "%s\n%s\nrange %5d   speed %3d   hull %3d%%" \
-        % [e["name"], e["ship_class"], dist, 0, 100]
+        % [e["name"], e["ship_class"], dist, 0, maxi(hull, 0)]
 
     var gpos := g_pos(e["pos"])
     if cam.is_position_behind(gpos):

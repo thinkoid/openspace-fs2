@@ -172,6 +172,16 @@ test('targeting-check', find_program('targeting_check.sh'),
     ],
     timeout: 60)
 
+# The weapons gate: fire cadence, swept segment-sphere collision, the
+# hull ledger, and the is-destroyed-delay / hits-left log queries of
+# inspect/weapons.gd against retail's contract (sexp.cc:3314/3835).
+test('weapons-check', find_program('weapons_check.sh'),
+    args: [
+        meson.current_source_dir() / 'check_weapons.gd',
+        meson.project_source_root(),
+    ],
+    timeout: 60)
+
 # The game-side consumption gate: every model assembled as a Ship
 # (inspect/ship.gd) in one headless engine boot; its replay of retail's
 # load-time movement reinterpretation is diffed per submodel against

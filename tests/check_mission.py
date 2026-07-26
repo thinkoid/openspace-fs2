@@ -48,10 +48,11 @@ def fs2_objects(path):
             num, re.search(r'\$Orientation:\s*([^$]+)', block).group(1))[:9]]
         flags = re.search(r'\+Flags:\s*\(([^)]*)\)', block)
         player = flags is not None and 'player-start' in flags.group(1)
+        invuln = flags is not None and 'invulnerable' in flags.group(1)
         out[name] = {
             'class': cls, 'pos': loc,
             'rvec': ori[0:3], 'uvec': ori[3:6], 'fvec': ori[6:9],
-            'player': player,
+            'player': player, 'invulnerable': invuln,
         }
     return out
 
@@ -100,6 +101,10 @@ def main():
         if (t['player_start'] == 'true') != e['player']:
             print(f'  FAIL {name}: player_start {t["player_start"]} '
                   f'vs flags {e["player"]}')
+            ok = False
+        if (t['invulnerable'] == 'true') != e['invulnerable']:
+            print(f'  FAIL {name}: invulnerable {t["invulnerable"]} '
+                  f'vs flags {e["invulnerable"]}')
             ok = False
 
     for name in tres:

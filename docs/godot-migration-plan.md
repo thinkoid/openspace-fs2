@@ -532,14 +532,54 @@ against independent tbl reads, bitten. Subach HL-7: 450 m/s, 15 damage,
 collision, hull damage, is-destroyed-delay, the synthetic range
 mission) consumes this next.
 
-Still ahead on the training-mission road: weapons runtime
-(is-destroyed-delay, hits-left; wants the synthetic
-destroyable-targets mission), the
-waypoint-AI sliver (are-waypoints-done-delay), and the game HUD (radar,
-directives gauge proper) — at which point Training-1 is not just a
-place but a lesson. The evaluator itself still wants a differential
-gate (a retail event-trace dump against the VM's replay,
-physics_dump-style) once the world predicates firm up.
+**Facts established by the weapons runtime half:**
+
+- `inspect/weapons.gd` owns the mechanism: LCtrl holds-to-fire at the
+  gun's `fire_wait` cadence, bolts inherit the shooter's velocity and
+  fly ballistically for `lifetime` seconds; the scene mirrors them with
+  a pooled unshaded mesh. The player's gun is the Subach by name
+  (loadout/$Primary Banks extraction is a refinement).
+- The collision call, made deliberately: swept segment against the
+  ship's POF bounding sphere, NOT retail's model_collide BSP walk — a
+  Subach bolt crosses ~7.5 m per 60 Hz frame, so a point test would
+  tunnel; the swept test is exact against the sphere. Polygon accuracy
+  waits for a slice that needs it.
+- Kills stamp a destroyed registry with `mt_fix`, retail's mission-log
+  shape: `is-destroyed-delay` (sexp.cc:3314 — ALL names down and
+  `Missiontime - latest >= i2f(delay)` → KNOWN_TRUE) and `hits-left`
+  (sexp.cc:3835 — `int(100*hull/initial)`, NAN_FOREVER once dead, NAN
+  for a name the world never had) are REAL now; both left the stub
+  list. A dead ship leaves the scene, the target cycle, and `distance`
+  goes NAN for it (retail's failed ship_name_lookup).
+- `invulnerable` (+Flags → OF_INVULNERABLE at ship creation,
+  missionparse.cc:1275) now rides the .tres per ship: the bolt stops,
+  the hull doesn't move (shiphit.cc:1687). Without it the player could
+  shoot Training-1's Instructor dead. check_mission.py verifies the
+  flag corpus-wide.
+- `tests/weapons-range.fs2` is the proving ground: a retail-legal
+  mission (Training-1's own dialect — Myrmidon + Subach vs three GTDR
+  Amazon drones, 150 hull each) exercising hits-left, per-drone
+  directives, and the delayed range-clear. cfile opens a path
+  containing a separator directly (cfilesystem.cc:596), so mission2tres
+  converts it in place from the repo — no staging into the install; the
+  mission-check gate now sweeps it with the corpus (91/91).
+- Gate: `weapons-check`, headless — cadence, the swept-vs-tunneling
+  case (one 0.1 s step through a 10 m sphere), hull ledger, kill
+  stamping, lifetime expiry, invulnerability, and the fix-math delay
+  boundary; bitten both ways (endpoint-only collision: 14 fails;
+  `>=`→`>`: exact boundary fails). Suite 15 gates.
+- Live proof: a synthetic gunnery hook (target hostiles, aim by basis,
+  hold LCtrl via `parse_input_event`) cleared the whole range on
+  camera — hull % draining in the target box, directives going [done],
+  `goal COMPLETE: Clear the range`.
+
+Still ahead on the training-mission road: the waypoint-AI sliver
+(are-waypoints-done-delay — the Instructor MOVES in Training-1, and the
+lesson chain gates on it) and the game HUD (radar, directives gauge
+proper) — at which point Training-1 is not just a place but a lesson.
+The evaluator itself still wants a differential gate (a retail
+event-trace dump against the VM's replay, physics_dump-style) once the
+world predicates firm up.
 
 ## Where this work lives
 
