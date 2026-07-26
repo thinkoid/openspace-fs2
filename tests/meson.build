@@ -136,17 +136,20 @@ test('shiptbl-check', find_program('shiptbl_check.sh'),
     depends: [shiptbl2tres],
     timeout: 120)
 
-# The mission gate: all 41 retail missions through retail's parse_main
-# (../tools/mission2tres, Fred_running) vs an independent python read of
-# each .fs2's #Objects -- strict bijection, float32-exact.
+# The mission gate: every mission in the install (campaign + training +
+# dogfight, 90 files) through retail's parse_main (../tools/mission2tres,
+# Fred_running) vs two independent python reads of the SAME .fs2 the tool
+# parsed -- check_mission.py for the #Objects placement bijection,
+# check_events.py for events/goals/messages/waypoints/ai-goals/wings.
 test('mission-check', find_program('mission_check.sh'),
     args: [
         mission2tres.full_path(),
         meson.current_source_dir() / 'check_mission.py',
         meson.project_source_root(),
+        meson.current_source_dir() / 'check_events.py',
     ],
     depends: [mission2tres],
-    timeout: 300)
+    timeout: 600)
 
 # The flight gate: the trace from physics_dump vs flight_model.gd's replay,
 # frame by frame within float-width tolerances. Needs no game install --

@@ -30,16 +30,22 @@ def f32(x):
 
 
 def fs2_objects(path):
-    text = open(path, encoding='latin-1').read()
+    text = open(path, encoding='latin-1').read().replace('\r\n', '\n')
+    # retail cuts every line at ';' before parsing (read_file_text) -- the
+    # install's copies carry ";! Object #N" tags after ship names
+    text = '\n'.join(l.split(';', 1)[0] for l in text.split('\n'))
     text = text[text.index('#Objects'):text.index('#Wings')]
+    num = r'-?[\d.]+(?:[eE]-?\d+)?'
     out = {}
     for block in re.split(r'\n\$Name:', text)[1:]:
         name = block[:block.index('\n')].strip()
-        cls = re.search(r'\$Class:\s*([^\n;]+)', block).group(1).strip()
-        loc = [f32(v) for v in re.search(
-            r'\$Location:\s*([^\n]+)', block).group(1).split(',')]
-        ori = [f32(v) for v in re.search(
-            r'\$Orientation:\s*([^\n]+)', block).group(1).split(',')]
+        cls = re.search(r'\$Class:\s*([^\n]+)', block).group(1).strip()
+        # the 1.2-added missions (G-*, M-*, MD*, MT*) wrap $Orientation:
+        # across lines -- scan fields to the next '$', then pull the floats
+        loc = [f32(v) for v in re.findall(
+            num, re.search(r'\$Location:\s*([^$]+)', block).group(1))[:3]]
+        ori = [f32(v) for v in re.findall(
+            num, re.search(r'\$Orientation:\s*([^$]+)', block).group(1))[:9]]
         flags = re.search(r'\+Flags:\s*\(([^)]*)\)', block)
         player = flags is not None and 'player-start' in flags.group(1)
         out[name] = {
@@ -52,6 +58,10 @@ def fs2_objects(path):
 
 def tres_ships(path):
     text = open(path).read()
+    # only the ships array -- the .tres carries wings/events/goals/messages/
+    # waypoints arrays after it (this gate checks placement; check_events.py
+    # owns the rest). Each ship entry ends at its ai_goals bracket.
+    text = text[text.index('ships = ['):text.index('\nwings = [')]
     out = {}
     for block in re.split(r'[{,] \{|^ships = \[\{', text, flags=re.M)[1:]:
         entry = {}

@@ -458,10 +458,59 @@ Missions (`tools/mission2tres`, `meson test mission-check`,
   knows is present (FRED's view); arrival timing belongs to the events
   slice.
 
-Still ahead on the training-mission road: the events/directives slice
-(arrival cues, the SEXP evaluator, Sensky's messages) and the game HUD
-(radar, target box, directives list) — at which point Training-1 is not
-just a place but a lesson.
+**Facts established by the events/SEXP slice (the extraction + evaluator
+core):**
+
+- The roadmap reordered itself when Training-1's own operator census was
+  taken (`is-destroyed-delay` ×9, `targeted` ×3, `key-pressed` naming only
+  `t`/`M`/`Tab`): events core → targeting → weapons → waypoint-AI sliver →
+  game HUD, each slice feeding the next. Testing targeting/weapons can use
+  a synthetic mission with inert objects.
+- `mission2tres` now emits the evaluator's entire diet: events (formulas
+  as canonical one-line sexp text from its own `Sexp_nodes` walker), goals,
+  messages, waypoint lists, per-ship AI goals, and wings. Traps that shaped
+  it: ship `$AI Goals` sexps are CONSUMED at creation (emit retail's
+  decoded `Ai_info` form; `ai_clear_ship_goals` resets only `ai_mode`, so
+  stale `ship_name`/`submode` must be masked by mode); wing goals never
+  reach members under `Fred_running` (the copy runs at wing creation,
+  which FRED skips — they ride the `wings` array with the kept
+  arrival/departure cue sexps).
+- The oracle corpus is the INSTALL's `data/missions` (90 files) — the
+  loose `missions/` checkout genuinely differs (1.2-patched text; the
+  "double spaces" that looked like tstrings.tbl lookups were a different
+  source file — in the default language `lcl_ext_localize` never opens
+  the table, localize.cc:484). Retail cuts every line at `;` before
+  parsing and folds ß→ss; the 1.2-added missions are CRLF with multi-line
+  `$Orientation:`; the whole corpus holds exactly ONE high byte (cp1252
+  0x92 in SM2-06, transcoded to UTF-8 by `esc()`). `check_events.py`
+  replays the ai-goal decode (mode bits, wing-name promotion to `_WING`
+  modes, priority bash ≥90→89, dock/undock/disable/disarm submodes).
+  Gate: mission-check now runs both checkers over all 90, 8 bite axes
+  proven.
+- `inspect/sexp_vm.gd` is retail's evaluator ported function-for-function
+  (eval_sexp's KNOWN_TRUE/FALSE caching on cons cells, sexp_and/or/not
+  propagation, eval_when side-effect actions, mission_process_event's
+  chain/repeat/interval and the OVERLOADED event timestamp — ms deadline
+  while repeating, `(int)Missiontime` fix once done, which
+  is-event-true-delay does fix math on; bug-compat). The ms clock starts
+  at a nonzero epoch: `timestamp_elapsed(0)` is never-elapsed and a zero
+  clock wedges `Mission_goal_timestamp`. Comparisons/arithmetic live in
+  the VM; world predicates (key-pressed, distance, facing, training-speed
+  context, training-msg) in mission.gd; unimplemented ops log ONCE and
+  default false (predicates) or true (actions) — the mission logs its own
+  TODO list: `are-waypoints-done-delay` (AI sliver), `is-destroyed-delay`
+  (weapons), `targeted` (targeting), `special-check` (training watchdog).
+- Sensky SPEAKS: training messages render top-center (wrapped, Iosevka),
+  directives with `$key$` tokens substituted through the BINDINGS table
+  (T/M/Tab; warp-out remapped Shift+Super+J — the WM eats Alt+J), so the
+  Instructor names the player's real keys, remaps included.
+
+Still ahead on the training-mission road: targeting, weapons, the
+waypoint-AI sliver, and the game HUD (radar, target box, directives
+gauge proper) — at which point Training-1 is not just a place but a
+lesson. The evaluator itself still wants a differential gate (a retail
+event-trace dump against the VM's replay, physics_dump-style) once the
+world predicates firm up.
 
 ## Where this work lives
 

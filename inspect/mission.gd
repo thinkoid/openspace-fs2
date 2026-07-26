@@ -18,6 +18,7 @@ extends Node3D
 
 const ShipClass := preload("res://ship.gd")
 const FlightClass := preload("res://flight_model.gd")
+const VMClass := preload("res://sexp_vm.gd")
 
 var mission: Resource
 var player_ship: Node3D
@@ -28,7 +29,43 @@ var cam: Camera3D
 var hud: CanvasLayer
 var hud_left: Label
 var hud_right: Label
+var msg_label: Label
+var directives: Label
 var ship_label := ""
+
+# ---- the events engine and its world ----
+var vm                            # VMClass instance
+var ship_entries := {}            # name -> mission ships entry (FS2 frame)
+var key_used := {}                # key token -> vm.ms of last press
+var msg_queue := []               # {at, until, text}
+var messages := {}                # name -> text
+var tc_speed := false             # training context: speed watch
+var tc_speed_min := 0
+var tc_speed_set_ms := -1
+
+# the bindings table: retail key tokens -> Godot keys and display names.
+# Mission logic stays retail-faithful ($t$, key-pressed "Tab"); the
+# physical keys are ours -- warp-out is Shift+Super+J by decree (the WM
+# eats Alt+J).
+const BINDINGS := {
+    "t": [KEY_T, "T"], "m": [KEY_M, "M"], "tab": [KEY_TAB, "Tab"],
+    "a": [KEY_A, "A"], "z": [KEY_Z, "Z"], "h": [KEY_H, "H"],
+    "b": [KEY_B, "B"], "backspace": [KEY_BACKSPACE, "Backspace"],
+    "left ctrl": [KEY_CTRL, "LCtrl"], "\\\\": [KEY_BACKSLASH, "\\"],
+    "alt-j": [KEY_J, "Shift+Super+J"],
+}
+
+# actions whose slices haven't landed yet: eval true (retail returns 1
+# from side-effect ops), logged once so the TODO list writes itself
+const STUB_ACTIONS := ["add-goal", "protect-ship", "unprotect-ship",
+    "ship-guardian", "ship-no-guardian", "flash-hud-gauge",
+    "cap-waypoint-speed", "key-reset-multiple", "hud-disable",
+    "training-context", "set-training-context-fly-path"]
+
+# predicates whose slices haven't landed: eval false, logged once
+const STUB_PREDICATES := ["targeted", "is-destroyed-delay", "hits-left",
+    "are-waypoints-done-delay", "special-check", "percent-ships-destroyed",
+    "is-subsystem-destroyed-delay", "waypoints-done-delay"]
 
 var view_chase := true
 var eye_parent: Node3D = null
@@ -110,9 +147,17 @@ func _ready() -> void:
     _setup_starfield()
     _setup_hud()
 
-    print("mission: \"%s\" -- %d/%d ships placed, player %s"
+    for e in mission.ships:
+        ship_entries[e["name"]] = e
+    for m in mission.messages:
+        messages[m["name"]] = m["text"]
+    vm = VMClass.new()
+    vm.world = self
+    vm.load_mission(mission)
+
+    print("mission: \"%s\" -- %d/%d ships placed, player %s, %d events"
         % [mission.mission_name, placed, mission.ships.size(),
-           player_entry["name"]])
+           player_entry["name"], vm.events.size()])
 
 func _fatal(msg: String) -> void:
     printerr("mission: " + msg)
@@ -136,6 +181,19 @@ func _physics_process(delta: float) -> void:
     for r in player_ship.rotators():
         r["node"].rotate_object_local(r["axis"], 0.5 * delta)
 
+    # training speed context: armed by set-training-context-speed, the
+    # `speed` predicate reads how long the player has held the band
+    if tc_speed:
+        if fm.fspeed >= tc_speed_min:
+            if tc_speed_set_ms < 0:
+                tc_speed_set_ms = vm.ms
+        else:
+            tc_speed_set_ms = -1
+
+    vm.frame(delta)
+    _update_messages()
+    _update_directives()
+
     _update_camera(delta)
     hud_right.text = "speed %6.1f\nengine %4d%%" % [fm.fspeed, int(throttle * 100.0)]
 
@@ -146,6 +204,11 @@ static func _axis(pos: Key, neg: Key) -> float:
 func _unhandled_input(event: InputEvent) -> void:
     if not (event is InputEventKey and event.pressed):
         return
+    # retail Control_config[].used: the ms clock at last press, read by
+    # key-pressed formulas through the bindings table
+    for token in BINDINGS:
+        if event.keycode == BINDINGS[token][0]:
+            key_used[token] = vm.ms if vm else 0
     match event.keycode:
         KEY_A:
             throttle = clampf(throttle + 0.1, -1.0, 1.0)
@@ -257,13 +320,165 @@ func _setup_hud() -> void:
     help.text = "arrows fly, Q/E roll, A/Z throttle, 0 cut, V view, R reset, Esc quit"
     hud.add_child(help)
 
+    # Sensky talks here: training messages, top center, wrapped inside the
+    # middle 70% so they never collide with the corner readouts
+    msg_label = _hud_label()
+    msg_label.anchor_left = 0.15
+    msg_label.anchor_right = 0.85
+    msg_label.offset_top = 160
+    msg_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    msg_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    msg_label.add_theme_color_override("font_color",
+                                       Color(0.65, 0.9, 1.0))
+    hud.add_child(msg_label)
+
+    # the directives list, right edge at a third down -- the lesson's
+    # current task (retail's directives gauge, rebuilt lean)
+    directives = _hud_label()
+    directives.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+    directives.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+    directives.grow_vertical = Control.GROW_DIRECTION_BOTH
+    directives.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+    directives.offset_right = -16
+    directives.add_theme_color_override("font_color",
+                                        Color(0.6, 1.0, 0.6))
+    hud.add_child(directives)
+
+# ---- the world interface: predicates and actions for SexpVM ----
+# retail's own semantics where the sim can answer (sexp.cc functions named
+# per case); honest logged stubs where a slice hasn't landed yet.
+
+func _pos_of(pname: String) -> Vector3:
+    if pname == player_entry["name"]:
+        return fm.pos
+    var e: Dictionary = ship_entries.get(pname, {})
+    return e["pos"] if e.has("pos") else Vector3.INF
+
+func sexp_op(op: String, n, v) -> int:
+    match op:
+        "key-pressed":              # sexp.cc:6494
+            var used: int = key_used.get(v.ctext(n).to_lower(), 0)
+            if used == 0:
+                return 0
+            if n["rest"] == null:
+                return 1
+            return 1 if v.timestamp_has_time_elapsed(
+                used, v.num(n["rest"]) * 1000) else 0
+
+        "key-reset":                # sexp.cc:6516
+            key_used.erase(v.ctext(n).to_lower())
+            return 1
+
+        "training-msg":             # sexp_send_training_message, sexp.cc:6731
+            var delay := 0
+            var length := -1
+            if n["rest"] != null and n["rest"]["rest"] != null:
+                delay = v.num(n["rest"]["rest"]) * 1000
+                if n["rest"]["rest"]["rest"] != null:
+                    length = v.num(n["rest"]["rest"]["rest"])
+            var mname: String = v.ctext(n)
+            if not (v.events[v.event_index]["repeat_count"] > 1
+                    or n["rest"] == null):
+                mname = v.ctext(n["rest"])
+            msg_queue.append({
+                "at": v.timestamp(delay),
+                "until": v.timestamp(delay + (length if length > 0 else 8)
+                                     * 1000),
+                "text": _subst(messages.get(mname, mname)),
+            })
+            return 1
+
+        "distance":                 # sexp.cc:3994, center-to-center meters
+            var p1 := _pos_of(v.ctext(n))
+            var p2 := _pos_of(v.ctext(n["rest"]))
+            if p1 == Vector3.INF or p2 == Vector3.INF:
+                return v.NAN_
+            return int((p1 - p2).length())
+
+        "facing":                   # sexp.cc:6612
+            var target := _pos_of(v.ctext(n))
+            if target == Vector3.INF:
+                return v.KNOWN_FALSE
+            var dot: float = fm.fvec.normalized().dot(
+                (target - fm.pos).normalized())
+            return 1 if dot >= cos(deg_to_rad(v.num(n["rest"]))) else 0
+
+        "speed":                    # sexp.cc:6565, training context
+            if tc_speed and tc_speed_set_ms >= 0 \
+                    and v.timestamp_has_time_elapsed(
+                        tc_speed_set_ms, v.num(n) * 1000):
+                return v.KNOWN_TRUE
+            return 0
+
+        "set-training-context-speed":
+            tc_speed = true
+            tc_speed_min = v.num(n)
+            tc_speed_set_ms = -1
+            return 1
+
+        "has-arrived-delay":        # every ship stands at t=0 (Fred's view;
+            # arrival cues are the wings refinement) -- true after the delay
+            return v.KNOWN_TRUE if v.f2i(v.mt_fix) >= v.num(n) else 0
+
+        _:
+            if op in STUB_ACTIONS:
+                v.log_stub(op, "action stubbed true (its slice hasn't landed)")
+                return 1
+            if op in STUB_PREDICATES:
+                v.log_stub(op, "predicate awaiting its slice, false")
+                return 0
+            v.log_unknown(op)
+            return 0
+
+func directive_satisfied(e) -> void:
+    print("directive satisfied: ", e["objective_text"])
+
+func goal_changed(g) -> void:
+    print("goal %s: %s" % ["COMPLETE" if g["satisfied"] == 1 else "FAILED",
+                           g["name"]])
+
+# $key$ tokens substitute through the bindings table -- Sensky names OUR
+# keys, remaps included
+func _subst(text: String) -> String:
+    var re := RegEx.create_from_string("\\$([^$]+)\\$")
+    var out := text
+    for m in re.search_all(text):
+        var token := m.get_string(1).to_lower().trim_prefix("press ")
+        var disp: String = BINDINGS[token][1] if BINDINGS.has(token) \
+            else m.get_string(1)
+        out = out.replace(m.get_string(0), disp)
+    return out
+
+func _update_messages() -> void:
+    var live := []
+    for m in msg_queue:
+        if m["at"] <= vm.ms and vm.ms < m["until"]:
+            live.append(m["text"])
+    msg_label.text = "\n\n".join(live)
+
+func _update_directives() -> void:
+    var lines := []
+    for e in vm.events:
+        if e["objective_text"] == "":
+            continue
+        if e["satisfied_time"] != 0:
+            # linger green for a few seconds after completion
+            if vm.mt_fix - e["satisfied_time"] < 5 * 65536:
+                lines.append("[done] " + _subst(e["objective_text"]))
+        elif e["current"] and e["formula"] != null:
+            var line: String = _subst(e["objective_text"])
+            if e["objective_key_text"] != "":
+                line += "  (%s)" % _subst(e["objective_key_text"])
+            lines.append(line)
+    directives.text = "\n".join(lines)
+
 # legible on a big display: large type, shadowed against bright hulls
 static func _hud_label() -> Label:
     var font := SystemFont.new()
     font.font_names = ["Iosevka"]
     var l := Label.new()
     l.add_theme_font_override("font", font)
-    l.add_theme_font_size_override("font_size", 48)
+    l.add_theme_font_size_override("font_size", 36)
     l.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
     l.add_theme_constant_override("shadow_offset_x", 2)
     l.add_theme_constant_override("shadow_offset_y", 2)
