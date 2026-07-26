@@ -588,8 +588,12 @@ mission) consumes this next.
   ship's table yaw rate toward the waypoint at table cruise speed
   (max_vel.z) instead of retail's full rotational-physics stack; same
   waypoints, same order, believable motion. On completion the ship
-  cruises straight (retail resets to default behavior; the next
-  add-goal lands within the 500 ms event cadence).
+  PARKS — the original cut had it cruise straight on the assumption
+  the next add-goal lands within the event cadence, but Training-1
+  gates the Instructor's next path on the PLAYER's lesson progress
+  (minutes, not milliseconds) and he left the training area at
+  75 m/s. Field-reported, fixed, and pinned in the gate: a finished
+  ship stays put.
 - `add-goal` is REAL for the sliver's verbs: ai-waypoints-once /
   ai-waypoints start a path, ai-stay-still / ai-play-dead park,
   ai-guard degrades to stay-still (logged once), the rest no-op
@@ -640,11 +644,43 @@ mission) consumes this next.
   `Objects[i].hull_strength` (already percent-applied by retail)
   when a mission needs it.
 
+**Facts established by the sound slice:**
+
+- The extraction chain stays authoritative: shiptbl2tres runs
+  gamesnd_parse_soundstbl (pure parsing, no device) before weapon_init
+  — retail's own order — so weapon sound INDICES resolve to filenames
+  through retail's own Snds[]: per-weapon `launch_snd`/`impact_snd`
+  (−1 and the "none.wav" placeholder both emit ""), plus a `sounds`
+  dict with the fighter explosion pair (SND_SHIP_EXPLODE_1/2 = boom_3
+  / boom_1; retail picks by object-index parity, ship.cc:2804 — this
+  world alternates per kill). shiptbl-check verifies all of it against
+  independent python reads of weapons.tbl + sounds.tbl (game-sounds
+  section only — the interface section reuses the same indices);
+  bitten.
+- `inspect/sound.gd` (SoundBank) plays the install's own wavs
+  straight: message voice on a dedicated channel (a new line cuts the
+  old), effects round-robin over a small pool, names resolved
+  case-insensitively over the voice trees + sounds dirs (cfile's
+  Windows-ism again — table and mission names disagree with on-disk
+  case throughout). Corpus census: the entire voice + effects set is
+  plain 8/16-bit Microsoft PCM, which AudioStreamWAV.load_from_file
+  eats directly — no transcoding, no staging. Unresolvable names log
+  once and stay silent.
+- The mission scene takes an optional game-root argument (or
+  FS2_GAME_ROOT) for the wav tree; without it the mission runs silent
+  with one log line. Voice fires when a training message's text
+  appears; the gun plays launch per shot, impact per hit, boom per
+  kill.
+- Gate: `sound-check` — index coverage, case-insensitive loads of the
+  wavs the missions actually name, polite silence modes; bitten
+  (dropping the case-fold: 6 fails). Suite 18 gates.
+
 The training-mission road is BUILT: layout, flight, events, targeting,
-weapons, waypoint AI, and the HUD all live — Training-1 runs as a
-lesson (stub log: special-check + ship-guardian only). What remains is
-polish and the evaluator differential gate (a retail event-trace dump
-against the VM's replay, physics_dump-style) once wanted.
+weapons, waypoint AI, the HUD, and sound all live — Training-1 runs as
+a lesson with Sensky's voice (stub log: special-check + ship-guardian
+only). What remains is polish and the evaluator differential gate (a
+retail event-trace dump against the VM's replay, physics_dump-style)
+once wanted.
 
 ## Where this work lives
 

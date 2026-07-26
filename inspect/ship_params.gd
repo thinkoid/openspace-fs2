@@ -25,5 +25,11 @@ extends Resource
 @export var ships: Dictionary = {}
 
 # weapon ballistics keyed by weapons.tbl $Name: velocity (m/s), damage
-# (hull points per hit), lifetime (s), fire_wait (s between shots)
+# (hull points per hit), lifetime (s), fire_wait (s between shots),
+# launch_snd/impact_snd (wav names via retail's sounds.tbl parse,
+# "" = silent)
 @export var weapons: Dictionary = {}
+
+# non-weapon effects: ship_explode_1/2 (fighter death pair, picked by
+# parity like ship.cc:2804)
+@export var sounds: Dictionary = {}

@@ -22,6 +22,7 @@
 
 #include <globalincs/pstypes.hh>
 #include <cfile/cfile.hh>
+#include <gamesnd/gamesnd.hh>
 #include <graphics/2d.hh>
 #include <io/timer.hh>
 #include <localization/localize.hh>
@@ -69,6 +70,10 @@ main(int argc, char *argv[])
     gr_screen.gf_init_alphacolor = null_init_alphacolor;
     timer_init();
     lcl_init(LCL_ENGLISH);
+    // sounds.tbl before weapons.tbl, retail's own order: parsing only
+    // stuffs Snds[] filenames, no audio device involved -- the weapon
+    // sound INDICES resolve to names through retail's own table
+    gamesnd_parse_soundstbl();
     weapon_init();
     ship_init();
 
@@ -133,15 +138,36 @@ main(int argc, char *argv[])
     t += "weapons = {\n";
     for (int i = 0; i < Num_weapon_types; ++i) {
         const weapon_info &w = Weapon_info[i];
+        // sound indices -> filenames through Snds[] (a -1 index or
+        // retail's "none.wav" placeholder both mean silence)
+        const char *launch =
+            (w.launch_snd >= 0) ? Snds[w.launch_snd].filename : "";
+        const char *impact =
+            (w.impact_snd >= 0) ? Snds[w.impact_snd].filename : "";
+        if (!stricmp(launch, "none.wav"))
+            launch = "";
+        if (!stricmp(impact, "none.wav"))
+            impact = "";
         t += "\"" + std::string(w.name) + "\": {";
         snprintf(buf, sizeof buf,
                  "\"velocity\": %.9g, \"damage\": %.9g, "
-                 "\"lifetime\": %.9g, \"fire_wait\": %.9g}",
-                 w.max_speed, w.damage, w.lifetime, w.fire_wait);
+                 "\"lifetime\": %.9g, \"fire_wait\": %.9g, "
+                 "\"launch_snd\": \"%s\", \"impact_snd\": \"%s\"}",
+                 w.max_speed, w.damage, w.lifetime, w.fire_wait,
+                 launch, impact);
         t += buf;
         t += (i + 1 < Num_weapon_types) ? ",\n" : "\n";
     }
     t += "}\n";
+
+    // the non-weapon effects this world plays: the fighter explosion
+    // pair (ship.cc:2804 picks by object-index parity)
+    snprintf(buf, sizeof buf,
+             "sounds = {\"ship_explode_1\": \"%s\", "
+             "\"ship_explode_2\": \"%s\"}\n",
+             Snds[SND_SHIP_EXPLODE_1].filename,
+             Snds[SND_SHIP_EXPLODE_2].filename);
+    t += buf;
 
     std::FILE *o = std::fopen(argv[2], "wb");
     if (!o || std::fwrite(t.data(), 1, t.size(), o) != t.size()) {

@@ -201,6 +201,15 @@ test('radar-check', find_program('radar_check.sh'),
     ],
     timeout: 60)
 
+# The sound gate: inspect/sound.gd's case-insensitive wav resolution
+# and real AudioStreamWAV loads against the unpacked install.
+test('sound-check', find_program('sound_check.sh'),
+    args: [
+        meson.current_source_dir() / 'check_sound.gd',
+        meson.project_source_root(),
+    ],
+    timeout: 60)
+
 # The game-side consumption gate: every model assembled as a Ship
 # (inspect/ship.gd) in one headless engine boot; its replay of retail's
 # load-time movement reinterpretation is diffed per submodel against

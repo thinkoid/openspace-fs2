@@ -46,7 +46,18 @@ WEAPON_FIELDS = {
 }
 
 
-def tbl_weapons(path):
+def snd_names(path):
+    # sounds.tbl game-sounds section only: index -> wav name (the
+    # interface section reuses the same indices)
+    text = open(path, encoding='latin-1').read()
+    text = text[:text.index('#Game Sounds End')]
+    out = {}
+    for m in re.finditer(r'\$Name:\s*(\d+)\s+([^\s,]+)\s*,', text):
+        out[int(m.group(1))] = m.group(2)
+    return out
+
+
+def tbl_weapons(path, snds):
     text = open(path, encoding='latin-1').read()
     out = {}
     for block in re.split(r'\n\$Name:', text)[1:]:
@@ -56,20 +67,36 @@ def tbl_weapons(path):
             fm = re.search(r'\$' + re.escape(field) + r':\s*([^;\n]+)', block)
             if fm:
                 entry[key] = f32(fm.group(1).split()[0])
+        # sound indices resolve through sounds.tbl; -1 and the
+        # "none.wav" placeholder both mean silence
+        for field, key in (('LaunchSnd', 'launch_snd'),
+                           ('ImpactSnd', 'impact_snd')):
+            fm = re.search(r'\$' + field + r':\s*(-?\d+)', block)
+            if fm:
+                wav = snds.get(int(fm.group(1)), '')
+                entry[key] = '' if wav.lower() == 'none.wav' else wav
         out[name.lstrip('@')] = entry
     return out
 
 
 def tres_weapons(path):
     text = open(path).read()
-    text = text[text.index('weapons = {'):]
+    text = text[text.index('weapons = {'):text.index('\nsounds = {')]
     out = {}
     for m in re.finditer(r'"([^"]+)": \{([^}]*)\}', text):
         entry = {}
         for fm in re.finditer(r'"(\w+)": ([-\d.e+]+)', m.group(2)):
             entry[fm.group(1)] = f32(fm.group(2))
+        for fm in re.finditer(r'"(\w+)": "([^"]*)"', m.group(2)):
+            entry[fm.group(1)] = fm.group(2)
         out[m.group(1)] = entry
     return out
+
+
+def tres_sounds(path):
+    text = open(path).read()
+    text = text[text.index('\nsounds = {'):]
+    return dict(re.findall(r'"(\w+)": "([^"]*)"', text))
 
 
 def tbl_entries(path):
@@ -139,10 +166,12 @@ def main():
         else:
             print(f'  OK   {stem}: {len(tbl[stem])} fields agree')
 
-    # the weapons dict against weapons.tbl, sitting beside ships.tbl
+    # the weapons dict against weapons.tbl, sitting beside ships.tbl;
+    # sound indices resolve through sounds.tbl beside them both
     import os
-    wtbl = tbl_weapons(os.path.join(os.path.dirname(sys.argv[2]),
-                                    'weapons.tbl'))
+    tables = os.path.dirname(sys.argv[2])
+    snds = snd_names(os.path.join(tables, 'sounds.tbl'))
+    wtbl = tbl_weapons(os.path.join(tables, 'weapons.tbl'), snds)
     wtres = tres_weapons(sys.argv[1])
     checked = 0
     for name, got in wtres.items():
@@ -158,6 +187,16 @@ def main():
                 ok = False
         checked += 1
     print(f'  OK   {checked} weapons checked')
+
+    # the effects dict: the fighter explosion pair by retail's indices
+    want = {'ship_explode_1': snds.get(7, ''), 'ship_explode_2':
+            snds.get(49, '')}
+    got = tres_sounds(sys.argv[1])
+    if got != want:
+        print(f'  FAIL sounds: tres {got} vs tbl {want}')
+        ok = False
+    else:
+        print(f'  OK   effects dict agrees')
     sys.exit(0 if ok else 1)
 
 

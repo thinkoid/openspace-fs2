@@ -17,8 +17,12 @@
 # projection, vector art). Every ship the mission knows is present
 # (FRED's view); ships without orders hold station.
 #
-#     godot --path inspect -- mission /abs/path/to/<mission>.tres
+#     godot --path inspect -- mission /abs/path/to/<mission>.tres \
+#         [/abs/game-root]
 #
+# The game root (or FS2_GAME_ROOT) points at the unpacked install so
+# the wavs play -- message voice, gun, impacts, explosions (SoundBank);
+# without it the mission runs silent.
 # The GLBs (and ship_params.tres) are found beside the mission .tres by
 # POF stem -- convert the classes the mission uses first:
 #     build/tools/pof2glb <models>/fighter2t-05.pof <dir>/fighter2t-05.glb
@@ -32,6 +36,7 @@ const TargetingClass := preload("res://targeting.gd")
 const WeaponsClass := preload("res://weapons.gd")
 const WaypointAIClass := preload("res://waypoint_ai.gd")
 const RadarClass := preload("res://radar.gd")
+const SoundClass := preload("res://sound.gd")
 
 var mission: Resource
 var player_ship: Node3D
@@ -129,6 +134,11 @@ var mouse_grabbed := false
 var missiles_logged := false
 const MOUSE_SENS := 0.05          # full deflection at ~20 px per tick
 
+# ---- sound: the install's own wavs (voice + effects) ----
+var snd                           # SoundClass instance
+var game_sounds := {}             # ship_params sounds dict (explosions)
+var kill_count := 0               # explosion pair parity (ship.cc:2804)
+
 # FS2 world frame -> Godot: the same (x, y, -z) map as everything else
 static func g_pos(v: Vector3) -> Vector3:
     return Vector3(v.x, v.y, -v.z)
@@ -137,12 +147,28 @@ static func g_basis(r: Vector3, u: Vector3, f: Vector3) -> Basis:
     return Basis(g_pos(r), g_pos(u), -g_pos(f))
 
 func _ready() -> void:
+    # `mission <tres> [game-root]` -- the root is the unpacked install,
+    # for the wavs; FS2_GAME_ROOT works too, silence otherwise
     var args := OS.get_cmdline_user_args()
     if args.is_empty():
-        _fatal("usage: godot --path inspect -- mission /abs/mission.tres")
+        _fatal("usage: godot --path inspect -- mission /abs/mission.tres"
+               + " [game-root]")
         return
     var tres_path: String = args[args.size() - 1]
+    var game_root: String = OS.get_environment("FS2_GAME_ROOT")
+    for a in args:
+        if String(a).ends_with(".tres"):
+            tres_path = a
+        elif DirAccess.dir_exists_absolute(a):
+            game_root = a
     var dir := tres_path.get_base_dir()
+
+    snd = SoundClass.new()
+    add_child(snd)
+    if game_root != "":
+        snd.setup(game_root)
+    else:
+        print("mission: no game root given -- sound off")
 
     mission = ResourceLoader.load(tres_path)
     if mission == null or mission.get_script() != preload("res://mission_data.gd"):
@@ -208,7 +234,9 @@ func _ready() -> void:
     for e in mission.ships:
         ship_entries[e["name"]] = e
     for m in mission.messages:
-        messages[m["name"]] = m["text"]
+        messages[m["name"]] = m
+    if sp:
+        game_sounds = sp.sounds
     vm = VMClass.new()
     vm.world = self
     vm.load_mission(mission)
@@ -308,7 +336,8 @@ func _physics_process(delta: float) -> void:
             or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
         var muzzle: Vector3 = fm.pos \
             + fm.fvec * (player_ship.data.radius + 2.0)
-        weapons.try_fire(vm.ms, muzzle, fm.fvec, fm.vel)
+        if weapons.try_fire(vm.ms, muzzle, fm.fvec, fm.vel):
+            snd.play_effect(weapons.gun.get("launch_snd", ""))
 
     # the movers move first, so this frame's collisions and SEXP
     # answers see fresh positions
@@ -322,6 +351,14 @@ func _physics_process(delta: float) -> void:
     for h in weapons.step(delta, vm.ms, vm.mt_fix, positions):
         if h["killed"]:
             _kill_ship(h["name"])
+            # the fighter explosion pair, alternated (retail picks by
+            # object-index parity, ship.cc:2804)
+            kill_count += 1
+            snd.play_effect(game_sounds.get(
+                "ship_explode_1" if kill_count & 1 else "ship_explode_2",
+                ""))
+        else:
+            snd.play_effect(weapons.gun.get("impact_snd", ""))
 
     vm.frame(delta)
     _update_bolts()
@@ -683,11 +720,14 @@ func sexp_op(op: String, n, v) -> int:
             if not (v.events[v.event_index]["repeat_count"] > 1
                     or n["rest"] == null):
                 mname = v.ctext(n["rest"])
+            var msg: Dictionary = messages.get(mname, {})
             msg_queue.append({
                 "at": v.timestamp(delay),
                 "until": v.timestamp(delay + (length if length > 0 else 8)
                                      * 1000),
-                "text": _subst(messages.get(mname, mname)),
+                "text": _subst(msg.get("text", mname)),
+                "wave": msg.get("wave", ""),
+                "voiced": false,
             })
             return 1
 
@@ -784,6 +824,9 @@ func _update_messages() -> void:
     for m in msg_queue:
         if m["at"] <= vm.ms and vm.ms < m["until"]:
             live.append(m["text"])
+            if not m["voiced"]:     # the voice line fires with the text
+                m["voiced"] = true
+                snd.play_voice(m["wave"])
     msg_label.text = "\n\n".join(live)
 
 # the target monitor's data half (retail's is lower-left bitmap art):
