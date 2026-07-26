@@ -79,6 +79,24 @@ func _init() -> void:
             if t["base"] == null or t["arm"] == null:
                 fail(stem + ": turret base/arm did not resolve")
 
+        # thruster submodels (is_thruster, pofparse.cc:688) are collected
+        # and DARK until the engines engage (modelinterp.cc:1192 skips
+        # them without MR_SHOW_THRUSTERS); set_thrusters flips the lot
+        var expected_thrusters := 0
+        for i in expected.size():
+            if str(ship.node_names[i]).find("thruster") != -1:
+                expected_thrusters += 1
+        if ship.thruster_nodes.size() != expected_thrusters:
+            fail("%s: %d thruster nodes collected, %d named"
+                % [stem, ship.thruster_nodes.size(), expected_thrusters])
+        for n in ship.thruster_nodes:
+            if n.visible:
+                fail(stem + ": thruster visible before engines engage")
+        ship.set_thrusters(true)
+        for n in ship.thruster_nodes:
+            if not n.visible:
+                fail(stem + ": set_thrusters(true) left a thruster dark")
+
         models += 1
         ship.free()
 

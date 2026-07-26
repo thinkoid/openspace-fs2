@@ -142,6 +142,8 @@ func _physics_process(delta: float) -> void:
     for r in ship.rotators():
         r["node"].rotate_object_local(r["axis"], 0.5 * delta)
 
+    ship.set_thrusters(throttle > 0.0 or fm.afterburner)
+
     _update_camera(delta)
     hud_right.text = "speed %6.1f\nengine %4d%%" % [fm.fspeed, int(throttle * 100.0)]
 

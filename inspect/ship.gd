@@ -34,6 +34,7 @@ var data: Resource                # the ShipData .tres
 var node_names: Array = []        # glTF node index (== submodel index) -> name
 var node_extras: Array = []       # same index -> file-encoding extras
 var loaded: Array = []            # same index -> Vector2i(type, axis), replayed
+var thruster_nodes: Array = []    # is_thruster submodels, engine-gated
 var _sub_nodes := {}
 
 # Build the ship from a converted GLB (its .tres sibling is found by stem).
@@ -84,7 +85,24 @@ func load_ship(glb_path: String) -> bool:
             if n:
                 n.visible = false
 
+    # thruster submodels (is_thruster = name contains "thruster",
+    # pofparse.cc:688) render only with the engines: retail skips them
+    # entirely without MR_SHOW_THRUSTERS (modelinterp.cc:1192) and
+    # scales the cone by forward_thrust. Hidden until someone throttles
+    # up; the scale refinement can ride a later polish pass.
+    for i in node_names.size():
+        if str(node_names[i]).find("thruster") != -1:
+            var n := sub_node(i)
+            if n:
+                n.visible = false
+                thruster_nodes.append(n)
+
     return true
+
+# engine output as visibility: on when thrusting, gone at zero
+func set_thrusters(on: bool) -> void:
+    for n in thruster_nodes:
+        n.visible = on
 
 # Retail's ID_SOBJ movement reinterpretation, replayed from the file values
 # the GLB extras carry (libpof dump.cc loaded_movement, itself retail's

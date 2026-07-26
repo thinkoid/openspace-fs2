@@ -43,6 +43,8 @@ var player_ship: Node3D
 var player_entry: Dictionary
 var fm
 var throttle := 0.0
+var match_speed := false          # M: track the target's speed (a MODE,
+                                  # retail's toggle; throttle keys cancel)
 var cam: Camera3D
 var hud: CanvasLayer
 var hud_left: Label
@@ -307,6 +309,13 @@ func _physics_process(delta: float) -> void:
     # floors the stick and swaps to the afterburner numbers
     fm.afterburner = Input.is_key_pressed(KEY_TAB)
 
+    # match speed is a MODE: while on, the throttle tracks the target's
+    # CURRENT speed every frame (the Instructor decelerates into his
+    # waypoints -- a one-shot match drifts off within seconds)
+    if match_speed and targeting.target != "":
+        throttle = clampf(
+            nav.speed_of(targeting.target) / fm.p["max_vel"].z, 0.0, 1.0)
+
     var ci := {
         "pitch": clampf(_axis(KEY_UP, KEY_DOWN)
                         - mouse_accum.y * MOUSE_SENS, -1.0, 1.0),
@@ -372,9 +381,15 @@ func _physics_process(delta: float) -> void:
     _update_target_box()
     _update_radar()
 
+    # engine glow: the player's by throttle/burner, the movers' by
+    # their commanded speed -- parked and killed ships go dark
+    player_ship.set_thrusters(throttle > 0.0 or fm.afterburner)
+
     _update_camera(delta)
     _update_reticle()
-    hud_right.text = "speed %6.1f\nengine %4d%%" % [fm.fspeed, int(throttle * 100.0)]
+    hud_right.text = "speed %6.1f\nengine %4d%%%s" \
+        % [fm.fspeed, int(throttle * 100.0),
+           "\nmatch" if match_speed else ""]
 
 static func _axis(pos: Key, neg: Key) -> float:
     return (1.0 if Input.is_key_pressed(pos) else 0.0) \
@@ -404,25 +419,26 @@ func _unhandled_input(event: InputEvent) -> void:
         if event.keycode == BINDINGS[token][0]:
             key_used[token] = vm.ms if vm else 0
     match event.keycode:
-        KEY_A:
+        KEY_A:            # any manual throttle input cancels the match
+            match_speed = false
             throttle = clampf(throttle + 0.1, -1.0, 1.0)
         KEY_Z:
+            match_speed = false
             throttle = clampf(throttle - 0.1, -1.0, 1.0)
         KEY_0:
+            match_speed = false
             throttle = 0.0
         KEY_T:      # retail: target next
             targeting.next_target(vm.ms)
         KEY_H:      # retail: target next hostile
             targeting.next_hostile(int(player_entry["team"]), vm.ms)
-        KEY_M:      # match speed: throttle to the target's current pace
-            # (one-shot; retail's toggle tracking is a refinement)
-            if targeting.target != "":
-                throttle = clampf(
-                    nav.speed_of(targeting.target) / fm.p["max_vel"].z,
-                    0.0, 1.0)
+        KEY_M:      # retail: toggle match-target-speed mode
+            match_speed = not match_speed and targeting.target != ""
         KEY_BACKSLASH:    # retail: max throttle
+            match_speed = false
             throttle = 1.0
         KEY_BACKSPACE:    # retail: zero throttle
+            match_speed = false
             throttle = 0.0
         KEY_V:
             view_chase = not view_chase
@@ -694,7 +710,11 @@ func _add_goal(ship: String, gop: String, target: String) -> void:
 func _update_ai_ships() -> void:
     for name in nav.ships:
         var st: Dictionary = nav.ships[name]
-        if st["mode"] == "still" or not ship_nodes.has(name):
+        if not ship_nodes.has(name):
+            continue
+        var moving: bool = st["mode"] != "still" and st["cur_speed"] > 0.0
+        ship_nodes[name].set_thrusters(moving)
+        if not moving:
             continue
         ship_entries[name]["pos"] = st["pos"]
         var f: Vector3 = st["fvec"]

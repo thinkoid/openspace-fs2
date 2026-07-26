@@ -698,6 +698,27 @@ the first real playthroughs):**
   in instead of charging; the target box and lead indicator read the
   live commanded speed. Bitten (divisor perturbation).
 
+**Facts established by the match-mode and engine-glow pass (field
+reports):**
+
+- Match speed is a MODE, not a one-shot: while on, the throttle tracks
+  the target's CURRENT speed every frame (the Instructor decelerates
+  into his waypoints — a one-shot match drifts within seconds). M
+  toggles it, any manual throttle input (A/Z/0/\/Backspace) cancels
+  it, and the HUD's engine readout shows "match" while active.
+- Thruster submodels are engine-gated, retail's own rule: is_thruster
+  = name contains "thruster" (pofparse.cc:688), and the renderer skips
+  them entirely without MR_SHOW_THRUSTERS (modelinterp.cc:1192), which
+  ships pass only with the engine machinery live. Ship collects them
+  hidden at load; set_thrusters() flips the lot. Player glow follows
+  throttle/burner, movers' glow follows their commanded speed, parked
+  and killed ships go dark. (Retail also scales the cone by
+  forward_thrust with a 0.1 stub at idle — the scale refinement can
+  ride a later polish pass; the field request was gone-at-zero.)
+- Pinned corpus-wide in ship-load-check: all 176 models collect
+  exactly their named thruster submodels, dark at load, all lit on
+  set_thrusters(true); bitten (skipping the hide went red).
+
 The training-mission road is BUILT: layout, flight, events, targeting,
 weapons, waypoint AI, the HUD, and sound all live — Training-1 runs as
 a lesson with Sensky's voice (stub log: special-check + ship-guardian
