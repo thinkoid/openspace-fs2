@@ -126,6 +126,14 @@ func speed_of(name: String) -> float:
     var s: Dictionary = ships[name]
     return 0.0 if s["mode"] == "still" else s["speed"]
 
+# the mover's velocity vector (the lead indicator aims with it)
+func velocity_of(name: String) -> Vector3:
+    if not ships.has(name):
+        return Vector3.ZERO
+    var s: Dictionary = ships[name]
+    return Vector3.ZERO if s["mode"] == "still" \
+        else s["fvec"] * s["speed"]
+
 # mission_log_get_time for LOG_WAYPOINTS_DONE: first entry matching
 # both names, case-insensitive (missionlog.cc:423)
 func done_time(ship: String, path: String) -> int:

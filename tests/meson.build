@@ -192,6 +192,15 @@ test('waypoints-check', find_program('waypoints_check.sh'),
     ],
     timeout: 60)
 
+# The radar gate: retail's blip projection (radar.cc:323-341, quirks
+# included) and the lead indicator's aim point in inspect/radar.gd.
+test('radar-check', find_program('radar_check.sh'),
+    args: [
+        meson.current_source_dir() / 'check_radar.gd',
+        meson.project_source_root(),
+    ],
+    timeout: 60)
+
 # The game-side consumption gate: every model assembled as a Ship
 # (inspect/ship.gd) in one headless engine boot; its replay of retail's
 # load-time movement reinterpretation is diffed per submodel against

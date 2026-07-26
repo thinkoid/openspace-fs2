@@ -611,11 +611,40 @@ mission) consumes this next.
   the directives chain advanced. The remaining stub log is down to
   `special-check` and `ship-guardian`.
 
-Still ahead on the training-mission road: the game HUD (radar,
-directives gauge proper) — at which point Training-1 is not just a
-place but a lesson. The evaluator itself still wants a differential
-gate (a retail event-trace dump against the VM's replay,
-physics_dump-style) once the world predicates firm up.
+**Facts established by the game-HUD slice:**
+
+- `inspect/radar.gd` is the radar gauge: the data path is retail's
+  radar_plot_object exactly — contact rotated into the player frame,
+  radial fraction `acos(z/dist)/pi` (ahead center, beam half-radius,
+  astern rim, radar.cc:327), bearing from x/y, rim clip at radius − 5
+  (radar.cc:351), screen y inverted, blips beyond the gun's reach
+  drawn dim (radar.cc:376), range filter RR_INFINITY (retail's
+  default, hudconfig.cc:1687). Retail quirk kept: a contact EXACTLY
+  astern has indeterminate bearing and plots at the CENTER
+  (the zdist < 0.01 arm, radar.cc:335). The art is lean vectors
+  (rim, beam ring, crosshair, colored rects; white box = current
+  target), not bitmap blips.
+- The lead indicator: aim point = target + velocity × time-of-flight
+  (dist / bolt speed, one iteration), shown for movers only, fed by
+  the AI's velocity_of. The directives gauge carries its retail title
+  and hides when empty.
+- Gate: `radar-check`, headless — the cardinal projection contract,
+  the acos fraction (45° = quarter radius, not linear), bearing
+  splitting, distance invariance, the dead-astern quirk, lead-point
+  math; bitten both ways (y-bearing flip: 2 fails; half-angle
+  fraction: 6 fails). Suite 17 gates.
+- KNOWN GAP (next nibble): `+Initial Hull` is a PERCENTAGE of table
+  hitpoints applied at ship creation — not extracted; the weapons
+  ledger starts every ship at full table hull. Every Training-1 and
+  range ship declares 100, so nothing bites yet; extract
+  `Objects[i].hull_strength` (already percent-applied by retail)
+  when a mission needs it.
+
+The training-mission road is BUILT: layout, flight, events, targeting,
+weapons, waypoint AI, and the HUD all live — Training-1 runs as a
+lesson (stub log: special-check + ship-guardian only). What remains is
+polish and the evaluator differential gate (a retail event-trace dump
+against the VM's replay, physics_dump-style) once wanted.
 
 ## Where this work lives
 

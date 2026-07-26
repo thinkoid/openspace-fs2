@@ -11,9 +11,11 @@
 # are-waypoints-done-delay reads, add-goal steering the Instructor from
 # path to path). Training-1 puts you in Alpha 1's Myrmidon with the
 # Instructor pulling away to his first waypoint;
-# tests/weapons-range.fs2 is the live-fire proving ground. Still ahead:
-# the full game HUD. Every ship the mission knows is present (FRED's
-# view); ships without orders hold station.
+# tests/weapons-range.fs2 is the live-fire proving ground. The HUD:
+# corner readouts, training messages, directives gauge, target monitor
+# + brackets + lead indicator, and the radar scope (retail's blip
+# projection, vector art). Every ship the mission knows is present
+# (FRED's view); ships without orders hold station.
 #
 #     godot --path inspect -- mission /abs/path/to/<mission>.tres
 #
@@ -29,6 +31,7 @@ const VMClass := preload("res://sexp_vm.gd")
 const TargetingClass := preload("res://targeting.gd")
 const WeaponsClass := preload("res://weapons.gd")
 const WaypointAIClass := preload("res://waypoint_ai.gd")
+const RadarClass := preload("res://radar.gd")
 
 var mission: Resource
 var player_ship: Node3D
@@ -43,6 +46,8 @@ var msg_label: Label
 var directives: Label
 var target_box: Label
 var target_marker: Label
+var lead_marker: Label
+var radar                         # RadarClass instance
 var ship_label := ""
 
 var targeting                     # TargetingClass instance
@@ -323,6 +328,7 @@ func _physics_process(delta: float) -> void:
     _update_messages()
     _update_directives()
     _update_target_box()
+    _update_radar()
 
     _update_camera(delta)
     hud_right.text = "speed %6.1f\nengine %4d%%" % [fm.fspeed, int(throttle * 100.0)]
@@ -527,6 +533,27 @@ func _setup_hud() -> void:
     msg_label.add_theme_color_override("font_color",
                                        Color(0.65, 0.9, 1.0))
     hud.add_child(msg_label)
+
+    # the radar scope, bottom center (retail's spot): blip data through
+    # retail's projection, drawn as vectors
+    radar = RadarClass.new()
+    radar.anchor_left = 0.5
+    radar.anchor_right = 0.5
+    radar.anchor_top = 1.0
+    radar.anchor_bottom = 1.0
+    radar.offset_left = -170
+    radar.offset_right = 170
+    radar.offset_top = -352
+    radar.offset_bottom = -12
+    hud.add_child(radar)
+
+    # the lead indicator: where to shoot so bolt and mover meet
+    lead_marker = _hud_label()
+    lead_marker.text = "-◇-"
+    lead_marker.visible = false
+    lead_marker.add_theme_color_override("font_color",
+                                         Color(0.45, 1.0, 0.5))
+    hud.add_child(lead_marker)
 
     # the directives list, right edge at a third down -- the lesson's
     # current task (retail's directives gauge, rebuilt lean)
@@ -766,6 +793,7 @@ func _update_target_box() -> void:
     if targeting.target == "":
         target_box.text = ""
         target_marker.visible = false
+        lead_marker.visible = false
         return
     var e: Dictionary = ship_entries[targeting.target]
     var dist := int((_pos_of(targeting.target) - fm.pos).length())
@@ -777,10 +805,45 @@ func _update_target_box() -> void:
     var gpos := g_pos(e["pos"])
     if cam.is_position_behind(gpos):
         target_marker.visible = false
+        lead_marker.visible = false
         return
     target_marker.visible = true
     var p := cam.unproject_position(gpos)
     target_marker.position = p - target_marker.size / 2.0
+
+    # the lead indicator, movers only: aim here and the bolt arrives
+    # where the target will be
+    var vel: Vector3 = nav.velocity_of(targeting.target)
+    if vel == Vector3.ZERO:
+        lead_marker.visible = false
+        return
+    var lead := g_pos(RadarClass.lead_point(
+        e["pos"], vel, fm.pos, weapons.gun["velocity"]))
+    lead_marker.visible = not cam.is_position_behind(lead)
+    if lead_marker.visible:
+        lead_marker.position = cam.unproject_position(lead) \
+            - lead_marker.size / 2.0
+
+# every live contact through retail's projection; dim past the gun's
+# reach (velocity * lifetime -- retail recalcs from the loadout at 1 Hz,
+# fallback 1500; one gun, so it is a constant here)
+func _update_radar() -> void:
+    var blips := []
+    var reach: float = weapons.gun["velocity"] * weapons.gun["lifetime"]
+    for name in ship_entries:
+        if name == player_entry["name"] or weapons.destroyed.has(name):
+            continue
+        var d: Vector3 = ship_entries[name]["pos"] - fm.pos
+        var rel := Vector3(d.dot(fm.rvec), d.dot(fm.uvec), d.dot(fm.fvec))
+        blips.append({
+            "disc": RadarClass.blip_disc(rel),
+            "dim": d.length() > reach,
+            "hostile": int(ship_entries[name]["team"])
+                != int(player_entry["team"]),
+            "target": name == targeting.target,
+        })
+    radar.blips = blips
+    radar.queue_redraw()
 
 func _update_directives() -> void:
     var lines := []
@@ -796,7 +859,9 @@ func _update_directives() -> void:
             if e["objective_key_text"] != "":
                 line += "  (%s)" % _subst(e["objective_key_text"])
             lines.append(line)
-    directives.text = "\n".join(lines)
+    # retail's gauge carries its title; empty gauge shows nothing
+    directives.text = "" if lines.is_empty() \
+        else "directives\n" + "\n".join(lines)
 
 # legible on a big display: large type, shadowed against bright hulls
 static func _hud_label() -> Label:
