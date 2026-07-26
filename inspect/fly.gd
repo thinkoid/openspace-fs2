@@ -42,6 +42,12 @@ var eye_point := Vector3.ZERO
 var eye_normal := Vector3.FORWARD
 var ship_label := ""
 
+# mouse flight (same shape as mission.gd): relative motion is the stick
+# deflection -- mouse right yaws starboard, mouse up noses down
+var mouse_accum := Vector2.ZERO
+var mouse_grabbed := false
+const MOUSE_SENS := 0.05          # full deflection at ~20 px per tick
+
 func _ready() -> void:
     var args := OS.get_cmdline_user_args()
     if args.is_empty():
@@ -100,16 +106,25 @@ func _fatal(msg: String) -> void:
 func _physics_process(delta: float) -> void:
     if fm == null:   # _fatal quits deferred; don't simulate meanwhile
         return
+
+    # pointer capture: grabbing in _ready races the WM (window not yet
+    # mapped/focused) -- assert on the first tick; a click re-grabs
+    if not mouse_grabbed:
+        mouse_grabbed = true
+        Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
     # Signs, from retail's frame (+X starboard, positive heading yaws right,
     # positive bank rolls LEFT): pitch is stick-true (Up pushes the nose
     # down), turn and roll are direction-true (Left turns left, Q rolls
     # left) -- user-calibrated 2026-07-25.
     var ci := {
-        "pitch": _axis(KEY_UP, KEY_DOWN),
-        "heading": _axis(KEY_RIGHT, KEY_LEFT),
+        "pitch": clampf(_axis(KEY_UP, KEY_DOWN)
+                        - mouse_accum.y * MOUSE_SENS, -1.0, 1.0),
+        "heading": clampf(_axis(KEY_RIGHT, KEY_LEFT)
+                          + mouse_accum.x * MOUSE_SENS, -1.0, 1.0),
         "bank": _axis(KEY_Q, KEY_E),
         "forward": throttle,
     }
+    mouse_accum = Vector2.ZERO
     fm.read_flying_controls(ci, delta)
     fm.sim(delta)
 
@@ -134,6 +149,13 @@ static func _axis(pos: Key, neg: Key) -> float:
         - (1.0 if Input.is_key_pressed(neg) else 0.0)
 
 func _unhandled_input(event: InputEvent) -> void:
+    if event is InputEventMouseMotion:
+        mouse_accum += event.relative
+        return
+    if event is InputEventMouseButton and event.pressed \
+            and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+        Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+        return
     if not (event is InputEventKey and event.pressed):
         return
     match event.keycode:
@@ -241,7 +263,7 @@ func _setup_hud() -> void:
     help.grow_vertical = Control.GROW_DIRECTION_BEGIN
     help.offset_left = 16
     help.offset_bottom = -12
-    help.text = "arrows fly, Q/E roll, A/Z throttle, 0 cut, V view, R reset, Esc quit"
+    help.text = "mouse steers, Q/E roll, A/Z throttle, 0 cut, V view, R reset, Esc quit"
     hud.add_child(help)
 
 # legible on a big display: large type, shadowed against bright hulls

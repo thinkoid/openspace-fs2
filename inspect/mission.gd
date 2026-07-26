@@ -70,7 +70,8 @@ var tc_speed_set_ms := -1
 # the bindings table: retail key tokens -> Godot keys and display names.
 # Mission logic stays retail-faithful ($t$, key-pressed "Tab"); the
 # physical keys are ours -- warp-out is Shift+Super+J by decree (the WM
-# eats Alt+J).
+# eats Alt+J). Mouse button 1 aliases "left ctrl" (guns are guns,
+# SEXP-wise); button 2 is reserved for missiles.
 const BINDINGS := {
     "t": [KEY_T, "T"], "m": [KEY_M, "M"], "tab": [KEY_TAB, "Tab"],
     "a": [KEY_A, "A"], "z": [KEY_Z, "Z"], "h": [KEY_H, "H"],
@@ -95,6 +96,15 @@ var view_chase := true
 var eye_parent: Node3D = null
 var eye_point := Vector3.ZERO
 var eye_normal := Vector3.FORWARD
+
+# mouse flight: relative motion accumulated between physics frames is
+# the stick deflection -- mouse right yaws starboard, mouse up noses
+# DOWN (stick-true, same convention as the Up arrow); stop moving and
+# the turn stops. Arrows still work, summed and clamped.
+var mouse_accum := Vector2.ZERO
+var mouse_grabbed := false
+var missiles_logged := false
+const MOUSE_SENS := 0.05          # full deflection at ~20 px per tick
 
 # FS2 world frame -> Godot: the same (x, y, -z) map as everything else
 static func g_pos(v: Vector3) -> Vector3:
@@ -213,12 +223,22 @@ func _fatal(msg: String) -> void:
 func _physics_process(delta: float) -> void:
     if fm == null:
         return
+
+    # pointer capture: grabbing in _ready races the WM (window not yet
+    # mapped/focused, the grab fails silently) -- assert it on the first
+    # tick instead; any click re-grabs if the WM dropped it
+    if not mouse_grabbed:
+        mouse_grabbed = true
+        Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
     var ci := {
-        "pitch": _axis(KEY_UP, KEY_DOWN),
-        "heading": _axis(KEY_RIGHT, KEY_LEFT),
+        "pitch": clampf(_axis(KEY_UP, KEY_DOWN)
+                        - mouse_accum.y * MOUSE_SENS, -1.0, 1.0),
+        "heading": clampf(_axis(KEY_RIGHT, KEY_LEFT)
+                          + mouse_accum.x * MOUSE_SENS, -1.0, 1.0),
         "bank": _axis(KEY_Q, KEY_E),
         "forward": throttle,
     }
+    mouse_accum = Vector2.ZERO
     fm.read_flying_controls(ci, delta)
     fm.sim(delta)
 
@@ -237,9 +257,11 @@ func _physics_process(delta: float) -> void:
         else:
             tc_speed_set_ms = -1
 
-    # the trigger: LCtrl held fires at the gun's cadence, bolts from just
-    # past the nose so the shooter's own sphere never eats them
-    if Input.is_key_pressed(KEY_CTRL):
+    # the trigger: LCtrl or mouse button 1 held fires at the gun's
+    # cadence, bolts from just past the nose so the shooter's own
+    # sphere never eats them
+    if Input.is_key_pressed(KEY_CTRL) \
+            or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
         var muzzle: Vector3 = fm.pos \
             + fm.fvec * (player_ship.data.radius + 2.0)
         weapons.try_fire(vm.ms, muzzle, fm.fvec, fm.vel)
@@ -265,6 +287,21 @@ static func _axis(pos: Key, neg: Key) -> float:
         - (1.0 if Input.is_key_pressed(neg) else 0.0)
 
 func _unhandled_input(event: InputEvent) -> void:
+    if event is InputEventMouseMotion:
+        mouse_accum += event.relative
+        return
+    if event is InputEventMouseButton and event.pressed:
+        if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+            Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+        if event.button_index == MOUSE_BUTTON_LEFT:
+            # guns are guns: firing by mouse satisfies the SEXP token
+            key_used["left ctrl"] = vm.ms if vm else 0
+        elif event.button_index == MOUSE_BUTTON_RIGHT \
+                and not missiles_logged:
+            missiles_logged = true
+            print("missiles: button 2 bound, the secondary slice "
+                  + "hasn't landed yet")
+        return
     if not (event is InputEventKey and event.pressed):
         return
     # retail Control_config[].used: the ms clock at last press, read by
@@ -414,7 +451,7 @@ func _setup_hud() -> void:
     help.grow_vertical = Control.GROW_DIRECTION_BEGIN
     help.offset_left = 16
     help.offset_bottom = -12
-    help.text = "arrows fly, Q/E roll, A/Z throttle, 0 cut, T/H target, M match, LCtrl fire, V view, R reset, F1 hud, Esc quit"
+    help.text = "mouse steers, M1 guns, M2 missiles, Q/E roll, A/Z throttle, T/H target, M match, V view, R reset, F1 hud, Esc quit"
     hud.add_child(help)
 
     # the target monitor's data, lower-left (retail's corner)
