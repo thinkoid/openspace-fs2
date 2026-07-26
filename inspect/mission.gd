@@ -25,7 +25,9 @@ var player_entry: Dictionary
 var fm
 var throttle := 0.0
 var cam: Camera3D
-var hud: Label
+var hud: CanvasLayer
+var hud_left: Label
+var hud_right: Label
 var ship_label := ""
 
 var view_chase := true
@@ -81,7 +83,7 @@ func _ready() -> void:
             fm.rvec = e["rvec"]
             fm.uvec = e["uvec"]
             fm.fvec = e["fvec"]
-            ship_label = "%s -- %s" % [mission.mission_name, e["name"]]
+            ship_label = "%s\n%s" % [mission.mission_name, e["name"]]
             if sp and sp.ships.has(e["pof"]):
                 fm.set_params(sp.ships[e["pof"]], s.data.mass)
                 ship_label += " (%s)" % sp.ships[e["pof"]]["name"]
@@ -135,9 +137,7 @@ func _physics_process(delta: float) -> void:
         r["node"].rotate_object_local(r["axis"], 0.5 * delta)
 
     _update_camera(delta)
-    hud.text = "%s\nspeed %5.1f   throttle %3d%%\n%s" % [
-        ship_label, fm.fspeed, int(throttle * 100.0),
-        "arrows fly, Q/E roll, A/Z throttle, 0 cut, V view, R reset, Esc quit"]
+    hud_right.text = "speed %6.1f\nengine %4d%%" % [fm.fspeed, int(throttle * 100.0)]
 
 static func _axis(pos: Key, neg: Key) -> float:
     return (1.0 if Input.is_key_pressed(pos) else 0.0) \
@@ -229,13 +229,42 @@ func _setup_starfield() -> void:
     mmi.multimesh = mm
     add_child(mmi)
 
+# HUD corners in Iosevka (a SystemFont: fontconfig resolves the installed
+# family, nothing is bundled): mission + ship upper-left, engine readouts
+# upper-right, the key help along the bottom edge. H hides the lot.
 func _setup_hud() -> void:
-    var layer := CanvasLayer.new()
-    add_child(layer)
-    hud = Label.new()
-    hud.position = Vector2(16, 12)
-    hud.add_theme_font_size_override("font_size", 22)
-    hud.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
-    hud.add_theme_constant_override("shadow_offset_x", 2)
-    hud.add_theme_constant_override("shadow_offset_y", 2)
-    layer.add_child(hud)
+    hud = CanvasLayer.new()
+    add_child(hud)
+
+    hud_left = _hud_label()
+    hud_left.position = Vector2(16, 12)
+    hud_left.text = ship_label
+    hud.add_child(hud_left)
+
+    hud_right = _hud_label()
+    hud_right.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+    hud_right.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+    hud_right.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+    hud_right.offset_top = 12
+    hud_right.offset_right = -16
+    hud.add_child(hud_right)
+
+    var help := _hud_label()
+    help.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+    help.grow_vertical = Control.GROW_DIRECTION_BEGIN
+    help.offset_left = 16
+    help.offset_bottom = -12
+    help.text = "arrows fly, Q/E roll, A/Z throttle, 0 cut, V view, R reset, Esc quit"
+    hud.add_child(help)
+
+# legible on a big display: large type, shadowed against bright hulls
+static func _hud_label() -> Label:
+    var font := SystemFont.new()
+    font.font_names = ["Iosevka"]
+    var l := Label.new()
+    l.add_theme_font_override("font", font)
+    l.add_theme_font_size_override("font_size", 48)
+    l.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+    l.add_theme_constant_override("shadow_offset_x", 2)
+    l.add_theme_constant_override("shadow_offset_y", 2)
+    return l
