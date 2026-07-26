@@ -115,11 +115,31 @@ main(int argc, char *argv[])
         t += buf;
         snprintf(buf, sizeof buf,
                  "\"afterburner_max_vel\": Vector3(%.9g, %.9g, %.9g),\n"
-                 "\"afterburner_forward_accel\": %.9g\n",
+                 "\"afterburner_forward_accel\": %.9g,\n",
                  s.afterburner_max_vel.x, s.afterburner_max_vel.y,
                  s.afterburner_max_vel.z, s.afterburner_forward_accel);
         t += buf;
+        // the weapons slice's data: $Hitpoints, what a kill costs
+        snprintf(buf, sizeof buf, "\"hull\": %.9g\n",
+                 s.initial_hull_strength);
+        t += buf;
         t += (i + 1 < Num_ship_types) ? "},\n" : "}\n";
+    }
+    t += "}\n";
+
+    // weapon ballistics, weapons.tbl through retail's weapon_init (already
+    // run above for ships.tbl's loadout references): what a projectile
+    // flies like and what a hit costs
+    t += "weapons = {\n";
+    for (int i = 0; i < Num_weapon_types; ++i) {
+        const weapon_info &w = Weapon_info[i];
+        t += "\"" + std::string(w.name) + "\": {";
+        snprintf(buf, sizeof buf,
+                 "\"velocity\": %.9g, \"damage\": %.9g, "
+                 "\"lifetime\": %.9g, \"fire_wait\": %.9g}",
+                 w.max_speed, w.damage, w.lifetime, w.fire_wait);
+        t += buf;
+        t += (i + 1 < Num_weapon_types) ? ",\n" : "\n";
     }
     t += "}\n";
 

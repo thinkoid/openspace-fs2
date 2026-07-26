@@ -33,7 +33,43 @@ FIELDS = {
     'Slide decel': ('slide_decel', 1),
     'Aburn Max Vel': ('afterburner_max_vel', 3),
     'Aburn For accel': ('afterburner_forward_accel', 1),
+    'Hitpoints': ('hull', 1),
 }
+
+# weapons.tbl field -> tres key (the ballistics subset the weapons slice
+# consumes; entries missing a field, e.g. beams, compare what they have)
+WEAPON_FIELDS = {
+    'Velocity': 'velocity',
+    'Damage': 'damage',
+    'Lifetime': 'lifetime',
+    'Fire Wait': 'fire_wait',
+}
+
+
+def tbl_weapons(path):
+    text = open(path, encoding='latin-1').read()
+    out = {}
+    for block in re.split(r'\n\$Name:', text)[1:]:
+        name = block[:block.index('\n')].split(';')[0].strip()
+        entry = {}
+        for field, key in WEAPON_FIELDS.items():
+            fm = re.search(r'\$' + re.escape(field) + r':\s*([^;\n]+)', block)
+            if fm:
+                entry[key] = f32(fm.group(1).split()[0])
+        out[name.lstrip('@')] = entry
+    return out
+
+
+def tres_weapons(path):
+    text = open(path).read()
+    text = text[text.index('weapons = {'):]
+    out = {}
+    for m in re.finditer(r'"([^"]+)": \{([^}]*)\}', text):
+        entry = {}
+        for fm in re.finditer(r'"(\w+)": ([-\d.e+]+)', m.group(2)):
+            entry[fm.group(1)] = f32(fm.group(2))
+        out[m.group(1)] = entry
+    return out
 
 
 def tbl_entries(path):
@@ -102,6 +138,26 @@ def main():
             ok = False
         else:
             print(f'  OK   {stem}: {len(tbl[stem])} fields agree')
+
+    # the weapons dict against weapons.tbl, sitting beside ships.tbl
+    import os
+    wtbl = tbl_weapons(os.path.join(os.path.dirname(sys.argv[2]),
+                                    'weapons.tbl'))
+    wtres = tres_weapons(sys.argv[1])
+    checked = 0
+    for name, got in wtres.items():
+        want = wtbl.get(name.lstrip('@'))
+        if want is None:
+            print(f'  FAIL weapon {name}: not found in weapons.tbl')
+            ok = False
+            continue
+        for key, w in want.items():
+            if got.get(key) != w:
+                print(f'  FAIL weapon {name}.{key}: '
+                      f'tres {got.get(key)} vs tbl {w}')
+                ok = False
+        checked += 1
+    print(f'  OK   {checked} weapons checked')
     sys.exit(0 if ok else 1)
 
 

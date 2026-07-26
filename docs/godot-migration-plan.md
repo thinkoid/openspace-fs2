@@ -523,8 +523,18 @@ core):**
   `InputEventKey`) before the frame capture — the synthetic T press
   acquired the Instructor on screen.
 
-Still ahead on the training-mission road: weapons (is-destroyed-delay,
-hits-left; wants the synthetic destroyable-targets mission), the
+**Facts established by the weapons data half:** shiptbl2tres now emits
+per-ship `hull` ($Hitpoints via `initial_hull_strength`) and a `weapons`
+dict (velocity/damage/lifetime/fire_wait from `Weapon_info[]`, retail's
+weapon_init already running in the tool); shiptbl-check compares both
+against independent tbl reads, bitten. Subach HL-7: 450 m/s, 15 damage,
+2 s lifetime, 0.2 s cadence — the runtime half (projectile sim,
+collision, hull damage, is-destroyed-delay, the synthetic range
+mission) consumes this next.
+
+Still ahead on the training-mission road: weapons runtime
+(is-destroyed-delay, hits-left; wants the synthetic
+destroyable-targets mission), the
 waypoint-AI sliver (are-waypoints-done-delay), and the game HUD (radar,
 directives gauge proper) — at which point Training-1 is not just a
 place but a lesson. The evaluator itself still wants a differential

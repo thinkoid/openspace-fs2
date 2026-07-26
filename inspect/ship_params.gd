@@ -23,3 +23,7 @@ class_name ShipParams
 extends Resource
 
 @export var ships: Dictionary = {}
+
+# weapon ballistics keyed by weapons.tbl $Name: velocity (m/s), damage
+# (hull points per hit), lifetime (s), fire_wait (s between shots)
+@export var weapons: Dictionary = {}
