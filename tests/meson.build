@@ -163,6 +163,15 @@ test('flight-check', find_program('flight_check.sh'),
     depends: [physics_dump],
     timeout: 120)
 
+# The targeting gate: cycle order, hostile filter, and the `targeted`
+# held-for semantics of inspect/targeting.gd over a synthetic ship list.
+test('targeting-check', find_program('targeting_check.sh'),
+    args: [
+        meson.current_source_dir() / 'check_targeting.gd',
+        meson.project_source_root(),
+    ],
+    timeout: 60)
+
 # The game-side consumption gate: every model assembled as a Ship
 # (inspect/ship.gd) in one headless engine boot; its replay of retail's
 # load-time movement reinterpretation is diffed per submodel against

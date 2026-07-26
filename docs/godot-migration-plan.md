@@ -505,12 +505,31 @@ core):**
   (T/M/Tab; warp-out remapped Shift+Super+J — the WM eats Alt+J), so the
   Instructor names the player's real keys, remaps included.
 
-Still ahead on the training-mission road: targeting, weapons, the
-waypoint-AI sliver, and the game HUD (radar, target box, directives
-gauge proper) — at which point Training-1 is not just a place but a
-lesson. The evaluator itself still wants a differential gate (a retail
-event-trace dump against the VM's replay, physics_dump-style) once the
-world predicates firm up.
+**Facts established by the targeting slice:**
+
+- `inspect/targeting.gd` owns the mechanism: mission-order cycling (T),
+  hostile-filtered cycling (H — the HUD toggle moved to F1 to free
+  retail's key), and `targeted`'s name + held-for semantics
+  (sexp.cc:6528). The `targeted` predicate is REAL now; the mission
+  scene draws the target monitor's data half (name/class/range/speed/
+  hull, lower-left) and brackets the target in the view via
+  `unproject_position`. Match speed (M) holds station — targets are
+  inert until the AI sliver.
+- Gate: `targeting-check`, headless over a synthetic ship list (the
+  inert-objects range, distilled) — cycle order, wraparound, hostile
+  filter, case-insensitive name, held-for delay; bitten. Suite 14 gates.
+- Live verification technique: the capture hook can PRESS KEYS through
+  the real input path (`Input.parse_input_event` with an
+  `InputEventKey`) before the frame capture — the synthetic T press
+  acquired the Instructor on screen.
+
+Still ahead on the training-mission road: weapons (is-destroyed-delay,
+hits-left; wants the synthetic destroyable-targets mission), the
+waypoint-AI sliver (are-waypoints-done-delay), and the game HUD (radar,
+directives gauge proper) — at which point Training-1 is not just a
+place but a lesson. The evaluator itself still wants a differential
+gate (a retail event-trace dump against the VM's replay,
+physics_dump-style) once the world predicates firm up.
 
 ## Where this work lives
 

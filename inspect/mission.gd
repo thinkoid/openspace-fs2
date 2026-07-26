@@ -2,11 +2,13 @@
 #
 # The mission scene: a MissionData layout (mission2tres, retail's parser)
 # spawned as real Ships, the player in the player-start ship under
-# FlightModel. The first walk into a retail mission space -- Training-1
-# puts you in Alpha 1's Myrmidon with the Instructor off your port bow.
-# No AI, no events, no directives yet: the other ships hold station
-# (arrival cues and wings are the events slice's business; every ship the
-# mission knows is present, FRED's view).
+# FlightModel, the mission's events running in SexpVM (retail's evaluator)
+# with this scene as its world -- training messages and directives render,
+# T/H targeting feeds the `targeted` predicate and the target monitor.
+# Training-1 puts you in Alpha 1's Myrmidon with the Instructor off your
+# port bow. Still ahead: weapons (is-destroyed-delay), the waypoint-AI
+# sliver (are-waypoints-done-delay), the full game HUD. Ships hold
+# station; every ship the mission knows is present (FRED's view).
 #
 #     godot --path inspect -- mission /abs/path/to/<mission>.tres
 #
@@ -19,6 +21,7 @@ extends Node3D
 const ShipClass := preload("res://ship.gd")
 const FlightClass := preload("res://flight_model.gd")
 const VMClass := preload("res://sexp_vm.gd")
+const TargetingClass := preload("res://targeting.gd")
 
 var mission: Resource
 var player_ship: Node3D
@@ -31,7 +34,11 @@ var hud_left: Label
 var hud_right: Label
 var msg_label: Label
 var directives: Label
+var target_box: Label
+var target_marker: Label
 var ship_label := ""
+
+var targeting                     # TargetingClass instance
 
 # ---- the events engine and its world ----
 var vm                            # VMClass instance
@@ -63,7 +70,7 @@ const STUB_ACTIONS := ["add-goal", "protect-ship", "unprotect-ship",
     "training-context", "set-training-context-fly-path"]
 
 # predicates whose slices haven't landed: eval false, logged once
-const STUB_PREDICATES := ["targeted", "is-destroyed-delay", "hits-left",
+const STUB_PREDICATES := ["is-destroyed-delay", "hits-left",
     "are-waypoints-done-delay", "special-check", "percent-ships-destroyed",
     "is-subsystem-destroyed-delay", "waypoints-done-delay"]
 
@@ -155,6 +162,9 @@ func _ready() -> void:
     vm.world = self
     vm.load_mission(mission)
 
+    targeting = TargetingClass.new()
+    targeting.setup(mission.ships, player_entry["name"])
+
     print("mission: \"%s\" -- %d/%d ships placed, player %s, %d events"
         % [mission.mission_name, placed, mission.ships.size(),
            player_entry["name"], vm.events.size()])
@@ -193,6 +203,7 @@ func _physics_process(delta: float) -> void:
     vm.frame(delta)
     _update_messages()
     _update_directives()
+    _update_target_box()
 
     _update_camera(delta)
     hud_right.text = "speed %6.1f\nengine %4d%%" % [fm.fspeed, int(throttle * 100.0)]
@@ -216,6 +227,13 @@ func _unhandled_input(event: InputEvent) -> void:
             throttle = clampf(throttle - 0.1, -1.0, 1.0)
         KEY_0:
             throttle = 0.0
+        KEY_T:      # retail: target next
+            targeting.next_target(vm.ms)
+        KEY_H:      # retail: target next hostile
+            targeting.next_hostile(int(player_entry["team"]), vm.ms)
+        KEY_M:      # match speed: our targets are inert, so hold station
+            if targeting.target != "":
+                throttle = 0.0
         KEY_V:
             view_chase = not view_chase
             player_ship.model.visible = view_chase
@@ -228,7 +246,7 @@ func _unhandled_input(event: InputEvent) -> void:
             fm.rotvel = Vector3.ZERO
             fm.prev_ramp_vel = Vector3.ZERO
             throttle = 0.0
-        KEY_H:
+        KEY_F1:     # HUD toggle (H now targets hostiles, retail's key)
             hud.visible = not hud.visible
         KEY_ESCAPE:
             get_tree().quit()
@@ -317,8 +335,25 @@ func _setup_hud() -> void:
     help.grow_vertical = Control.GROW_DIRECTION_BEGIN
     help.offset_left = 16
     help.offset_bottom = -12
-    help.text = "arrows fly, Q/E roll, A/Z throttle, 0 cut, V view, R reset, Esc quit"
+    help.text = "arrows fly, Q/E roll, A/Z throttle, 0 cut, T/H target, M match, V view, R reset, F1 hud, Esc quit"
     hud.add_child(help)
+
+    # the target monitor's data, lower-left (retail's corner)
+    target_box = _hud_label()
+    target_box.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+    target_box.grow_vertical = Control.GROW_DIRECTION_BEGIN
+    target_box.offset_left = 16
+    target_box.offset_bottom = -70
+    target_box.add_theme_color_override("font_color", Color(1.0, 0.85, 0.5))
+    hud.add_child(target_box)
+
+    # brackets over the target in the view
+    target_marker = _hud_label()
+    target_marker.text = "[    ]"
+    target_marker.visible = false
+    target_marker.add_theme_color_override("font_color",
+                                           Color(1.0, 0.85, 0.5))
+    hud.add_child(target_marker)
 
     # Sensky talks here: training messages, top center, wrapped inside the
     # middle 70% so they never collide with the corner readouts
@@ -356,6 +391,16 @@ func _pos_of(pname: String) -> Vector3:
 
 func sexp_op(op: String, n, v) -> int:
     match op:
+        "targeted":                 # sexp.cc:6528 via Targeting; the
+            # subsystem arg belongs to the turrets, false until then
+            if n["rest"] != null and n["rest"]["rest"] != null:
+                return 0
+            var delay := 0
+            if n["rest"] != null:
+                delay = v.num(n["rest"])
+            return 1 if targeting.targeted_check(
+                v.ctext(n), delay, v.ms) else 0
+
         "key-pressed":              # sexp.cc:6494
             var used: int = key_used.get(v.ctext(n).to_lower(), 0)
             if used == 0:
@@ -455,6 +500,27 @@ func _update_messages() -> void:
         if m["at"] <= vm.ms and vm.ms < m["until"]:
             live.append(m["text"])
     msg_label.text = "\n\n".join(live)
+
+# the target monitor's data half (retail's is lower-left bitmap art):
+# name, class, range, speed, hull. Inert ships: speed 0, hull 100% until
+# the weapons slice. The marker brackets the target in the 3D view.
+func _update_target_box() -> void:
+    if targeting.target == "":
+        target_box.text = ""
+        target_marker.visible = false
+        return
+    var e: Dictionary = ship_entries[targeting.target]
+    var dist := int((_pos_of(targeting.target) - fm.pos).length())
+    target_box.text = "%s\n%s\nrange %5d   speed %3d   hull %3d%%" \
+        % [e["name"], e["ship_class"], dist, 0, 100]
+
+    var gpos := g_pos(e["pos"])
+    if cam.is_position_behind(gpos):
+        target_marker.visible = false
+        return
+    target_marker.visible = true
+    var p := cam.unproject_position(gpos)
+    target_marker.position = p - target_marker.size / 2.0
 
 func _update_directives() -> void:
     var lines := []
