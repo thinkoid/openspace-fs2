@@ -52,6 +52,7 @@ var directives: Label
 var target_box: Label
 var target_marker: Label
 var lead_marker: Label
+var reticle: Label
 var radar                         # RadarClass instance
 var ship_label := ""
 
@@ -368,6 +369,7 @@ func _physics_process(delta: float) -> void:
     _update_radar()
 
     _update_camera(delta)
+    _update_reticle()
     hud_right.text = "speed %6.1f\nengine %4d%%" % [fm.fspeed, int(throttle * 100.0)]
 
 static func _axis(pos: Key, neg: Key) -> float:
@@ -583,6 +585,15 @@ func _setup_hud() -> void:
     radar.offset_top = -352
     radar.offset_bottom = -12
     hud.add_child(radar)
+
+    # the reticle: the boresight, projected along the gun line at the
+    # Subach's reach -- put it on the target and the bolts land there.
+    # Projected, not screen-centered, so it stays honest in chase view
+    reticle = _hud_label()
+    reticle.text = "-+-"
+    reticle.add_theme_color_override("font_color",
+                                     Color(0.55, 1.0, 0.6))
+    hud.add_child(reticle)
 
     # the lead indicator: where to shoot so bolt and mover meet
     lead_marker = _hud_label()
@@ -866,6 +877,16 @@ func _update_target_box() -> void:
     if lead_marker.visible:
         lead_marker.position = cam.unproject_position(lead) \
             - lead_marker.size / 2.0
+
+# the boresight at the gun's reach (velocity * lifetime); the camera
+# has already moved this frame, so the unprojection is current
+func _update_reticle() -> void:
+    var reach: float = weapons.gun["velocity"] * weapons.gun["lifetime"]
+    var aim := g_pos(fm.pos + fm.fvec * reach)
+    reticle.visible = not cam.is_position_behind(aim)
+    if reticle.visible:
+        reticle.position = cam.unproject_position(aim) \
+            - reticle.size / 2.0
 
 # every live contact through retail's projection; dim past the gun's
 # reach (velocity * lifetime -- retail recalcs from the loadout at 1 Hz,
