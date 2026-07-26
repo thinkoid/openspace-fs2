@@ -675,6 +675,29 @@ mission) consumes this next.
   wavs the missions actually name, polite silence modes; bitten
   (dropping the case-fold: 6 fails). Suite 18 gates.
 
+**Facts established by the controls-and-pace pass (field reports from
+the first real playthroughs):**
+
+- Afterburner is REAL: retail's exact PF_AFTERBURNER_ON branch in the
+  flight model (physics.cc:601/626/716 — the burner floors the stick,
+  swaps the goal to afterburner_max_vel and the accel ramp to the
+  burner's constant), flag-gated so the oracle-pinned path is
+  IDENTICAL with the flag off (flight-check's replay carries no
+  afterburner; its new semantic checks cover engage-reaches-AB-speed
+  and tankless-never-engages, bitten via the goal swap). Tab holds it.
+  Myrmidon: 75 cruise / 135 burner.
+- Throttle keys: `\` max, Backspace zero (retail's bindings); M now
+  matches the TARGET's current speed (one-shot throttle set; retail's
+  continuous match toggle is a refinement).
+- The Instructor's "very animated pace": waypoint flight commanded a
+  flat max_vel.z; retail commands DISTANCE-PROPORTIONAL speed —
+  dist/5 for small ships (aicode.cc:4687), clipped by the max and by
+  cap-waypoint-speed (aicode.cc:4702, positive caps only, retail
+  stores -1 for none). Both now ported; `cap-waypoint-speed` left the
+  stub list (Training-1's Catch Up event caps him at 55). Ships glide
+  in instead of charging; the target box and lead indicator read the
+  live commanded speed. Bitten (divisor perturbation).
+
 The training-mission road is BUILT: layout, flight, events, targeting,
 weapons, waypoint AI, the HUD, and sound all live — Training-1 runs as
 a lesson with Sensky's voice (stub log: special-check + ship-guardian

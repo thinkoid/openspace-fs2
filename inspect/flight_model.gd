@@ -7,9 +7,13 @@
 # trajectory. Same function names, same phase structure, so it reads against
 # the reference.
 #
-# Scope is the PF_ACCELERATES flight path only -- no slide, afterburner,
-# reduced-damp, shockwave or warp specials; those arrive with the slices
-# that need them. Everything here is in FS2's OWN frame (+Z forward, orient
+# Scope is the PF_ACCELERATES flight path plus PF_AFTERBURNER_ON -- no
+# slide, reduced-damp, shockwave or warp specials; those arrive with the
+# slices that need them. The afterburner is retail's exact branch
+# (physics.cc:601/626/716): the burner floors the stick, swaps the goal
+# to afterburner_max_vel and the accel ramp to the burner's constant;
+# with the flag off the code path is IDENTICAL to the oracle-pinned one
+# (flight-check replays carry no afterburner). Everything here is in FS2's OWN frame (+Z forward, orient
 # rows rvec/uvec/fvec); the scene maps to Godot at the boundary
 # (fly.gd; the map is (x, y, -z), tools/pof2glb.cc "the axis map").
 #
@@ -52,6 +56,9 @@ func set_params(tbl: Dictionary, pof_mass: float) -> void:
         "forward_decel_time_const": tbl["forward_decel"],
         "side_slip_time_const": tbl["damp"],
         "rotdamp": tbl["rotdamp"],
+        "afterburner_max_vel": tbl["afterburner_max_vel"],
+        "afterburner_forward_accel_time_const":
+            tbl["afterburner_forward_accel"],
     }
 
 # state -- physics_info's living fields, FS2 frame throughout
@@ -66,6 +73,12 @@ var desired_rotvel := Vector3.ZERO     # local
 var prev_ramp_vel := Vector3.ZERO      # local, the ramp's memory
 var speed := 0.0
 var fspeed := 0.0
+var afterburner := false               # PF_AFTERBURNER_ON
+
+# a ship without burner tanks (afterburner_max_vel.z == 0, retail's
+# SIF_AFTERBURNER gate) never engages -- the synthetic FIGHTER has none
+func has_afterburner() -> bool:
+    return p.get("afterburner_max_vel", Vector3.ZERO).z > 0.0
 
 # physics.cc apply_physics: frame-rate-independent damped approach; damping
 # zero snaps to the target. Returns [new_vel, delta_pos].
@@ -147,6 +160,10 @@ func read_flying_controls(ci: Dictionary, sim_time: float) -> void:
     var bank := clampf(ci.get("bank", 0.0), -1.0, 1.0)
     var forward := clampf(ci.get("forward", 0.0), -1.0, 1.0)
 
+    var burn := afterburner and has_afterburner()
+    if burn:                     # physics.cc:601 -- the burner floors it
+        forward = 1.0
+
     desired_rotvel.x = pitch * p["max_rotvel"].x
     desired_rotvel.y = heading * p["max_rotvel"].y
 
@@ -155,7 +172,9 @@ func read_flying_controls(ci: Dictionary, sim_time: float) -> void:
 
     desired_rotvel.z = bank * p["max_rotvel"].z + delta_bank
 
-    var goal_vel := Vector3(0.0, 0.0, forward * p["max_vel"].z)
+    # physics.cc:626: the burner swaps the whole goal, not just the cap
+    var vmax: Vector3 = p["afterburner_max_vel"] if burn else p["max_vel"]
+    var goal_vel := Vector3(0.0, 0.0, forward * vmax.z)
     if goal_vel.z < -p["max_rear_vel"]:
         goal_vel.z = -p["max_rear_vel"]
 
@@ -164,7 +183,8 @@ func read_flying_controls(ci: Dictionary, sim_time: float) -> void:
 
     var ramp_time_const: float
     if goal_vel.z >= prev_ramp_vel.z:
-        ramp_time_const = p["forward_accel_time_const"]
+        ramp_time_const = p["afterburner_forward_accel_time_const"] \
+            if burn else p["forward_accel_time_const"]
     else:
         ramp_time_const = p["forward_decel_time_const"]
     prev_ramp_vel.z = velocity_ramp(prev_ramp_vel.z, goal_vel.z,

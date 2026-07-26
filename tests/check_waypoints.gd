@@ -111,6 +111,35 @@ func _init() -> void:
                                        9 * 65536, {"Runner": 1}),
           VM.KNOWN_TRUE)
 
+    # commanded speed is retail's dist/5, clipped by the ship's max and
+    # by cap-waypoint-speed (aicode.cc:4687/4702) -- a distant ship
+    # flies flat out, a near one glides in, a capped one obeys the cap
+    var pace = W.new()
+    pace.set_lists([
+        {"name": "Far", "points": [Vector3(0, 0, 1000)]},
+        {"name": "Near", "points": [Vector3(0, 0, 100)]}])
+    pace.register("Sprinter", Vector3.ZERO, Vector3(0, 0, 1),
+                  70.0, 1.5, 16.0)
+    pace.register("Glider", Vector3.ZERO, Vector3(0, 0, 1),
+                  70.0, 1.5, 16.0)
+    pace.command("Sprinter", "waypoints-once", "Far")
+    pace.command("Glider", "waypoints-once", "Near")
+    pace.step(0.1, 65536)
+    check("far target: flat out",
+          pace.ships["Sprinter"]["cur_speed"], 70.0)
+    check("near target: dist/5",
+          pace.ships["Glider"]["cur_speed"], 20.0)
+    check("speed_of reads commanded",
+          pace.speed_of("Glider"), 20.0)
+    pace.set_speed_cap("Sprinter", 55.0)
+    pace.step(0.1, 65536)
+    check("cap-waypoint-speed obeyed",
+          pace.ships["Sprinter"]["cur_speed"], 55.0)
+    pace.set_speed_cap("Sprinter", -1.0)
+    pace.step(0.1, 65536)
+    check("negative cap clears (retail -1)",
+          pace.ships["Sprinter"]["cur_speed"], 70.0)
+
     if failed == 0:
         print("OK waypoints: flight, arrival, log, predicate semantics")
     quit(1 if failed > 0 else 0)

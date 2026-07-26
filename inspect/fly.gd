@@ -116,6 +116,8 @@ func _physics_process(delta: float) -> void:
     # positive bank rolls LEFT): pitch is stick-true (Up pushes the nose
     # down), turn and roll are direction-true (Left turns left, Q rolls
     # left) -- user-calibrated 2026-07-25.
+    fm.afterburner = Input.is_key_pressed(KEY_TAB)
+
     var ci := {
         "pitch": clampf(_axis(KEY_UP, KEY_DOWN)
                         - mouse_accum.y * MOUSE_SENS, -1.0, 1.0),
@@ -164,6 +166,10 @@ func _unhandled_input(event: InputEvent) -> void:
         KEY_Z:
             throttle = clampf(throttle - 0.1, -1.0, 1.0)
         KEY_0:
+            throttle = 0.0
+        KEY_BACKSLASH:    # retail: max throttle
+            throttle = 1.0
+        KEY_BACKSPACE:    # retail: zero throttle
             throttle = 0.0
         KEY_V:
             view_chase = not view_chase

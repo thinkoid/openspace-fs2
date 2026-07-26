@@ -67,6 +67,38 @@ func _init() -> void:
         quit(1)
         return
 
+    # afterburner semantics (the replay above ran with the flag OFF, so
+    # the oracle path is untouched): the burner floors the stick and
+    # swaps to the afterburner numbers; a ship without tanks never
+    # engages (physics.cc:601/626/716)
+    var ab = load("res://flight_model.gd").new()
+    ab.set_params({
+        "density": 1.0, "damp": 0.05, "rotdamp": 0.35,
+        "max_vel": Vector3(0, 0, 70), "max_rear_vel": 0.0,
+        "max_rotvel": Vector3(1.75, 1.4, 2.75),
+        "forward_accel": 3.0, "forward_decel": 2.0,
+        "afterburner_max_vel": Vector3(0, 0, 130),
+        "afterburner_forward_accel": 0.9,
+    }, 12.0)
+    ab.afterburner = true
+    for i in 900:                      # 15 s: past every ramp
+        ab.read_flying_controls({"forward": 0.0}, dt)
+        ab.sim(dt)
+    if absf(ab.fspeed - 130.0) > 1.0:
+        printerr("FAIL: afterburner should reach 130, got %s"
+                 % str(ab.fspeed))
+        bad += 1
+
+    var noab = load("res://flight_model.gd").new()
+    noab.afterburner = true            # no tanks: must change nothing
+    for i in 900:
+        noab.read_flying_controls({"forward": 1.0}, dt)
+        noab.sim(dt)
+    if noab.fspeed > noab.p["max_vel"].z + 0.5:
+        printerr("FAIL: tankless afterburner must not exceed max_vel, got %s"
+                 % str(noab.fspeed))
+        bad += 1
+
     if max_pos > TOL_POS:
         printerr("FAIL: position diverges %s (tol %s)" % [str(max_pos), str(TOL_POS)])
         bad += 1

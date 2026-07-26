@@ -113,7 +113,7 @@ const BINDINGS := {
 # from side-effect ops), logged once so the TODO list writes itself
 const STUB_ACTIONS := ["protect-ship", "unprotect-ship",
     "ship-guardian", "ship-no-guardian", "flash-hud-gauge",
-    "cap-waypoint-speed", "key-reset-multiple", "hud-disable",
+    "key-reset-multiple", "hud-disable",
     "training-context", "set-training-context-fly-path"]
 
 # predicates whose slices haven't landed: eval false, logged once
@@ -303,6 +303,10 @@ func _physics_process(delta: float) -> void:
     if not mouse_grabbed:
         mouse_grabbed = true
         Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+    # Tab is the burner while held (retail's control): the flight model
+    # floors the stick and swaps to the afterburner numbers
+    fm.afterburner = Input.is_key_pressed(KEY_TAB)
+
     var ci := {
         "pitch": clampf(_axis(KEY_UP, KEY_DOWN)
                         - mouse_accum.y * MOUSE_SENS, -1.0, 1.0),
@@ -410,9 +414,16 @@ func _unhandled_input(event: InputEvent) -> void:
             targeting.next_target(vm.ms)
         KEY_H:      # retail: target next hostile
             targeting.next_hostile(int(player_entry["team"]), vm.ms)
-        KEY_M:      # match speed: our targets are inert, so hold station
+        KEY_M:      # match speed: throttle to the target's current pace
+            # (one-shot; retail's toggle tracking is a refinement)
             if targeting.target != "":
-                throttle = 0.0
+                throttle = clampf(
+                    nav.speed_of(targeting.target) / fm.p["max_vel"].z,
+                    0.0, 1.0)
+        KEY_BACKSLASH:    # retail: max throttle
+            throttle = 1.0
+        KEY_BACKSPACE:    # retail: zero throttle
+            throttle = 0.0
         KEY_V:
             view_chase = not view_chase
             player_ship.model.visible = view_chase
@@ -541,7 +552,7 @@ func _setup_hud() -> void:
     help.grow_vertical = Control.GROW_DIRECTION_BEGIN
     help.offset_left = 16
     help.offset_bottom = -12
-    help.text = "mouse steers, M1 guns, M2 missiles, Q/E roll, A/Z throttle, T/H target, M match, V view, R reset, F1 hud, Esc quit"
+    help.text = "mouse+M1 steer/fire, A/Z \\ Bksp throttle, Tab burn, Q/E roll, T/H target, M match, V view, R reset, F1 hud, Esc"
     hud.add_child(help)
 
     # the target monitor's data, lower-left (retail's corner)
@@ -782,6 +793,10 @@ func sexp_op(op: String, n, v) -> int:
             if goal["rest"] != null:
                 gtarget = v.ctext(goal["rest"])
             _add_goal(v.ctext(n), goal["text"], gtarget)
+            return 1
+
+        "cap-waypoint-speed":       # sexp.cc:5584 -> the nav's cap
+            nav.set_speed_cap(v.ctext(n), v.num(n["rest"]))
             return 1
 
         "is-destroyed-delay":       # sexp.cc:3314 via the destroyed

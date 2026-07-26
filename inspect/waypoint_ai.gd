@@ -19,9 +19,12 @@
 # What is approximation, deliberately: the flying itself. Retail turns
 # through the full rotational physics (aicode's ai_turn_towards_vector
 # stack); here the forward vector rotates toward the waypoint at the
-# ship's yaw rate and the hull moves along it at cruise speed
-# (max_vel.z, retail's current_max_speed -- waypoint_speed_cap stays a
-# stub). Believable motion that hits the same waypoints in the same
+# ship's yaw rate and the hull moves along it at retail's own commanded
+# speed: DISTANCE-PROPORTIONAL, dist/5 for small ships (aicode.cc:4687,
+# the dot-alignment shaping dropped -- our turn is quick), clipped by
+# the ship's max and by cap-waypoint-speed (aicode.cc:4702, only a
+# positive cap applies). Ships glide in rather than charging at max
+# everywhere -- flat max_vel.z was field-reported as "very animated". Believable motion that hits the same waypoints in the same
 # order; the maneuvering polish belongs to a real AI slice if one is
 # ever needed. On finishing a path the ship PARKS: retail completes
 # the goal and an orderless ship idles, and the next add-goal may be
@@ -48,8 +51,14 @@ func set_lists(waypoint_lists: Array) -> void:
 func register(name: String, pos: Vector3, fvec: Vector3, speed: float,
               turn: float, radius: float) -> void:
     ships[name] = {"pos": pos, "fvec": fvec.normalized(), "speed": speed,
-                   "turn": turn, "radius": radius,
-                   "mode": "still", "path": "", "idx": 0}
+                   "turn": turn, "radius": radius, "cap": 0.0,
+                   "cur_speed": 0.0, "mode": "still", "path": "", "idx": 0}
+
+# cap-waypoint-speed (sexp.cc:5584): a positive cap limits waypoint
+# flight; anything else clears it (retail stores -1 for none)
+func set_speed_cap(name: String, cap: float) -> void:
+    if ships.has(name):
+        ships[name]["cap"] = maxf(cap, 0.0)
 
 func _find_list(path_name: String) -> String:
     for name in lists:
@@ -102,8 +111,15 @@ func step(delta: float, mt_fix: int) -> Array:
         else:
             s["fvec"] = desired
 
+        # retail's commanded speed: dist/5, clipped by max and cap
+        var target_speed: float = minf(
+            s["pos"].distance_to(wp) / 5.0, s["speed"])
+        if s["cap"] > 0.0:
+            target_speed = minf(target_speed, s["cap"])
+        s["cur_speed"] = target_speed
+
         var from: Vector3 = s["pos"]
-        s["pos"] = from + s["fvec"] * s["speed"] * delta
+        s["pos"] = from + s["fvec"] * target_speed * delta
 
         # retail's arrival test, both arms (aicode.cc:4717): raw
         # proximity padded by this frame's travel, or the swept segment
@@ -123,7 +139,7 @@ func speed_of(name: String) -> float:
     if not ships.has(name):
         return 0.0
     var s: Dictionary = ships[name]
-    return 0.0 if s["mode"] == "still" else s["speed"]
+    return 0.0 if s["mode"] == "still" else s["cur_speed"]
 
 # the mover's velocity vector (the lead indicator aims with it)
 func velocity_of(name: String) -> Vector3:
@@ -131,7 +147,7 @@ func velocity_of(name: String) -> Vector3:
         return Vector3.ZERO
     var s: Dictionary = ships[name]
     return Vector3.ZERO if s["mode"] == "still" \
-        else s["fvec"] * s["speed"]
+        else s["fvec"] * s["cur_speed"]
 
 # mission_log_get_time for LOG_WAYPOINTS_DONE: first entry matching
 # both names, case-insensitive (missionlog.cc:423)
