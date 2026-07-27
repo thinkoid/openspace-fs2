@@ -16,7 +16,7 @@
 
 #define INPUTBOX_PASSWD_CHAR '*' // the password protected char
 
-//	Retuen true if c is a letter, else return false.
+// Retuen true if c is a letter, else return false.
 int
 is_letter(char c)
 {
@@ -145,7 +145,7 @@ UI_INPUTBOX::create(UI_WINDOW *wnd, int _x, int _y, int _w, int _text_len,
     oldposition = position;
     length = _text_len;
     pressed_down = 0;
-    //	first_time = 1;
+    //   first_time = 1;
     changed_flag = 0;
     flags = _flags;
     pixel_limit = pixel_lim;
@@ -248,12 +248,12 @@ UI_INPUTBOX::draw()
     // text, if you type an arrow it will unselect it.
     // So it needs to be colored differently to show this.
     if (!disabled_flag && !(flags & UI_INPUTBOX_FLAG_NO_BACK)) {
-        //		if ( (my_wnd->selected_gadget == this) && first_time ) {
-        //			gr_set_color_fast( text_color );
+        //     if ( (my_wnd->selected_gadget == this) && first_time ) {
+        //        gr_set_color_fast( text_color );
 
-        //		} else {
+        //     } else {
         gr_set_color_fast(&CBLACK);
-        //		}
+        //     }
 
         // color the background behind the text
         gr_rect(0, 0, tw + 1, th);
@@ -363,7 +363,7 @@ UI_INPUTBOX::process(int focus)
     // check if mouse is pressed
     if (B1_PRESSED && is_mouse_on()) {
         set_focus();
-        //		first_time = 1;
+        //     first_time = 1;
     }
 
     if (disabled_flag)
@@ -371,8 +371,8 @@ UI_INPUTBOX::process(int focus)
 
     if (my_wnd->selected_gadget == this)
         focus = 1;
-    //	else
-    //		first_time = 0;
+    //   else
+    //      first_time = 0;
 
     key_used = 0;
     changed_flag = 0;
@@ -398,8 +398,8 @@ UI_INPUTBOX::process(int focus)
 
             changed_flag = 1;
             key_used = 1;
-            //				if (first_time)
-            //					first_time = 0;
+            //          if (first_time)
+            //             first_time = 0;
 
             break;
 
@@ -408,10 +408,10 @@ UI_INPUTBOX::process(int focus)
             locked = 0;
             changed_flag = 1;
             key_used = 1;
-            //				if (first_time)
-            //					first_time = 0;
+            //          if (first_time)
+            //             first_time = 0;
 
-            //				should_reset = 1;
+            //          should_reset = 1;
             break;
 
         case KEY_ESC:
@@ -456,15 +456,15 @@ UI_INPUTBOX::process(int focus)
                     }
 
                     key_used = 1;
-                    //						if (should_reset) {
-                    //							should_reset = 0;
-                    //							position = 0;
-                    //						}
+                    //                 if (should_reset) {
+                    //                    should_reset = 0;
+                    //                    position = 0;
+                    //                 }
 
-                    //						if (first_time) {
-                    //							first_time = 0;
-                    //							position = 0;
-                    //						}
+                    //                 if (first_time) {
+                    //                    first_time = 0;
+                    //                    position = 0;
+                    //                 }
 
                     if (position < length) {
                         text[position] = (char)ascii;
@@ -510,8 +510,8 @@ UI_INPUTBOX::process(int focus)
         if (clear_lastkey || (key_used && (flags & UI_INPUTBOX_FLAG_EAT_USED)))
             my_wnd->last_keypress = 0;
 
-        //	} else {
-        //		first_time = 1;
+        //  } else {
+        //     first_time = 1;
     }
 }
 

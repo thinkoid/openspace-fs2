@@ -12,8 +12,8 @@
 
 static void oracle_trap(const char *sym)
 {
-	fprintf(stderr, "oracle strayed into unported code: %s\n", sym);
-	abort();
+   fprintf(stderr, "oracle strayed into unported code: %s\n", sym);
+   abort();
 }
 
 void debug_console(void (*)())

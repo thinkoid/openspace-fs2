@@ -304,11 +304,11 @@ shipfx_blow_off_subsystem(object *ship_obj, ship *ship_p, ship_subsys *subsys,
     get_subsystem_world_pos(ship_obj, subsys, &subobj_pos);
 
     /*
-	if ( psub->turret_gun_sobj > -1 )
-		debris_create( ship_obj, ship_p->modelnum, psub->turret_gun_sobj, &subobj_pos, exp_center, 0, 1.0f );
+   if ( psub->turret_gun_sobj > -1 )
+      debris_create( ship_obj, ship_p->modelnum, psub->turret_gun_sobj, &subobj_pos, exp_center, 0, 1.0f );
 
-	if ( psub->subobj_num > -1 )
-		debris_create( ship_obj, ship_p->modelnum, psub->subobj_num, &subobj_pos, exp_center, 0, 1.0f );
+   if ( psub->subobj_num > -1 )
+      debris_create( ship_obj, ship_p->modelnum, psub->subobj_num, &subobj_pos, exp_center, 0, 1.0f );
 */
     // get rid of sparks on submodel that is destroyed
     shipfx_remove_submodel_ship_sparks(ship_p, psub->subobj_num);
@@ -411,7 +411,7 @@ shipfx_calculate_effect_radius(object *objp)
 
     object *docked_objp = ai_find_docked_object(objp);
 
-    //	If ship is docked then center wormhold about their center and make radius large enough.
+    //   If ship is docked then center wormhold about their center and make radius large enough.
     if (docked_objp) {
         ship *docked_shipp = &Ships[docked_objp->instance];
 
@@ -603,11 +603,11 @@ shipfx_warpin_start(object *objp)
 
         // see if this ship is docked with anything, and if so, make docked ship be "arriving"
         /*
-		if ( Ai_info[shipp->ai_index].dock_objnum != -1 ) {
-			Ships[Ai_info[shipp->ai_index].dock_objnum].final_warp_time = timestamp(fl2i(warp_time*1000.0f));
-			Ships[Ai_info[shipp->ai_index].dock_objnum].flags |= SF_ARRIVING_STAGE_1;
-		}
-		*/
+      if ( Ai_info[shipp->ai_index].dock_objnum != -1 ) {
+         Ships[Ai_info[shipp->ai_index].dock_objnum].final_warp_time = timestamp(fl2i(warp_time*1000.0f));
+         Ships[Ai_info[shipp->ai_index].dock_objnum].flags |= SF_ARRIVING_STAGE_1;
+      }
+      */
     }
 }
 
@@ -649,13 +649,13 @@ shipfx_warpin_frame(object *objp, float frametime)
             shipp->final_warp_time = timestamp(fl2i(warp_time * 1000.0f));
 
             /*
-			// see if this ship is docked with anything, and if so, make docked ship be "arriving"
-			if ( Ai_info[shipp->ai_index].dock_objnum != -1 ) {
-				Ships[Ai_info[shipp->ai_index].dock_objnum].flags &= (~SF_ARRIVING_STAGE_1);
-				Ships[Ai_info[shipp->ai_index].dock_objnum].flags |= SF_ARRIVING_STAGE_2;
-				Ships[Ai_info[shipp->ai_index].dock_objnum].final_warp_time = timestamp(fl2i(warp_time*1000.0f));
-			}
-			*/
+         // see if this ship is docked with anything, and if so, make docked ship be "arriving"
+         if ( Ai_info[shipp->ai_index].dock_objnum != -1 ) {
+            Ships[Ai_info[shipp->ai_index].dock_objnum].flags &= (~SF_ARRIVING_STAGE_1);
+            Ships[Ai_info[shipp->ai_index].dock_objnum].flags |= SF_ARRIVING_STAGE_2;
+            Ships[Ai_info[shipp->ai_index].dock_objnum].final_warp_time = timestamp(fl2i(warp_time*1000.0f));
+         }
+         */
         }
     }
     else if (shipp->flags & SF_ARRIVING_STAGE_2) {
@@ -806,7 +806,7 @@ compute_warpout_stuff(object *objp, float *speed, float *warp_time,
 
     radius = objp->radius;
 
-    //	If ship is docked then center wormhold about their center and make radius large enough.
+    //   If ship is docked then center wormhold about their center and make radius large enough.
     if (docked_objp) {
         vm_vec_avg(&center_pos, &objp->pos, &docked_objp->pos);
         radius += docked_objp->radius;
@@ -945,7 +945,7 @@ shipfx_warpout_start(object *objp)
     }
     shipp->flags |= SF_DEPART_WARP;
 
-    //	mprintf(( "Warp time = %.4f , effect time = %.4f ms\n", warp_time*1000.0f, effect_time ));
+    //   mprintf(( "Warp time = %.4f , effect time = %.4f ms\n", warp_time*1000.0f, effect_time ));
 
     // This is a hack to make the ship go at the right speed to go from it's current position to the warp_effect_pos;
 
@@ -967,7 +967,7 @@ shipfx_warpout_start(object *objp)
 
         // special case for HUGE ships
         if (Ship_info[shipp->ship_info_index].flags & SIF_HUGE_SHIP) {
-            //			objp->phys_info.flags |= PF_SPECIAL_WARP_OUT;
+            //       objp->phys_info.flags |= PF_SPECIAL_WARP_OUT;
         }
     }
 }
@@ -995,7 +995,7 @@ shipfx_warpout_frame(object *objp, float frametime)
                   &shipp->warp_effect_pos, &shipp->warp_effect_fvec, 0.0f);
     dist = vm_vec_dist(&pos, &objp->pos);
 
-    //	mprintf(( "Warp pos = %.1f, rad=%.1f, center dist = %.1f\n", warp_pos, objp->radius, dist ));
+    //   mprintf(( "Warp pos = %.1f, rad=%.1f, center dist = %.1f\n", warp_pos, objp->radius, dist ));
 
     if (objp == Player_obj) {
         // Code for player warpout frame
@@ -1021,7 +1021,7 @@ shipfx_warpout_frame(object *objp, float frametime)
 
         int timed_out = timestamp_elapsed(shipp->final_warp_time);
         if (timed_out) {
-            //			mprintf(("Frame %i: Ship %s missed departue cue.\n", Framecount, shipp->ship_name ));
+            //       mprintf(("Frame %i: Ship %s missed departue cue.\n", Framecount, shipp->ship_name ));
             int delta_ms = timestamp_until(shipp->final_warp_time);
             if (delta_ms > 1000.0f * frametime) {
                 nprintf(
@@ -1137,8 +1137,8 @@ shipfx_in_shadow(object *src_obj)
                 mc.p1 = &rp1;
                 mc.flags = MC_CHECK_MODEL;
 
-                //			mc.flags |= MC_CHECK_SPHERELINE;
-                //			mc.radius = src_obj->radius;
+                //         mc.flags |= MC_CHECK_SPHERELINE;
+                //         mc.radius = src_obj->radius;
 
                 if (model_collide(&mc)) {
                     return 1;
@@ -1189,8 +1189,8 @@ shipfx_eye_in_shadow(vector *eye_pos, object *src_obj, int sun_n)
             mc.p1 = &rp1;
             mc.flags = MC_CHECK_MODEL;
 
-            //			mc.flags |= MC_CHECK_SPHERELINE;
-            //			mc.radius = src_obj->radius;
+            //       mc.flags |= MC_CHECK_SPHERELINE;
+            //       mc.radius = src_obj->radius;
 
             int hit = model_collide(&mc);
 
@@ -1569,7 +1569,7 @@ shipfx_emit_spark(int n, int sn)
 
         pe.normal = tmp_norm; // What normal the particle emit around
         pe.normal_variance =
-            0.3f; //	How close they stick to that normal 0=good, 1=360 degree
+            0.3f; // How close they stick to that normal 0=good, 1=360 degree
         pe.min_rad = 0.20f; // Min radius
         pe.max_rad = 0.50f; // Max radius
 
@@ -1594,7 +1594,7 @@ shipfx_emit_spark(int n, int sn)
             pe.num_low = 5; // Lowest number of particles to create (software)
             pe.num_high = 7; // Highest number of particles to create (software)
             pe.normal_variance =
-                1.0f; //	How close they stick to that normal 0=good, 1=360 degree
+                1.0f; //   How close they stick to that normal 0=good, 1=360 degree
             pe.min_vel = 2.0f; // How fast the slowest particle can move
             pe.max_vel = 12.0f; // How fast the fastest particle can move
             pe.min_life = 0.05f; // How long the particles live
@@ -1609,7 +1609,7 @@ shipfx_emit_spark(int n, int sn)
             pe.num_high = 8; // Highest number of particles to create (software)
             pe.normal_variance =
                 0.2f *
-                spark_width_scale; //	How close they stick to that normal 0=good, 1=360 degree
+                spark_width_scale; //  How close they stick to that normal 0=good, 1=360 degree
             pe.min_vel = 3.0f; // How fast the slowest particle can move
             pe.max_vel = 12.0f; // How fast the fastest particle can move
             pe.min_life = 0.35f * 2.0f *
@@ -1622,7 +1622,7 @@ shipfx_emit_spark(int n, int sn)
     }
 
     // Select time to do next spark
-    //	Ships[n].next_hit_spark = timestamp_rand(100,500);
+    //   Ships[n].next_hit_spark = timestamp_rand(100,500);
     shipp->next_hit_spark = timestamp_rand(50, 100);
 }
 
@@ -1769,11 +1769,11 @@ split_ship_init(ship *shipp, split_ship *split_ship)
     }
 
     /*
-	// set the remaining debris slots to not draw
-	for (i=pm->num_debris_objects; i<MAX_DEBRIS_OBJECTS; i++) {
-		split_ship->front_ship.draw_debris[i] = DEBRIS_NONE;
-		split_ship->back_ship.draw_debris[i]  = DEBRIS_NONE;
-	} */
+   // set the remaining debris slots to not draw
+   for (i=pm->num_debris_objects; i<MAX_DEBRIS_OBJECTS; i++) {
+      split_ship->front_ship.draw_debris[i] = DEBRIS_NONE;
+      split_ship->back_ship.draw_debris[i]  = DEBRIS_NONE;
+   } */
 
     // set up physics
     physics_init(&split_ship->front_ship.phys_info);
@@ -1827,10 +1827,10 @@ split_ship_init(ship *shipp, split_ship *split_ship)
     vector vel_from_rotvel;
     vm_vec_crossprod(&vel_from_rotvel, &temp_rotvel,
                      &split_ship->front_ship.local_pivot);
-    //	vm_vec_scale_add2(&split_ship->front_ship.phys_info.vel, &vel_from_rotvel, 0.5f);
+    //   vm_vec_scale_add2(&split_ship->front_ship.phys_info.vel, &vel_from_rotvel, 0.5f);
     vm_vec_crossprod(&vel_from_rotvel, &temp_rotvel,
                      &split_ship->back_ship.local_pivot);
-    //	vm_vec_scale_add2(&split_ship->back_ship.phys_info.vel, &vel_from_rotvel, 0.5f);
+    //   vm_vec_scale_add2(&split_ship->back_ship.phys_info.vel, &vel_from_rotvel, 0.5f);
 
     // set up velocity and make initial fireballs and particles
     split_ship->front_ship.phys_info.vel = parent_ship_obj->phys_info.vel;
@@ -1896,9 +1896,9 @@ half_ship_render_ship_and_debris(clip_ship *half_ship, ship *shipp)
                     create_debris = 1;
                 }
                 // is the debris visible
-                //				if (half_ship->cur_clip_plane_pt > tmp1.z + pm->submodel[pm->debris_objects[i]].min.z - 0.5f*half_ship->explosion_vel) {
-                //					render_debris = 1;
-                //				}
+                //            if (half_ship->cur_clip_plane_pt > tmp1.z + pm->submodel[pm->debris_objects[i]].min.z - 0.5f*half_ship->explosion_vel) {
+                //               render_debris = 1;
+                //            }
                 // back ship
             }
             else {
@@ -1908,9 +1908,9 @@ half_ship_render_ship_and_debris(clip_ship *half_ship, ship *shipp)
                     create_debris = 1;
                 }
                 // is the debris visible
-                //				if (half_ship->cur_clip_plane_pt < tmp1.z + pm->submodel[pm->debris_objects[i]].max.z - 0.5f*half_ship->explosion_vel) {
-                //					render_debris = 1;
-                //				}
+                //            if (half_ship->cur_clip_plane_pt < tmp1.z + pm->submodel[pm->debris_objects[i]].max.z - 0.5f*half_ship->explosion_vel) {
+                //               render_debris = 1;
+                //            }
             }
 
             // Draw debris, but not live debris
@@ -1957,9 +1957,9 @@ half_ship_render_ship_and_debris(clip_ship *half_ship, ship *shipp)
                         vm_vec_scale_add2(&debris_vel, &radial_vel, radial_mag);
                         debris_obj->phys_info.vel = debris_vel;
                         /* } else {
-							debris_obj->phys_info.vel = half_ship->phys_info.vel;
-							debris_obj->phys_info.rotvel = half_ship->phys_info.rotvel;
-						} */
+                     debris_obj->phys_info.vel = half_ship->phys_info.vel;
+                     debris_obj->phys_info.rotvel = half_ship->phys_info.rotvel;
+                  } */
                     }
                 }
             }
@@ -2187,7 +2187,7 @@ maybe_fireball_wipe(clip_ship *half_ship, int *sound_handle)
 #endif
             pe.normal = vmd_x_vector; // What normal the particle emit around
             pe.normal_variance =
-                2.0f; //	How close they stick to that normal 0=on normal, 1=180, 2=360 degree
+                2.0f; //   How close they stick to that normal 0=on normal, 1=180, 2=360 degree
             pe.min_vel = 0.0f; // How fast the slowest particle can move
             pe.max_vel =
                 half_ship->explosion_vel; // How fast the fastest particle can move
@@ -2263,7 +2263,7 @@ shipfx_large_blowup_do_frame(ship *shipp, float frametime)
     float length_left = max(the_split_ship->front_ship.length_left,
                             the_split_ship->back_ship.length_left);
 
-    //	mprintf(( "Blowup frame, dist = %.1f \n", length_left ));
+    //   mprintf(( "Blowup frame, dist = %.1f \n", length_left ));
 
     if (length_left < 0) {
         the_split_ship->used = 0;
@@ -2281,9 +2281,9 @@ void
 shipfx_large_blowup_render(ship *shipp)
 {
     // This actually renders the original model like it should render.
-    //	object *objp = &Objects[shipp->objnum];
-    //	model_render( shipp->modelnum, &objp->orient, &objp->pos, MR_NORMAL );
-    //	return;
+    //   object *objp = &Objects[shipp->objnum];
+    //   model_render( shipp->modelnum, &objp->orient, &objp->pos, MR_NORMAL );
+    //   return;
 
     Assert(Split_ships_inited);
     Assert(shipp->large_ship_blowup_index > -1);
@@ -2411,7 +2411,7 @@ shipfx_do_damaged_arcs_frame(ship *shipp)
 
         n = 0;
 
-        //		int a = 100, b = 1000;
+        //     int a = 100, b = 1000;
         float factor = 1.0f + 0.0025f * obj->radius;
         int a = (int)(factor * 100.0f);
         int b = (int)(factor * 1000.0f);
@@ -2420,7 +2420,7 @@ shipfx_do_damaged_arcs_frame(ship *shipp)
         // Create the arc effects
         for (i = 0; i < MAX_SHIP_ARCS; i++) {
             if (!timestamp_valid(shipp->arc_timestamp[i])) {
-                //shipp->arc_timestamp[i] = timestamp_rand(400,1000);	// live up to a second
+                //shipp->arc_timestamp[i] = timestamp_rand(400,1000);   // live up to a second
                 shipp->arc_timestamp[i] = timestamp(
                     lifetime); // live up to a second
 
@@ -2541,126 +2541,126 @@ void
 shipfx_do_lightning_frame(ship *shipp)
 {
     /*
-	ship_info *sip;
-	object *objp;
-	int stamp, count;
-	vector v1, v2, n1, n2, temp, temp2;
-	bolt_info binfo;
+   ship_info *sip;
+   object *objp;
+   int stamp, count;
+   vector v1, v2, n1, n2, temp, temp2;
+   bolt_info binfo;
 
-	// sanity checks
-	Assert(shipp != NULL);
-	if(shipp == NULL){
-		return;
-	} 
-	Assert(shipp->ship_info_index >= 0);
-	if(shipp->ship_info_index < 0){
-		return;
-	}	
-	Assert(shipp->objnum >= 0);
-	if(shipp->objnum < 0){
-		return;
-	}	
+   // sanity checks
+   Assert(shipp != NULL);
+   if(shipp == NULL){
+      return;
+   } 
+   Assert(shipp->ship_info_index >= 0);
+   if(shipp->ship_info_index < 0){
+      return;
+   }  
+   Assert(shipp->objnum >= 0);
+   if(shipp->objnum < 0){
+      return;
+   }  
 
-	// get some pointers
-	sip = &Ship_info[shipp->ship_info_index];
-	objp = &Objects[shipp->objnum];	
+   // get some pointers
+   sip = &Ship_info[shipp->ship_info_index];
+   objp = &Objects[shipp->objnum];  
 
-	// if this is not a nebula mission, don't do anything
-	if(!(The_mission.flags & MISSION_FLAG_FULLNEB)){
-		shipp->lightning_stamp = -1;
-		return;
-	}
-	
-	// if this not a cruiser or big ship
-	if(!((sip->flags & SIF_CRUISER) || (sip->flags & SIF_BIG_SHIP) || (sip->flags & SIF_HUGE_SHIP))){
-		shipp->lightning_stamp = -1;
-		return;
-	}
+   // if this is not a nebula mission, don't do anything
+   if(!(The_mission.flags & MISSION_FLAG_FULLNEB)){
+      shipp->lightning_stamp = -1;
+      return;
+   }
+   
+   // if this not a cruiser or big ship
+   if(!((sip->flags & SIF_CRUISER) || (sip->flags & SIF_BIG_SHIP) || (sip->flags & SIF_HUGE_SHIP))){
+      shipp->lightning_stamp = -1;
+      return;
+   }
 
-	// determine stamp and count values
-	if(sip->flags & SIF_CRUISER){
-		stamp = (int)((float)(Nebl_cruiser_min + ((Nebl_cruiser_max - Nebl_cruiser_min) * Nebl_intensity)) * frand_range(0.8f, 1.1f));
-		count = l_cruiser_count;
-	} 
-	else {
-		if(sip->flags & SIF_HUGE_SHIP){
-			stamp = (int)((float)(Nebl_supercap_min + ((Nebl_supercap_max - Nebl_supercap_min) * Nebl_intensity)) * frand_range(0.8f, 1.1f));
-			count = l_huge_count;
-		} else {
-			stamp = (int)((float)(Nebl_cap_min + ((Nebl_cap_max - Nebl_cap_min) * Nebl_intensity)) * frand_range(0.8f, 1.1f));
-			count = l_big_count;
-		}
-	}
+   // determine stamp and count values
+   if(sip->flags & SIF_CRUISER){
+      stamp = (int)((float)(Nebl_cruiser_min + ((Nebl_cruiser_max - Nebl_cruiser_min) * Nebl_intensity)) * frand_range(0.8f, 1.1f));
+      count = l_cruiser_count;
+   } 
+   else {
+      if(sip->flags & SIF_HUGE_SHIP){
+         stamp = (int)((float)(Nebl_supercap_min + ((Nebl_supercap_max - Nebl_supercap_min) * Nebl_intensity)) * frand_range(0.8f, 1.1f));
+         count = l_huge_count;
+      } else {
+         stamp = (int)((float)(Nebl_cap_min + ((Nebl_cap_max - Nebl_cap_min) * Nebl_intensity)) * frand_range(0.8f, 1.1f));
+         count = l_big_count;
+      }
+   }
 
-	// if his timestamp is unset
-	if(shipp->lightning_stamp == -1){
-		shipp->lightning_stamp = timestamp(stamp);
-		return;
-	}
-	// if his timestamp is currently unelapsed
-	if(!timestamp_elapsed(shipp->lightning_stamp)){
-		return;
-	}
+   // if his timestamp is unset
+   if(shipp->lightning_stamp == -1){
+      shipp->lightning_stamp = timestamp(stamp);
+      return;
+   }
+   // if his timestamp is currently unelapsed
+   if(!timestamp_elapsed(shipp->lightning_stamp)){
+      return;
+   }
 
-	mprintf(("SHIP BOLT\n"));
+   mprintf(("SHIP BOLT\n"));
 
-	// restamp him first
-	shipp->lightning_stamp = timestamp(stamp);
+   // restamp him first
+   shipp->lightning_stamp = timestamp(stamp);
 
-	// ah, now we can create some lightning bolts
-	count = (int)frand_range(0.0f, (float)count);
-	while(count > 0){
-		// get 2 points on the hull of the ship
-		submodel_get_two_random_points(shipp->modelnum, 0, &v1, &v2, &n1, &n2);		
+   // ah, now we can create some lightning bolts
+   count = (int)frand_range(0.0f, (float)count);
+   while(count > 0){
+      // get 2 points on the hull of the ship
+      submodel_get_two_random_points(shipp->modelnum, 0, &v1, &v2, &n1, &n2);    
 
-		// make up to 2 bolts
-		if(objp->radius > l_max_radius){
-			vm_vec_scale_add(&temp2, &v1, &n1, l_max_radius);
-		} else {
-			vm_vec_scale_add(&temp2, &v1, &n1, objp->radius);
-		}
-		vm_vec_unrotate(&temp, &temp2, &objp->orient);
-		vm_vec_add2(&temp, &objp->pos);
-		vm_vec_unrotate(&temp2, &v1, &objp->orient);
-		vm_vec_add2(&temp2, &objp->pos);
+      // make up to 2 bolts
+      if(objp->radius > l_max_radius){
+         vm_vec_scale_add(&temp2, &v1, &n1, l_max_radius);
+      } else {
+         vm_vec_scale_add(&temp2, &v1, &n1, objp->radius);
+      }
+      vm_vec_unrotate(&temp, &temp2, &objp->orient);
+      vm_vec_add2(&temp, &objp->pos);
+      vm_vec_unrotate(&temp2, &v1, &objp->orient);
+      vm_vec_add2(&temp2, &objp->pos);
 
-		// create the bolt
-		binfo.start = temp;
-		binfo.strike = temp2;
-		binfo.num_strikes = 3;
-		binfo.noise = 0.045f;
-		binfo.life = 375;
-		binfo.delay = (int)frand_range(0.0f, 1600.0f);
-		nebl_bolt(&binfo);
-		count--;
-	
-		// done
-		if(count <= 0){
-			break;
-		}
+      // create the bolt
+      binfo.start = temp;
+      binfo.strike = temp2;
+      binfo.num_strikes = 3;
+      binfo.noise = 0.045f;
+      binfo.life = 375;
+      binfo.delay = (int)frand_range(0.0f, 1600.0f);
+      nebl_bolt(&binfo);
+      count--;
+   
+      // done
+      if(count <= 0){
+         break;
+      }
 
-		// one more		
-		if(objp->radius > l_max_radius){
-			vm_vec_scale_add(&temp2, &v2, &n2, l_max_radius);
-		} else {
-			vm_vec_scale_add(&temp2, &v2, &n2, objp->radius);
-		}
-		vm_vec_unrotate(&temp, &temp2, &objp->orient);
-		vm_vec_add2(&temp, &objp->pos);
-		vm_vec_unrotate(&temp2, &v2, &objp->orient);
-		vm_vec_add2(&temp2, &objp->pos);
+      // one more    
+      if(objp->radius > l_max_radius){
+         vm_vec_scale_add(&temp2, &v2, &n2, l_max_radius);
+      } else {
+         vm_vec_scale_add(&temp2, &v2, &n2, objp->radius);
+      }
+      vm_vec_unrotate(&temp, &temp2, &objp->orient);
+      vm_vec_add2(&temp, &objp->pos);
+      vm_vec_unrotate(&temp2, &v2, &objp->orient);
+      vm_vec_add2(&temp2, &objp->pos);
 
-		// create the bolt
-		binfo.start = temp;
-		binfo.strike = temp2;
-		binfo.num_strikes = 3;
-		binfo.noise = 0.045f;
-		binfo.life = 375;
-		binfo.delay = (int)frand_range(0.0f, 1600.0f);
-		nebl_bolt(&binfo);		
-		count--;
-	}
-	*/
+      // create the bolt
+      binfo.start = temp;
+      binfo.strike = temp2;
+      binfo.num_strikes = 3;
+      binfo.noise = 0.045f;
+      binfo.life = 375;
+      binfo.delay = (int)frand_range(0.0f, 1600.0f);
+      nebl_bolt(&binfo);      
+      count--;
+   }
+   */
 }
 
 // do all shockwaves for a ship blowing up
@@ -2896,7 +2896,7 @@ engine_wash_ship_process(ship *shipp)
                                              &thruster_to_ship);
                             vm_vec_scale_add2(&shipp->wash_rot_axis, &temp,
                                               dot_to_ship / dist_sqr);
-                            //							shipp->wash_intensity += (1.0f - dist_sqr / (max_wash_dist*max_wash_dist));
+                            //                     shipp->wash_intensity += (1.0f - dist_sqr / (max_wash_dist*max_wash_dist));
                             ship_intensity += (1.0f - dist_sqr / (max_wash_dist *
                                                                   max_wash_dist));
                             if (!do_damage) {
@@ -2923,7 +2923,7 @@ engine_wash_ship_process(ship *shipp)
                                                  &thruster_to_ship);
                                 vm_vec_scale_add2(&shipp->wash_rot_axis, &temp,
                                                   dot_to_ship / dist_sqr);
-                                //								shipp->wash_intensity += (1.0f - dist_sqr / (max_wash_dist*max_wash_dist));
+                                //                       shipp->wash_intensity += (1.0f - dist_sqr / (max_wash_dist*max_wash_dist));
                                 ship_intensity += (1.0f -
                                                    dist_sqr / (max_wash_dist *
                                                                max_wash_dist));

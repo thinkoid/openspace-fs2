@@ -80,17 +80,17 @@ grx_rect(int x, int y, int w, int h)
     ubyte *dptr;
 
     /* HARDWARE_ONLY
-	if ( Current_alphacolor )	{
-		for (i=0; i<h; i++ )	{
-			dptr = GR_SCREEN_PTR(ubyte,x1,y1+i);
+   if ( Current_alphacolor )  {
+      for (i=0; i<h; i++ ) {
+         dptr = GR_SCREEN_PTR(ubyte,x1,y1+i);
 
-			int j;
-			for( j=0; j<w; j++ )	{
-				*dptr++ = Current_alphacolor->table.lookup[14][*dptr];
-			}
-		}
-	} else {
-	*/
+         int j;
+         for( j=0; j<w; j++ ) {
+            *dptr++ = Current_alphacolor->table.lookup[14][*dptr];
+         }
+      }
+   } else {
+   */
     for (i = 0; i < h; i++) {
         dptr = GR_SCREEN_PTR(ubyte, x1, y1 + i);
         memset(dptr, gr_screen.current_color.raw8, w);

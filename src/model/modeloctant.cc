@@ -50,7 +50,7 @@ model_octant_find_shields(polymodel *pm, model_octant *oct)
 
     n = 0;
 
-    //	Scan all the triangles in the mesh to find how many tris there are.
+    //   Scan all the triangles in the mesh to find how many tris there are.
     for (i = 0; i < pm->shield.ntris; i++) {
         tri = &pm->shield.tris[i];
 
@@ -71,7 +71,7 @@ model_octant_find_shields(polymodel *pm, model_octant *oct)
 
     n = 0;
 
-    //	Rescan all the triangles in the mesh.
+    //   Rescan all the triangles in the mesh.
     for (i = 0; i < pm->shield.ntris; i++) {
         tri = &pm->shield.tris[i];
 
@@ -302,7 +302,7 @@ model_octant_find_faces(polymodel *pm, model_octant *oct)
     oct->nverts = 0;
     model_octant_find_faces_sub(pm, oct, p, 0);
 
-    //	mprintf(( "Octant has %d faces\n", oct->nfaces ));
+    //   mprintf(( "Octant has %d faces\n", oct->nfaces ));
 }
 
 // Creates the octants for a given polygon model
@@ -418,9 +418,9 @@ model_which_octant_distant_many(vector *pnt, int model_num, matrix *model_orient
     i = ((x << 2) | (y << 1) | z);
 
     octs[0] = i;
-    octs[1] = i ^ 4; //	Adjacent octant in x dimension
-    octs[2] = i ^ 2; //	Adjacent octant in y dimension
-    octs[3] = i ^ 1; //	Adjacent octant in z dimension
+    octs[1] = i ^ 4; // Adjacent octant in x dimension
+    octs[2] = i ^ 2; // Adjacent octant in y dimension
+    octs[3] = i ^ 1; // Adjacent octant in z dimension
 
     return i;
 }

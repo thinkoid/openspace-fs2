@@ -42,9 +42,9 @@ collide_debris_ship(obj_pair *pair)
     Assert(pdebris->type == OBJ_DEBRIS);
     Assert(pship->type == OBJ_SHIP);
 
-    /*	Debris_ship_count++;
-	if (Debris_ship_count % 100 == 0)
-		nprintf(("AI", "Done %i debris:ship checks in %i frames = %.2f checks/frame\n", Debris_ship_count, Framecount, (float) Debris_ship_count/Framecount));
+    /*   Debris_ship_count++;
+   if (Debris_ship_count % 100 == 0)
+      nprintf(("AI", "Done %i debris:ship checks in %i frames = %.2f checks/frame\n", Debris_ship_count, Framecount, (float) Debris_ship_count/Framecount));
 */
     dist = vm_vec_dist(&pdebris->pos, &pship->pos);
     if (dist < pdebris->radius + pship->radius) {
@@ -77,8 +77,8 @@ collide_debris_ship(obj_pair *pair)
             // calculate ship damage
             ship_damage =
                 0.005f *
-                debris_hit_info.impulse; //	Cut collision-based damage in half.
-            //	Decrease heavy damage by 2x.
+                debris_hit_info.impulse; //  Cut collision-based damage in half.
+            // Decrease heavy damage by 2x.
             if (ship_damage > 5.0f)
                 ship_damage = 5.0f + (ship_damage - 5.0f) / 2.0f;
 
@@ -144,7 +144,7 @@ collide_debris_ship(obj_pair *pair)
             return 0;
         }
     }
-    else { //	Bounding spheres don't intersect, set timestamp for next collision check.
+    else { //  Bounding spheres don't intersect, set timestamp for next collision check.
         float ship_max_speed, debris_speed;
         float time;
         ship *shipp;
@@ -250,10 +250,10 @@ collide_asteroid_ship(obj_pair *pair)
             else {
                 ship_damage =
                     0.001f * asteroid_hit_info
-                                 .impulse; //	Cut collision-based damage in half.
+                                 .impulse; //   Cut collision-based damage in half.
             }
 
-            //	Decrease heavy damage by 2x.
+            // Decrease heavy damage by 2x.
             if (ship_damage > 5.0f)
                 ship_damage = 5.0f + (ship_damage - 5.0f) / 2.0f;
 
@@ -273,7 +273,7 @@ collide_asteroid_ship(obj_pair *pair)
                             .initial_hull_strength));
             }
 
-            //	Decrease damage during warp out because it's damn annoying when your escoree dies during warp out.
+            // Decrease damage during warp out because it's damn annoying when your escoree dies during warp out.
             if (Ai_info[Ships[pship->instance].ai_index].mode == AIM_WARP_OUT)
                 ship_damage /= 3.0f;
 
@@ -306,7 +306,7 @@ collide_asteroid_ship(obj_pair *pair)
                                         ship_damage, quadrant_num, CREATE_SPARKS,
                                         asteroid_hit_info.submodel_num);
                 //if (asteroid_hit_info.heavy->type == OBJ_SHIP) {
-                //	nprintf(("AI", "Time = %7.3f, asteroid #%i applying %7.3f damage to ship %s\n", f2fl(Missiontime), pasteroid-Objects, ship_damage, Ships[asteroid_hit_info.heavy->instance].ship_name));
+                //   nprintf(("AI", "Time = %7.3f, asteroid #%i applying %7.3f damage to ship %s\n", f2fl(Missiontime), pasteroid-Objects, ship_damage, Ships[asteroid_hit_info.heavy->instance].ship_name));
                 //}
             }
             else {
@@ -315,7 +315,7 @@ collide_asteroid_ship(obj_pair *pair)
                                         asteroid_hit_info.heavy, &hitpos,
                                         ship_damage, MISS_SHIELDS, NO_SPARKS);
                 //if (asteroid_hit_info.light->type == OBJ_SHIP) {
-                //	nprintf(("AI", "Time = %7.3f, asteroid #%i applying %7.3f damage to ship %s\n", f2fl(Missiontime), pasteroid-Objects, ship_damage, Ships[asteroid_hit_info.light->instance].ship_name));
+                //   nprintf(("AI", "Time = %7.3f, asteroid #%i applying %7.3f damage to ship %s\n", f2fl(Missiontime), pasteroid-Objects, ship_damage, Ships[asteroid_hit_info.light->instance].ship_name));
                 //}
             }
 

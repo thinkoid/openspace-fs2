@@ -291,10 +291,10 @@ gameseq_push_state(int new_state)
 
     // Flush all events!!
     // I commented out because I'm not sure if we should throw out events when pushing or not.
-    //	int event;
-    //	while( (event = gameseq_get_event()) != -1 )	{
-    //		mprintf(( "Throwing out event %d because of state push from %d to %d\n", event, old_state, new_state ));
-    //	}
+    //   int event;
+    //   while( (event = gameseq_get_event()) != -1 ) {
+    //      mprintf(( "Throwing out event %d because of state push from %d to %d\n", event, old_state, new_state ));
+    //   }
 
     Assert(state_reentry == 1); // Get John! (Invalid state sequencing!)
     Assert(state_in_event_processer ==

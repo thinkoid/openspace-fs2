@@ -205,7 +205,7 @@ static int Hash_table_inited = 0;
 #define MISSION_ICON_VOLITION 0 // mini volition death's head :)
 
 // icon offsets (see LIST_ defines above
-//#define MISSION_ICON_VOLITION_X				(46)
+//#define MISSION_ICON_VOLITION_X            (46)
 #define MISSION_ICON_VOLITION_Y_OFFSET (-1)
 
 // icon offsets
@@ -794,9 +794,9 @@ sim_room_can_resume_savegame(char *savegame_filename)
 }
 
 // Decide wether to resume a save game or not
-// exit:	1	=>	savegame has been restored
-//			0	=>	no restore, proceed to briefing
-//			-1	=>	don't start mission at all
+// exit: 1  => savegame has been restored
+//       0  => no restore, proceed to briefing
+//       -1 => don't start mission at all
 int
 sim_room_maybe_resume_savegame()
 {
@@ -804,58 +804,58 @@ sim_room_maybe_resume_savegame()
     return 0;
 
     /*
-	char savegame_filename[_MAX_FNAME];
-	int popup_rval = -1, resume_savegame = 0;
+   char savegame_filename[_MAX_FNAME];
+   int popup_rval = -1, resume_savegame = 0;
 
-	// Generate the save-game filename for this campaign
-	memset(savegame_filename, 0, _MAX_FNAME);
-	mission_campaign_savefile_generate_root(savegame_filename);
-	strcat(savegame_filename, NOX("svg"));
+   // Generate the save-game filename for this campaign
+   memset(savegame_filename, 0, _MAX_FNAME);
+   mission_campaign_savefile_generate_root(savegame_filename);
+   strcat(savegame_filename, NOX("svg"));
 
-	// Decide if we should offer choice to resume this savegame
-	if ( sim_room_can_resume_savegame(savegame_filename) ) {
-		popup_rval = popup(0, 3, XSTR("&Cancel",-1), XSTR("&Overwrite",-1), XSTR("&Resume",-1), XSTR("A save game for this mission exists.", -1));
-		switch ( popup_rval ) {
-		case 0:
-		case -1:
-			resume_savegame = -1;
-			break;
-		case 1:
-			resume_savegame = 0;
-			break;
-		case 2:
-			resume_savegame = 1;
-			break;
-		default:
-			Int3();
-			resume_savegame = -1;
-			break;
-		}
-	} else {
-		resume_savegame = 0;
-	}
+   // Decide if we should offer choice to resume this savegame
+   if ( sim_room_can_resume_savegame(savegame_filename) ) {
+      popup_rval = popup(0, 3, XSTR("&Cancel",-1), XSTR("&Overwrite",-1), XSTR("&Resume",-1), XSTR("A save game for this mission exists.", -1));
+      switch ( popup_rval ) {
+      case 0:
+      case -1:
+         resume_savegame = -1;
+         break;
+      case 1:
+         resume_savegame = 0;
+         break;
+      case 2:
+         resume_savegame = 1;
+         break;
+      default:
+         Int3();
+         resume_savegame = -1;
+         break;
+      }
+   } else {
+      resume_savegame = 0;
+   }
 
-	if (resume_savegame == 1) {
-		if ( state_restore_all(savegame_filename) == -1 ) {
-			popup_rval = popup(PF_TITLE_BIG | PF_TITLE_RED, 2, POPUP_NO, POPUP_YES, XSTR("Error\nSaved misison could not be loaded.\nDo you wish to start this mission from the beginning?", -1));
-			if (popup_rval == 1) {
-				resume_savegame = 0;
-			} else {
-				resume_savegame = -1;
-			}
+   if (resume_savegame == 1) {
+      if ( state_restore_all(savegame_filename) == -1 ) {
+         popup_rval = popup(PF_TITLE_BIG | PF_TITLE_RED, 2, POPUP_NO, POPUP_YES, XSTR("Error\nSaved misison could not be loaded.\nDo you wish to start this mission from the beginning?", -1));
+         if (popup_rval == 1) {
+            resume_savegame = 0;
+         } else {
+            resume_savegame = -1;
+         }
 
-		} else {
-			resume_savegame = 1;
-		}
-	}
+      } else {
+         resume_savegame = 1;
+      }
+   }
 
-	// If we are resuming this savegame, then delete the file
-	if (resume_savegame == 1) {
-		cf_delete(savegame_filename);
-	}
+   // If we are resuming this savegame, then delete the file
+   if (resume_savegame == 1) {
+      cf_delete(savegame_filename);
+   }
 
-	return resume_savegame;
-	*/
+   return resume_savegame;
+   */
 }
 
 int
@@ -937,7 +937,7 @@ sim_room_button_pressed(int n)
     case MISSION_TAB:
 #ifdef OEM_BUILD
         game_feature_not_in_demo_popup();
-        //			gamesnd_play_iface(SND_GENERAL_FAIL);
+        //        gamesnd_play_iface(SND_GENERAL_FAIL);
         break;
 #else
         Player->readyroom_listing_mode = MODE_MISSIONS;
@@ -1681,16 +1681,16 @@ campaign_room_button_pressed(int n)
         break;
 
         /*
-		case CR_HELP_BUTTON:
-			launch_context_help();
-			gamesnd_play_iface(SND_HELP_PRESSED);
-			break;
+      case CR_HELP_BUTTON:
+         launch_context_help();
+         gamesnd_play_iface(SND_HELP_PRESSED);
+         break;
 
-		case CR_OPTIONS_BUTTON:
-			gamesnd_play_iface(SND_SWITCH_SCREENS);
-			gameseq_post_event(GS_EVENT_OPTIONS_MENU);
-			return 1;
-		*/
+      case CR_OPTIONS_BUTTON:
+         gamesnd_play_iface(SND_SWITCH_SCREENS);
+         gameseq_post_event(GS_EVENT_OPTIONS_MENU);
+         return 1;
+      */
 
     case CR_RESET_BUTTON:
         if ((Active_campaign_index < 0) ||

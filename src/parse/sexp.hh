@@ -21,7 +21,7 @@
 #else
 #define MAX_SEXP_NODES                                                           \
     2200 // Reduced from 2000 to 1200 by MK on 4/1/98.
-        //	Most used nodes is 698 in sm1-10a.  Sandeep thinks that's the most complex mission.
+        //  Most used nodes is 698 in sm1-10a.  Sandeep thinks that's the most complex mission.
         // AL 2-4-98: upped to 1600, btm03 ran out of sexps, since campaign took a bunch
         // DA 12/15 bumped up to 2000 - Dan ran out
 #endif
@@ -352,7 +352,7 @@
 #define CAR(n) (Sexp_nodes[n].first)
 #define CDR(n) (Sexp_nodes[n].rest)
 #define CADR(n) (Sexp_nodes[Sexp_nodes[n].rest].first)
-// #define CTEXT(n)	(Sexp_nodes[n].text)
+// #define CTEXT(n)  (Sexp_nodes[n].text)
 char *CTEXT(int n);
 
 #define REF_TYPE_SHIP 1
@@ -556,7 +556,7 @@ extern int find_operator(char *token);
 extern int query_sexp_args_count(int index);
 extern int check_sexp_syntax(int index, int return_type = OPR_BOOL,
                              int recursive = 0, int *bindex = NULL, int mode = 0);
-extern int get_sexp_main(void); //	Returns start node
+extern int get_sexp_main(void); //  Returns start node
 extern int stuff_sexp_variable_list();
 extern int eval_sexp(int index);
 extern int query_operator_return_type(int op);

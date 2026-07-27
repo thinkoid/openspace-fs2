@@ -56,19 +56,19 @@ extern int Show_area_effect;
 //
 // Call to create a shockwave
 //
-//	input:	parent_objnum	=> object number of object spawning the shockwave
-//				pos				=>	vector specifing global position of shockwave center
-//				speed				=>	speed at which shockwave expands (m/s)
-//				inner_radius	=>	radius at which damage applied is at maximum
-//				outer_radius	=> damage decreases linearly to zero from inner_radius to
-//										outer_radius.  Outside outer_radius, damage is 0.
-//				damage			=>	the maximum damage (ie within inner_radius)
-//				blast				=> the maximux blast (within inner_radius)
-//				sw_flag			=> indicates whether shockwave is from weapon or ship explosion
-//				delay          => delay in ms before the shockwave actually starts
+// input:   parent_objnum  => object number of object spawning the shockwave
+//          pos            => vector specifing global position of shockwave center
+//          speed          => speed at which shockwave expands (m/s)
+//          inner_radius   => radius at which damage applied is at maximum
+//          outer_radius   => damage decreases linearly to zero from inner_radius to
+//                            outer_radius.  Outside outer_radius, damage is 0.
+//          damage         => the maximum damage (ie within inner_radius)
+//          blast          => the maximux blast (within inner_radius)
+//          sw_flag        => indicates whether shockwave is from weapon or ship explosion
+//          delay          => delay in ms before the shockwave actually starts
 //
-//	return:	success			=>	object number of shockwave
-//				failure			=>	-1
+// return:  success        => object number of shockwave
+//          failure        => -1
 //
 int
 shockwave_create(int parent_objnum, vector *pos, shockwave_create_info *sci,
@@ -117,7 +117,7 @@ shockwave_create(int parent_objnum, vector *pos, shockwave_create_info *sci,
     sw->rot_angle = sci->rot_angle;
 
     si = &Shockwave_info[sw->shockwave_info_index];
-    //	sw->total_time = i2fl(si->num_frames) / si->fps;	// in seconds
+    //   sw->total_time = i2fl(si->num_frames) / si->fps;   // in seconds
     sw->total_time = sw->outer_radius / sw->speed;
 
     if (Objects[parent_objnum].type == OBJ_WEAPON) {
@@ -149,7 +149,7 @@ shockwave_create(int parent_objnum, vector *pos, shockwave_create_info *sci,
 //
 // Delete a shockwave
 //
-//	input:	object *objp	=>		pointer to shockwave object
+// input:   object *objp   =>    pointer to shockwave object
 //
 void
 shockwave_delete(object *objp)
@@ -209,11 +209,11 @@ shockwave_set_framenum(int index)
 // ------------------------------------------------------------------------------------
 // shockwave_move()
 //
-//	Simulate a single shockwave.  If the shockwave radius exceeds outer_radius, then
+// Simulate a single shockwave.  If the shockwave radius exceeds outer_radius, then
 // delete the shockwave.
 //
-//	input:		ojbp			=>		object pointer that points to shockwave object
-//					frametime	=>		time to simulate shockwave
+// input:      ojbp        =>    object pointer that points to shockwave object
+//             frametime   =>    time to simulate shockwave
 //
 void
 shockwave_move(object *shockwave_objp, float frametime)
@@ -240,9 +240,9 @@ shockwave_move(object *shockwave_objp, float frametime)
 
     sw->time_elapsed += frametime;
     /*
-	if ( sw->time_elapsed > sw->total_time ) {
-		shockwave_objp->flags |= OF_SHOULD_BE_DEAD;
-	}
+   if ( sw->time_elapsed > sw->total_time ) {
+      shockwave_objp->flags |= OF_SHOULD_BE_DEAD;
+   }
 */
 
     shockwave_set_framenum(shockwave_objp->instance);
@@ -317,9 +317,9 @@ shockwave_move(object *shockwave_objp, float frametime)
 // ------------------------------------------------------------------------------------
 // shockwave_render()
 //
-//	Draw the shockwave identified by handle
+// Draw the shockwave identified by handle
 //
-//	input:	objp	=>		pointer to shockwave object
+// input:   objp  =>    pointer to shockwave object
 //
 void
 shockwave_render(object *objp)
@@ -403,7 +403,7 @@ shockwave_level_close()
 // ------------------------------------------------------------------------------------
 // shockwave_close()
 //
-//	Called at game-shutdown to
+// Called at game-shutdown to
 //
 void
 shockwave_close()
@@ -412,9 +412,9 @@ shockwave_close()
 // ------------------------------------------------------------------------------------
 // shockwave_move_all()
 //
-//	Simulate all shockwaves in Shockwave_list
+// Simulate all shockwaves in Shockwave_list
 //
-//	input:	frametime	=>		time for last frame in ms
+// input:   frametime   =>    time for last frame in ms
 //
 void
 shockwave_move_all(float frametime)

@@ -107,12 +107,12 @@ UI_WINDOW::set_mask_bmap(int bmap, char *name)
         bm_get_info(bmap, &mask_w, &mask_h);
         tt_group = -1;
         /*
-		for (i=0; i<Num_tooltip_groups; i++){
-			if (!stricmp(Tooltip_groups[i].mask, name)){
-				tt_group = i;
-			}
-		}
-		*/
+      for (i=0; i<Num_tooltip_groups; i++){
+         if (!stricmp(Tooltip_groups[i].mask, name)){
+            tt_group = i;
+         }
+      }
+      */
     }
     else {
         nprintf(
@@ -324,18 +324,18 @@ UI_WINDOW::draw_tooltip()
     // ptr = &Tooltip_groups[tt_group];
     hotspot = get_current_hotspot();
 
-    //	mprintf(("HOTSPOT: %d [%d]\n",hotspot, Framecount));
+    //   mprintf(("HOTSPOT: %d [%d]\n",hotspot, Framecount));
 
     /*
-	if (hotspot != last_tooltip_hotspot) {
-		last_tooltip_hotspot = hotspot;
-		last_tooltip_time = timer_get_milliseconds();
-		ttx = tty = -1;
-		return;
+   if (hotspot != last_tooltip_hotspot) {
+      last_tooltip_hotspot = hotspot;
+      last_tooltip_time = timer_get_milliseconds();
+      ttx = tty = -1;
+      return;
 
-	} else if (timer_get_milliseconds() - last_tooltip_time < TOOLTIP_DELAY)
-		return;
-	*/
+   } else if (timer_get_milliseconds() - last_tooltip_time < TOOLTIP_DELAY)
+      return;
+   */
 
     if (first_gadget) {
         gadget = first_gadget;
@@ -352,32 +352,32 @@ UI_WINDOW::draw_tooltip()
     }
 
     /*
-	for (i=ptr->start; i<ptr->end; i++) {
-		if (Tooltips[i].hotspot == hotspot) {
-			char *str;
-			int w, h;
+   for (i=ptr->start; i<ptr->end; i++) {
+      if (Tooltips[i].hotspot == hotspot) {
+         char *str;
+         int w, h;
 
-			str = Tooltips[i].text;
-			if (str[0] == '@') {
-				if (!tooltip_handler)
-					Error(LOCATION, "No tooltip handler for screen with mask \"%s\"", ptr->mask);
+         str = Tooltips[i].text;
+         if (str[0] == '@') {
+            if (!tooltip_handler)
+               Error(LOCATION, "No tooltip handler for screen with mask \"%s\"", ptr->mask);
 
-				str = (*tooltip_handler)(str);  // Let the screen handle the custom tooltips
-				if (!str)
-					return;
-			}
+            str = (*tooltip_handler)(str);  // Let the screen handle the custom tooltips
+            if (!str)
+               return;
+         }
 
-			if (ttx < 0 || tty < 0) {
-				gr_get_string_size(&w, &h, str);
-				Assert(w < 320 && h < 100);
-				ttx = ui_mouse.x - w / 2;
-				tty = ui_mouse.y - h;
-			}
+         if (ttx < 0 || tty < 0) {
+            gr_get_string_size(&w, &h, str);
+            Assert(w < 320 && h < 100);
+            ttx = ui_mouse.x - w / 2;
+            tty = ui_mouse.y - h;
+         }
 
-			render_tooltip(str);
-		}
-	}
-	*/
+         render_tooltip(str);
+      }
+   }
+   */
 }
 
 void
@@ -434,16 +434,16 @@ UI_WINDOW::process(int key_in, int process_mouse)
     }
 
     // The following code was commented out by NeilK on 4/15/99 to fix a problem we were having with
-    //	the UI_SLIDER2 class not receiving the process event when the mouse was dragging the scroller
+    //   the UI_SLIDER2 class not receiving the process event when the mouse was dragging the scroller
     // but outside the mask region. I checked a handful of other screens and so no adverse affects
     // of this change at the time.
 
     /*
-	if (mouse_captured_gadget) {
-		mouse_captured_gadget->process();  // if a control has captured the mouse, only it gets processed
-		use_hack_to_get_around_stupid_problem_flag = 0;
-		return last_keypress;
-	}
+   if (mouse_captured_gadget) {
+      mouse_captured_gadget->process();  // if a control has captured the mouse, only it gets processed
+      use_hack_to_get_around_stupid_problem_flag = 0;
+      return last_keypress;
+   }
 */
     if (!first_gadget) {
         use_hack_to_get_around_stupid_problem_flag = 0;
@@ -693,89 +693,89 @@ void
 UI_WINDOW::do_dump_check()
 {
 #if 0
-	if ( keypress == KEY_SHIFTED+KEY_CTRLED+KEY_ALTED+KEY_F12 ) {
-		FILE *fp;
+   if ( keypress == KEY_SHIFTED+KEY_CTRLED+KEY_ALTED+KEY_F12 ) {
+      FILE *fp;
 
-		last_keypress = keypress = 0;
+      last_keypress = keypress = 0;
 
-		mprintf(( "\n========== WINDOW GADGETS =========\n" ));
-		mprintf(( "(Also dumped to ui.out)\n" ));
+      mprintf(( "\n========== WINDOW GADGETS =========\n" ));
+      mprintf(( "(Also dumped to ui.out)\n" ));
 
-		fp = fopen( "ui.out", "wt" );
-		tmp = first_gadget;
-		do	{
-			if ( tmp->parent == NULL ) {	
-				switch ( tmp->kind ) {
-				case UI_KIND_BUTTON:
-					mprintf(( "UI: Button at %d,%d\n", tmp->x, tmp->y ));
-					fprintf( fp, "UI: Button at %d,%d\n", tmp->x, tmp->y );
-					break;
-				case UI_KIND_KEYTRAP:
-					mprintf(( "UI: Keytrap at %d,%d\n", tmp->x, tmp->y ));
-					fprintf( fp, "UI: Keytrap at %d,%d\n", tmp->x, tmp->y );
-					break;
-				case UI_KIND_CHECKBOX:
-					mprintf(( "UI: Checkbox at %d,%d\n", tmp->x, tmp->y ));
-					fprintf( fp, "UI: Checkbox at %d,%d\n", tmp->x, tmp->y );
-					break;
-				case UI_KIND_RADIO:
-					mprintf(( "UI: Radiobutton at %d,%d\n", tmp->x, tmp->y ));
-					fprintf( fp, "UI: Radiobutton at %d,%d\n", tmp->x, tmp->y );
-					break;
-				case UI_KIND_SCROLLBAR:
-					mprintf(( "UI: Scrollbar at %d,%d\n", tmp->x, tmp->y ));
-					fprintf( fp, "UI: Scrollbar at %d,%d\n", tmp->x, tmp->y );
-					break;
-				case UI_KIND_LISTBOX:
-					mprintf(( "UI: Listbox at %d,%d\n", tmp->x, tmp->y ));
-					fprintf( fp, "UI: Listbox at %d,%d\n", tmp->x, tmp->y );
-					break;
-				case UI_KIND_INPUTBOX:
-					mprintf(( "UI: Inputbox at %d,%d\n", tmp->x, tmp->y ));
-					fprintf( fp, "UI: Inputbox at %d,%d\n", tmp->x, tmp->y );
-					break;
-				default:
-					mprintf(( "UI: Unknown type %d at %d,%d\n", tmp->kind, tmp->x, tmp->y ));
-					fprintf( fp, "UI: Unknown type %d at %d,%d\n", tmp->kind, tmp->x, tmp->y );
-				}
-			}
-			tmp = tmp->next;
-		} while( tmp != first_gadget );
-		fclose(fp);
-		mprintf(( "===================================\n" ));
-	}
+      fp = fopen( "ui.out", "wt" );
+      tmp = first_gadget;
+      do {
+         if ( tmp->parent == NULL ) {  
+            switch ( tmp->kind ) {
+            case UI_KIND_BUTTON:
+               mprintf(( "UI: Button at %d,%d\n", tmp->x, tmp->y ));
+               fprintf( fp, "UI: Button at %d,%d\n", tmp->x, tmp->y );
+               break;
+            case UI_KIND_KEYTRAP:
+               mprintf(( "UI: Keytrap at %d,%d\n", tmp->x, tmp->y ));
+               fprintf( fp, "UI: Keytrap at %d,%d\n", tmp->x, tmp->y );
+               break;
+            case UI_KIND_CHECKBOX:
+               mprintf(( "UI: Checkbox at %d,%d\n", tmp->x, tmp->y ));
+               fprintf( fp, "UI: Checkbox at %d,%d\n", tmp->x, tmp->y );
+               break;
+            case UI_KIND_RADIO:
+               mprintf(( "UI: Radiobutton at %d,%d\n", tmp->x, tmp->y ));
+               fprintf( fp, "UI: Radiobutton at %d,%d\n", tmp->x, tmp->y );
+               break;
+            case UI_KIND_SCROLLBAR:
+               mprintf(( "UI: Scrollbar at %d,%d\n", tmp->x, tmp->y ));
+               fprintf( fp, "UI: Scrollbar at %d,%d\n", tmp->x, tmp->y );
+               break;
+            case UI_KIND_LISTBOX:
+               mprintf(( "UI: Listbox at %d,%d\n", tmp->x, tmp->y ));
+               fprintf( fp, "UI: Listbox at %d,%d\n", tmp->x, tmp->y );
+               break;
+            case UI_KIND_INPUTBOX:
+               mprintf(( "UI: Inputbox at %d,%d\n", tmp->x, tmp->y ));
+               fprintf( fp, "UI: Inputbox at %d,%d\n", tmp->x, tmp->y );
+               break;
+            default:
+               mprintf(( "UI: Unknown type %d at %d,%d\n", tmp->kind, tmp->x, tmp->y ));
+               fprintf( fp, "UI: Unknown type %d at %d,%d\n", tmp->kind, tmp->x, tmp->y );
+            }
+         }
+         tmp = tmp->next;
+      } while( tmp != first_gadget );
+      fclose(fp);
+      mprintf(( "===================================\n" ));
+   }
 #endif
 }
 
 /*
 void parse_tooltip(int n)
 {
-	char buf[MESSAGE_LENGTH];
+   char buf[MESSAGE_LENGTH];
 
-	stuff_int(&Tooltips[n].hotspot);
-	stuff_string(buf, F_MESSAGE, NULL);
-	Tooltips[n].text = strdup(buf);
+   stuff_int(&Tooltips[n].hotspot);
+   stuff_string(buf, F_MESSAGE, NULL);
+   Tooltips[n].text = strdup(buf);
 }
 
 int parse_tooltips_group(int group, int n)
 {
-	char buf[NAME_LENGTH];
+   char buf[NAME_LENGTH];
 
-	Assert(group < MAX_TOOLTIP_GROUPS);
-	required_string("$Mask Filename:");
-	stuff_string(buf, F_NAME, NULL);
-	Tooltip_groups[group].mask = strdup(buf);
-	Tooltip_groups[group].start = n;
+   Assert(group < MAX_TOOLTIP_GROUPS);
+   required_string("$Mask Filename:");
+   stuff_string(buf, F_NAME, NULL);
+   Tooltip_groups[group].mask = strdup(buf);
+   Tooltip_groups[group].start = n;
 
-	while (1) {
-		if (check_for_string("#") || check_for_string("$")) {
-			Tooltip_groups[group].end = n;
-			return n;
-		}
+   while (1) {
+      if (check_for_string("#") || check_for_string("$")) {
+         Tooltip_groups[group].end = n;
+         return n;
+      }
 
-		Assert(n < MAX_TOOLTIPS);
-		parse_tooltip(n++);
-	}
+      Assert(n < MAX_TOOLTIPS);
+      parse_tooltip(n++);
+   }
 }
 
 void parse_ship_tooltip(int n)
@@ -788,57 +788,57 @@ void parse_weapon_tooltip(int n)
 
 void parse_tooltips()
 {
-	int n;
+   int n;
 
-	// open localization
-	lcl_ext_open();
+   // open localization
+   lcl_ext_open();
 
-	read_file_text("tooltips.tbl");
+   read_file_text("tooltips.tbl");
 
-	n = Num_tooltip_groups = 0;
-	reset_parse();
+   n = Num_tooltip_groups = 0;
+   reset_parse();
 
-	if (optional_string("#UI"))
-		while (required_string_either("#", "$")) {
-			n = parse_tooltips_group(Num_tooltip_groups, n);
-			Num_tooltip_groups++;
-		}
+   if (optional_string("#UI"))
+      while (required_string_either("#", "$")) {
+         n = parse_tooltips_group(Num_tooltip_groups, n);
+         Num_tooltip_groups++;
+      }
 
-	if (optional_string("#Ships"))
-		while (required_string_either("#", "$")) {
-			parse_ship_tooltip(Num_ship_tooltips);
-			Num_ship_tooltips++;
-		}
+   if (optional_string("#Ships"))
+      while (required_string_either("#", "$")) {
+         parse_ship_tooltip(Num_ship_tooltips);
+         Num_ship_tooltips++;
+      }
 
-	if (optional_string("#Weapons"))
-		while (required_string_either("#", "$")) {
-			parse_ship_tooltip(Num_weapon_tooltips);
-			Num_weapon_tooltips++;
-		}
+   if (optional_string("#Weapons"))
+      while (required_string_either("#", "$")) {
+         parse_ship_tooltip(Num_weapon_tooltips);
+         Num_weapon_tooltips++;
+      }
 
-	required_string("#End");
+   required_string("#End");
 
-	// close localization
-	lcl_ext_close();
+   // close localization
+   lcl_ext_close();
 }
 
 void init_tooltips()
 {
-	static int inited = 0;
+   static int inited = 0;
 
-	if (!inited) {
-		int rval;
+   if (!inited) {
+      int rval;
 
-		if ((rval = setjmp(parse_abort)) != 0) {
+      if ((rval = setjmp(parse_abort)) != 0) {
 
-		} else {			
+      } else {       
 #ifndef DEMO
-			parse_tooltips();
+         parse_tooltips();
 #endif
-		}
+      }
 
-		inited = 1;
-	}
+      inited = 1;
+   }
 }
 */
 

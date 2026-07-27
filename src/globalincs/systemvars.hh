@@ -15,10 +15,10 @@
 #include <math.h>
 
 #define GM_NORMAL (1 << 1)
-#define GM_DEAD_DIED (1 << 2) //	Died, waiting to blow up.
-#define GM_DEAD_BLEW_UP (1 << 3) //	Blew up.
+#define GM_DEAD_DIED (1 << 2) // Died, waiting to blow up.
+#define GM_DEAD_BLEW_UP (1 << 3) // Blew up.
 #define GM_DEAD_ABORTED                                                          \
-    (1 << 4) //	Player pressed a key, aborting death sequence.
+    (1 << 4) //   Player pressed a key, aborting death sequence.
 #define GM_IN_MISSION                                                            \
     (1 << 5) // Player is actually in the mission -- not at a pre-mission menu
 
@@ -27,11 +27,11 @@
 #define GM_STATS_TRANSFER (1 << 9) // in the process of stats transfer
 #define GM_CAMPAIGN_MODE (1 << 10) // are we currently in a campaign.
 
-#define VM_EXTERNAL (1 << 0) //	Set if not viewing from player position.
-#define VM_SLEWED (1 << 1) //	Set if viewer orientation is slewed.
-#define VM_DEAD_VIEW (1 << 2) //	Set if viewer is watching from dead view.
-#define VM_CHASE (1 << 3) //	Chase view.
-#define VM_OTHER_SHIP (1 << 4) //	View from another ship.
+#define VM_EXTERNAL (1 << 0) //  Set if not viewing from player position.
+#define VM_SLEWED (1 << 1) // Set if viewer orientation is slewed.
+#define VM_DEAD_VIEW (1 << 2) // Set if viewer is watching from dead view.
+#define VM_CHASE (1 << 3) //  Chase view.
+#define VM_OTHER_SHIP (1 << 4) //   View from another ship.
 #define VM_EXTERNAL_CAMERA_LOCKED                                                \
     (1                                                                           \
      << 5) // External camera is locked in place (ie controls move ship not camera)
@@ -47,8 +47,8 @@
 
 typedef struct vei
 {
-    angles angles; //	Angles defining viewer location.
-    float distance; //	Distance from which to view, plus 2x radius.
+    angles angles; //   Angles defining viewer location.
+    float distance; //  Distance from which to view, plus 2x radius.
 } vei;
 
 typedef struct vci

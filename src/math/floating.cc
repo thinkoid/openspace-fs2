@@ -43,17 +43,17 @@ union _flint
 /*
 static void MakeInverseSqrtLookupTable()
 {
-	long f;
-	unsigned char *h;
-	union _flint fi, fo;
+   long f;
+   unsigned char *h;
+   union _flint fi, fo;
 
-	iSqrt_inited = 1;
-	for ( f=0, h=iSqrt; f < TABLE_SIZE; f++ )	{
-		fi.i = ((EXP_BIAS-1)<<EXP_POS) | (f<<LOOKUP_POS);
-		fo.f = 1.0f / fl_sqrt(fi.f);
-		*h++ = (unsigned char)(((fo.i + (1<<(SEED_POS-2))) >>SEED_POS ) & 0xFF);
-	}
-	iSqrt[ TABLE_SIZE / 2 ] = 0xFF;
+   iSqrt_inited = 1;
+   for ( f=0, h=iSqrt; f < TABLE_SIZE; f++ ) {
+      fi.i = ((EXP_BIAS-1)<<EXP_POS) | (f<<LOOKUP_POS);
+      fo.f = 1.0f / fl_sqrt(fi.f);
+      *h++ = (unsigned char)(((fo.i + (1<<(SEED_POS-2))) >>SEED_POS ) & 0xFF);
+   }
+   iSqrt[ TABLE_SIZE / 2 ] = 0xFF;
 }
 */
 
@@ -61,28 +61,28 @@ static void MakeInverseSqrtLookupTable()
 float
 fl_isqrt_c(float x)
 {
-    //	unsigned long a = ((union _flint *)(&x))->i;
-    //	float arg = x;
-    //	union _flint seed;
-    //	FLOAT r;
+    //   unsigned long a = ((union _flint *)(&x))->i;
+    //   float arg = x;
+    //   union _flint seed;
+    //   FLOAT r;
 
     int t1, t2, t3;
     t1 = timer_get_microseconds();
     float r1 = 1.0f / (float)sqrt((double)x);
     t2 = timer_get_microseconds();
-    //	float r2 = fl_isqrt_asm(x);
+    //   float r2 = fl_isqrt_asm(x);
     t3 = timer_get_microseconds();
 
     return r1;
 
-    /*	if ( !iSqrt_inited )
-		MakeInverseSqrtLookupTable();
+    /*   if ( !iSqrt_inited )
+      MakeInverseSqrtLookupTable();
 
-	seed.i = SET_EXP(((3*EXP_BIAS-1) - GET_EXP(a)) >> 1 ) | SET_MANTSEED(iSqrt[GET_EMANT(a)]);
-	r = seed.f;
-	r = (3.0f - r * r * arg ) * r * 0.5f;
-	r = (3.0f - r * r * arg ) * r * 0.5f;
-	return r;
+   seed.i = SET_EXP(((3*EXP_BIAS-1) - GET_EXP(a)) >> 1 ) | SET_MANTSEED(iSqrt[GET_EMANT(a)]);
+   r = seed.f;
+   r = (3.0f - r * r * arg ) * r * 0.5f;
+   r = (3.0f - r * r * arg ) * r * 0.5f;
+   return r;
 */
 }
 
@@ -99,7 +99,7 @@ fl_roundoff(float x, int multiple)
     return (float)(((int)x / multiple) * multiple);
 }
 
-//	Return random value in range 0.0..1.0- (1.0- means the closest number less than 1.0)
+// Return random value in range 0.0..1.0- (1.0- means the closest number less than 1.0)
 float
 frand()
 {
@@ -111,7 +111,7 @@ frand()
     return rval;
 }
 
-//	Return a floating point number in the range min..max.
+// Return a floating point number in the range min..max.
 float
 frand_range(float min, float max)
 {
@@ -123,11 +123,11 @@ frand_range(float min, float max)
     return rval;
 }
 
-//	Call this in the frame interval to get TRUE chance times per second.
-//	If you want it to return TRUE 3 times per second, call it in the frame interval like so:
-//		rand_chance(flFrametime, 3.0f);
+// Call this in the frame interval to get TRUE chance times per second.
+// If you want it to return TRUE 3 times per second, call it in the frame interval like so:
+//    rand_chance(flFrametime, 3.0f);
 int
-rand_chance(float frametime, float chance) //	default value for chance = 1.0f.
+rand_chance(float frametime, float chance) //   default value for chance = 1.0f.
 {
     while (--chance > 0.0f)
         if (frand() < frametime)
@@ -138,9 +138,9 @@ rand_chance(float frametime, float chance) //	default value for chance = 1.0f.
 
 /*fix fl2f( float x )
 {
-	float nf;
-	nf = x*65536.0f + 8390656.0f;
-	return ((*((int *)&nf)) & 0x7FFFFF)-2048;
+   float nf;
+   nf = x*65536.0f + 8390656.0f;
+   return ((*((int *)&nf)) & 0x7FFFFF)-2048;
 }
 */
 

@@ -113,7 +113,7 @@ int timestamp();
 
 #define timestamp_valid(stamp) ((stamp == 0) ? 0 : 1)
 
-//	Returns millliseconds until timestamp will elapse.
+// Returns millliseconds until timestamp will elapse.
 int timestamp_until(int stamp);
 
 // checks if a specified time (in milliseconds) has elapsed past the given timestamp (which

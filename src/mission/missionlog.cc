@@ -292,7 +292,7 @@ mission_log_add_entry(int type, char *pname, char *sname, int info_index)
                 if (index == -1) {
                     index = ship_find_exited_ship_by_name(sname);
                     if (index == -1) {
-                        //	Int3();		// get allender.  name of object who killed ship appears to be bogus!!!
+                        // Int3();     // get allender.  name of object who killed ship appears to be bogus!!!
                         break;
                     }
                     team = Ships_exited[index].team;

@@ -155,22 +155,22 @@ static MENU_REGION Medal_regions
 
 static UI_WINDOW Medals_window;
 
-//#define MAX_MEDALS_BUTTONS						1
-//#define MEDAL_BUTTON_EXIT						0
+//#define MAX_MEDALS_BUTTONS                 1
+//#define MEDAL_BUTTON_EXIT                  0
 //static UI_BUTTON Medal_buttons[MAX_MEDALS_BUTTONS];
 
 /*static char *Medal_button_names[MAX_MEDALS_BUTTONS] = {
 //XSTR:OFF
-	"MX_17"
+   "MX_17"
 //XSTR:ON
 };
 */
 /*
 static int Medal_button_coords[MAX_MEDALS_BUTTONS][2] = {
-	{561,411}
+   {561,411}
 };
 static int Medal_button_masks[MAX_MEDALS_BUTTONS] = {
-	17
+   17
 };
 */
 
@@ -550,12 +550,12 @@ medal_main_close()
 /*
 void init_medal_palette()
 {
-	Medal_palette = bm_load("MedalsPalette.pcx");
-	if(Medal_palette > -1){
+   Medal_palette = bm_load("MedalsPalette.pcx");
+   if(Medal_palette > -1){
 #ifndef HARDWARE_ONLY
-		palette_use_bm_palette(Medal_palette);
+      palette_use_bm_palette(Medal_palette);
 #endif
-	}
+   }
 }
 */
 

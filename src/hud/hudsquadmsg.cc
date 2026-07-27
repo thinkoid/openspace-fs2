@@ -117,7 +117,7 @@ int First_menu_item = -1; // index of first item in the menu
 // system
 typedef struct key_store
 {
-    int option_num; // which element in the	Control_config array is this
+    int option_num; // which element in the  Control_config array is this
     int id; // which id (1 or 2) is this key.
     int key_value; // which key value to put there.
 } key_store;
@@ -312,7 +312,7 @@ int hud_squadmsg_ship_order_valid(int shipnum, int order);
 void
 hud_squadmsg_start()
 {
-    //	int i;
+    //   int i;
 
     //if ( num_keys_saved < 0 )  // save the keys if they haven't been saved yet
     hud_squadmsg_save_keys();
@@ -320,8 +320,8 @@ hud_squadmsg_start()
     Msg_key = -1;
 
     /*
-	for (i=0; i<num_keys_saved; i++)
-		clear_key_binding ( (short) key_save[i].key_value );				// removes all mention of this key from Control_config
+   for (i=0; i<num_keys_saved; i++)
+      clear_key_binding ( (short) key_save[i].key_value );           // removes all mention of this key from Control_config
 */
 
     Num_menu_items = -1; // reset the menu items
@@ -346,14 +346,14 @@ void
 hud_squadmsg_end()
 {
     /*
-	int i;
-	key_store *ksp;
+   int i;
+   key_store *ksp;
 
-	// move through all keys saved and restore their orignal values.
-	for ( i=0; i<num_keys_saved; i++ ) {
-		ksp = &key_save[i];
-		Control_config[ksp->option_num].key_id = (short) ksp->key_value;
-	}
+   // move through all keys saved and restore their orignal values.
+   for ( i=0; i<num_keys_saved; i++ ) {
+      ksp = &key_save[i];
+      Control_config[ksp->option_num].key_id = (short) ksp->key_value;
+   }
 */
 
     if (message_is_playing() == FALSE)
@@ -646,7 +646,7 @@ hud_squadmsg_read_key(int k)
                 key_found = 1;
             }
 
-            //			key_down_count(k);
+            //       key_down_count(k);
             break;
         }
     }
@@ -778,12 +778,12 @@ hud_squadmsg_display_menu(char *title)
         }
         else {
             /*
-			dim_index = min(5, HUD_color_alpha - 2);
-			if ( dim_index < 0 ) {
-				dim_index = 0;
-			}
-			gr_set_color_fast(&HUD_color_defaults[dim_index]);
-			*/
+         dim_index = min(5, HUD_color_alpha - 2);
+         if ( dim_index < 0 ) {
+            dim_index = 0;
+         }
+         gr_set_color_fast(&HUD_color_defaults[dim_index]);
+         */
 
             hud_set_gauge_color(HUD_MESSAGE_BOX, HUD_C_DIM);
         }
@@ -928,8 +928,8 @@ hud_squadmsg_rearm_shortcut()
 void
 hud_squadmsg_repair_rearm_abort(int toggle_state)
 {
-    //	ai_info *aip;
-    //	object *robjp;
+    //   ai_info *aip;
+    //   object *robjp;
     object *tobj;
 
     tobj = Player_obj;
@@ -1328,7 +1328,7 @@ hud_squadmsg_send_ship_command(int shipnum, int command, int send_message)
         case PROTECT_TARGET_ITEM:
 
             // AL 31-3-98: Can't protect self... this can happen if all fighters
-            //					are told to protect another friendly ship
+            //             are told to protect another friendly ship
             if (ainfo->target_objnum == Ships[shipnum].objnum) {
                 return 0;
             }
@@ -1559,7 +1559,7 @@ hud_squadmsg_send_wing_command(int wingnum, int command, int send_message)
             Assert(wing_team != target_team);
 
             ai_mode = AI_GOAL_IGNORE;
-            ai_submode = 0; //	actually, a don't care.
+            ai_submode = 0; //   actually, a don't care.
             message = MESSAGE_YESSIR;
             break;
 
@@ -1937,16 +1937,16 @@ hud_squadmsg_call_reinforcement(int reinforcement_num)
 
     // commented out on 9/9/98 because these messages simply are not used
     /*
-	// now play a message (if there is one to play) for this reinforcement arrival.  The first for loop
-	// determine how many messages there are to play, since the array is packet.  Then, if >= 1 message
-	// to play, play one
-	for (i = 0; i < MAX_REINFORCEMENT_MESSAGES; i++ )
-		if ( !strlen(rp->yes_messages[i]) )
-			break;
+   // now play a message (if there is one to play) for this reinforcement arrival.  The first for loop
+   // determine how many messages there are to play, since the array is packet.  Then, if >= 1 message
+   // to play, play one
+   for (i = 0; i < MAX_REINFORCEMENT_MESSAGES; i++ )
+      if ( !strlen(rp->yes_messages[i]) )
+         break;
 
-	//if ( i > 0 )
-	//	message_send_to_player( rp->yes_messages[myrand() % i], rp->name, MESSAGE_PRIORITY_NORMAL, HUD_SOURCE_FRIENDLY );
-	*/
+   //if ( i > 0 )
+   // message_send_to_player( rp->yes_messages[myrand() % i], rp->name, MESSAGE_PRIORITY_NORMAL, HUD_SOURCE_FRIENDLY );
+   */
 
     mission_log_add_entry(LOG_PLAYER_REINFORCEMENT, rp->name, NULL);
 }
@@ -1987,7 +1987,7 @@ hud_squadmsg_reinforcement_select()
         }
     }
 
-    //	hud_squadmsg_display_menu( "Select Reinforcement" );
+    //   hud_squadmsg_display_menu( "Select Reinforcement" );
     hud_squadmsg_display_menu(XSTR(
         "Select Ship/Wing",
         319)); // AL 11-14-97: Reinforcement didn't fit, so using this for now
@@ -2197,28 +2197,28 @@ hud_squadmsg_wing_command()
 void
 hud_squadmsg_save_keys(int do_scroll)
 {
-    //	int i, j;
+    //   int i, j;
 
     num_keys_saved = 0;
 
     /*
-	for ( j=0; j<MAX_KEYS_USED; j++ ) {
-		for ( i=0; Control_config[i].text[0]; i++ ) {	// the text field in this structure is empty at the end of the config list
-			if ( Control_config[i].key_id == keys_used[j] ) {		// this is true if we have a match
+   for ( j=0; j<MAX_KEYS_USED; j++ ) {
+      for ( i=0; Control_config[i].text[0]; i++ ) {   // the text field in this structure is empty at the end of the config list
+         if ( Control_config[i].key_id == keys_used[j] ) {     // this is true if we have a match
 
-				// if we are not saving scrolling keys and we are trying to match page up and page down
-				// then skip them.
-				if ( !do_scroll && ((keys_used[j] == KEY_PAGEDOWN) || (keys_used[j] == KEY_PAGEUP)) )
-					continue;
+            // if we are not saving scrolling keys and we are trying to match page up and page down
+            // then skip them.
+            if ( !do_scroll && ((keys_used[j] == KEY_PAGEDOWN) || (keys_used[j] == KEY_PAGEUP)) )
+               continue;
 
-				Assert( num_keys_saved < MAX_KEYS_USED );
-				key_save[num_keys_saved].option_num = i;
-				key_save[num_keys_saved].key_value = keys_used[j];
-				num_keys_saved++;
-				break;  // done with this key -- move to next.
-			}
-		}
-	}
+            Assert( num_keys_saved < MAX_KEYS_USED );
+            key_save[num_keys_saved].option_num = i;
+            key_save[num_keys_saved].key_value = keys_used[j];
+            num_keys_saved++;
+            break;  // done with this key -- move to next.
+         }
+      }
+   }
 */
 }
 

@@ -527,7 +527,7 @@ stars_camera_cut()
     reload_old_debris = 1;
 }
 
-//#define TIME_STAR_CODE		// enable to time star code
+//#define TIME_STAR_CODE      // enable to time star code
 
 extern int Sun_drew;
 extern float Viewer_zoom;
@@ -713,43 +713,43 @@ stars_draw_bitmaps(int show_bitmaps)
 /*
 void calculate_bitmap_matrix(starfield_bitmaps *bm, vector *v)
 {
-	vm_vector_2_matrix(&bm->m, v, NULL, NULL);
-	vm_orthogonalize_matrix(&bm->m);
+   vm_vector_2_matrix(&bm->m, v, NULL, NULL);
+   vm_orthogonalize_matrix(&bm->m);
 }
 
 void calculate_bitmap_points(starfield_bitmaps *bm, float bank)
 {
-	int i;
-	vector fvec, uvec, rvec, tmp;
-	angles tangles;
+   int i;
+   vector fvec, uvec, rvec, tmp;
+   angles tangles;
 
-	vm_orthogonalize_matrix(&bm->m);
-	if (bank) {
-		tangles.p = tangles.h = 0.0f;
-		tangles.b = bank;
-		vm_rotate_matrix_by_angles(&bm->m, &tangles);
-	}
+   vm_orthogonalize_matrix(&bm->m);
+   if (bank) {
+      tangles.p = tangles.h = 0.0f;
+      tangles.b = bank;
+      vm_rotate_matrix_by_angles(&bm->m, &tangles);
+   }
 
-	fvec = bm->m.fvec;
-	vm_vec_scale(&fvec, bm->dist );
-	uvec = bm->m.uvec;
-	rvec = bm->m.rvec;
+   fvec = bm->m.fvec;
+   vm_vec_scale(&fvec, bm->dist );
+   uvec = bm->m.uvec;
+   rvec = bm->m.rvec;
 
-	vm_vec_sub(&tmp, &fvec, &uvec);
-	vm_vec_sub(&bm->points[3], &tmp, &rvec);
+   vm_vec_sub(&tmp, &fvec, &uvec);
+   vm_vec_sub(&bm->points[3], &tmp, &rvec);
 
-	vm_vec_sub(&tmp, &fvec, &uvec);
-	vm_vec_add(&bm->points[2], &tmp, &rvec);
+   vm_vec_sub(&tmp, &fvec, &uvec);
+   vm_vec_add(&bm->points[2], &tmp, &rvec);
 
-	vm_vec_add(&tmp, &fvec, &uvec);
-	vm_vec_add(&bm->points[1], &tmp, &rvec);
+   vm_vec_add(&tmp, &fvec, &uvec);
+   vm_vec_add(&bm->points[1], &tmp, &rvec);
 
-	vm_vec_add(&tmp, &fvec, &uvec);
-	vm_vec_sub(&bm->points[0], &tmp, &rvec);
+   vm_vec_add(&tmp, &fvec, &uvec);
+   vm_vec_sub(&bm->points[0], &tmp, &rvec);
 
-	for (i=0; i<4; i++){
-		vm_vec_normalize(&bm->points[i]);
-	}
+   for (i=0; i<4; i++){
+      vm_vec_normalize(&bm->points[i]);
+   }
 }
 */
 
@@ -1085,7 +1085,7 @@ stars_draw(int show_stars, int show_suns, int show_nebulas, int show_subspace)
 
                 vm_vec_scale(&d->pos, MAX_DIST);
                 vm_vec_add2(&d->pos, &Eye_position);
-                //				vm_vec_add2(&d->pos, &Player_obj->pos );
+                //            vm_vec_add2(&d->pos, &Player_obj->pos );
                 d->active = 1;
                 d->vclip = i % MAX_DEBRIS_VCLIPS; //rand()
 
@@ -1138,11 +1138,11 @@ stars_draw(int show_stars, int show_suns, int show_nebulas, int show_subspace)
             else if (vdist < MIN_DIST_RANGE)
                 d->active = 0;
 
-            //		vector tmp;
-            //		vm_vec_sub( &tmp, &d->pos, &Player_obj->pos );
-            //		vdist = vm_vec_dot( &tmp, &Player_obj->orient.fvec );
-            //		if ( vdist < 0.0f )
-            //			d->active = 0;
+            //    vector tmp;
+            //    vm_vec_sub( &tmp, &d->pos, &Player_obj->pos );
+            //    vdist = vm_vec_dot( &tmp, &Player_obj->orient.fvec );
+            //    if ( vdist < 0.0f )
+            //       d->active = 0;
         }
 
         reload_old_debris = 0;

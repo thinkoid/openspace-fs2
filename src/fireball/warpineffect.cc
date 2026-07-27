@@ -63,7 +63,7 @@ warpin_render(matrix *orient, vector *pos, int texture_bitmap_num, float radius,
 
     int saved_gr_zbuffering = gr_zbuffer_get();
 
-    //	gr_zbuffering = 0;
+    //   gr_zbuffering = 0;
 
     gr_set_bitmap(texture_bitmap_num, GR_ALPHABLEND_FILTER, GR_BITBLT_MODE_NORMAL,
                   1.0f);
@@ -93,7 +93,7 @@ warpin_render(matrix *orient, vector *pos, int texture_bitmap_num, float radius,
     vm_vec_scale_add2(&vecs[3], &orient->rvec, -radius);
     vm_vec_scale_add2(&vecs[3], &orient->fvec, Grid_depth);
 
-    //	vm_vec_scale_add( &vecs[4], &center, &orient->fvec, -Grid_depth );
+    //   vm_vec_scale_add( &vecs[4], &center, &orient->fvec, -Grid_depth );
     vecs[4] = center;
 
     verts[0].u = 0.01f;

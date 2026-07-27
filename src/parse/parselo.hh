@@ -54,8 +54,8 @@ extern jmp_buf parse_abort;
 #define SHIP_TYPE                                                                \
     0 // used to identify which kind of array to do a search for a name in
 #define SHIP_INFO_TYPE 1
-#define WEAPON_LIST_TYPE 2 //	to parse an int_list of weapons
-#define RAW_INTEGER_TYPE 3 //	to parse a list of integers
+#define WEAPON_LIST_TYPE 2 // to parse an int_list of weapons
+#define RAW_INTEGER_TYPE 3 // to parse a list of integers
 #define WEAPON_POOL_TYPE 4
 
 #define SEXP_SAVE_MODE 1
@@ -99,7 +99,7 @@ extern void stuff_string(char *pstr, int type, char *terminators, int len = 0);
 extern void stuff_string_line(char *pstr, int len);
 
 // Exactly the same as stuff string only Malloc's the buffer.
-//	Supports various FreeSpace primitive types.  If 'len' is supplied, it will override
+// Supports various FreeSpace primitive types.  If 'len' is supplied, it will override
 // the default string length if using the F_NAME case.
 char *stuff_and_malloc_string(int type, char *terminators, int len);
 extern void stuff_float(float *f);

@@ -96,7 +96,7 @@ protected:
     // Data for supporting bitmaps associated with different states of the control
     int uses_bmaps;
     int m_num_frames;
-    //		ubyte		*bmap_storage[MAX_BMAPS_PER_GADGET];
+    //      ubyte    *bmap_storage[MAX_BMAPS_PER_GADGET];
 
     void drag_with_children(int dx, int dy);
     void start_drag_with_children();
@@ -300,7 +300,7 @@ class UI_INPUTBOX : public UI_GADGET
     int flags;
     int pixel_limit; // base max characters on how wide the string is (-1 to ignore) in pixels
     int locked;
-    //		int should_reset;
+    //      int should_reset;
     int ignore_escape;
     color *text_color;
     char *valid_chars;
@@ -321,7 +321,7 @@ class UI_INPUTBOX : public UI_GADGET
     virtual void destroy();
 
 public:
-    //		int first_time;
+    //      int first_time;
 
     void create(UI_WINDOW *wnd, int _x, int _y, int _w, int _textlen, char *text,
                 int _flags = 0, int pixel_lim = -1, color *clr = NULL);
@@ -712,18 +712,18 @@ typedef struct ui_button_info
 
 /*
 typedef struct {
-	char *mask;
-	int start;
-	int end;
+   char *mask;
+   int start;
+   int end;
 } tooltip_group;
 
 typedef struct {
-	int hotspot;
-	char *text;
+   int hotspot;
+   char *text;
 } tooltip;
 
-#define MAX_TOOLTIP_GROUPS	50
-#define MAX_TOOLTIPS			500
+#define MAX_TOOLTIP_GROUPS 50
+#define MAX_TOOLTIPS       500
 
 extern int Num_tooltip_groups;
 extern tooltip_group Tooltip_groups[MAX_TOOLTIP_GROUPS];
@@ -736,45 +736,45 @@ void ui_sort_filenames(int n, char **list);
 /*
 class UI_SLIDER : public UI_GADGET
 {
-	friend UI_BUTTON;
-		int horz;
-		int position;
-		int window_size;
-		int fake_length;
-		int fake_position;
-		int fake_size;
-		UI_BUTTON left_button;
-		UI_BUTTON right_button;
-		int last_scrolled;
-		int drag_x, drag_y;
-		int drag_starting;
-		int dragging;
-		int moved;
+   friend UI_BUTTON;
+      int horz;
+      int position;
+      int window_size;
+      int fake_length;
+      int fake_position;
+      int fake_size;
+      UI_BUTTON left_button;
+      UI_BUTTON right_button;
+      int last_scrolled;
+      int drag_x, drag_y;
+      int drag_starting;
+      int dragging;
+      int moved;
 
-		int marker_x, marker_y, marker_w, marker_h;
-		int n_positions, pixel_range, increment;
-		float start, stop, current;
-		int mouse_locked;
+      int marker_x, marker_y, marker_w, marker_h;
+      int n_positions, pixel_range, increment;
+      float start, stop, current;
+      int mouse_locked;
 
-		virtual void draw();
-		virtual void process(int focus = 0);
+      virtual void draw();
+      virtual void process(int focus = 0);
 
-		// Used to index into bmap_ids[] array to locate right bitmap for slider
-		enum { SLIDER_BAR_NORMAL = 0 };
-		enum { SLIDER_BAR_DISABLED = 1 };
-		enum { SLIDER_MARKER_NORMAL = 2 };
-		enum { SLIDER_MARKER_DISABLED = 3 };
+      // Used to index into bmap_ids[] array to locate right bitmap for slider
+      enum { SLIDER_BAR_NORMAL = 0 };
+      enum { SLIDER_BAR_DISABLED = 1 };
+      enum { SLIDER_MARKER_NORMAL = 2 };
+      enum { SLIDER_MARKER_DISABLED = 3 };
 
-	public:
-		void create(UI_WINDOW *wnd, int _x, int _y, int _w, int _h, float _start, float _stop, float _pos, int n_positions);
-		int getpos();
-		float getcurrent();
-		int changed();
-		void hide();
-		void unhide();
-		int get_hidden();
-		void link_hotspot(int up_button_num, int down_button_num);
-		int set_bmaps(char *left_button_fname, char *right_button_fname, char *bar_fname, char *marker_fname);
+   public:
+      void create(UI_WINDOW *wnd, int _x, int _y, int _w, int _h, float _start, float _stop, float _pos, int n_positions);
+      int getpos();
+      float getcurrent();
+      int changed();
+      void hide();
+      void unhide();
+      int get_hidden();
+      void link_hotspot(int up_button_num, int down_button_num);
+      int set_bmaps(char *left_button_fname, char *right_button_fname, char *bar_fname, char *marker_fname);
 };
 */
 

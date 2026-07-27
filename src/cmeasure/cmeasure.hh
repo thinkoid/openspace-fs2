@@ -15,38 +15,38 @@
 
 #define MAX_CMEASURES 64
 
-//	Goes in cmeasure.subtype
+// Goes in cmeasure.subtype
 #define CMEASURE_UNUSED -1
 
 #define MAX_CMEASURE_TYPES 3
 
-#define CMEASURE_WAIT 333 //	delay in milliseconds between countermeasure firing.
+#define CMEASURE_WAIT 333 //  delay in milliseconds between countermeasure firing.
 
 #define CMF_DUD_HEAT                                                             \
-    0x01 //	If set, this cmeasure is a dud to heat seekers.  Set at create time.
+    0x01 // If set, this cmeasure is a dud to heat seekers.  Set at create time.
 #define CMF_DUD_ASPECT                                                           \
-    0x02 //	If set, this cmeasure is a dud to aspect seekers.  Set at create time.
+    0x02 // If set, this cmeasure is a dud to aspect seekers.  Set at create time.
 
 #define CMF_DUD (CMF_DUD_HEAT | CMF_DUD_ASPECT)
 
-//	Maximum distance at which a countermeasure can be tracked
-//	If this value is too large, missiles will always be tracking countermeasures.
+// Maximum distance at which a countermeasure can be tracked
+// If this value is too large, missiles will always be tracking countermeasures.
 #define MAX_CMEASURE_TRACK_DIST 300.0f
 
 typedef struct cmeasure_info
 {
     char cmeasure_name[NAME_LENGTH];
     float max_speed; // launch speed, relative to ship
-    float fire_wait; //	time between launches
-    float life_min, life_max; //	lifetime will be in range min..max.
-    int launch_sound; //	Sound played when launched.
+    float fire_wait; // time between launches
+    float life_min, life_max; // lifetime will be in range min..max.
+    int launch_sound; //   Sound played when launched.
     char pof_name[NAME_LENGTH];
     int model_num; // What this renders as
 } cmeasure_info;
 
 typedef struct cmeasure
 {
-    int flags; //	You know, flag type things.
+    int flags; // You know, flag type things.
     int subtype; // See CMEASURE_??? defines
     int objnum;
     int source_objnum; // What object this came from

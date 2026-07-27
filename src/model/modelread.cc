@@ -390,7 +390,7 @@ model_load(char *filename, int n_subsystems, model_subsystem *subsystems)
     }
 
     create_family_tree(pm);
-    //	dump_object_tree(pm);
+    //   dump_object_tree(pm);
 
     //==============================
     // Find all the lower detail versions of the hires model
@@ -590,31 +590,31 @@ model_get(int model_num)
 // also.
 void model_find_bound_box_3d(int model_num,int submodel_num, int inc_children, matrix *orient, vector * pos, vector * box )
 {
-	polymodel * pm;
-	vector to_root_xlat;
-	matrix to_root_rotate;
-	int n_steps, steps[16];
-	int tmp_sobj;
-	
-	if ( (model_num < 0) || (model_num >= N_polygon_models) ) return;
+   polymodel * pm;
+   vector to_root_xlat;
+   matrix to_root_rotate;
+   int n_steps, steps[16];
+   int tmp_sobj;
+   
+   if ( (model_num < 0) || (model_num >= N_polygon_models) ) return;
 
-	pm = &Polygon_models[model_num];
+   pm = &Polygon_models[model_num];
 
-	if ( submodel_num < 0 ) submodel_num = pm->detail[0];
+   if ( submodel_num < 0 ) submodel_num = pm->detail[0];
 
-	// traverse up the model tree to a root object.
-	// Store this path in n_steps,
-	n_steps = 0;
-	tmp_sobj = submodel_num;
-	while( tmp_sobj > -1 )	{
-		steps[n_steps++] = tmp_sobj;
-		tmp_sobj = pm->submodel[tmp_sobj].parent;
-	}
-	
-	
+   // traverse up the model tree to a root object.
+   // Store this path in n_steps,
+   n_steps = 0;
+   tmp_sobj = submodel_num;
+   while( tmp_sobj > -1 )  {
+      steps[n_steps++] = tmp_sobj;
+      tmp_sobj = pm->submodel[tmp_sobj].parent;
+   }
+   
+   
 
-//	vm_copy_transpose_matrix(&to_world_rotate, orient );
-//	to_world_xlat = *pos;
+// vm_copy_transpose_matrix(&to_world_rotate, orient );
+// to_world_xlat = *pos;
 
 }
 */
@@ -1160,7 +1160,7 @@ model_make_turrent_matrix(int model_num, model_subsystem *turret)
     turret->turret_matrix.rvec = rvec;
     turret->turret_matrix.uvec = uvec;
 
-    //	vm_vector_2_matrix(&turret->turret_matrix,&turret->turret_norm,NULL,NULL);
+    //   vm_vector_2_matrix(&turret->turret_matrix,&turret->turret_norm,NULL,NULL);
 
     // HACK!! WARNING!!!
     // I'm doing nothing to verify that this matrix is orthogonal!!
@@ -1176,7 +1176,7 @@ model_make_turrent_matrix(int model_num, model_subsystem *turret)
 
 // Tries to move joints so that the turrent points to the point dst.
 // turret1 is the angles of the turret, turret2 is the angles of the gun from turret
-//	Returns 1 if rotated gun, 0 if no gun to rotate (rotation handled by AI)
+// Returns 1 if rotated gun, 0 if no gun to rotate (rotation handled by AI)
 int
 model_rotate_gun(int model_num, model_subsystem *turret, matrix *orient,
                  angles *turret1, angles *turret2, vector *pos, vector *dst)
@@ -1199,52 +1199,52 @@ model_rotate_gun(int model_num, model_subsystem *turret, matrix *orient,
         model_make_turrent_matrix(model_num, turret);
 
     Assert(turret->flags & MSS_FLAG_TURRET_MATRIX);
-//	Assert( sm->movement_axis == MOVEMENT_AXIS_X );				// Gun must be able to change pitch
-//	Assert( sm_parent->movement_axis == MOVEMENT_AXIS_Z );	// Parent must be able to change heading
+// Assert( sm->movement_axis == MOVEMENT_AXIS_X );          // Gun must be able to change pitch
+// Assert( sm_parent->movement_axis == MOVEMENT_AXIS_Z );   // Parent must be able to change heading
 
 //======================================================
 // DEBUG code to draw the normal out of this gun and a circle
 // at the gun point.
 #if 0
-	{
-		vector tmp;
-		vector tmp1;
-		vertex dpnt1, dpnt2;
+   {
+      vector tmp;
+      vector tmp1;
+      vertex dpnt1, dpnt2;
 
-		model_clear_instance(model_num);
-		sm->angs.p = turret2->p;
-		sm_parent->angs.h = turret1->h;
+      model_clear_instance(model_num);
+      sm->angs.p = turret2->p;
+      sm_parent->angs.h = turret1->h;
 
-		model_find_world_point(&tmp, &vmd_zero_vector, model_num, turret->turret_gun_sobj, orient, pos );
-		gr_set_color(255,0,0);
-		g3_rotate_vertex( &dpnt1, &tmp );
+      model_find_world_point(&tmp, &vmd_zero_vector, model_num, turret->turret_gun_sobj, orient, pos );
+      gr_set_color(255,0,0);
+      g3_rotate_vertex( &dpnt1, &tmp );
 
-		gr_set_color(255,0,0);
-		g3_draw_sphere(&dpnt1,1.0f);
+      gr_set_color(255,0,0);
+      g3_draw_sphere(&dpnt1,1.0f);
 
-		vm_vec_copy_scale( &tmp1, &turret->turret_matrix.fvec, 10.0f );
-		model_find_world_point(&tmp, &tmp1, model_num, turret->turret_gun_sobj, orient, pos );
-		g3_rotate_vertex( &dpnt2, &tmp );
+      vm_vec_copy_scale( &tmp1, &turret->turret_matrix.fvec, 10.0f );
+      model_find_world_point(&tmp, &tmp1, model_num, turret->turret_gun_sobj, orient, pos );
+      g3_rotate_vertex( &dpnt2, &tmp );
 
-		gr_set_color(0,255,0);
-		g3_draw_line(&dpnt1,&dpnt2);
-		gr_set_color(0,128,0);
-		g3_draw_sphere(&dpnt2,0.2f);
+      gr_set_color(0,255,0);
+      g3_draw_line(&dpnt1,&dpnt2);
+      gr_set_color(0,128,0);
+      g3_draw_sphere(&dpnt2,0.2f);
 
-		vm_vec_copy_scale( &tmp1, &turret->turret_matrix.rvec, 10.0f );
-		model_find_world_point(&tmp, &tmp1, model_num, turret->turret_gun_sobj, orient, pos );
-		g3_rotate_vertex( &dpnt2, &tmp );
+      vm_vec_copy_scale( &tmp1, &turret->turret_matrix.rvec, 10.0f );
+      model_find_world_point(&tmp, &tmp1, model_num, turret->turret_gun_sobj, orient, pos );
+      g3_rotate_vertex( &dpnt2, &tmp );
 
-		gr_set_color(0,0,255);
-		g3_draw_line(&dpnt1,&dpnt2);
+      gr_set_color(0,0,255);
+      g3_draw_line(&dpnt1,&dpnt2);
 
-		vm_vec_copy_scale( &tmp1, &turret->turret_matrix.uvec, 10.0f );
-		model_find_world_point(&tmp, &tmp1, model_num, turret->turret_gun_sobj, orient, pos );
-		g3_rotate_vertex( &dpnt2, &tmp );
+      vm_vec_copy_scale( &tmp1, &turret->turret_matrix.uvec, 10.0f );
+      model_find_world_point(&tmp, &tmp1, model_num, turret->turret_gun_sobj, orient, pos );
+      g3_rotate_vertex( &dpnt2, &tmp );
 
-		gr_set_color(255,0,0);
-		g3_draw_line(&dpnt1,&dpnt2);
-	}
+      gr_set_color(255,0,0);
+      g3_draw_line(&dpnt1,&dpnt2);
+   }
 #endif
 
     //------------
@@ -1276,7 +1276,7 @@ model_rotate_gun(int model_num, model_subsystem *turret, matrix *orient,
     desired_angles.h = PI - atan2_safe(of_dst.x, of_dst.y);
     desired_angles.b = 0.0f;
 
-    //	mprintf(( "Z = %.1f, atan= %.1f\n", of_dst.z, desired_angles.p ));
+    //   mprintf(( "Z = %.1f, atan= %.1f\n", of_dst.z, desired_angles.p ));
 
     //------------
     // Gradually turn the turret towards the desired angles
@@ -1285,8 +1285,8 @@ model_rotate_gun(int model_num, model_subsystem *turret, matrix *orient,
     vm_interp_angle(&turret1->h, desired_angles.h, step_size);
     vm_interp_angle(&turret2->p, desired_angles.p, step_size);
 
-    //	turret1->h -= step_size*(key_down_timef(KEY_1)-key_down_timef(KEY_2) );
-    //	turret2->p += step_size*(key_down_timef(KEY_3)-key_down_timef(KEY_4) );
+    //   turret1->h -= step_size*(key_down_timef(KEY_1)-key_down_timef(KEY_2) );
+    //   turret2->p += step_size*(key_down_timef(KEY_3)-key_down_timef(KEY_4) );
 
     return 1;
 }
@@ -1433,7 +1433,7 @@ model_get_rotating_submodel_list(int *submodel_list, int *num_rotating_submodels
     ship *pship = &Ships[objp->instance];
     for (int idx = 0; idx < *num_rotating_submodels; idx++) {
         int valid = rotating_submodel_has_ship_subsys(submodel_list[idx], pship);
-        //		Assert( valid );
+        //     Assert( valid );
         if (!valid) {
             Warning(LOCATION,
                     "Ship %s has rotating submodel [%s] without ship subsystem\n",
@@ -1513,12 +1513,12 @@ model_clear_instance(int model_num)
 
     interp_clear_instance();
 
-    //	if ( keyd_pressed[KEY_1] ) pm->lights[0].value = 1.0f/255.0f;
-    //	if ( keyd_pressed[KEY_2] ) pm->lights[1].value = 1.0f/255.0f;
-    //	if ( keyd_pressed[KEY_3] ) pm->lights[2].value = 1.0f/255.0f;
-    //	if ( keyd_pressed[KEY_4] ) pm->lights[3].value = 1.0f/255.0f;
-    //	if ( keyd_pressed[KEY_5] ) pm->lights[4].value = 1.0f/255.0f;
-    //	if ( keyd_pressed[KEY_6] ) pm->lights[5].value = 1.0f/255.0f;
+    //   if ( keyd_pressed[KEY_1] ) pm->lights[0].value = 1.0f/255.0f;
+    //   if ( keyd_pressed[KEY_2] ) pm->lights[1].value = 1.0f/255.0f;
+    //   if ( keyd_pressed[KEY_3] ) pm->lights[2].value = 1.0f/255.0f;
+    //   if ( keyd_pressed[KEY_4] ) pm->lights[3].value = 1.0f/255.0f;
+    //   if ( keyd_pressed[KEY_5] ) pm->lights[4].value = 1.0f/255.0f;
+    //   if ( keyd_pressed[KEY_6] ) pm->lights[5].value = 1.0f/255.0f;
 }
 
 // initialization during ship set

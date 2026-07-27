@@ -146,7 +146,7 @@ int Pattern_default_next[MAX_PATTERNS] = {
     SONG_BTTL_3, // EARV_2 progresses to BTTL_3 by default
     SONG_NRML_1, // VICT_1 progresses to NRML_1 by default
     SONG_NRML_1, // VICT_2 progresses to NRML_1 by default
-    SONG_NRML_1, //	FAIL_1 progresses to NRML_1 by default
+    SONG_NRML_1, //  FAIL_1 progresses to NRML_1 by default
     -1 // no music plays after dead
 };
 
@@ -412,8 +412,8 @@ event_music_do_frame()
 // Called at the start of a mission (level).  Sets up the pattern data, and kicks off the
 // first track to play().
 //
-// input:	force_soundtrack	=>		OPTIONAL parameter (default value -1)
-//												forces the soundtrack to ignore the music.tbl assignment
+// input:   force_soundtrack  =>    OPTIONAL parameter (default value -1)
+//                                  forces the soundtrack to ignore the music.tbl assignment
 //
 void
 event_music_level_init(int force_soundtrack)
@@ -443,13 +443,13 @@ event_music_level_init(int force_soundtrack)
     if (Current_soundtrack_num < 0) {
         return;
         /*
-		// okay, assign a random soundtrack if one exists
-		if ( Num_soundtracks > 0 ) {
-			Current_soundtrack_num = rand()%Num_soundtracks;
-			nprintf(("EVENTMUSIC", "EVENTMUSIC ==> Picking random event music soundtrack: %s\n", Soundtracks[Current_soundtrack_num].name));
-		} else {
-			return;
-		}
+      // okay, assign a random soundtrack if one exists
+      if ( Num_soundtracks > 0 ) {
+         Current_soundtrack_num = rand()%Num_soundtracks;
+         nprintf(("EVENTMUSIC", "EVENTMUSIC ==> Picking random event music soundtrack: %s\n", Soundtracks[Current_soundtrack_num].name));
+      } else {
+         return;
+      }
 */
     }
 
@@ -599,7 +599,7 @@ event_music_battle_start()
         return 0;
     }
 
-    //	No special tracks in training.
+    //   No special tracks in training.
     if (The_mission.game_type & MISSION_TYPE_TRAINING)
         return -1;
 
@@ -706,18 +706,18 @@ event_music_enemy_arrival()
     }
 
     /*
-	// AL 11-03-97:
-	// Alternate between BTTL_2 and BTTL_3 following enemy arrivals
-	if ( Num_enemy_arrivals & 1 ) {
-		Patterns[next_pattern].next_pattern = SONG_BTTL_2;
-	} else {
-		if ( Patterns[SONG_BTTL_3].handle != -1 ) {
-			Patterns[next_pattern].next_pattern = SONG_BTTL_3;
-		} else {
-			Patterns[next_pattern].next_pattern = SONG_BTTL_2;
-		}
-	}
-	*/
+   // AL 11-03-97:
+   // Alternate between BTTL_2 and BTTL_3 following enemy arrivals
+   if ( Num_enemy_arrivals & 1 ) {
+      Patterns[next_pattern].next_pattern = SONG_BTTL_2;
+   } else {
+      if ( Patterns[SONG_BTTL_3].handle != -1 ) {
+         Patterns[next_pattern].next_pattern = SONG_BTTL_3;
+      } else {
+         Patterns[next_pattern].next_pattern = SONG_BTTL_2;
+      }
+   }
+   */
 
     if (Current_pattern != -1) {
         Patterns[Current_pattern].next_pattern = next_pattern;
@@ -774,11 +774,11 @@ event_music_friendly_arrival()
     if (Current_pattern != -1) {
         // AL 06-24-99: always overlay allied arrivals
         /*
-		if (next_pattern == SONG_AARV_1) {
-			Patterns[Current_pattern].next_pattern = next_pattern;
-			Patterns[Current_pattern].force_pattern = TRUE;
-		} else {
-		*/
+      if (next_pattern == SONG_AARV_1) {
+         Patterns[Current_pattern].next_pattern = next_pattern;
+         Patterns[Current_pattern].force_pattern = TRUE;
+      } else {
+      */
         Assert(Patterns[SONG_AARV_1].handle >= 0);
         audiostream_play(Patterns[SONG_AARV_1].handle, Master_event_music_volume,
                          0); // no looping
@@ -796,11 +796,11 @@ event_music_friendly_arrival()
     return 0;
 }
 
-//	Play arrival music keyed to team "team".
+// Play arrival music keyed to team "team".
 void
 event_music_arrival(int team)
 {
-    //	No friendly arrival music in a training mission.
+    //   No friendly arrival music in a training mission.
     if (The_mission.game_type & MISSION_TYPE_TRAINING)
         return;
 
@@ -822,7 +822,7 @@ event_music_primary_goal_failed()
 {
     int next_pattern;
 
-    //	No special tracks in training.
+    //   No special tracks in training.
     if (The_mission.game_type & MISSION_TYPE_TRAINING)
         return -1;
 
@@ -865,7 +865,7 @@ event_music_primary_goals_met()
 {
     int next_pattern = SONG_VICT_1;
 
-    //	No special tracks in training.
+    //   No special tracks in training.
     if (The_mission.game_type & MISSION_TYPE_TRAINING)
         return -1;
 
@@ -946,7 +946,7 @@ event_music_player_respawn()
     if (Event_music_level_inited == FALSE)
         return -1;
 
-    //	Assert(Current_pattern == SONG_DEAD_1);
+    //   Assert(Current_pattern == SONG_DEAD_1);
 
     Event_Music_battle_started = 0;
     Patterns[Current_pattern].next_pattern = SONG_NRML_1;
@@ -1184,7 +1184,7 @@ event_music_enable()
 // -------------------------------------------------------------------------------------------------
 // event_music_start_default()
 //
-//	Start playing a default track, based on how far the mission has progressed
+// Start playing a default track, based on how far the mission has progressed
 //
 void
 event_music_start_default()
@@ -1215,7 +1215,7 @@ event_music_start_default()
 // -------------------------------------------------------------------------------------------------
 // event_music_pause()
 //
-//	Stop any playing pattern, but don't rewind.
+// Stop any playing pattern, but don't rewind.
 //
 void
 event_music_pause()
@@ -1245,7 +1245,7 @@ event_music_pause()
 // -------------------------------------------------------------------------------------------------
 // event_music_unpause()
 //
-//	Start the Current_pattern if it is paused.
+// Start the Current_pattern if it is paused.
 //
 void
 event_music_unpause()
@@ -1279,7 +1279,7 @@ event_music_unpause()
 // -------------------------------------------------------------------------------------------------
 // event_music_set_volume_all()
 //
-//	Set the volume of the event driven music.  Used when using the game-wide music volume is changed
+// Set the volume of the event driven music.  Used when using the game-wide music volume is changed
 // by the user.
 //
 void
@@ -1293,8 +1293,8 @@ event_music_set_volume_all(float volume)
 //
 // Determine if there are any non-friendly ships in existance
 //
-// returns: 1 =>	there are non-friendly ships in existance
-//				0 =>  any ships in existance are friendly
+// returns: 1 =>  there are non-friendly ships in existance
+//          0 =>  any ships in existance are friendly
 int
 hostile_ships_present()
 {
@@ -1375,7 +1375,7 @@ event_music_get_info(char *outbuf)
 // ----------------------------------------------------------------
 // event_music_next_soundtrack()
 //
-// input:	delta		=>		1 or -1, depending if you want to go to next or previous song
+// input:   delta    =>    1 or -1, depending if you want to go to next or previous song
 //
 // returns: New soundtrack number if successfully changed, otherwise return -1
 //

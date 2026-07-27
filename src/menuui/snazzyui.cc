@@ -59,7 +59,7 @@ snazzy_menu_init()
 // over one of these regions.  Since these regions may be many different colors,
 // the mask is checked instead, since the regions are always a uniform color
 //
-//	The action parameter is used to return whether the region is clicked on or simply
+// The action parameter is used to return whether the region is clicked on or simply
 // has the mouse over it.  The #defines SNAZZY_OVER and SNAZZY_CLICKED are used.
 //
 // The purpose of the key_in parameter is to allow the caller to determine if any
@@ -100,7 +100,7 @@ snazzy_menu_do(ubyte *data, int mask_w, int mask_h, int num_regions,
             *key = k; // pass keypress back to caller
     }
 
-    //	if (mouse_down_count(MOUSE_LEFT_BUTTON) )	{
+    //   if (mouse_down_count(MOUSE_LEFT_BUTTON) ) {
     if (!mouse_down(MOUSE_LEFT_BUTTON) && Snazzy_mouse_left_was_down) {
         if (pixel_value >= 0)
             //nprintf(("Alan", "pixel val: %d\n", pixel_value));

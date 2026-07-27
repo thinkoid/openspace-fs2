@@ -30,7 +30,7 @@ typedef struct channel
     DWORD last_position;
 } channel;
 
-// #define	MAX_CHANNELS  16
+// #define  MAX_CHANNELS  16
 extern channel *Channels; //[MAX_CHANNELS];
 
 #endif /* __CHANNEL_H__ */

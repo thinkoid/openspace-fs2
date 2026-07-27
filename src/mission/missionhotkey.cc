@@ -65,31 +65,31 @@ static char *Hotkey_mask_fname[GR_NUM_RESOLUTIONS] = {
     "2_Hotkeys-M" // GR_1024
 };
 
-//#define GROUP_LIST_X	40
-//#define GROUP_LIST_W	160
+//#define GROUP_LIST_X  40
+//#define GROUP_LIST_W  160
 
-// #define ICON_LIST_X	219
-// #define ICON_LIST_W	8
+// #define ICON_LIST_X  219
+// #define ICON_LIST_W  8
 
-// #define ICON_LIST_X	280
-// #define ICON_LIST_W	8
+// #define ICON_LIST_X  280
+// #define ICON_LIST_W  8
 
-//#define SHIP_LIST_X	242
-//#define SHIP_LIST_X2	259
-//#define SHIP_LIST_W	341
-//#define SHIP_LIST_W2	324
+//#define SHIP_LIST_X   242
+//#define SHIP_LIST_X2  259
+//#define SHIP_LIST_W   341
+//#define SHIP_LIST_W2  324
 
-// #define SHIP_LIST_X	302
-// #define SHIP_LIST_X2	319
-// #define SHIP_LIST_W	281
-// #define SHIP_LIST_W2	264
+// #define SHIP_LIST_X  302
+// #define SHIP_LIST_X2 319
+// #define SHIP_LIST_W  281
+// #define SHIP_LIST_W2 264
 
-// #define LIST_Y			70
-// #define LIST_H			280
+// #define LIST_Y       70
+// #define LIST_H       280
 
 /*
-#define HOTKEY_X		575
-#define HOTKEY_Y		41
+#define HOTKEY_X     575
+#define HOTKEY_Y     41
 */
 
 #define HOTKEY_LINE_HEADING 1
@@ -147,27 +147,27 @@ static int Hotkey_function_name_coords[GR_NUM_RESOLUTIONS][4] = { {
                                                                   } };
 
 /*
-#define FIELD_LEFT_EDGE		0
-#define FIELD_F5				1
-#define FIELD_F6				2
-#define FIELD_F7				3
-#define FIELD_F8				4
-#define FIELD_F9				5
-#define FIELD_F10				6
-#define FIELD_F11				7
-#define FIELD_F12				8
-#define FIELD_ICON			9
-#define FIELD_RIGHT_EDGE	10
+#define FIELD_LEFT_EDGE    0
+#define FIELD_F5           1
+#define FIELD_F6           2
+#define FIELD_F7           3
+#define FIELD_F8           4
+#define FIELD_F9           5
+#define FIELD_F10          6
+#define FIELD_F11          7
+#define FIELD_F12          8
+#define FIELD_ICON         9
+#define FIELD_RIGHT_EDGE   10
 // x coords of unseen field boundaries (  | field1 | field2 | ... |  )
 // entried will all be centered in fields except FIELD_SHIP which will be left justified
 // an edge is named by the field on its left
 static int Hotkey_field_edge[GR_NUM_RESOLUTIONS][11] = {
-	{
-		29, 56, 83, 110, 137, 164, 191, 218, 245, 280, 531
-	},
-	{
-		47, 91, 135, 179, 223, 267, 311, 355, 399, 448, 849
-	}
+   {
+      29, 56, 83, 110, 137, 164, 191, 218, 245, 280, 531
+   },
+   {
+      47, 91, 135, 179, 223, 267, 311, 355, 399, 448, 849
+   }
 }
 */
 
@@ -617,9 +617,9 @@ hotkey_build_team_listing(int team, int y)
     // through object list.  Seemed safer since it doesn't rely on the team value getting reset to
     // a bogus value between missions
     //for (i=0; i<MAX_SHIPS; i++) {
-    //	if ((Ships[i].team == team) && (Ships[i].wingnum < 0)) {
-    //		hotkey_line_add_sorted(Ships[i].ship_name, HOTKEY_LINE_SHIP, i, start);
-    //	}
+    //   if ((Ships[i].team == team) && (Ships[i].wingnum < 0)) {
+    //      hotkey_line_add_sorted(Ships[i].ship_name, HOTKEY_LINE_SHIP, i, start);
+    //   }
 
     for (so = GET_FIRST(&Ship_obj_list); so != END_OF_LIST(&Ship_obj_list);
          so = GET_NEXT(so)) {
@@ -1050,7 +1050,7 @@ mission_hotkey_close()
         bm_unload(Wing_bmp);
 
     // unload the overlay bitmap
-    //	help_overlay_unload(HOTKEY_OVERLAY);
+    //   help_overlay_unload(HOTKEY_OVERLAY);
 
     // unpause all beam weapon sounds
     beam_unpause_sounds();
@@ -1256,15 +1256,15 @@ mission_hotkey_do_frame(float frametime)
             i = y + font_height / 2 - h / 2 - 1;
             gr_bitmap(Hotkey_wing_icon_x[gr_screen.res], i);
 
-            //				i = y + font_height / 2 - 1;
-            //				gr_set_color_fast(&circle_color);
-            //				gr_circle(ICON_LIST_X + 4, i, 5);
+            //          i = y + font_height / 2 - 1;
+            //          gr_set_color_fast(&circle_color);
+            //          gr_circle(ICON_LIST_X + 4, i, 5);
 
-            //				gr_set_color_fast(&Color_bright);
-            //				gr_line(ICON_LIST_X, i, ICON_LIST_X + 2, i);
-            //				gr_line(ICON_LIST_X + 4, i - 4, ICON_LIST_X + 4, i - 2);
-            //				gr_line(ICON_LIST_X + 6, i, ICON_LIST_X + 8, i);
-            //				gr_line(ICON_LIST_X + 4, i + 2, ICON_LIST_X + 4, i + 4);
+            //          gr_set_color_fast(&Color_bright);
+            //          gr_line(ICON_LIST_X, i, ICON_LIST_X + 2, i);
+            //          gr_line(ICON_LIST_X + 4, i - 4, ICON_LIST_X + 4, i - 2);
+            //          gr_line(ICON_LIST_X + 6, i, ICON_LIST_X + 8, i);
+            //          gr_line(ICON_LIST_X + 4, i + 2, ICON_LIST_X + 4, i + 4);
 
             hotkeys = get_wing_hotkeys(Hotkey_lines[line].index);
             break;
@@ -1315,19 +1315,19 @@ mission_hotkey_do_frame(float frametime)
                 }
             }
             /*
-			*buf = 0;
-			for (i=0; i<MAX_KEYED_TARGETS; i++) {
-				if (hotkeys & (1 << i)) {
-					strcat(buf, Scan_code_text[Key_sets[i]]);
-					strcat(buf, ", ");
-				}
-			}
+         *buf = 0;
+         for (i=0; i<MAX_KEYED_TARGETS; i++) {
+            if (hotkeys & (1 << i)) {
+               strcat(buf, Scan_code_text[Key_sets[i]]);
+               strcat(buf, ", ");
+            }
+         }
 
-			Assert(strlen(buf) > 1);
-			buf[strlen(buf) - 2] = 0;  // lose the ", " on the end
+         Assert(strlen(buf) > 1);
+         buf[strlen(buf) - 2] = 0;  // lose the ", " on the end
 
-			gr_force_fit_string(buf, 255, GROUP_LIST_W);
-			gr_printf(GROUP_LIST_X, y, buf);*/
+         gr_force_fit_string(buf, 255, GROUP_LIST_W);
+         gr_printf(GROUP_LIST_X, y, buf);*/
         }
 
         // draw ship/wing name

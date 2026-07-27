@@ -32,7 +32,7 @@ int Description_index;
 cutscene_info Cutscenes[MAX_CUTSCENES];
 
 extern int
-    All_movies_enabled; //	If set, all movies may be viewed.  Keyed off cheat code.
+    All_movies_enabled; // If set, all movies may be viewed.  Keyed off cheat code.
 
 // initialization stuff for cutscenes
 void
@@ -306,14 +306,14 @@ cutscenes_screen_play()
 
     // no soup for you!
     /*
-	int rval = movie_play(full_name);
-	if ( !rval ) {
-		char str[256];
+   int rval = movie_play(full_name);
+   if ( !rval ) {
+      char str[256];
 
-		sprintf(str, XSTR( "Unable to play movie %s.", 204), Cutscenes[which_cutscene].name );
-		popup(0, 1, POPUP_OK, str );
-	}
-	*/
+      sprintf(str, XSTR( "Unable to play movie %s.", 204), Cutscenes[which_cutscene].name );
+      popup(0, 1, POPUP_OK, str );
+   }
+   */
 }
 
 void
@@ -472,11 +472,11 @@ cutscenes_screen_init()
 
     // when doing a debug version, just put all of the movie files here.
 #ifndef NDEBUG
-    //Cutscenes_viewable = 0xffffffff;			// makes all cutscenes viewble.
+    //Cutscenes_viewable = 0xffffffff;       // makes all cutscenes viewble.
 #endif
 
     if (All_movies_enabled)
-        Cutscenes_viewable = 0xffffffff; //	Cheat code enables all movies.
+        Cutscenes_viewable = 0xffffffff; //  Cheat code enables all movies.
 
     Num_files = 0;
     for (i = 0; i < Num_cutscenes; i++) {

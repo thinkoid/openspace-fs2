@@ -669,10 +669,10 @@ debug_console(void (*_func)())
                     strcpy(oldcommand_line[last_oldcommand], command_line);
                 }
             }
-            //			int i;
-            //			for (i=0; i<=last_oldcommand; i++ )	{
-            //				dc_printf( "OC %d. %s\n", i, oldcommand_line[i] );
-            //			}
+            //       int i;
+            //       for (i=0; i<=last_oldcommand; i++ ) {
+            //          dc_printf( "OC %d. %s\n", i, oldcommand_line[i] );
+            //       }
 
             debug_output('\n');
             command_line_pos = 0;

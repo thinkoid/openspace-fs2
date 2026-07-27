@@ -119,11 +119,11 @@ g3_draw_laser(vector *headp, float head_width, vector *tailp, float tail_width,
     mx = (tailx + headx) / 2.0f;
     my = (taily + heady) / 2.0f;
 
-    //	gr_set_color(255,0,0);
-    //	g3_draw_line( &pt1, &pt2 );
+    //   gr_set_color(255,0,0);
+    //   g3_draw_line( &pt1, &pt2 );
 
-    //	gr_set_color( 255, 0, 0 );
-    //	gr_pixel( fl2i(mx),fl2i(my) );
+    //   gr_set_color( 255, 0, 0 );
+    //   gr_pixel( fl2i(mx),fl2i(my) );
 
     // Draw box with width 'w' and height 'h' at angle 'a' from horizontal
     // centered around mx, my
@@ -285,11 +285,11 @@ g3_draw_laser_rgb(vector *headp, float head_width, vector *tailp,
     mx = (tailx + headx) / 2.0f;
     my = (taily + heady) / 2.0f;
 
-    //	gr_set_color(255,0,0);
-    //	g3_draw_line( &pt1, &pt2 );
+    //   gr_set_color(255,0,0);
+    //   g3_draw_line( &pt1, &pt2 );
 
-    //	gr_set_color( 255, 0, 0 );
-    //	gr_pixel( fl2i(mx),fl2i(my) );
+    //   gr_set_color( 255, 0, 0 );
+    //   gr_pixel( fl2i(mx),fl2i(my) );
 
     // Draw box with width 'w' and height 'h' at angle 'a' from horizontal
     // centered around mx, my

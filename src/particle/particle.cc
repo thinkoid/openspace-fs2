@@ -25,7 +25,7 @@ typedef struct particle
     float age; // How long it's been alive
     float max_life; // How much life we had
     float radius; // radius
-    int type; // type										// -1 = None
+    int type; // type                              // -1 = None
     uint optional_data; // depends on type
     int nframes; // If an ani, how many frames?
 
@@ -40,8 +40,8 @@ typedef struct particle
 #define MAX_PARTICLES 500
 #else
 #define MAX_PARTICLES                                                            \
-    2000 //	Reduced from 2000 to 800 by MK on 4/1/98.  Most I ever saw was 400 and the system recovers
-        //	gracefully from running out of slots.
+    2000 // Reduced from 2000 to 800 by MK on 4/1/98.  Most I ever saw was 400 and the system recovers
+        //  gracefully from running out of slots.
         // AP: Put it to 1500 on 4/15/98.  Primary hit sparks weren't finding open slots.
         // Made todo item for John to force oldest smoke particles to give up their slots.
 #endif
@@ -67,7 +67,7 @@ particle_init()
 {
     int i;
 
-    //	Particles_enabled = os_config_read_uint( NULL, "UseParticles", 0 );
+    //   Particles_enabled = os_config_read_uint( NULL, "UseParticles", 0 );
 
     Num_particles = 0;
     Next_particle = 0;
@@ -136,7 +136,7 @@ DCF(particles, "Turns particles on/off")
     if (Dc_status)
         dc_printf("particles are %s\n", (Particles_enabled ? "ON" : "OFF"));
 
-    //	os_config_write_uint( NULL, "UseParticles", Particles_enabled );
+    //   os_config_write_uint( NULL, "UseParticles", Particles_enabled );
 }
 
 //mprintf(( "%s\n", text ));
@@ -478,13 +478,13 @@ particle_render_all()
                 framenum = Anim_num_frames_fire - 1;
 
             /*
-					vertex pos;
-					flags = g3_rotate_vertex( &pos, &p->pos );
-					if ( flags )	{
-						nclipped++;
-						break;
-					}
-					*/
+               vertex pos;
+               flags = g3_rotate_vertex( &pos, &p->pos );
+               if ( flags )   {
+                  nclipped++;
+                  break;
+               }
+               */
 
             // set the bitmap
             gr_set_bitmap(p->reverse ? Anim_bitmap_id_fire +
@@ -514,13 +514,13 @@ particle_render_all()
                 framenum = Anim_num_frames_smoke - 1;
 
             /*
-					vertex pos;
-					flags = g3_rotate_vertex( &pos, &p->pos );
-					if ( flags )	{
-						nclipped++;
-						break;
-					}
-					*/
+               vertex pos;
+               flags = g3_rotate_vertex( &pos, &p->pos );
+               if ( flags )   {
+                  nclipped++;
+                  break;
+               }
+               */
 
             // set the bitmap
             gr_set_bitmap(p->reverse ? Anim_bitmap_id_smoke +
@@ -550,13 +550,13 @@ particle_render_all()
                 framenum = Anim_num_frames_smoke2 - 1;
 
             /*
-					vertex pos;
-					flags = g3_rotate_vertex( &pos, &p->pos );
-					if ( flags )	{
-						nclipped++;
-						break;
-					}
-					*/
+               vertex pos;
+               flags = g3_rotate_vertex( &pos, &p->pos );
+               if ( flags )   {
+                  nclipped++;
+                  break;
+               }
+               */
 
             // set the bitmap
             gr_set_bitmap(p->reverse ? Anim_bitmap_id_smoke2 +
@@ -578,7 +578,7 @@ particle_render_all()
         }
         }
     }
-    //	mprintf(( "NP=%d, NCP=%d\n", n, nclipped ));
+    //   mprintf(( "NP=%d, NCP=%d\n", n, nclipped ));
 }
 
 //============================================================================
@@ -588,17 +588,17 @@ particle_render_all()
 // Use a structure rather than pass a ton of parameters to particle_emit
 /*
 typedef struct particle_emitter {
-	int		num_low;				// Lowest number of particles to create
-	int		num_high;			// Highest number of particles to create
-	vector	pos;					// Where the particles emit from
-	vector	vel;					// Initial velocity of all the particles
-	float		lifetime;			// How long the particles live
-	vector	normal;				// What normal the particle emit arond
-	float		normal_variance;	//	How close they stick to that normal 0=good, 1=360 degree
-	float		min_vel;				// How fast the slowest particle can move
-	float		max_vel;				// How fast the fastest particle can move
-	float		min_rad;				// Min radius
-	float		max_rad;				// Max radius
+   int      num_low;          // Lowest number of particles to create
+   int      num_high;         // Highest number of particles to create
+   vector   pos;              // Where the particles emit from
+   vector   vel;              // Initial velocity of all the particles
+   float    lifetime;         // How long the particles live
+   vector   normal;           // What normal the particle emit arond
+   float    normal_variance;  // How close they stick to that normal 0=good, 1=360 degree
+   float    min_vel;          // How fast the slowest particle can move
+   float    max_vel;          // How fast the fastest particle can move
+   float    min_rad;          // Min radius
+   float    max_rad;          // Max radius
 } particle_emitter;
 */
 

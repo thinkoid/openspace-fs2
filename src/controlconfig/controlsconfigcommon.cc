@@ -747,7 +747,7 @@ char *Joy_button_text_french[] = {
     "Chapeau Arri\xe8re", "Chapeau Avant", "Chapeau Gauche", "Chapeau Droite"
 };
 
-//	This is the text that is displayed on the screen for the keys a player selects
+// This is the text that is displayed on the screen for the keys a player selects
 char *Scan_code_text_english[] = {
     "",
     "Esc",

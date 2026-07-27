@@ -210,8 +210,8 @@ typedef struct subsys_status
     int subsys_cargo_name;
 } subsys_status;
 
-//	a parse object
-//	information from a $OBJECT: definition is read into this struct to
+// a parse object
+// information from a $OBJECT: definition is read into this struct to
 // be copied into the real object, ship, etc. structs
 typedef struct p_object
 {
@@ -232,7 +232,7 @@ typedef struct p_object
     int arrival_location;
     int arrival_distance; // used when arrival location is near or in front of some ship
     int arrival_anchor; // ship used for anchoring an arrival point
-    int arrival_cue; //	Index in Sexp_nodes of this sexp.
+    int arrival_cue; // Index in Sexp_nodes of this sexp.
     int arrival_delay;
     int subsys_index; // index into subsys_status array
     int subsys_count; // number of elements used in subsys_status array
@@ -242,7 +242,7 @@ typedef struct p_object
 
     int departure_location;
     int departure_anchor;
-    int departure_cue; //	Index in Sexp_nodes of this sexp.
+    int departure_cue; //  Index in Sexp_nodes of this sexp.
     int departure_delay;
 
     char misc[NAME_LENGTH];

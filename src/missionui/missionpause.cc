@@ -104,7 +104,7 @@ pause_do()
     char *pause_str = XSTR("Paused", 767);
     int str_w, str_h;
 
-    //	RENDER A GAME FRAME HERE AS THE BACKGROUND
+    //   RENDER A GAME FRAME HERE AS THE BACKGROUND
     gr_restore_screen(Pause_saved_screen);
     if (Pause_background_bitmap >= 0) {
         gr_set_bitmap(Pause_background_bitmap);
@@ -243,7 +243,7 @@ pause_debug_do()
     }
 
     if (Pause_continue.pressed() ||
-        (key == KEY_PAUSE)) { //	Changed, MK, 11/9/97, only Pause break pause.
+        (key == KEY_PAUSE)) { // Changed, MK, 11/9/97, only Pause break pause.
         gameseq_post_event(GS_EVENT_PREVIOUS_STATE);
     }
 

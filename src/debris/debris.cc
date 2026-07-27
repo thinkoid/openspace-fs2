@@ -50,8 +50,8 @@ char *Debris_texture_files[MAX_SPECIES_NAMES] = {
 
 int Debris_textures[MAX_SPECIES_NAMES];
 
-#define MAX_DEBRIS_DIST 10000.0f //	Debris goes away if it's this far away.
-#define DEBRIS_DISTANCE_CHECK_TIME (10 * 1000) //	Check every 10 seconds.
+#define MAX_DEBRIS_DIST 10000.0f // Debris goes away if it's this far away.
+#define DEBRIS_DISTANCE_CHECK_TIME (10 * 1000) //  Check every 10 seconds.
 #define DEBRIS_INDEX(dp) (dp - Debris)
 
 #define MAX_SPEED_SMALL_DEBRIS 200 // maximum velocity of small debris piece
@@ -62,7 +62,7 @@ int Debris_textures[MAX_SPECIES_NAMES];
 // ---------------------------------------------------------------------------------------
 // debris_start_death_roll()
 //
-//	Start the sequence of a piece of debris writhing in unholy agony!!!
+// Start the sequence of a piece of debris writhing in unholy agony!!!
 //
 static void
 debris_start_death_roll(object *debris_obj, debris *debris_p)
@@ -81,7 +81,7 @@ debris_start_death_roll(object *debris_obj, debris *debris_p)
     }
 
     debris_obj->flags |= OF_SHOULD_BE_DEAD;
-    //	demo_do_flag_dead(OBJ_INDEX(debris_obj));
+    //   demo_do_flag_dead(OBJ_INDEX(debris_obj));
 }
 
 // ---------------------------------------------------------------------------------------
@@ -240,8 +240,8 @@ debris_delete(object *obj)
     Num_debris_pieces--;
 }
 
-//	If debris piece *db is far away from the player, make it go away very soon.
-//	Delete if MAX_DEBRIS_DIST from player.
+// If debris piece *db is far away from the player, make it go away very soon.
+// Delete if MAX_DEBRIS_DIST from player.
 void
 maybe_delete_debris(debris *db)
 {
@@ -268,10 +268,10 @@ MONITOR(NumHullDebris);
 //
 // Do various updates to debris:  check if time to die, start fireballs
 //
-// parameters:		obj			=>		pointer to debris object
-//						frame_time	=>		time elapsed since last debris_move() called
+// parameters:    obj         =>    pointer to debris object
+//                frame_time  =>    time elapsed since last debris_move() called
 //
-//	Maybe delete debris if it's very far away from player.
+// Maybe delete debris if it's very far away from player.
 void
 debris_process_post(object *obj, float frame_time)
 {
@@ -302,7 +302,7 @@ debris_process_post(object *obj, float frame_time)
         }
     }
 
-    maybe_delete_debris(db); //	Make this debris go away if it's very far away.
+    maybe_delete_debris(db); //  Make this debris go away if it's very far away.
 
     // ================== DO THE ELECTRIC ARCING STUFF =====================
     if (db->arc_frequency <= 0) {
@@ -335,7 +335,7 @@ debris_process_post(object *obj, float frame_time)
             // Create the spark effects
             for (i = 0; i < MAX_DEBRIS_ARCS; i++) {
                 if (!timestamp_valid(db->arc_timestamp[i])) {
-                    //db->arc_timestamp[i] = timestamp_rand(400,1000);	// live up to a second
+                    //db->arc_timestamp[i] = timestamp_rand(400,1000);  // live up to a second
                     db->arc_timestamp[i] = timestamp(
                         lifetime); // live up to a second
 
@@ -454,8 +454,8 @@ void calc_debris_physics_properties(physics_info *pi, vector *min, vector *max);
 //
 // Create debris from an object
 //
-//	exp_force:	Explosion force, used to assign velocity to pieces.
-//					1.0f assigns velocity like before.  2.0f assigns twice as much to non-inherited part of velocity
+// exp_force:  Explosion force, used to assign velocity to pieces.
+//             1.0f assigns velocity like before.  2.0f assigns twice as much to non-inherited part of velocity
 object *
 debris_create(object *source_obj, int model_num, int submodel_num, vector *pos,
               vector *exp_center, int hull_flag, float exp_force)
@@ -537,7 +537,7 @@ debris_create(object *source_obj, int model_num, int submodel_num, vector *pos,
 
     for (i = 0; i < MAX_DEBRIS_ARCS; i++) {
         db->arc_timestamp[i] = timestamp(-1);
-        //	vector	arc_pts[MAX_DEBRIS_ARCS][2];		// The endpoints of each arc
+        //  vector   arc_pts[MAX_DEBRIS_ARCS][2];     // The endpoints of each arc
     }
 
     if (db->is_hull) {
@@ -589,7 +589,7 @@ debris_create(object *source_obj, int model_num, int submodel_num, vector *pos,
 
     obj->net_signature = 0;
 
-    // -- No long need shield: bset_shield_strength(obj, 100.0f);		//	Hey!  Set to some meaningful value!
+    // -- No long need shield: bset_shield_strength(obj, 100.0f);    // Hey!  Set to some meaningful value!
 
     if (source_obj->type == OBJ_SHIP) {
         obj->hull_strength = Ship_info[Ships[source_obj->instance].ship_info_index]
@@ -659,10 +659,10 @@ debris_create(object *source_obj, int model_num, int submodel_num, vector *pos,
         vm_vec_copy_scale(&radial_vel, &to_center, scale);
     }
 
-    //	MK: This next line causes debris pieces to get between 50% and 100% of the parent ship's
-    //	velocity.  What would be very cool is if the rotational velocity of the parent would become
+    //   MK: This next line causes debris pieces to get between 50% and 100% of the parent ship's
+    //   velocity.  What would be very cool is if the rotational velocity of the parent would become
     // translational velocity of the debris piece.  This would be based on the location of the debris
-    //	piece in the parent object.
+    //   piece in the parent object.
 
     // DA: here we need to vel_from_rot = w x to_center, where w is world is unrotated to world coords and offset is the
     // displacement fromt the center of the parent object to the center of the debris piece
@@ -713,8 +713,8 @@ debris_create(object *source_obj, int model_num, int submodel_num, vector *pos,
     }
 #endif
 
-    //	vm_vec_scale_add(&obj->phys_info.vel, &radial_vel, &source_obj->phys_info.vel, frand()/2.0f + 0.5f);
-    //	nprintf(("Andsager","object vel from rotvel: %0.2f, %0.2f, %0.2f\n",vel_from_rotvel.x, vel_from_rotvel.y, vel_from_rotvel.z));
+    //   vm_vec_scale_add(&obj->phys_info.vel, &radial_vel, &source_obj->phys_info.vel, frand()/2.0f + 0.5f);
+    //   nprintf(("Andsager","object vel from rotvel: %0.2f, %0.2f, %0.2f\n",vel_from_rotvel.x, vel_from_rotvel.y, vel_from_rotvel.z));
 
     // make sure rotational velocity does not get too high
     if (radius < 1.0) {
@@ -747,10 +747,10 @@ debris_create(object *source_obj, int model_num, int submodel_num, vector *pos,
     // ensure vel is valid
     Assert(!vm_is_vec_nan(&obj->phys_info.vel));
 
-    //	if ( hull_flag )	{
-    //		vm_vec_zero(&obj->phys_info.vel);
-    //		vm_vec_zero(&obj->phys_info.rotvel);
-    //	}
+    //   if ( hull_flag )  {
+    //      vm_vec_zero(&obj->phys_info.vel);
+    //      vm_vec_zero(&obj->phys_info.rotvel);
+    //   }
 
     return obj;
 }
@@ -758,8 +758,8 @@ debris_create(object *source_obj, int model_num, int submodel_num, vector *pos,
 // ---------------------------------------------------------------------------------------
 // debris_hit()
 //
-//	Alas, poor debris_obj got whacked.  Fortunately, we know who did it, where and how hard, so we
-//	can do something about it.
+// Alas, poor debris_obj got whacked.  Fortunately, we know who did it, where and how hard, so we
+// can do something about it.
 //
 void
 debris_hit(object *debris_obj, object *other_obj, vector *hitpos, float damage)
@@ -780,7 +780,7 @@ debris_hit(object *debris_obj, object *other_obj, vector *hitpos, float damage)
 
         pe.normal = tmp_norm; // What normal the particle emit around
         pe.normal_variance =
-            0.3f; //	How close they stick to that normal 0=good, 1=360 degree
+            0.3f; // How close they stick to that normal 0=good, 1=360 degree
         pe.min_rad = 0.20f; // Min radius
         pe.max_rad = 0.40f; // Max radius
 
@@ -788,7 +788,7 @@ debris_hit(object *debris_obj, object *other_obj, vector *hitpos, float damage)
         pe.num_low = 10; // Lowest number of particles to create
         pe.num_high = 10; // Highest number of particles to create
         pe.normal_variance =
-            0.3f; //	How close they stick to that normal 0=good, 1=360 degree
+            0.3f; // How close they stick to that normal 0=good, 1=360 degree
         pe.min_vel = 0.0f; // How fast the slowest particle can move
         pe.max_vel = 10.0f; // How fast the fastest particle can move
         pe.min_life = 0.25f; // How long the particles live
@@ -810,9 +810,9 @@ debris_hit(object *debris_obj, object *other_obj, vector *hitpos, float damage)
 // ---------------------------------------------------------------------------------------
 // debris_check_collision()
 //
-//	See if poor debris object *obj got whacked by evil *other_obj at point *hitpos.
+// See if poor debris object *obj got whacked by evil *other_obj at point *hitpos.
 // NOTE: debris_hit_info pointer NULL for debris:weapon collision, otherwise debris:ship collision.
-//	Return true if hit, else return false.
+// Return true if hit, else return false.
 //
 #pragma warning(push)
 #pragma warning(disable : 4701)
@@ -959,7 +959,7 @@ debris_check_collision(object *pdebris, object *other_obj, vector *hitpos,
 
                     mc.p0 = &p0;
                     mc.p1 = &p1;
-                    // mc.pos = zero	// in submodel RF
+                    // mc.pos = zero   // in submodel RF
 
                     mc.orient = &vmd_identity_matrix;
                     mc.submodel_num = submodel_list[i];
@@ -1096,7 +1096,7 @@ debris_check_collision(object *pdebris, object *other_obj, vector *hitpos,
 // ---------------------------------------------------------------------------------------
 // debris_get_team()
 //
-//	Return the team field for a debris object
+// Return the team field for a debris object
 //
 int
 debris_get_team(object *objp)

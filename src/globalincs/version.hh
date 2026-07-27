@@ -17,18 +17,18 @@
 // keep this defined to build a standalone only executable
 // STANDALONE_ONLY
 // #define STANDALONE_ONLY_BUILD
-// #define STANDALONE_ONLY_RELEASE_VERSION		0
+// #define STANDALONE_ONLY_RELEASE_VERSION      0
 
 // Here are the version defines.
-//	Gets displayed as MAJOR.MINOR, or 1.21 if MAJOR = 1, MINOR = 21.
-//	Prior to release, MAJOR should be zero.  After release, it should be 1.  Probably never increase to 2 as that could
-//	cause confusion with a sequel.
-//	MINOR should increase by 1 for each minor upgrade and by 10 for major upgrades.
-//	With each rev we send, we should increase MINOR.
+// Gets displayed as MAJOR.MINOR, or 1.21 if MAJOR = 1, MINOR = 21.
+// Prior to release, MAJOR should be zero.  After release, it should be 1.  Probably never increase to 2 as that could
+// cause confusion with a sequel.
+// MINOR should increase by 1 for each minor upgrade and by 10 for major upgrades.
+// With each rev we send, we should increase MINOR.
 // Version history (full version):
-//		1.0	Initial US/UK release
-//		1.01	Patch for Win95 volume label bug
-//		1.20	German release version
+//    1.0   Initial US/UK release
+//    1.01  Patch for Win95 volume label bug
+//    1.20  German release version
 
 #if defined(FS2_DEMO)
 #define FS_VERSION_MAJOR 01 // Major is 0 for pre-release and 1 for 1.0 release

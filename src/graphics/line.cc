@@ -46,35 +46,35 @@ gr8_uline(int x1, int y1, int x2, int y2)
     }
 
     /* HARDWARE_ONLY - removed alpha color table stuff
-	if ( Current_alphacolor )	{
-		if(dx>dy)	{
+   if ( Current_alphacolor )  {
+      if(dx>dy)   {
 
-			for(i=dx+1;i>0;i--) {
-				*dptr = Current_alphacolor->table.lookup[14][*dptr];
-				dptr += xstep;
-				error_term+=dy;
+         for(i=dx+1;i>0;i--) {
+            *dptr = Current_alphacolor->table.lookup[14][*dptr];
+            dptr += xstep;
+            error_term+=dy;
 
-				if(error_term>dx)	{
-					error_term-=dx;
-					dptr+=ystep;
-				}
-			}
-		} else {
+            if(error_term>dx) {
+               error_term-=dx;
+               dptr+=ystep;
+            }
+         }
+      } else {
 
-			for(i=dy+1;i>0;i--)	{
-				*dptr = Current_alphacolor->table.lookup[14][*dptr];
-				dptr += ystep;
-				error_term+=dx;
-				if(error_term>0)	{
-					error_term-=dy;
-					dptr+=xstep;
-				}
+         for(i=dy+1;i>0;i--)  {
+            *dptr = Current_alphacolor->table.lookup[14][*dptr];
+            dptr += ystep;
+            error_term+=dx;
+            if(error_term>0)  {
+               error_term-=dy;
+               dptr+=xstep;
+            }
 
-			}
+         }
 
-		}
-	} else {
-	*/
+      }
+   } else {
+   */
     if (dx > dy) {
         for (i = dx + 1; i > 0; i--) {
             *dptr = color;

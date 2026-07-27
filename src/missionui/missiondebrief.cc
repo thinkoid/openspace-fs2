@@ -440,7 +440,7 @@ debrief_voice_load_all()
         }
         if (strnicmp(Debrief_stages[i]->voice, NOX("none"), 4)) {
             debrief_load_voice_file(i, Debrief_stages[i]->voice);
-            //			Debrief_voices[i] = audiostream_open(Debrief_stages[i]->voice, ASF_VOICE);
+            //       Debrief_voices[i] = audiostream_open(Debrief_stages[i]->voice, ASF_VOICE);
         }
     }
 }
@@ -512,11 +512,11 @@ debrief_voice_stop()
 }
 
 // --------------------------------------------------------------------------------------
-//	debrief_set_stages()
+// debrief_set_stages()
 //
 // Set up the active stages for this debriefing
 //
-// returns:		number of active debriefing stages
+// returns:    number of active debriefing stages
 //
 int
 debrief_set_stages()
@@ -582,7 +582,7 @@ debrief_buttons_init()
 }
 
 // --------------------------------------------------------------------------------------
-//	debrief_ui_init()
+// debrief_ui_init()
 //
 void
 debrief_ui_init()
@@ -834,12 +834,12 @@ debrief_traitor_init()
         char traitor_voice_file[NAME_LENGTH];
         stuff_string(traitor_voice_file, F_FILESPEC, NULL);
 
-        // DKA 9/13/99	Only 1 traitor msg for FS2
-        //		if ( Player->on_bastion ) {
-        //			strcpy(stagep->voice, NOX("3_"));
-        //		} else {
-        //			strcpy(stagep->voice, NOX("1_"));
-        //		}
+        // DKA 9/13/99  Only 1 traitor msg for FS2
+        //     if ( Player->on_bastion ) {
+        //        strcpy(stagep->voice, NOX("3_"));
+        //     } else {
+        //        strcpy(stagep->voice, NOX("1_"));
+        //     }
 
         strcat(stagep->voice, traitor_voice_file);
 
@@ -918,8 +918,8 @@ debrief_accept(int ok_to_post_start_game_event)
                 "Your career is over, Traitor!  You can't accept new missions!",
                 439);
         } /* else if (Cheats_enabled) {
-			str = XSTR( "You are a cheater.  You cannot accept this mission!", 440);
-		}*/
+         str = XSTR( "You are a cheater.  You cannot accept this mission!", 440);
+      }*/
         else {
             str = XSTR(
                 "You have failed this mission and cannot accept.  What do you you wish to do instead?",
@@ -963,15 +963,15 @@ debrief_accept(int ok_to_post_start_game_event)
              (Campaign.loop_mission != -1)) &&
             !require_repeat_mission) {
             /*
-			char buffer[512];
-			debrief_assemble_optional_mission_popup_text(buffer, Campaign.missions[cur].mission_loop_desc);
+         char buffer[512];
+         debrief_assemble_optional_mission_popup_text(buffer, Campaign.missions[cur].mission_loop_desc);
 
-			int choice = popup(0 , 2, POPUP_NO, POPUP_YES, buffer);
-			if (choice == 1) {
-				Campaign.loop_enabled = 1;
-				Campaign.next_mission = Campaign.loop_mission;
-			}
-			*/
+         int choice = popup(0 , 2, POPUP_NO, POPUP_YES, buffer);
+         if (choice == 1) {
+            Campaign.loop_enabled = 1;
+            Campaign.next_mission = Campaign.loop_mission;
+         }
+         */
             go_loop = 1;
         }
 
@@ -1046,7 +1046,7 @@ debrief_prev_tab()
 }
 
 // --------------------------------------------------------------------------------------
-//	debrief_next_stage()
+// debrief_next_stage()
 //
 void
 debrief_next_stage()
@@ -1060,7 +1060,7 @@ debrief_next_stage()
 }
 
 // --------------------------------------------------------------------------------------
-//	debrief_prev_stage()
+// debrief_prev_stage()
 //
 void
 debrief_prev_stage()
@@ -1074,7 +1074,7 @@ debrief_prev_stage()
 }
 
 // --------------------------------------------------------------------------------------
-//	debrief_first_stage()
+// debrief_first_stage()
 void
 debrief_first_stage()
 {
@@ -1087,7 +1087,7 @@ debrief_first_stage()
 }
 
 // --------------------------------------------------------------------------------------
-//	debrief_last_stage()
+// debrief_last_stage()
 void
 debrief_last_stage()
 {
@@ -1305,7 +1305,7 @@ debrief_button_pressed(int num)
         New_mode = num;
         break;
     case STATS_TAB:
-        // Debrief_ui_window.use_hack_to_get_around_stupid_problem_flag = 1;			// allows failure sound to be played
+        // Debrief_ui_window.use_hack_to_get_around_stupid_problem_flag = 1;        // allows failure sound to be played
         Buttons[gr_screen.res][RECOMMENDATIONS].button.disable();
         if (num != Current_mode) {
             gamesnd_play_iface(SND_SCREEN_MODE_PRESSED);
@@ -1527,7 +1527,7 @@ void
 debrief_init()
 {
     Assert(!Debrief_inited);
-    //	Campaign.loop_enabled = 0;
+    //   Campaign.loop_enabled = 0;
     Campaign.loop_mission = CAMPAIGN_LOOP_MISSION_UNINITIALIZED;
 
     // set up the right briefing for this guy
@@ -1569,8 +1569,8 @@ debrief_init()
     debrief_award_init();
     show_stats_init();
     debrief_voice_init();
-    //	rank_bitmaps_clear();
-    //	rank_bitmaps_load();
+    //   rank_bitmaps_clear();
+    //   rank_bitmaps_load();
 
     strcpy(Debrief_current_callsign, Player->callsign);
     Debrief_player = Player;
@@ -1586,12 +1586,12 @@ debrief_init()
     }
 
     /*
-	if (mission_evaluate_primary_goals() == PRIMARY_GOALS_COMPLETE) {
-		common_music_init(SCORE_DEBRIEF_SUCCESS);
-	} else {
-		common_music_init(SCORE_DEBRIEF_FAIL);
-	}
-	*/
+   if (mission_evaluate_primary_goals() == PRIMARY_GOALS_COMPLETE) {
+      common_music_init(SCORE_DEBRIEF_SUCCESS);
+   } else {
+      common_music_init(SCORE_DEBRIEF_FAIL);
+   }
+   */
 
     // start up the appropriate music.  outside a campaign next_mission always
     // equals current_mission, so gate the failed-the-mission test on campaign mode
@@ -1639,7 +1639,7 @@ debrief_init()
 }
 
 // --------------------------------------------------------------------------------------
-//	debrief_close()
+// debrief_close()
 void
 debrief_close()
 {
@@ -1666,7 +1666,7 @@ debrief_close()
     }
 
     // unload the overlay bitmap
-    //	help_overlay_unload(DEBRIEFING_OVERLAY);
+    //   help_overlay_unload(DEBRIEFING_OVERLAY);
 
     // clear out award text
     Debrief_award_text_num_lines = 0;
@@ -1674,7 +1674,7 @@ debrief_close()
     debrief_voice_unload_all();
     common_music_close();
 
-    //	rank_bitmaps_release();
+    //   rank_bitmaps_release();
 
     // unload bitmaps
     if (Background_bitmap >= 0) {
@@ -1857,7 +1857,7 @@ debrief_add_award_text(char *str)
     }
 }
 
-//	called once per frame to drive all the input reading and rendering
+// called once per frame to drive all the input reading and rendering
 void
 debrief_do_frame(float frametime)
 {
@@ -1964,21 +1964,21 @@ debrief_do_frame(float frametime)
         //  draw medal/badge/rank labels
         debrief_draw_award_text();
 
-        /*		if (Rank_text_bitmap >= 0) {
-			gr_set_bitmap(Rank_text_bitmap);
-			gr_bitmap(Debrief_award_coords[gr_screen.res][0], Debrief_award_coords[gr_screen.res][1]);
-		}
+        /*     if (Rank_text_bitmap >= 0) {
+         gr_set_bitmap(Rank_text_bitmap);
+         gr_bitmap(Debrief_award_coords[gr_screen.res][0], Debrief_award_coords[gr_screen.res][1]);
+      }
 
-	
-		if (Medal_text_bitmap >= 0) {
-			gr_set_bitmap(Medal_text_bitmap);
-			gr_bitmap(Debrief_award_text_coords[gr_screen.res][0], Debrief_award_text_coords[gr_screen.res][1]);
-		}
+   
+      if (Medal_text_bitmap >= 0) {
+         gr_set_bitmap(Medal_text_bitmap);
+         gr_bitmap(Debrief_award_text_coords[gr_screen.res][0], Debrief_award_text_coords[gr_screen.res][1]);
+      }
 
-		if (Badge_text_bitmap >= 0) {
-			gr_set_bitmap(Badge_text_bitmap);
-			gr_bitmap(Debrief_award_text_coords[gr_screen.res][0], Debrief_award_text_coords[gr_screen.res][1]);
-		}
+      if (Badge_text_bitmap >= 0) {
+         gr_set_bitmap(Badge_text_bitmap);
+         gr_bitmap(Debrief_award_text_coords[gr_screen.res][0], Debrief_award_text_coords[gr_screen.res][1]);
+      }
 */
     }
 
@@ -2042,7 +2042,7 @@ debrief_do_frame(float frametime)
     debrief_render_stagenum();
 
     // AL 3-6-98: Needed to move key reading here, since popups are launched from this code, and we don't
-    //				  want to include the mouse pointer which is drawn in the flip
+    //              want to include the mouse pointer which is drawn in the flip
 
     if (!help_overlay_active(DEBRIEFING_OVERLAY)) {
         debrief_check_buttons();

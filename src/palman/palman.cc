@@ -203,7 +203,7 @@ palette_find(int r, int g, int b)
         restrict = 1;
     }
 
-    //	int	rgb = ((r/4)<<12)+((g/4)<<6)+(b/4);
+    //   int   rgb = ((r/4)<<12)+((g/4)<<6)+(b/4);
 
     i = palette_cache_find(r, g, b);
     if (i != -1) {
@@ -292,7 +292,7 @@ palette_write_cached1(char *name)
     strcpy(new_name, name);
     strcat(new_name, ".clr");
 
-    //	mprintf(( "Writing palette cache file '%s'\n", new_name ));
+    //   mprintf(( "Writing palette cache file '%s'\n", new_name ));
 
     fp = cfopen(new_name, "wb", CFILE_NORMAL, CF_TYPE_CACHE);
     if (!fp)
@@ -325,7 +325,7 @@ palette_write_cached1(char *name)
     }
 
     cfclose(fp);
-    //	mprintf(( "Done.\n" ));
+    //   mprintf(( "Done.\n" ));
 }
 
 // Returns TRUE if successful, else 0
@@ -342,7 +342,7 @@ palette_read_cached(char *name)
     strcpy(new_name, name);
     strcat(new_name, ".clr");
 
-    //	mprintf(( "Reading palette '%s'\n", name ));
+    //   mprintf(( "Reading palette '%s'\n", name ));
 
     fp = cfopen(new_name, "rb", CFILE_NORMAL, CF_TYPE_CACHE);
 
@@ -411,7 +411,7 @@ palette_read_cached(char *name)
 
     cfclose(fp);
 
-    //	mprintf(( "Done.\n" ));
+    //   mprintf(( "Done.\n" ));
 
     return 1;
 }
@@ -461,7 +461,7 @@ palman_create_blend_table(float factor, ubyte *table)
             Df = 1.0f;
         }
 
-        //		Sf = Df =1.0f;
+        //     Sf = Df =1.0f;
 
         for (j = 0; j < 256; j++) {
             br = i2fl(gr_palette[j * 3 + 0]);
@@ -520,10 +520,10 @@ palette_flush()
 {
     // DB 2/3/99 - I think this was causing some wacky unhandled exceptions at game shutdown. Since we don't use palettes anymore.....
     /*
-	if ( stricmp( palette_name, "none" ) )	{
-		palette_write_cached1( palette_name );
-	}
-	*/
+   if ( stricmp( palette_name, "none" ) ) {
+      palette_write_cached1( palette_name );
+   }
+   */
 }
 
 // When gr_set_palette is called, it fills in gr_palette and then calls this
@@ -532,13 +532,13 @@ palette_flush()
 void
 palette_update(char *name_with_extension, int restrict_font_to_128)
 {
-    //	int i;
+    //   int i;
     uint tmp_checksum;
     char name[128];
 
     Palman_restrict_colors = restrict_font_to_128;
 
-    //	mprintf(( "<<<<<<<<< PALETTE UPDATE (%s) >>>>>>>>>>>\n", (name_with_extension?name_with_extension:"null") ));
+    //   mprintf(( "<<<<<<<<< PALETTE UPDATE (%s) >>>>>>>>>>>\n", (name_with_extension?name_with_extension:"null") ));
 
     strcpy(name, name_with_extension);
     char *p = strchr(name, '.');
@@ -657,7 +657,7 @@ palette_get_fade_table()
             }
         }
 
-        //		mprintf(( "done\n" ));
+        //     mprintf(( "done\n" ));
         palette_fade_table_calculated = 1;
     }
 
@@ -670,12 +670,12 @@ palette_get_blend_table(float alpha)
     int i;
 
     if (!palette_blend_table_calculated) {
-        //		mprintf(( "Creating blending table..." ));
+        //     mprintf(( "Creating blending table..." ));
         for (i = 0; i < NUM_BLEND_TABLES; i++) {
             palman_create_blend_table(blend_table_factors[i],
                                       &palette_blend_table[i * 256 * 256]);
         }
-        //		mprintf(( "done\n" ));
+        //     mprintf(( "done\n" ));
         palette_blend_table_calculated = 1;
     }
 

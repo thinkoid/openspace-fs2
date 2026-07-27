@@ -47,10 +47,10 @@
 #define GOAL_SCREEN_H_COORD 3
 
 /*
-#define GOAL_SCREEN_TEXT_X	81
-#define GOAL_SCREEN_TEXT_Y	95
-#define GOAL_SCREEN_TEXT_W	385
-#define GOAL_SCREEN_TEXT_H	299
+#define GOAL_SCREEN_TEXT_X 81
+#define GOAL_SCREEN_TEXT_Y 95
+#define GOAL_SCREEN_TEXT_W 385
+#define GOAL_SCREEN_TEXT_H 299
 #define GOAL_SCREEN_ICON_X 45
 */
 
@@ -949,7 +949,7 @@ mission_process_event(int event)
             // value at the sexpresion node to unknown so that it will get reevaled
             Mission_events[event].timestamp = timestamp(
                 Mission_events[event].interval * 1000);
-            //			Sexp_nodes[Mission_events[event].formula].value = SEXP_UNKNOWN;
+            //       Sexp_nodes[Mission_events[event].formula].value = SEXP_UNKNOWN;
         }
     }
 }
@@ -1008,7 +1008,7 @@ mission_eval_goals()
 
             // tell the player how to end the mission
             //if ( goal_changed && mission_evaluate_primary_goals() != PRIMARY_GOALS_INCOMPLETE ) {
-            //	HUD_sourced_printf(HUD_SOURCE_IMPORTANT, "Press %s to end mission and return to base", textify_scancode(Control_config[END_MISSION].key_id) );
+            // HUD_sourced_printf(HUD_SOURCE_IMPORTANT, "Press %s to end mission and return to base", textify_scancode(Control_config[END_MISSION].key_id) );
             //}
         } // end if goals[i].satsified != GOAL_COMPLETE
     } // end for
@@ -1037,9 +1037,9 @@ mission_eval_goals()
     }
 }
 
-//	evaluate_primary_goals() will determine if the primary goals for a mission are complete
+// evaluate_primary_goals() will determine if the primary goals for a mission are complete
 //
-//	returns 1 - all primary goals are all complete or imcomplete (or there are no primary goals at all)
+// returns 1 - all primary goals are all complete or imcomplete (or there are no primary goals at all)
 // returns 0 - not all primary goals are complete
 int
 mission_evaluate_primary_goals()

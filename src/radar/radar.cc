@@ -103,26 +103,26 @@ static int Radar_flicker_on[NUM_FLICKER_TIMERS]; // status of flickering
 #define RADAR_BLIP_DIM 1
 
 rcol Radar_color_rgb[MAX_RADAR_LEVELS][MAX_RADAR_COLORS] = {
-    { { 0xff, 0x00, 0x00 }, // hostile			(red)
-      { 0x00, 0xff, 0x00 }, // friendly			(green)
-      { 0xff, 0x00, 0xff }, // unknown			(purple)
-      { 0xff, 0x00, 0x00 }, //	neutral			(red)
+    { { 0xff, 0x00, 0x00 }, // hostile       (red)
+      { 0x00, 0xff, 0x00 }, // friendly         (green)
+      { 0xff, 0x00, 0xff }, // unknown       (purple)
+      { 0xff, 0x00, 0x00 }, //   neutral        (red)
       { 0x7f, 0x7f, 0x00 }, // homing missile (yellow)
-      { 0x7f, 0x7f, 0x7f }, // navbuoy or cargo	(gray)
-      { 0x00, 0x00, 0xff }, // warp ship		(blue)
-      { 0x7f, 0x7f, 0x7f }, // jump node		(gray)
-      { 0xff, 0xff, 0x00 } }, // tagged	 		(yellow)
+      { 0x7f, 0x7f, 0x7f }, // navbuoy or cargo (gray)
+      { 0x00, 0x00, 0xff }, // warp ship     (blue)
+      { 0x7f, 0x7f, 0x7f }, // jump node     (gray)
+      { 0xff, 0xff, 0x00 } }, // tagged         (yellow)
 
     // 1/3 intensity of above colors
-    { { 0x7f, 0x00, 0x00 }, // hostile			(red)
-      { 0x00, 0x7f, 0x00 }, // friendly			(green)
-      { 0x7f, 0x00, 0x7f }, // unknown			(purple)
-      { 0x7f, 0x00, 0x00 }, //	neutral			(red)
+    { { 0x7f, 0x00, 0x00 }, // hostile       (red)
+      { 0x00, 0x7f, 0x00 }, // friendly         (green)
+      { 0x7f, 0x00, 0x7f }, // unknown       (purple)
+      { 0x7f, 0x00, 0x00 }, //   neutral        (red)
       { 0x40, 0x40, 0x00 }, // homing missile (yellow)
-      { 0x40, 0x40, 0x40 }, // navbuoy or cargo	(gray)
-      { 0x00, 0x00, 0x7f }, // warp ship		(blue)
-      { 0x40, 0x40, 0x40 }, // jump node		(gray)
-      { 0x7f, 0x7f, 0x00 } }, // tagged			(yellow)
+      { 0x40, 0x40, 0x40 }, // navbuoy or cargo (gray)
+      { 0x00, 0x00, 0x7f }, // warp ship     (blue)
+      { 0x40, 0x40, 0x40 }, // jump node     (gray)
+      { 0x7f, 0x7f, 0x00 } }, // tagged         (yellow)
 };
 
 color Radar_colors[MAX_RADAR_LEVELS][MAX_RADAR_COLORS];
@@ -224,7 +224,7 @@ radar_blip_color(object *objp)
                     break;
                 default:
                     color = RCOL_HOSTILE;
-                    Int3(); //	Bogus team id in shipp->team
+                    Int3(); //   Bogus team id in shipp->team
                     break;
                 }
             }
@@ -596,7 +596,7 @@ draw_radar_blips(int rcol, int is_dim, int distort)
 }
 
 // Draw the radar blips
-// input:	distorted	=>		0 (default) to draw normal, 1 to draw distorted
+// input:   distorted   =>    0 (default) to draw normal, 1 to draw distorted
 void
 radar_draw_blips_sorted(int distort)
 {

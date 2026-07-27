@@ -83,7 +83,7 @@ typedef struct
 
 // #define's for the type parameter in cfopen.
 #define CFILE_NORMAL 0 // open file normally
-#define CFILE_MEMORY_MAPPED (1 << 0) //	open file as a memory-mapped file
+#define CFILE_MEMORY_MAPPED (1 << 0) //   open file as a memory-mapped file
 
 #define CF_SORT_NONE 0
 #define CF_SORT_NAME 1

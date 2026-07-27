@@ -53,9 +53,9 @@ typedef struct mission_goal
     int type; // primary/secondary/bonus
     int satisfied; // has this goal been satisfied
     char message
-        [MAX_GOAL_TEXT]; //	Brief description, such as "Destroy all vile aliens!"
-    int rating; //	Some importance figure or something.
-    int formula; //	Index in Sexp_nodes of this Sexp.
+        [MAX_GOAL_TEXT]; //   Brief description, such as "Destroy all vile aliens!"
+    int rating; //   Some importance figure or something.
+    int formula; //  Index in Sexp_nodes of this Sexp.
     int score; // score for this goal
     int flags; // MGF_
     int team; // which team is this objective for.

@@ -367,7 +367,7 @@ red_alert_do_frame(float frametime)
     k = Ui_window.process() & ~KEY_DEBUGGED;
     switch (k) {
     case KEY_ESC:
-        //			gameseq_post_event(GS_EVENT_ENTER_GAME);
+        //        gameseq_post_event(GS_EVENT_ENTER_GAME);
         gameseq_post_event(GS_EVENT_MAIN_MENU);
         break;
     } // end switch
@@ -791,10 +791,10 @@ void
 red_alert_start_mission()
 {
     // if we are not in campaign mode, go to debriefing
-    //	if ( !(Game_mode & GM_CAMPAIGN_MODE) ) {
-    //		gameseq_post_event( GS_EVENT_DEBRIEF );	// proceed to debriefing
-    //		return;
-    //	}
+    //   if ( !(Game_mode & GM_CAMPAIGN_MODE) ) {
+    //      gameseq_post_event( GS_EVENT_DEBRIEF );   // proceed to debriefing
+    //      return;
+    //   }
 
     // check player health here.
     // if we're dead (or about to die), don't start red alert mission.

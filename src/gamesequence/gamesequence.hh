@@ -44,8 +44,8 @@
 #define GS_EVENT_MISSION_LOG_SCROLLBACK                                          \
     22 // scrollback screen for message log entries
 #define GS_EVENT_GAMEPLAY_HELP 23 // show help for the gameplay
-#define GS_EVENT_DEATH_DIED 24 //	Player just died
-#define GS_EVENT_DEATH_BLEW_UP 25 //	Saw ship explode.
+#define GS_EVENT_DEATH_DIED 24 //   Player just died
+#define GS_EVENT_DEATH_BLEW_UP 25 //   Saw ship explode.
 #define GS_EVENT_NEW_CAMPAIGN 26
 #define GS_EVENT_CREDITS 27 // Got to the credits
 #define GS_EVENT_SHOW_GOALS 28 // Show the goal status screen
@@ -101,8 +101,8 @@ extern char *GS_event_text[]; // text description for the GS_EVENT_* #defines ab
 #define GS_STATE_CONTROL_CONFIG 16
 #define GS_STATE_WEAPON_SELECT 17
 #define GS_STATE_MISSION_LOG_SCROLLBACK 18
-#define GS_STATE_DEATH_DIED 19 //	Player just died
-#define GS_STATE_DEATH_BLEW_UP 20 //	Saw ship explode.
+#define GS_STATE_DEATH_DIED 19 //   Player just died
+#define GS_STATE_DEATH_BLEW_UP 20 //   Saw ship explode.
 #define GS_STATE_SIMULATOR_ROOM 21
 #define GS_STATE_CREDITS 22
 #define GS_STATE_SHOW_GOALS 23

@@ -163,7 +163,7 @@ escort_compare_func(const void *e1, const void *e2)
 // create complete priority sorted escort list for all active ships
 // escorts - array of escort info
 // num_escorts - number of escorts requests in field of active ships
-//	  This will be culled to MAX_ESCORTS, selecting the top set from escorts
+//   This will be culled to MAX_ESCORTS, selecting the top set from escorts
 void
 hud_create_complete_escort_list(escort_info *escorts, int *num_escorts)
 {

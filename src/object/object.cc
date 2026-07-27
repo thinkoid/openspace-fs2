@@ -87,8 +87,8 @@ char *Object_type_names[MAX_OBJECT_TYPES] = {
 #endif
 
 //-----------------------------------------------------------------------------
-//	Scan the object list, freeing down to num_used objects
-//	Returns number of slots freed.
+// Scan the object list, freeing down to num_used objects
+// Returns number of slots freed.
 int
 free_object_slots(int num_used)
 {
@@ -142,7 +142,7 @@ free_object_slots(int num_used)
             case OBJ_BEAM:
                 break;
             default:
-                Int3(); //	Hey, what kind of object is this?  Unknown!
+                Int3(); // Hey, what kind of object is this?  Unknown!
                 break;
             }
     }
@@ -169,15 +169,15 @@ free_object_slots(int num_used)
         return original_num_to_free;
 
     //JAS - I removed this because small fireballs are now particles, which aren't objects.
-    //JAS	for (i=0; i<num_to_free; i++)
-    //JAS		if ( (Objects[obj_list[i]].type == OBJ_FIREBALL) && (Fireball_data[Objects[obj_list[i]].instance].type == FIREBALL_TYPE_SMALL) ) {
-    //JAS			num_to_free--;
-    //JAS			nprintf(("allender", "Freeing FIREBALL object %3i\n", obj_list[i]));
-    //JAS			Objects[obj_list[i]].flags |= OF_SHOULD_BE_DEAD;
-    //JAS		}
+    //JAS   for (i=0; i<num_to_free; i++)
+    //JAS      if ( (Objects[obj_list[i]].type == OBJ_FIREBALL) && (Fireball_data[Objects[obj_list[i]].instance].type == FIREBALL_TYPE_SMALL) ) {
+    //JAS         num_to_free--;
+    //JAS         nprintf(("allender", "Freeing FIREBALL object %3i\n", obj_list[i]));
+    //JAS         Objects[obj_list[i]].flags |= OF_SHOULD_BE_DEAD;
+    //JAS      }
     //JAS
-    //JAS	if (!num_to_free)
-    //JAS		return original_num_to_free;
+    //JAS   if (!num_to_free)
+    //JAS      return original_num_to_free;
 
     for (i = 0; i < num_to_free; i++) {
         object *tmp_obj = &Objects[obj_list[i]];
@@ -248,8 +248,8 @@ set_shield_strength(object *objp, float strength)
     }
 }
 
-//	Recharge whole shield.
-//	Apply delta/MAX_SHIELD_SECTIONS to each shield section.
+// Recharge whole shield.
+// Apply delta/MAX_SHIELD_SECTIONS to each shield section.
 void
 add_shield_strength(object *objp, float delta)
 {
@@ -420,7 +420,7 @@ obj_create(ubyte type, int parent_obj, int instance, matrix *orient, vector *pos
 
     // Zero out object structure to keep weird bugs from happening
     // in uninitialized fields.
-    //	memset( obj, 0, sizeof(object) );
+    //   memset( obj, 0, sizeof(object) );
 
     if (obj->type == OBJ_SHIP) {
         obj->signature = Object_next_ship_signature++;
@@ -459,7 +459,7 @@ obj_create(ubyte type, int parent_obj, int instance, matrix *orient, vector *pos
     obj->last_orient = obj->orient;
     obj->radius = radius;
 
-    obj->flags &= ~OF_INVULNERABLE; //	Make vulnerable.
+    obj->flags &= ~OF_INVULNERABLE; // Make vulnerable.
     physics_init(&obj->phys_info);
 
     for (idx = 0; idx < MAX_OBJECT_SOUNDS; idx++) {
@@ -473,7 +473,7 @@ obj_create(ubyte type, int parent_obj, int instance, matrix *orient, vector *pos
 }
 
 //remove object from the world
-//	If Player_obj, don't remove it!
+// If Player_obj, don't remove it!
 void
 obj_delete(int objnum)
 {
@@ -562,7 +562,7 @@ obj_delete(int objnum)
     obj_free(objnum);
 }
 
-//	------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
 void
 obj_delete_all_that_should_be_dead()
 {
@@ -589,7 +589,7 @@ obj_merge_created_list(void)
 {
     // The old way just merged the two.   This code takes one out of the create list,
     // creates object pairs for it, and then adds it to the used list.
-    //	OLD WAY: list_merge( &obj_used_list, &obj_create_list );
+    //   OLD WAY: list_merge( &obj_used_list, &obj_create_list );
     object *objp = GET_FIRST(&obj_create_list);
     while (objp != END_OF_LIST(&obj_create_list)) {
         list_remove(obj_create_list, objp);
@@ -611,7 +611,7 @@ int physics_paused = 0, ai_paused = 0;
 
 extern void call_doa(object *obj1, object *obj2, ship_info *sip1);
 
-//	If this is a cargo container or a repair ship, move it along with the ship it's docked to.
+// If this is a cargo container or a repair ship, move it along with the ship it's docked to.
 void
 move_docked_objects(object *objp)
 {
@@ -631,7 +631,7 @@ move_docked_objects(object *objp)
         if ((sip->flags & SIF_SUPPORT) || (sip->flags & SIF_CARGO)) {
             Assert(!((sip->flags & SIF_SUPPORT) &&
                      (sip->flags &
-                      SIF_CARGO))); //	Ship can't be both repair and cargo
+                      SIF_CARGO))); // Ship can't be both repair and cargo
             if (aip->dock_objnum != -1) {
                 if (aip->mode == AIM_DOCK) {
                     if (aip->submode < AIS_UNDOCK_1)
@@ -683,7 +683,7 @@ move_docked_objects(object *objp)
 }
 
 /*
-float	Last_fire_time = 0.0f;
+float Last_fire_time = 0.0f;
 int Avg_delay_count = 0;
 float Avg_delay_total;
 */
@@ -746,7 +746,7 @@ obj_player_fire_stuff(object *objp, control_info ci)
 void
 obj_move_call_physics(object *objp, float frametime)
 {
-    //	Do physics for objects with OF_PHYSICS flag set and with some engine strength remaining.
+    //   Do physics for objects with OF_PHYSICS flag set and with some engine strength remaining.
     if (objp->flags & OF_PHYSICS) {
         // only set phys info if ship is not dead
         if ((objp->type == OBJ_SHIP) &&
@@ -759,7 +759,7 @@ obj_move_call_physics(object *objp, float frametime)
             }
 
             if (engine_strength ==
-                0.0f) { //	All this is necessary to make ship gradually come to a stop after engines are blown.
+                0.0f) { // All this is necessary to make ship gradually come to a stop after engines are blown.
                 vm_vec_zero(&objp->phys_info.desired_vel);
                 vm_vec_zero(&objp->phys_info.desired_rotvel);
                 objp->phys_info.flags |= (PF_REDUCED_DAMP | PF_DEAD_DAMP);
@@ -768,7 +768,7 @@ obj_move_call_physics(object *objp, float frametime)
             } // else {
             // DA: comment out lines that resets PF_DEAD_DAMP after every frame.
             // This is now reset during engine repair.
-            //	objp->phys_info.flags &= ~(PF_REDUCED_DAMP | PF_DEAD_DAMP);
+            // objp->phys_info.flags &= ~(PF_REDUCED_DAMP | PF_DEAD_DAMP);
             // objp->phys_info.side_slip_time_const = Ship_info[Ships[objp->instance].ship_info_index].damp;
             // }
         }
@@ -790,15 +790,15 @@ obj_move_call_physics(object *objp, float frametime)
             }
         }
         else {
-            //	Hack for dock mode.
-            //	If docking with a ship, we don't obey the normal ship physics, we can slew about.
+            // Hack for dock mode.
+            // If docking with a ship, we don't obey the normal ship physics, we can slew about.
             if (objp->type == OBJ_SHIP) {
                 ai_info *aip = &Ai_info[Ships[objp->instance].ai_index];
 
-                //	Note: This conditional for using PF_USE_VEL (instantaneous acceleration) is probably too loose.
-                //	A ships awaiting support will fly towards the support ship with instantaneous acceleration.
-                //	But we want to have ships in the process of docking have quick acceleration, or they overshoot their goals.
-                //	Probably can not key off dock_objnum, but then need to add some other condition.  Live with it for now. -- MK, 2/19/98
+                //   Note: This conditional for using PF_USE_VEL (instantaneous acceleration) is probably too loose.
+                //   A ships awaiting support will fly towards the support ship with instantaneous acceleration.
+                //   But we want to have ships in the process of docking have quick acceleration, or they overshoot their goals.
+                //   Probably can not key off dock_objnum, but then need to add some other condition.  Live with it for now. -- MK, 2/19/98
                 if ((aip->dock_objnum != -1) ||
                     ((aip->mode == AIM_DOCK) &&
                      ((aip->submode == AIS_DOCK_2) ||
@@ -812,7 +812,7 @@ obj_move_call_physics(object *objp, float frametime)
                     }
                     else {
                         objp->phys_info.flags &=
-                            ~PF_USE_VEL; //	If engine blown, don't PF_USE_VEL, or ships stop immediately
+                            ~PF_USE_VEL; //  If engine blown, don't PF_USE_VEL, or ships stop immediately
                     }
                 }
                 else {
@@ -1239,7 +1239,7 @@ obj_move_all(float frametime)
         objp = GET_NEXT(objp);
     }
 
-    //	After all objects have been moved, move all docked objects.
+    //   After all objects have been moved, move all docked objects.
     objp = GET_FIRST(&obj_used_list);
     while (objp != END_OF_LIST(&obj_used_list)) {
         if (objp->type == OBJ_SHIP) {
@@ -1256,17 +1256,17 @@ obj_move_all(float frametime)
     // velocities from how far they moved.
     // DA: Commented out 2/23, unnecessary since colliding objects calculate their post collision velocities through physics.
     /*
-	objp = GET_FIRST(&obj_used_list);
-	while( objp !=END_OF_LIST(&obj_used_list) )	{
-		if ( !(objp->flags&OF_SHOULD_BE_DEAD) && (objp->type != OBJ_OBSERVER) && (objp->type != OBJ_ASTEROID) && (objp->type != OBJ_DEBRIS))	{
-			objp->phys_info.vel.x = (objp->pos.x - objp->last_pos.x) / frametime;
-			objp->phys_info.vel.y = (objp->pos.y - objp->last_pos.y) / frametime;
-			objp->phys_info.vel.z = (objp->pos.z - objp->last_pos.z) / frametime;
-		}
-		objp = GET_NEXT(objp);
-	} */
+   objp = GET_FIRST(&obj_used_list);
+   while( objp !=END_OF_LIST(&obj_used_list) )  {
+      if ( !(objp->flags&OF_SHOULD_BE_DEAD) && (objp->type != OBJ_OBSERVER) && (objp->type != OBJ_ASTEROID) && (objp->type != OBJ_DEBRIS))   {
+         objp->phys_info.vel.x = (objp->pos.x - objp->last_pos.x) / frametime;
+         objp->phys_info.vel.y = (objp->pos.y - objp->last_pos.y) / frametime;
+         objp->phys_info.vel.z = (objp->pos.z - objp->last_pos.z) / frametime;
+      }
+      objp = GET_NEXT(objp);
+   } */
 
-    find_homing_object_cmeasures(); //	If any cmeasures fired, maybe steer away homing missiles
+    find_homing_object_cmeasures(); // If any cmeasures fired, maybe steer away homing missiles
 
     // do pre-collision stuff for beam weapons
     beam_move_all_pre();
@@ -1287,13 +1287,13 @@ obj_move_all(float frametime)
 MONITOR(NumObjectsRend);
 
 // -----------------------------------------------------------------------------
-//	Render an object.  Calls one of several routines based on type
+// Render an object.  Calls one of several routines based on type
 void
 obj_render(object *obj)
 {
     if (obj->flags & OF_SHOULD_BE_DEAD)
         return;
-    //	if ( obj == Viewer_obj ) return;
+    //   if ( obj == Viewer_obj ) return;
 
     MONITOR_INC(NumObjectsRend, 1);
 
@@ -1401,10 +1401,10 @@ obj_get_SIF(int obj)
 
 // Return the team for the object passed as a parameter
 //
-//	input:		objp => pointer to object that you want team for
+// input:      objp => pointer to object that you want team for
 //
-// exit:			success => enumerated team ( TEAM_HOSTILE, TEAM_FRIENDLY, TEAM_NEUTRAL, etc )
-//					failure => -1 (for objects that don't have teams)
+// exit:       success => enumerated team ( TEAM_HOSTILE, TEAM_FRIENDLY, TEAM_NEUTRAL, etc )
+//             failure => -1 (for objects that don't have teams)
 int
 obj_team(object *objp)
 {

@@ -74,7 +74,7 @@ debris_struct Field_debris_info[] = { -1,
 int Asteroids_enabled = 1;
 int Num_asteroid_types;
 int Num_asteroids = 0;
-int Asteroid_throw_objnum = -1; //	Object index of ship to throw asteroids at.
+int Asteroid_throw_objnum = -1; //  Object index of ship to throw asteroids at.
 int Next_asteroid_throw;
 
 asteroid_info Asteroid_info[MAX_DEBRIS_TYPES];
@@ -91,7 +91,7 @@ static float Asteroid_impact_explosion_radius;
 #define ASTEROID_MIN_COLLIDE_TIME                                                \
     24 // time in seconds to check for asteroid colliding
 
-//	Force updating of pair stuff for asteroid *objp.
+// Force updating of pair stuff for asteroid *objp.
 void
 asteroid_update_collide(object *objp)
 {
@@ -155,7 +155,7 @@ asteroid_obj_list_remove(object *obj)
     Asteroid_objs[index].flags = 0;
 }
 
-//	Prevent speed from getting too huge so it's hard to catch up to an asteroid.
+// Prevent speed from getting too huge so it's hard to catch up to an asteroid.
 float
 asteroid_cap_speed(int asteroid_info_index, float speed)
 {
@@ -387,12 +387,12 @@ asteroid_create(asteroid_field *asfieldp, int asteroid_type, int asteroid_subtyp
     Assert(!vm_is_vec_nan(&objp->phys_info.vel));
 
     // assign a persistant sound to the asteroid
-    //	obj_snd_assign(objnum, SND_ASTEROID);
+    //   obj_snd_assign(objnum, SND_ASTEROID);
 
     return objp;
 }
 
-//	Create asteroids when parent_objp blows up.
+// Create asteroids when parent_objp blows up.
 void
 asteroid_sub_create(object *parent_objp, int asteroid_type, vector *relvec)
 {
@@ -406,7 +406,7 @@ asteroid_sub_create(object *parent_objp, int asteroid_type, vector *relvec)
     if (new_objp == NULL)
         return;
 
-    //	Now, bash some values.
+    //   Now, bash some values.
     vm_vec_scale_add(&new_objp->pos, &parent_objp->pos, relvec,
                      0.5f * parent_objp->radius);
     float parent_speed = vm_vec_mag_quick(&parent_objp->phys_info.vel);
@@ -429,7 +429,7 @@ asteroid_sub_create(object *parent_objp, int asteroid_type, vector *relvec)
                      &new_objp->phys_info.vel, -flFrametime);
     // DA: 4/22/98  We get next line for free when new object (in obj_create_list) is merged.
     // this line gives too many collision pairs.
-    //	asteroid_update_collide(new_objp);
+    //   asteroid_update_collide(new_objp);
 }
 
 // Load in an asteroid model
@@ -437,19 +437,19 @@ void
 asteroid_load(int asteroid_info_index, int asteroid_subtype)
 {
     asteroid_info *asip;
-    //	int				pof_index;
+    //   int            pof_index;
 
     asip = &Asteroid_info[asteroid_info_index];
 
     // pick one of MAX_ASTEROID_POFS models
     // LOAD ALL TEXTURES USED
-    //	static int asteroid_pof_index = rand() % MAX_ASTEROID_POFS;
-    //	if (Asteroid_field.debris_genre == DG_ASTEROID) {
-    //		pof_index = asteroid_pof_index;
-    //	} else {
-    //		// only 1 pof for ship debris type
-    //		pof_index = 0;
-    //	}
+    //   static int asteroid_pof_index = rand() % MAX_ASTEROID_POFS;
+    //   if (Asteroid_field.debris_genre == DG_ASTEROID) {
+    //      pof_index = asteroid_pof_index;
+    //   } else {
+    //      // only 1 pof for ship debris type
+    //      pof_index = 0;
+    //   }
 
     asip->model_num[asteroid_subtype] = model_load(
         asip->pof_files[asteroid_subtype], 0, NULL);
@@ -724,7 +724,7 @@ asteroid_is_targeted(object *objp)
     return 0;
 }
 
-//	Create an asteroid that will hit object *objp in delta_time seconds
+// Create an asteroid that will hit object *objp in delta_time seconds
 void
 asteroid_aim_at_target(object *objp, object *asteroid_objp, float delta_time)
 {
@@ -754,8 +754,8 @@ asteroid_aim_at_target(object *objp, object *asteroid_objp, float delta_time)
 
 int Max_incoming_asteroids[NUM_SKILL_LEVELS] = { 3, 4, 5, 7, 10 };
 
-//	Call once per frame to maybe throw an asteroid at a ship.
-//	"count" asteroids already targeted on
+// Call once per frame to maybe throw an asteroid at a ship.
+// "count" asteroids already targeted on
 void
 maybe_throw_asteroid(int count)
 {
@@ -902,7 +902,7 @@ asteroid_process_pre(object *objp, float frame_time)
 
         //nprintf(("AI", "Frm %i: Obj #%2i: Hull: %5.1f Vel: %5.1f %5.1f %5.1f Des: %5.1f %5.1f %5.1f\n", Framecount, objp-Objects, objp->hull_strength, v->x, v->y, v->z, vv->x, vv->y, vv->z));
 
-        //	Make vel chase desired_vel
+        //  Make vel chase desired_vel
         lerp(&objp->phys_info.vel.x, objp->phys_info.vel.x,
              objp->phys_info.desired_vel.x, flFrametime);
         lerp(&objp->phys_info.vel.y, objp->phys_info.vel.y,
@@ -1069,7 +1069,7 @@ asteroid_check_collision(object *pasteroid, object *other_obj, vector *hitpos,
 
                     mc.p0 = &p0;
                     mc.p1 = &p1;
-                    // mc.pos = zero	// in submodel RF
+                    // mc.pos = zero   // in submodel RF
 
                     mc.orient = &vmd_identity_matrix;
                     mc.submodel_num = submodel_list[i];
@@ -1221,11 +1221,11 @@ asteroid_render(object *obj)
         model_render(
             Asteroid_info[asp->type].model_num[asp->asteroid_subtype],
             &obj->orient, &obj->pos, MR_NORMAL | MR_IS_ASTEROID,
-            OBJ_INDEX(obj)); //	Replace MR_NORMAL with 0x07 for big yellow blobs
+            OBJ_INDEX(obj)); //  Replace MR_NORMAL with 0x07 for big yellow blobs
     }
 }
 
-//	Create a normalized vector generally in the direction from *hitpos to other_obj->pos
+// Create a normalized vector generally in the direction from *hitpos to other_obj->pos
 void
 asc_get_relvec(vector *relvec, object *other_obj, vector *hitpos)
 {
@@ -1234,7 +1234,7 @@ asc_get_relvec(vector *relvec, object *other_obj, vector *hitpos)
 
     vm_vec_normalized_dir(&tvec, &other_obj->pos, hitpos);
 
-    //	Try up to three times to get a good vector.
+    //   Try up to three times to get a good vector.
     while (count++ < 3) {
         vm_vec_rand_vec_quick(&rand_vec);
         vm_vec_add(relvec, &tvec, &rand_vec);
@@ -1335,11 +1335,11 @@ asteriod_explode_sound(object *objp, int type, int play_loud)
                 0, 1.0f, SND_PRIORITY_MUST_PLAY, NULL, range_factor);
 }
 
-//	asteroid_do_area_effect()
+// asteroid_do_area_effect()
 //
 // Do the area effect for an asteroid exploding
 //
-// input:	asteroid_objp	=>		object pointer to asteriod causing explosion
+// input:   asteroid_objp  =>    object pointer to asteriod causing explosion
 void
 asteroid_do_area_effect(object *asteroid_objp)
 {
@@ -1377,12 +1377,12 @@ asteroid_do_area_effect(object *asteroid_objp)
     } // end for
 }
 
-//	Asteroid asteroid_obj was hit.
-//	Apply damage.  Maybe make it break into smaller asteroids.
-// input:	asteroid_obj	=>		pointer to asteroid object getting hit
-//				other_obj		=>		object that hit asteroid, can be NULL if asteroid hit by area effect
-//				hitpos			=>		world position asteroid was hit, can be NULL if hit by area effect
-//				damage			=>		amount of damage to apply to asteroid
+// Asteroid asteroid_obj was hit.
+// Apply damage.  Maybe make it break into smaller asteroids.
+// input:   asteroid_obj   =>    pointer to asteroid object getting hit
+//          other_obj      =>    object that hit asteroid, can be NULL if asteroid hit by area effect
+//          hitpos         =>    world position asteroid was hit, can be NULL if hit by area effect
+//          damage         =>    amount of damage to apply to asteroid
 void
 asteroid_hit(object *asteroid_obj, object *other_obj, vector *hitpos,
              float damage)
@@ -1406,7 +1406,7 @@ asteroid_hit(object *asteroid_obj, object *other_obj, vector *hitpos,
 
             explosion_life = asteroid_create_explosion(asteroid_obj);
             if (asp->collide_objnum == OBJ_INDEX(other_obj)) {
-                //				play_loud_collision = 1;
+                //            play_loud_collision = 1;
             }
             asteriod_explode_sound(asteroid_obj, asp->type, play_loud_collision);
             asteroid_do_area_effect(asteroid_obj);
@@ -1479,11 +1479,11 @@ DCF(asteroids, "Turns asteroids on/off")
         dc_printf("asteroids are %s\n", (Asteroids_enabled ? "ON" : "OFF"));
 
     /*
-	if ((old_asteroids_enabled == 0) && (Asteroids_enabled == 1)) {
-		asteroid_init();
-	} else if ((old_asteroids_enabled == 1) && (Asteroids_enabled == 0)) {
-		asteroid_uninit();
-	}
+   if ((old_asteroids_enabled == 0) && (Asteroids_enabled == 1)) {
+      asteroid_init();
+   } else if ((old_asteroids_enabled == 1) && (Asteroids_enabled == 0)) {
+      asteroid_uninit();
+   }
 */
 }
 
@@ -1639,7 +1639,7 @@ asteroid_test_collide(object *asteroid_obj, object *ship_obj, mc_info *mc)
     mc->pos = &ship_obj->pos; // The object's position
     mc->p0 = &asteroid_obj->pos; // Point 1 of ray to check
     mc->p1 = &terminus; // Point 2 of ray to check
-    //	mc->flags = MC_CHECK_MODEL | MC_ONLY_BOUND_BOX;
+    //   mc->flags = MC_CHECK_MODEL | MC_ONLY_BOUND_BOX;
     mc->flags = MC_CHECK_MODEL | MC_CHECK_SPHERELINE;
     mc->radius = asteroid_obj->radius;
 
@@ -1888,7 +1888,7 @@ asteroid_parse_tbl()
     lcl_ext_close();
 }
 
-//	Return number of asteroids expected to collide with a ship.
+// Return number of asteroids expected to collide with a ship.
 int
 count_incident_asteroids()
 {
@@ -1912,8 +1912,8 @@ count_incident_asteroids()
     return count;
 }
 
-//	Pick object to throw asteroids at.
-//	Pick any capital or big ship inside the bounds of the asteroid field.
+// Pick object to throw asteroids at.
+// Pick any capital or big ship inside the bounds of the asteroid field.
 int
 set_asteroid_throw_objnum()
 {
@@ -2016,7 +2016,7 @@ asteroid_show_brackets()
         if (hud_gauge_active(HUD_OFFSCREEN_INDICATOR)) {
             if (asteroid_vertex.codes != 0) {
                 float dist;
-                //				dist = vm_vec_dist_quick(&Player_obj->pos, &asteroid_objp->pos);
+                //            dist = vm_vec_dist_quick(&Player_obj->pos, &asteroid_objp->pos);
                 dist = hud_find_target_distance(asteroid_objp, Player_obj);
                 gr_set_color_fast(&IFF_colors[IFF_COLOR_SELECTION][1]);
                 hud_draw_offscreen_indicator(&asteroid_vertex,

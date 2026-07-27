@@ -466,7 +466,7 @@ beam_fire(beam_fire_info *fire_info)
         beam_get_binfo(
             new_item, fire_info->accuracy,
             wip->b_info
-                .beam_shots); // to fill in b_info	- the set of directional aim vectors
+                .beam_shots); // to fill in b_info - the set of directional aim vectors
     }
 
     // create the associated object
@@ -801,7 +801,7 @@ beam_type_b_move(beam *b)
     if ((double)dot_save >= 0.999999999) {
         actual_dir = b->binfo.dir_a;
     }
-    // otherwise move towards the dir	we calculated when firing this beam
+    // otherwise move towards the dir  we calculated when firing this beam
     else {
         vm_vec_interp_constant(&actual_dir, &b->binfo.dir_a, &b->binfo.dir_b,
                                BEAM_T(b));
@@ -1121,26 +1121,26 @@ beam_move_all_post()
     // process beam culling info
 #ifndef NDEBUG
     /*
-	if(Beam_test_stamp == -1){
-		Beam_test_stamp = timestamp(BEAM_TEST_STAMP_TIME);
-		Beam_test_ints = 0;
-		Beam_test_framecount = 0;
-	} else {
-		if(timestamp_elapsed(Beam_test_stamp)){			
-			// report the results
-			nprintf(("General", "Performed %f beam ints/frame (%d, %d, %d, %d), over %f seconds\n", (float)Beam_test_ints/(float)Beam_test_framecount, Beam_test_ints, Beam_test_framecount, Beam_test_ship, Beam_test_ast, (float)BEAM_TEST_STAMP_TIME / 1000.0f));
+   if(Beam_test_stamp == -1){
+      Beam_test_stamp = timestamp(BEAM_TEST_STAMP_TIME);
+      Beam_test_ints = 0;
+      Beam_test_framecount = 0;
+   } else {
+      if(timestamp_elapsed(Beam_test_stamp)){         
+         // report the results
+         nprintf(("General", "Performed %f beam ints/frame (%d, %d, %d, %d), over %f seconds\n", (float)Beam_test_ints/(float)Beam_test_framecount, Beam_test_ints, Beam_test_framecount, Beam_test_ship, Beam_test_ast, (float)BEAM_TEST_STAMP_TIME / 1000.0f));
 
-			// reset vars
-			Beam_test_stamp = timestamp(BEAM_TEST_STAMP_TIME);
-			Beam_test_ints = 0;
-			Beam_test_ship = 0;
-			Beam_test_ast = 0;
-			Beam_test_framecount = 0;
-		} else {
-			Beam_test_framecount++;
-		}
-	}
-	*/
+         // reset vars
+         Beam_test_stamp = timestamp(BEAM_TEST_STAMP_TIME);
+         Beam_test_ints = 0;
+         Beam_test_ship = 0;
+         Beam_test_ast = 0;
+         Beam_test_framecount = 0;
+      } else {
+         Beam_test_framecount++;
+      }
+   }
+   */
 #endif
 }
 
@@ -1493,7 +1493,7 @@ beam_add_light_small(beam *bm, object *objp, vector *pt_override = NULL)
     float fb = (float)wip->laser_color_1.blue / 255.0f;
 
     // add a unique light
-    // noise *= 0.1f;			// a little less noise here, since we want the beam to generally cast a bright light
+    // noise *= 0.1f;         // a little less noise here, since we want the beam to generally cast a bright light
     light_add_point_unique(&near_pt, light_rad * 0.0001f, light_rad, 1.0f, fr, fg,
                            fb, OBJ_INDEX(objp));
 }
@@ -1953,7 +1953,7 @@ beam_get_binfo(beam *b, float accuracy, int num_shots)
     case BEAM_TYPE_D:
         // get a bunch of shot aims
         for (idx = 0; idx < b->binfo.shot_count; idx++) {
-            //	MK, 9/3/99: Added pow() function to make increasingly likely to miss with subsequent shots.  30% more likely with each shot.
+            // MK, 9/3/99: Added pow() function to make increasingly likely to miss with subsequent shots.  30% more likely with each shot.
             float r = ((float)pow(1.3f, idx)) *
                       bwi->beam_miss_factor[skill_level] * accuracy;
             b->binfo.shot_aim[idx] = frand_range(0.0f, 1.0f + r);
@@ -2787,12 +2787,12 @@ beam_get_cull_vals(object *objp, beam *b, float *cull_dot, float *cull_dist)
     case OBJ_SHIP:
         // for cap ships, only cull for 90deg or better
         /*
-		if(Ship_info[Ships[objp->instance].ship_info_index].flags & SIF_CAPITAL){
-			*cull_dot = 0.0f;
-			*cull_dist = 0.0f;
-			return;
-		}
-		*/
+      if(Ship_info[Ships[objp->instance].ship_info_index].flags & SIF_CAPITAL){
+         *cull_dot = 0.0f;
+         *cull_dist = 0.0f;
+         return;
+      }
+      */
 
         // for large ships, cull at some multiple of the radius
         if (Ship_info[Ships[objp->instance].ship_info_index].flags &

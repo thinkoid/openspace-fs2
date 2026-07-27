@@ -230,59 +230,59 @@ MONITOR(FontChars);
 
 void gr8_char(int x,int y,int letter)
 {
-	font_char *ch;
-	
-	ch = &Current_font->char_data[letter];
+   font_char *ch;
+   
+   ch = &Current_font->char_data[letter];
 
-	gr_aabitmap_ex( x, y, ch->byte_width, Current_font->h, Current_font->u[letter], Current_font->v[letter] );
+   gr_aabitmap_ex( x, y, ch->byte_width, Current_font->h, Current_font->u[letter], Current_font->v[letter] );
 
-//	mprintf(( "String = %s\n", text ));
+// mprintf(( "String = %s\n", text ));
 }
 
 
 void gr8_string( int sx, int sy, char *s )
 {
-	int width, spacing, letter;
-	int x, y;
+   int width, spacing, letter;
+   int x, y;
 
-	if ( !Current_font ) return;
-	if ( !s ) return;
-	
-	gr_set_bitmap(Current_font->bitmap);
+   if ( !Current_font ) return;
+   if ( !s ) return;
+   
+   gr_set_bitmap(Current_font->bitmap);
 
-	x = sx;
-	y = sy;
+   x = sx;
+   y = sy;
 
-	if (sx==0x8000) {			//centered
-		x = get_centered_x(s);
-	} else {
-		x = sx;
-	}
+   if (sx==0x8000) {       //centered
+      x = get_centered_x(s);
+   } else {
+      x = sx;
+   }
 
-	while (*s)	{
-		while (*s== '\n' )	{
-			s++;
-			y += Current_font->h;
-			if (sx==0x8000) {			//centered
-				x = get_centered_x(s);
-			} else {
-				x = sx;
-			}
-		}
-		if (*s == 0 ) break;
+   while (*s)  {
+      while (*s== '\n' )   {
+         s++;
+         y += Current_font->h;
+         if (sx==0x8000) {       //centered
+            x = get_centered_x(s);
+         } else {
+            x = sx;
+         }
+      }
+      if (*s == 0 ) break;
 
-		letter = get_char_width(s[0],s[1],&width,&spacing);
+      letter = get_char_width(s[0],s[1],&width,&spacing);
 
-		if (letter<0) {	//not in font, draw as space
-			x += spacing;
-			s++;
-			continue;
-		}
-		gr8_char( x, y, letter );
-	
-		x += spacing;
-		s++;
-	}
+      if (letter<0) {   //not in font, draw as space
+         x += spacing;
+         s++;
+         continue;
+      }
+      gr8_char( x, y, letter );
+   
+      x += spacing;
+      s++;
+   }
 }
 */
 

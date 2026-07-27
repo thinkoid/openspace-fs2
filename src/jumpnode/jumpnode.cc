@@ -58,9 +58,9 @@ jumpnode_render(object *jumpnode_objp, vector *pos, vector *view_pos)
                 }
             }
 
-            //		nprintf(("Alan","alpha index is: %d\n", alpha_index));
+            //    nprintf(("Alan","alpha index is: %d\n", alpha_index));
             gr_set_color_fast(&HUD_color_defaults[alpha_index]);
-            //			model_set_outline_color(HUD_color_red, HUD_color_green, HUD_color_blue);
+            //       model_set_outline_color(HUD_color_red, HUD_color_green, HUD_color_blue);
         }
         else {
             gr_set_color(HUD_color_red, HUD_color_green, HUD_color_blue);

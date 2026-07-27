@@ -30,8 +30,8 @@
 #include <globalincs/alphacolors.hh>
 #include <localization/localize.hh>
 
-//#define MAX_PRIMARY_BANKS		3
-//#define MAX_SECONDARY_BANKS	3	//	Lowered from 5 to 3 by MK on 3/25/98.  This needs to be <= MAX_WL_SECONDARY or you'll get stack overwrites.
+//#define MAX_PRIMARY_BANKS      3
+//#define MAX_SECONDARY_BANKS 3  // Lowered from 5 to 3 by MK on 3/25/98.  This needs to be <= MAX_WL_SECONDARY or you'll get stack overwrites.
 
 #define IS_BANK_PRIMARY(x) (x < 3 ? 1 : 0)
 #define IS_BANK_SECONDARY(x) (x > 2 ? 1 : 0)
@@ -89,7 +89,7 @@ typedef struct wl_bitmap_group
 #define WL_BUTTON_RESET 4
 #define WL_BUTTON_DUMMY 5
 UI_WINDOW Weapon_ui_window;
-//UI_BUTTON	Weapon_buttons[NUM_WEAPON_BUTTONS];
+//UI_BUTTON Weapon_buttons[NUM_WEAPON_BUTTONS];
 
 static char *Wl_mask_single[GR_NUM_RESOLUTIONS] = { "weaponloadout-m",
                                                     "2_weaponloadout-m" };
@@ -260,7 +260,7 @@ int Slist_start, Slist_size;
 
 static int Selected_wl_slot = -1; // Currently selected ship slot
 static int Selected_wl_class = -1; // Class of weapon that is selected
-static int Hot_wl_slot = -1; //	Ship slot that mouse is over (0..11)
+static int Hot_wl_slot = -1; //  Ship slot that mouse is over (0..11)
 static int Hot_weapon_icon = -1; // Icon number (0-7) which has mouse over it
 static int Hot_weapon_bank =
     -1; // index (0-7) for weapon slot on ship that has a droppable icon over it
@@ -679,8 +679,8 @@ wl_get_ship_class(int wl_slot)
     return Wss_slots[wl_slot].ship_class;
 }
 
-//	Return true if weapon_flags indicates a weapon that is legal for use in current game type.
-//	Function added by MK on 9/6/99 to support separate legal loadouts for dogfight missions.
+// Return true if weapon_flags indicates a weapon that is legal for use in current game type.
+// Function added by MK on 9/6/99 to support separate legal loadouts for dogfight missions.
 int
 weapon_allowed_for_game_type(int weapon_flags)
 {
@@ -709,8 +709,8 @@ wl_set_disabled_weapons(int ship_class)
     sip = &Ship_info[ship_class];
 
     for (i = 0; i < MAX_WEAPON_TYPES; i++) {
-        //	Determine whether weapon #i is allowed on this ship class in the current type of mission.
-        //	As of 9/6/99, the only difference is dogfight missions have a different list of legal weapons.
+        //  Determine whether weapon #i is allowed on this ship class in the current type of mission.
+        //  As of 9/6/99, the only difference is dogfight missions have a different list of legal weapons.
         Wl_icons[i].can_use = weapon_allowed_for_game_type(
             sip->allowed_weapons[i]);
     }
@@ -741,7 +741,7 @@ maybe_select_wl_slot(int block, int slot)
 //
 // Change to the weapon that corresponds to index in the weapon list
 //
-// input:	index		=>		weapon icon index (0-7)
+// input:   index    =>    weapon icon index (0-7)
 //
 void
 maybe_select_new_weapon(int index)
@@ -780,7 +780,7 @@ maybe_select_new_weapon(int index)
 //
 // Change to the weapon that corresponds to the ship weapon slot
 //
-// input: index ->	index of bank (0..2 primary, 0..6 secondary)
+// input: index ->   index of bank (0..2 primary, 0..6 secondary)
 void
 maybe_select_new_ship_weapon(int index)
 {
@@ -875,15 +875,15 @@ wl_load_anim(int weapon_class)
         }
 
         /*
-		if (!cf_exist(animation_filename, CF_TYPE_INTERFACE)) {
-			// file does not exist, use original low res version
-			mprintf(("Weapon ANI: Can not find %s, using lowres version instead.\n",animation_filename)); 
-			strcpy(animation_filename, Weapon_info[weapon_class].anim_filename);
-		} else {
-			animation_filename[strlen(animation_filename) - 4] = '\0';
-			mprintf(("Weapon ANI: Found hires version of %s\n",animation_filename));
-		}
-		*/
+      if (!cf_exist(animation_filename, CF_TYPE_INTERFACE)) {
+         // file does not exist, use original low res version
+         mprintf(("Weapon ANI: Can not find %s, using lowres version instead.\n",animation_filename)); 
+         strcpy(animation_filename, Weapon_info[weapon_class].anim_filename);
+      } else {
+         animation_filename[strlen(animation_filename) - 4] = '\0';
+         mprintf(("Weapon ANI: Found hires version of %s\n",animation_filename));
+      }
+      */
     }
     else {
         strcpy(animation_filename, Weapon_info[weapon_class].anim_filename);
@@ -995,7 +995,7 @@ wl_load_all_icons()
 #endif
 }
 
-//	wl_unload_icons() frees the bitmaps used for weapon icons
+// wl_unload_icons() frees the bitmaps used for weapon icons
 void
 wl_unload_icons()
 {
@@ -1150,43 +1150,43 @@ wl_start_slot_animation(int n)
 
 /*
 
-	int						ship_class;
-	wl_ship_class_info	*wl_ship;
-	anim_play_struct		aps;
+   int                  ship_class;
+   wl_ship_class_info   *wl_ship;
+   anim_play_struct     aps;
 
-	if ( n < 0 ) {
-		return;
-	}
+   if ( n < 0 ) {
+      return;
+   }
 
-	ship_class = Wss_slots[n].ship_class;
-	
-	if ( ship_class < 0 ) {
-		Int3();
-		return;
-	}
+   ship_class = Wss_slots[n].ship_class;
+   
+   if ( ship_class < 0 ) {
+      Int3();
+      return;
+   }
 
-	wl_ship = &Wl_ships[ship_class];
+   wl_ship = &Wl_ships[ship_class];
 
-	// maybe this animation is already playing?
-	if ( wl_ship->anim_instance ) {
-		anim_stop_playing(wl_ship->anim_instance);
-		wl_ship->anim_instance = NULL;
-	}
-	
-	// maybe we have to load this animation
-	if ( wl_ship->anim == NULL ) {
-		wl_ship->anim = anim_load(Ship_info[ship_class].overhead_filename, 1);
-		if ( wl_ship->anim == NULL ) {
-			Int3();		// couldn't load anim filename.. get Alan
-			return;
-		}
-	}
+   // maybe this animation is already playing?
+   if ( wl_ship->anim_instance ) {
+      anim_stop_playing(wl_ship->anim_instance);
+      wl_ship->anim_instance = NULL;
+   }
+   
+   // maybe we have to load this animation
+   if ( wl_ship->anim == NULL ) {
+      wl_ship->anim = anim_load(Ship_info[ship_class].overhead_filename, 1);
+      if ( wl_ship->anim == NULL ) {
+         Int3();     // couldn't load anim filename.. get Alan
+         return;
+      }
+   }
 
-	anim_play_init(&aps, wl_ship->anim, Wl_overhead_coords[gr_screen.res][0], Wl_overhead_coords[gr_screen.res][1]);
-	aps.screen_id = ON_WEAPON_SELECT;
-	aps.framerate_independent = 1;
-	aps.skip_frames = 0;
-	wl_ship->anim_instance = anim_play(&aps);
+   anim_play_init(&aps, wl_ship->anim, Wl_overhead_coords[gr_screen.res][0], Wl_overhead_coords[gr_screen.res][1]);
+   aps.screen_id = ON_WEAPON_SELECT;
+   aps.framerate_independent = 1;
+   aps.skip_frames = 0;
+   wl_ship->anim_instance = anim_play(&aps);
 */
 #endif
 }
@@ -1199,9 +1199,9 @@ wl_set_selected_slot(int slot_num)
         // slot has changed.... start an animation
         wl_start_slot_animation(slot_num);
         /*
-		if ( Current_screen == ON_WEAPON_SELECT ) {
-			gamesnd_play_iface(SND_OVERHEAD_SHIP_ANIM);
-		}
+      if ( Current_screen == ON_WEAPON_SELECT ) {
+         gamesnd_play_iface(SND_OVERHEAD_SHIP_ANIM);
+      }
 */
     }
 
@@ -1338,7 +1338,7 @@ wl_cull_illegal_weapons(int ship_class, int *wep, int *wep_count)
 
         if (!weapon_allowed_for_game_type(
                 Ship_info[ship_class].allowed_weapons[wep[i]])) {
-            //			wep[i] = -1;
+            //       wep[i] = -1;
             wep_count[i] = 0;
         }
     }
@@ -1377,7 +1377,7 @@ wl_get_default_weapons(int ship_class, int slot_num, int *wep, int *wep_count)
         }
         else {
             // ship has been created
-            //			wl_get_ship_weapons(slot_num/4, slot_num%4, wep, wep_count);
+            //       wl_get_ship_weapons(slot_num/4, slot_num%4, wep, wep_count);
             int ship_index = -1;
             p_object *pobjp;
             ss_return_ship(slot_num / 4, slot_num % 4, &ship_index, &pobjp);
@@ -1593,7 +1593,7 @@ weapon_select_common_init()
 
 // ---------------------------------------------------------------------------------
 // weapon_select_init() is called to load the bitmaps and set up the mask regions for
-//	the weapon loadout screen.  common_select_init() is called to load the animations
+// the weapon loadout screen.  common_select_init() is called to load the animations
 // and bitmaps which are in common with the ship select and briefing screens.
 //
 // The Weapon_select_open flag is set to 1 when weapon_select_init() completes successfully
@@ -1872,7 +1872,7 @@ do_mouse_over_list_weapon(int index)
 //
 // returns:
 //          0 -> icon was not dropped on a slot
-//				1 -> icon was dropped on a slot
+//          1 -> icon was dropped on a slot
 int
 do_mouse_over_ship_weapon(int index)
 {
@@ -2551,12 +2551,12 @@ weapon_select_close()
 }
 
 // ------------------------------------------------------------------------
-//	wl_render_icon_count()
-//		renders the number next to the weapon icon
+// wl_render_icon_count()
+//    renders the number next to the weapon icon
 //
-// input:	x,y			=>		x,y screen position OF THE ICON (NOT where u want the text,
-//										this is calculated to prevent overlapping)
-//				num			=>		the actual count to be printed
+// input:   x,y         =>    x,y screen position OF THE ICON (NOT where u want the text,
+//                            this is calculated to prevent overlapping)
+//          num         =>    the actual count to be printed
 //
 void
 wl_render_icon_count(int num, int x, int y)
@@ -2575,15 +2575,15 @@ wl_render_icon_count(int num, int x, int y)
 }
 
 // ------------------------------------------------------------------------
-//	wl_render_icon()
+// wl_render_icon()
 //
-// input:	index			=>		index into Wl_icons[], identifying which weapon to draw
-//				x,y			=>		x,y screen position to draw icon at
-//				num			=>		count for weapon
-//				draw_num_flag =>	0 if not to draw count for weapon, nonzero otherwise
-//				hot_mask		=>		value that should match Hot_weapon_icon to show mouse is over
-//				hot_bank_mask =>	value that should match Hot_weapon_bank_icon to show mouse is over
-//				select_mask	=>		value that should match Selected_wl_class to show icon is selected
+// input:   index       =>    index into Wl_icons[], identifying which weapon to draw
+//          x,y         =>    x,y screen position to draw icon at
+//          num         =>    count for weapon
+//          draw_num_flag =>  0 if not to draw count for weapon, nonzero otherwise
+//          hot_mask    =>    value that should match Hot_weapon_icon to show mouse is over
+//          hot_bank_mask =>  value that should match Hot_weapon_bank_icon to show mouse is over
+//          select_mask =>    value that should match Selected_wl_class to show icon is selected
 //
 void
 wl_render_icon(int index, int x, int y, int num, int draw_num_flag, int hot_mask,
@@ -2642,11 +2642,11 @@ wl_render_icon(int index, int x, int y, int num, int draw_num_flag, int hot_mask
 }
 
 // ------------------------------------------------------------------------
-//	wl_draw_ship_weapons()
+// wl_draw_ship_weapons()
 //
 // Draw the icons for the weapons that are currently on the selected ship
 //
-// input:	slot_num		=>		Slot to draw weapons for
+// input:   slot_num    =>    Slot to draw weapons for
 //
 void
 wl_draw_ship_weapons(int index)
@@ -2678,10 +2678,10 @@ wl_draw_ship_weapons(int index)
 }
 
 // ------------------------------------------------------------------------
-//	draw_wl_icon_with_number()
+// draw_wl_icon_with_number()
 //
-// input:	list_count			=>		list position on screen (0-7)
-//				weapon_class		=>		class of weapon
+// input:   list_count        =>    list position on screen (0-7)
+//          weapon_class      =>    class of weapon
 //
 void
 draw_wl_icon_with_number(int list_count, int weapon_class)
@@ -2695,7 +2695,7 @@ draw_wl_icon_with_number(int list_count, int weapon_class)
 }
 
 // ------------------------------------------------------------------------
-//	draw_wl_icons()
+// draw_wl_icons()
 //
 // Draw the weapon icons that are available
 void
@@ -2752,16 +2752,16 @@ wl_pick_icon_from_list(int index)
     }
 
     /*
-	// some are available, but weapon cannot be used on current ship class
-	if ( !Wl_icons[weapon_class].can_use ) {
-		wl_pause_anim();
+   // some are available, but weapon cannot be used on current ship class
+   if ( !Wl_icons[weapon_class].can_use ) {
+      wl_pause_anim();
 
-		int ship_class = Wss_slots[Selected_wl_slot].ship_class;
-		popup(PF_USE_AFFIRMATIVE_ICON, 1, POPUP_OK, "A %s is unable to carry %s weaponry", Ship_info[ship_class].name, Weapon_info[weapon_class].name);
+      int ship_class = Wss_slots[Selected_wl_slot].ship_class;
+      popup(PF_USE_AFFIRMATIVE_ICON, 1, POPUP_OK, "A %s is unable to carry %s weaponry", Ship_info[ship_class].name, Weapon_info[weapon_class].name);
 
-		wl_unpause_anim();
-		return;
-	}
+      wl_unpause_anim();
+      return;
+   }
 */
 
     wl_set_carried_icon(-1, -1, weapon_class);
@@ -2773,9 +2773,9 @@ wl_pick_icon_from_list(int index)
 }
 
 // ------------------------------------------------------------------------
-//	pick_from_ship_slot()
+// pick_from_ship_slot()
 //
-// input: num	->	index into shipb banks (0..2 primary, 3..6 secondary)
+// input: num  -> index into shipb banks (0..2 primary, 3..6 secondary)
 void
 pick_from_ship_slot(int num)
 {
@@ -2830,18 +2830,18 @@ wl_slots_all_empty(wss_unit *slot)
 }
 
 // ------------------------------------------------------------------------
-//	wl_update_ship_weapons()
+// wl_update_ship_weapons()
 //
 // Change a ship's weapons based on the information contained in the
 // Weapon_data[] structure that is filled in during weapon loadout
 //
-// returns: -1	=>	if the playre ship has no weapons
-//				0	=>	function finished without errors
+// returns: -1 => if the playre ship has no weapons
+//          0  => function finished without errors
 int
 wl_update_ship_weapons(int objnum, wss_unit *slot)
 {
     // AL 11-15-97: Ensure that the player ship hasn't removed all
-    //					 weapons from their ship.  This will cause a warning to appear.
+    //                weapons from their ship.  This will cause a warning to appear.
     if (objnum == OBJ_INDEX(Player_obj) && Weapon_select_open) {
         if (wl_slots_all_empty(slot)) {
             return -1;
@@ -2853,12 +2853,12 @@ wl_update_ship_weapons(int objnum, wss_unit *slot)
 }
 
 // ------------------------------------------------------------------------
-//	wl_update_parse_object_weapons()
+// wl_update_parse_object_weapons()
 //
 // Set the Pilot subsystem of a parse_object to the weapons that are setup
 // for the wing_block,wing_slot ship
 //
-// input:	pobjp	=>	pointer to parse object that references Pilot subsystem
+// input:   pobjp => pointer to parse object that references Pilot subsystem
 //
 void
 wl_update_parse_object_weapons(p_object *pobjp, wss_unit *slot)
@@ -2956,12 +2956,12 @@ start_weapon_animation(int weapon_class)
     if (icon->anim == NULL) {
         wl_load_anim(weapon_class);
         /*
-		icon->anim = anim_load(Weapon_info[weapon_class].anim_filename, 1);
-		if ( icon->anim == NULL ) {
-			Int3();	// could not open the weapon animation
-			return;
-		}
-		*/
+      icon->anim = anim_load(Weapon_info[weapon_class].anim_filename, 1);
+      if ( icon->anim == NULL ) {
+         Int3();  // could not open the weapon animation
+         return;
+      }
+      */
     }
 
     // see if we need to get an instance
@@ -3081,7 +3081,7 @@ wl_saturate_bank(int ship_slot, int bank)
 }
 
 // exit: 0 -> no data changed
-//			1 -> data changed
+//       1 -> data changed
 //       sound => gets filled with sound id to play
 int
 wl_swap_slot_slot(int from_bank, int to_bank, int ship_slot, int *sound)
@@ -3178,7 +3178,7 @@ wl_swap_slot_slot(int from_bank, int to_bank, int ship_slot, int *sound)
 }
 
 // exit: 0 -> no data changed
-//			1 -> data changed
+//       1 -> data changed
 //       sound => gets filled with sound id to play
 int
 wl_dump_to_list(int from_bank, int to_list, int ship_slot, int *sound)
@@ -3201,7 +3201,7 @@ wl_dump_to_list(int from_bank, int to_list, int ship_slot, int *sound)
 }
 
 // exit: 0 -> no data changed
-//			1 -> data changed
+//       1 -> data changed
 //       sound => gets filled with sound id to play
 int
 wl_grab_from_list(int from_list, int to_bank, int ship_slot, int *sound)
@@ -3259,7 +3259,7 @@ wl_grab_from_list(int from_list, int to_bank, int ship_slot, int *sound)
 }
 
 // exit: 0 -> no data changed
-//			1 -> data changed
+//       1 -> data changed
 //       sound => gets filled with sound id to play
 int
 wl_swap_list_slot(int from_list, int to_bank, int ship_slot, int *sound)

@@ -59,19 +59,19 @@
 #define PF_WEB_CURSOR_1 (1 << 27) // button 1 will get web cursor
 #define PF_WEB_CURSOR_2 (1 << 28) // button 2 will get web cursor
 
-// input:	flags			=>		formatting specificatons (PF_... shown above)
-//				nchoices		=>		number of choices popup has
-//				text_1		=>		text for first button
-//				...			=>
-//				text_n		=>		text for last button
-//				msg text		=>		text msg for popup (can be of form "%s",pl->text)
+// input:   flags       =>    formatting specificatons (PF_... shown above)
+//          nchoices    =>    number of choices popup has
+//          text_1      =>    text for first button
+//          ...         =>
+//          text_n      =>    text for last button
+//          msg text    =>    text msg for popup (can be of form "%s",pl->text)
 //
 // exit: choice selected (0..nchoices-1)
-//			will return -1 if there was an error or popup was aborted
+//       will return -1 if there was an error or popup was aborted
 //
 // typical usage:
 //
-//	rval = popup(0, 2, POPUP_YES, POPUP_NO, "Hey %s, do you want to quit", pl->callsign);
+// rval = popup(0, 2, POPUP_YES, POPUP_NO, "Hey %s, do you want to quit", pl->callsign);
 int popup(int flags, int nchoices, ...);
 
 // popup with cancel button and conditional funcrion.
@@ -79,7 +79,7 @@ int popup(int flags, int nchoices, ...);
 //                          continues waiting.  If condition() returns anything else, the popup will
 //                          return that value.
 //          text_1      => text for cancel button
-// 			msg text		=>	text msg for popup (can be of form "%s",pl->text)
+//          msg text    => text msg for popup (can be of form "%s",pl->text)
 //
 // exit: condition occured (return value of condition)
 //       will return 0 if cancel was pressed or popup was aborted
@@ -94,7 +94,7 @@ int popup(int flags, int nchoices, ...);
 // .
 // .
 // .
-//	rval = popup_till_condition( condition_function, "Cancel", "Checking to see if %s is an idiot.", pl->callsign);
+// rval = popup_till_condition( condition_function, "Cancel", "Checking to see if %s is an idiot.", pl->callsign);
 int popup_till_condition(int (*condition)(), ...);
 
 // popup to return the value from an input box

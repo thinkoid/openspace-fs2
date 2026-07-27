@@ -1,28 +1,28 @@
 /****************************************************************************
 
-    MODULE:     	SW_Force.H
-	Tab settings: 	5 9
+    MODULE:       SW_Force.H
+   Tab settings:  5 9
 
-	Copyright 1995, 1996, Microsoft Corporation, 	All Rights Reserved.
+   Copyright 1995, 1996, Microsoft Corporation,    All Rights Reserved.
 
-	You have a royalty-free right to use, modify, reproduce and 
-	distribute this header Files (and/or any modified version) in 
-	any way you find useful, provided that you agree that 
-	Microsoft has no warranty obligations or liability for any 
-	Application Files which are created using the header Files. 
+   You have a royalty-free right to use, modify, reproduce and 
+   distribute this header Files (and/or any modified version) in 
+   any way you find useful, provided that you agree that 
+   Microsoft has no warranty obligations or liability for any 
+   Application Files which are created using the header Files. 
 
-    PURPOSE:    	Header for SideWinder Force Feedback Joystick
-    				and interface to DirectInput Force Feedback API
+    PURPOSE:      Header for SideWinder Force Feedback Joystick
+               and interface to DirectInput Force Feedback API
     
 
-	Author(s):	Name:
-	----------	----------------
+   Author(s):  Name:
+   ----------  ----------------
 
 
-	Revision History:
-	-----------------
-	Version Date            Author  Comments
-   	1.0  	24-Mar-97       MEA     original
+   Revision History:
+   -----------------
+   Version Date            Author  Comments
+      1.0   24-Mar-97       MEA     original
         
 ****************************************************************************/
 #ifndef _SW_Force_SEEN
@@ -233,8 +233,8 @@ BOOL SWFF_RegisterVFXObject(LPCTSTR pszVFXPath);
 BOOL SWFF_GetJoyData(IN int nJoyID, IN OUT JOYINFOEX *pjix, OUT char *pszErr);
 /*
 HRESULT SWFF_GetJoyData2(
-	IN LPDIRECTINPUTDEVICE2 pDIDevice,
-	IN OUT LPDIJOYSTATE pjs);
+   IN LPDIRECTINPUTDEVICE2 pDIDevice,
+   IN OUT LPDIJOYSTATE pjs);
 */
 void SWFF_ErrorCodeToString(IN HRESULT hResult, OUT TCHAR *pszCodeString);
 
@@ -340,7 +340,7 @@ typedef struct _BE_WALL_PARAM
 } BE_WALL_PARAM, *PBE_WALL_PARAM;
 
 //
-// ---	EF_VFX_EFFECT = { FRC file effects }
+// ---   EF_VFX_EFFECT = { FRC file effects }
 //
 // Subtypes:  none
 

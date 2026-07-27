@@ -15,8 +15,8 @@
 #define PF_ACCELERATES (1 << 1)
 #define PF_USE_VEL                                                               \
     (1                                                                           \
-     << 2) //	Use velocity present in physics_info struct, don't call physics_sim_vel.
-#define PF_AFTERBURNER_ON (1 << 3) //	Afterburner currently engaged.
+     << 2) //  Use velocity present in physics_info struct, don't call physics_sim_vel.
+#define PF_AFTERBURNER_ON (1 << 3) //  Afterburner currently engaged.
 #define PF_SLIDE_ENABLED (1 << 4) // Allow descent style sliding
 #define PF_REDUCED_DAMP                                                          \
     (1                                                                           \
@@ -31,14 +31,14 @@
      << 8) // true when afterburner cannot be used.  replaces variable used in afterburner code
 #define PF_CONST_VEL                                                             \
     (1 << 9) // Use velocity in phys_info struct.  Optimize weapons in phys_sim
-#define PF_WARP_IN (1 << 10) //	Use when ship is warping in
+#define PF_WARP_IN (1 << 10) //  Use when ship is warping in
 #define PF_SPECIAL_WARP_IN                                                       \
     (1                                                                           \
-     << 11) //	Use when ship is warping in and we want to slow the ship faster than normal game physics
-#define PF_WARP_OUT (1 << 12) //	Use when ship is warping out
+     << 11) // Use when ship is warping in and we want to slow the ship faster than normal game physics
+#define PF_WARP_OUT (1 << 12) // Use when ship is warping out
 #define PF_SPECIAL_WARP_OUT                                                      \
     (1                                                                           \
-     << 13) //	Use when ship is warping out and we want to slow the ship faster than normal game physics
+     << 13) // Use when ship is warping out and we want to slow the ship faster than normal game physics
 
 //information for physics sim for an object
 typedef struct physics_info
@@ -61,8 +61,8 @@ typedef struct physics_info
     float max_rear_vel; //maximum velocity in the backwards Z direction
 
     // Acceleration rates.  Only used if flag PF_ACCELERATES is set
-    // starting from rest	time to reach .50  v_max	0.69 time const
-    //								time to reach .75  v_max	1.39 time const
+    // starting from rest  time to reach .50  v_max   0.69 time const
+    //                        time to reach .75  v_max   1.39 time const
     //
     float forward_accel_time_const; // forward acceleration time const
     float afterburner_forward_accel_time_const; // forward acceleration time const while afterburner engaged
@@ -82,10 +82,10 @@ typedef struct physics_info
     vector vel; // The current velocity vector of this object
     vector rotvel; // The current rotational velecity (angles)
     float speed; // Yes, this can be derived from velocity, but that's expensive!
-    float fspeed; //	Speed in the forward direction.
+    float fspeed; // Speed in the forward direction.
     float heading;
-    vector prev_fvec; //	Used in AI for momentum.
-    matrix last_rotmat; //	Used for moving two objects together and for editor.
+    vector prev_fvec; //   Used in AI for momentum.
+    matrix last_rotmat; // Used for moving two objects together and for editor.
 
     int afterburner_decay; // timestamp used to control how long ship shakes after afterburner released
     int shockwave_decay; // timestamp used to control how long ship affected after hit by shockwave
@@ -117,7 +117,7 @@ typedef struct control_info
 
 } control_info;
 
-extern int physics_paused; //	Set means don't do physics, except for player.
+extern int physics_paused; // Set means don't do physics, except for player.
 
 // To use the "Descent-ship" physics:
 //   controls_read_all(&ci, FrameSecs );

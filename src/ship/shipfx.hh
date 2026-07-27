@@ -114,7 +114,7 @@ void shipfx_do_shockwave_stuff(ship *shipp, shockwave_create_info *sci);
 void shipfx_do_damaged_arcs_frame(ship *shipp);
 
 // =================================================
-//				NEBULA LIGHTNING.
+//          NEBULA LIGHTNING.
 // =================================================
 void shipfx_do_lightning_frame(ship *shipp);
 

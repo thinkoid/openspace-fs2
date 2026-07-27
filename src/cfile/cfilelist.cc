@@ -93,12 +93,12 @@ cf_sort_filenames(int n, char **list, int sort, file_list_info *info)
              sort));
 }
 
-//	cf_compress - Do Run Length Compression on a block of data. Targa format.
+// cf_compress - Do Run Length Compression on a block of data. Targa format.
 //
-//	Usage:
-//				out			Buffer to write it out to
-//				in				Buffer to compress
-//				bytecount	Number of bytes input
+// Usage:
+//          out         Buffer to write it out to
+//          in          Buffer to compress
+//          bytecount   Number of bytes input
 int
 cf_compress(char *out, char *in, int bytecount)
 {
@@ -158,13 +158,13 @@ cf_compress(char *out, char *in, int bytecount)
 
         // current pixel == match pixel?
         if (*inputpixel == *matchpixel) {
-            //	establishing a run of enough length to
-            //	save space by doing it
-            //		-- write the non-run length packet
-            //		-- start run-length packet
+            // establishing a run of enough length to
+            // save space by doing it
+            //    -- write the non-run length packet
+            //    -- start run-length packet
 
             if (++rlcount == rlthresh) {
-                //	close a non-run packet
+                //   close a non-run packet
 
                 if (pixcount > (rlcount + 1)) {
                     // write out length and do not set run flag
@@ -181,9 +181,9 @@ cf_compress(char *out, char *in, int bytecount)
         }
         else {
             // no match -- either break a run or continue without one
-            //	if a run exists break it:
-            //		write the bytes in the string (1+1)
-            //		start the next string
+            // if a run exists break it:
+            //    write the bytes in the string (1+1)
+            //    start the next string
 
             if (rlcount >= rlthresh) {
                 *flagbyte++ = (char)(0x80 | rlcount);
@@ -193,9 +193,9 @@ cf_compress(char *out, char *in, int bytecount)
                 continue;
             }
             else {
-                //	not a match and currently not a run
-                //		- save the current pixel
-                //		- reset the run-length flag
+                //   not a match and currently not a run
+                //      - save the current pixel
+                //      - reset the run-length flag
                 rlcount = 0;
                 matchpixel = inputpixel;
             }
@@ -220,12 +220,12 @@ cf_compress(char *out, char *in, int bytecount)
     return (flagbyte - out);
 }
 
-//	cf_decompress - Do Decompression on a run-length encoded block of data. Targa format.
+// cf_decompress - Do Decompression on a run-length encoded block of data. Targa format.
 //
-//	Usage:
-//				out			Buffer to write it out to
-//				in				Buffer to compress
-//				bytecount	Number of bytes input
+// Usage:
+//          out         Buffer to write it out to
+//          in          Buffer to compress
+//          bytecount   Number of bytes input
 int
 cf_decompress(char *out, char *in)
 {
@@ -367,13 +367,13 @@ cfwrite_compressed(void *param_buf, int param_elsize, int param_nelem,
 
         // current pixel == match pixel?
         if (*inputpixel == *matchpixel) {
-            //	establishing a run of enough length to
-            //	save space by doing it
-            //		-- write the non-run length packet
-            //		-- start run-length packet
+            // establishing a run of enough length to
+            // save space by doing it
+            //    -- write the non-run length packet
+            //    -- start run-length packet
 
             if (++rlcount == rlthresh) {
-                //	close a non-run packet
+                //   close a non-run packet
 
                 if (pixcount > (rlcount + 1)) {
                     // write out length and do not set run flag
@@ -389,9 +389,9 @@ cfwrite_compressed(void *param_buf, int param_elsize, int param_nelem,
         }
         else {
             // no match -- either break a run or continue without one
-            //	if a run exists break it:
-            //		write the bytes in the string (1+1)
-            //		start the next string
+            // if a run exists break it:
+            //    write the bytes in the string (1+1)
+            //    start the next string
 
             if (rlcount >= rlthresh) {
                 ubyte code = (ubyte)(0x80 | rlcount);
@@ -401,9 +401,9 @@ cfwrite_compressed(void *param_buf, int param_elsize, int param_nelem,
                 continue;
             }
             else {
-                //	not a match and currently not a run
-                //		- save the current pixel
-                //		- reset the run-length flag
+                //   not a match and currently not a run
+                //      - save the current pixel
+                //      - reset the run-length flag
                 rlcount = 0;
                 matchpixel = inputpixel;
             }

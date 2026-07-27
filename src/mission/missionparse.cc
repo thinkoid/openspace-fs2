@@ -191,8 +191,8 @@ char *Icon_names[MAX_BRIEF_ICONS] = { { "Fighter" },
                                       { "Jump Node" },
                                       { "Transport" } };
 
-//	Translate team mask values like TEAM_FRIENDLY to indices in Team_names array.
-//	-1 means an illegal value.
+// Translate team mask values like TEAM_FRIENDLY to indices in Team_names array.
+// -1 means an illegal value.
 int Team_names_index_xlate[MAX_TEAM_NAMES_INDEX + 1] = { -1, 0,  1,  -1, 2,
                                                          -1, -1, -1, 3 };
 
@@ -461,7 +461,7 @@ parse_mission_info(mission *pm)
         Mission_all_attack = 0;
     }
 
-    //	Maybe delay the player's entry.
+    //   Maybe delay the player's entry.
     if (optional_string("+Player Entry Delay:")) {
         float temp;
 
@@ -934,7 +934,7 @@ parse_briefing(mission *pm)
                 }
 
                 required_string("$multi_text");
-                //				stuff_string(bi->text, F_MULTITEXT, NULL, MAX_ICON_TEXT_LEN);
+                //            stuff_string(bi->text, F_MULTITEXT, NULL, MAX_ICON_TEXT_LEN);
                 stuff_string(not_used_text, F_MULTITEXT, NULL, MAX_ICON_TEXT_LEN);
                 required_string("$end_icon");
             } // end while
@@ -1003,8 +1003,8 @@ parse_debriefing_new(mission *pm)
 
     // next code should be old -- hopefully not called anymore
     //if (!optional_string("#Debriefing_info")) {
-    //	parse_debriefing_old(pm);
-    //	return;
+    //   parse_debriefing_old(pm);
+    //   return;
     //}
 
     // 2/3/98 -- MWA.  We can now have multiple briefings and debriefings on a team
@@ -1103,8 +1103,8 @@ position_ship_for_knossos_warpin(p_object *objp, int shipnum, int objnum)
     }
 }
 
-//	Given a stuffed p_object struct, create an object and fill in the necessary fields.
-//	Return object number.
+// Given a stuffed p_object struct, create an object and fill in the necessary fields.
+// Return object number.
 int
 parse_create_object(p_object *objp)
 {
@@ -1404,7 +1404,7 @@ parse_create_object(p_object *objp)
 
                 for (j = 0; j < MAX_SECONDARY_BANKS; j++) {
                     // AL 3-5-98:  This is correct for FRED, but not for FreeSpace... but is this even used?
-                    //					As far as I know, turrets cannot run out of ammo
+                    //              As far as I know, turrets cannot run out of ammo
                     ptr->weapons.secondary_bank_ammo[j] = sssp->secondary_ammo[j];
                 }
 
@@ -1471,7 +1471,7 @@ parse_create_object(p_object *objp)
             submodel_get_two_random_points(sip->modelnum, pm->detail[0], &v1,
                                            &v2);
             ship_hit_sparks_no_rotate(&Objects[objnum], &v1);
-            //			ship_hit_sparks_no_rotate(&Objects[objnum], &v2);
+            //       ship_hit_sparks_no_rotate(&Objects[objnum], &v2);
         }
     }
 
@@ -1513,17 +1513,17 @@ parse_create_object(p_object *objp)
     return objnum;
 }
 
-//	Mp points at the text of an object, which begins with the "$Name:" field.
-//	Snags all object information and calls parse_create_object to create a ship.
-//	Why create a ship?  Why not an object?  Stay tuned...
+// Mp points at the text of an object, which begins with the "$Name:" field.
+// Snags all object information and calls parse_create_object to create a ship.
+// Why create a ship?  Why not an object?  Stay tuned...
 //
 // flag is parameter that is used to tell what kind information we are retrieving from the mission.
 // if we are just getting player starts, then don't create the objects
 int
 parse_object(mission *pm, int flag, p_object *objp)
 {
-    // p_object	temp_object;
-    // p_object	*objp;
+    // p_object   temp_object;
+    // p_object   *objp;
     int i, j, count, shipnum, delay, destroy_before_mission_time;
     char name[NAME_LENGTH], flag_strings[MAX_PARSE_OBJECT_FLAGS][NAME_LENGTH];
 
@@ -2824,42 +2824,42 @@ void
 parse_bitmap(mission *pm)
 {
     /*
-	char name[NAME_LENGTH];
-	int z;
-	starfield_bitmaps *ptr;
+   char name[NAME_LENGTH];
+   int z;
+   starfield_bitmaps *ptr;
 
-	Assert(Num_starfield_bitmaps < MAX_STARFIELD_BITMAPS);
-	Assert(pm != NULL);
-	ptr = &Starfield_bitmaps[Num_starfield_bitmaps];
+   Assert(Num_starfield_bitmaps < MAX_STARFIELD_BITMAPS);
+   Assert(pm != NULL);
+   ptr = &Starfield_bitmaps[Num_starfield_bitmaps];
 
-	required_string("$Bitmap:");
-	stuff_string(name, F_NAME, NULL);
-	for (z=0; z<Num_starfield_bitmap_lists; z++)	{
-		if (!stricmp(name, Starfield_bitmap_list[z].name)){
-			break;
-		}
-	}
+   required_string("$Bitmap:");
+   stuff_string(name, F_NAME, NULL);
+   for (z=0; z<Num_starfield_bitmap_lists; z++) {
+      if (!stricmp(name, Starfield_bitmap_list[z].name)){
+         break;
+      }
+   }
 
-	if ( z >= Num_starfield_bitmap_lists )	{
-		Warning( LOCATION, "Bitmap specified in mission not in game!\n" );
-		z = 0;
-	}
-	
-	ptr->bitmap_index = z;
-	required_string("$Orientation:");
-	stuff_matrix(&ptr->m);
+   if ( z >= Num_starfield_bitmap_lists ) {
+      Warning( LOCATION, "Bitmap specified in mission not in game!\n" );
+      z = 0;
+   }
+   
+   ptr->bitmap_index = z;
+   required_string("$Orientation:");
+   stuff_matrix(&ptr->m);
 
-	required_string("$Rotation rate:");
-	stuff_float(&ptr->rot);
+   required_string("$Rotation rate:");
+   stuff_float(&ptr->rot);
 
-	required_string("$Distance:");
-	stuff_float(&ptr->dist);
+   required_string("$Distance:");
+   stuff_float(&ptr->dist);
 
-	required_string("$Light:");
-	stuff_int(&ptr->light);
-	Num_starfield_bitmaps++;
-	calculate_bitmap_points(ptr);
-	*/
+   required_string("$Light:");
+   stuff_int(&ptr->light);
+   Num_starfield_bitmaps++;
+   calculate_bitmap_points(ptr);
+   */
     Int3();
 }
 
@@ -3057,7 +3057,7 @@ parse_asteroid_fields(mission *pm)
 
     i = 0;
     count = 0;
-    //	required_string("#Asteroid Fields");
+    //   required_string("#Asteroid Fields");
     while (required_string_either("#", "$density:")) {
         float speed, density;
 
@@ -3325,27 +3325,27 @@ post_process_mission()
     ai_post_process_mission();
 
     /*
-	for (i=0; i<Total_initially_docked; i++) {
-		z = ship_name_lookup(Initially_docked[i].dockee);
-		if (z >= 0) {
-			Assert(Initially_docked[i].docker->type == OBJ_SHIP);
-			p1 = model_find_dock_name_index(Ships[Initially_docked[i].docker->instance].modelnum,
-				Initially_docked[i].docker_point);
-			Assert(Objects[z].type == OBJ_SHIP);
-			p2 = model_find_dock_name_index(Ships[Objects[z].instance].modelnum,
-				Initially_docked[i].dockee_point);
+   for (i=0; i<Total_initially_docked; i++) {
+      z = ship_name_lookup(Initially_docked[i].dockee);
+      if (z >= 0) {
+         Assert(Initially_docked[i].docker->type == OBJ_SHIP);
+         p1 = model_find_dock_name_index(Ships[Initially_docked[i].docker->instance].modelnum,
+            Initially_docked[i].docker_point);
+         Assert(Objects[z].type == OBJ_SHIP);
+         p2 = model_find_dock_name_index(Ships[Objects[z].instance].modelnum,
+            Initially_docked[i].dockee_point);
 
-			if ((p1 >= 0) && (p2 >= 0)) {
-				nprintf(("AI", "Initially Docked: %s with %s\n", Ships[Initially_docked[i].docker->instance].ship_name, Ships[Objects[z].instance].ship_name));
-				if (ship_docking_valid(Initially_docked[i].docker->instance, Objects[z].instance))  // only dock if they are allowed to be docked.
-					ai_dock_with_object(Initially_docked[i].docker, &Objects[z], 89, AIDO_DOCK_NOW, p1, p2);
-					
-			} else
-				Int3();		//	Curious.  Two ships told to dock, but one of the dock points is bogus.  
-								// Get Allender or Hoffoss, one of whom probably wrote the above if ()
-		}
-	}
-	*/
+         if ((p1 >= 0) && (p2 >= 0)) {
+            nprintf(("AI", "Initially Docked: %s with %s\n", Ships[Initially_docked[i].docker->instance].ship_name, Ships[Objects[z].instance].ship_name));
+            if (ship_docking_valid(Initially_docked[i].docker->instance, Objects[z].instance))  // only dock if they are allowed to be docked.
+               ai_dock_with_object(Initially_docked[i].docker, &Objects[z], 89, AIDO_DOCK_NOW, p1, p2);
+               
+         } else
+            Int3();     // Curious.  Two ships told to dock, but one of the dock points is bogus.  
+                        // Get Allender or Hoffoss, one of whom probably wrote the above if ()
+      }
+   }
+   */
 
     // we must also count all of the ships of particular types.  We count all of the ships that do not have
     // their SF_IGNORE_COUNT flag set.  We don't count ships in wings when the equivalent wing flag is set.
@@ -3368,10 +3368,10 @@ post_process_mission()
         siflags = Ship_info[Ships[shipnum].ship_info_index].flags;
 
         // determine the number of times we need to add this ship into the count
-        //		if ( Ships[i].wingnum == -1 )
+        //     if ( Ships[i].wingnum == -1 )
         num = 1;
-        //		else
-        //			num = Wings[Ships[i].wingnum].num_waves;
+        //     else
+        //        num = Wings[Ships[i].wingnum].num_waves;
 
         ship_add_ship_type_count(siflags, num);
     }
@@ -3503,7 +3503,7 @@ parse_main(char *mission_name, int flags)
 
     // fill in Ship_class_names array with the names from the ship_info struct;
     Num_parse_names = 0;
-    Mission_all_attack = 0; //	Might get set in mission load.
+    Mission_all_attack = 0; //   Might get set in mission load.
     Assert(Num_ship_types < MAX_SHIP_TYPES);
 
     for (i = 0; i < Num_ship_types; i++)
@@ -3708,7 +3708,7 @@ mission_parse_do_initial_docks()
                                             AIDO_DOCK_NOW, p2, p1);
                 }
                 else
-                    Int3(); //	Curious.  Two ships told to dock, but one of the dock points is bogus.
+                    Int3(); //   Curious.  Two ships told to dock, but one of the dock points is bogus.
                 // Get Allender or Hoffoss, one of whom probably wrote the above if ()
             }
         }
@@ -4118,7 +4118,7 @@ mission_parse_support_arrived(int objnum)
         }
     }
 
-    //	MK: A bit of a hack.  If on player's team and player isn't allowed shields, don't give this ship shields.
+    //   MK: A bit of a hack.  If on player's team and player isn't allowed shields, don't give this ship shields.
     if ((Player_obj->flags & OF_NO_SHIELDS) &&
         (Player_ship->team == Ships[Objects[objnum].instance].team))
         Objects[objnum].flags |= OF_NO_SHIELDS;
@@ -4166,8 +4166,8 @@ mission_eval_arrivals()
         Arrival_message_delay_timestamp = timestamp(-1); // make the stamp invalid
     }
 
-    //	if ( !timestamp_elapsed(Mission_arrival_timestamp) )
-    //		return;
+    //   if ( !timestamp_elapsed(Mission_arrival_timestamp) )
+    //      return;
 
     // check the ship_arrival_list
     objnum = -1;
@@ -4336,7 +4336,7 @@ void
 mission_do_departure(object *objp)
 {
     ship *shipp;
-    //	vector v;
+    //   vector v;
 
     MONITOR_INC(NumShipDepartures, 1);
 
@@ -4379,8 +4379,8 @@ mission_eval_departures()
     object *objp;
     wing *wingp;
 
-    //	if ( !timestamp_elapsed(Mission_departure_timestamp) )
-    //		return;
+    //   if ( !timestamp_elapsed(Mission_departure_timestamp) )
+    //      return;
 
     // scan through the active ships an evaluate their departure cues.  For those
     // ships whose time has come, set their departing flag.
@@ -4405,7 +4405,7 @@ mission_eval_departures()
             if (shipp->wingnum != -1)
                 continue;
 
-            //				&& (!timestamp_valid(shipp->departure_delay) || timestamp_elapsed(shipp->departure_delay)) )
+            //          && (!timestamp_valid(shipp->departure_delay) || timestamp_elapsed(shipp->departure_delay)) )
             // when the departure cue becomes true, set off the departure delay timer.  We store the
             // timer as -seconds in Freespace which indicates that the timer has not been set.  If the timer
             // is not set, then turn it into a valid timer and keep evaluating the timer until it is elapsed
@@ -4454,8 +4454,8 @@ mission_eval_departures()
                 if ((shipp->flags & SF_DEPARTING) || (shipp->flags & SF_DYING))
                     continue;
 
-                //				shipp->flags |= SF_DEPARTING;
-                //				shipp->final_depart_time = timestamp(3*1000);
+                //            shipp->flags |= SF_DEPARTING;
+                //            shipp->final_depart_time = timestamp(3*1000);
 
                 Assert(shipp->objnum != -1);
                 objp = &Objects[shipp->objnum];
@@ -4473,16 +4473,16 @@ mission_eval_departures()
             // now keys off of the WF_WING_DEPARTING flag instead of the counts below.
 
             /*
-			// now be sure that we update wing structure members if there are any remaining waves left
-			if ( wingp->current_wave < wingp->num_waves ) {
-				int num_remaining;
+         // now be sure that we update wing structure members if there are any remaining waves left
+         if ( wingp->current_wave < wingp->num_waves ) {
+            int num_remaining;
 
-				num_remaining = ( (wingp->num_waves - wingp->current_wave) * wingp->wave_count);
-				wingp->total_departed += num_remaining;
-				wingp->total_arrived_count += num_remaining;
-				wingp->current_wave = wingp->num_waves;
-			}
-			*/
+            num_remaining = ( (wingp->num_waves - wingp->current_wave) * wingp->wave_count);
+            wingp->total_departed += num_remaining;
+            wingp->total_arrived_count += num_remaining;
+            wingp->current_wave = wingp->num_waves;
+         }
+         */
         }
     }
     Mission_departure_timestamp = timestamp(DEPARTURE_TIMESTAMP);
@@ -4581,7 +4581,7 @@ mission_add_to_arriving_support(object *requester_objp)
     Assert(Arriving_support_ship);
 
     if (Num_arriving_repair_targets == MAX_AI_GOALS) {
-        // Int3();			// get allender -- ship isn't going to get repair, but I hope they never queue up this far!!!
+        // Int3();         // get allender -- ship isn't going to get repair, but I hope they never queue up this far!!!
         mprintf(("Reached MAX_AI_GOALS trying to add repair request!\n"));
         return;
     }
@@ -4607,8 +4607,8 @@ extern int pp_collide_any(vector *curpos, vector *goalpos, float radius,
                           object *ignore_objp1, object *ignore_objp2,
                           int big_only_flag);
 
-//	Set the warp in position for a support ship relative to an object.
-//	Caller tries several positions, passing vector in x, y, z.
+// Set the warp in position for a support ship relative to an object.
+// Caller tries several positions, passing vector in x, y, z.
 int
 get_warp_in_pos(vector *pos, object *objp, float x, float y, float z)
 {
@@ -4639,7 +4639,7 @@ mission_warp_in_support_ship(object *requester_objp)
     Assert(requester_objp->type == OBJ_SHIP);
     requester_shipp =
         &Ships[requester_objp
-                   ->instance]; //	MK, 10/23/97, used to be ->type, bogus, no?
+                   ->instance]; //  MK, 10/23/97, used to be ->type, bogus, no?
 
     // if the support ship is already arriving, add the requester to the list
     if (Arriving_support_ship) {
@@ -4653,23 +4653,23 @@ mission_warp_in_support_ship(object *requester_objp)
 
     // be sure to account for case as player being only ship left in mission
     /*
-	if ( !(IS_VEC_NULL( warp_in_pos)) ) {
-		mag = vm_vec_mag( &warp_in_pos );
-		if ( mag < WARP_IN_MIN_DISTANCE )
-			vm_vec_scale( &warp_in_pos, WARP_IN_MIN_DISTANCE/mag);
-		else
-			vm_vec_scale( &warp
-	} else {
-		// take -player_pos.fvec scaled by 1000.0f;
-		warp_in_pos = Player_obj->orient.fvec;
-		vm_vec_scale( &warp_in_pos, -1000.0f );
-	}
-	*/
+   if ( !(IS_VEC_NULL( warp_in_pos)) ) {
+      mag = vm_vec_mag( &warp_in_pos );
+      if ( mag < WARP_IN_MIN_DISTANCE )
+         vm_vec_scale( &warp_in_pos, WARP_IN_MIN_DISTANCE/mag);
+      else
+         vm_vec_scale( &warp
+   } else {
+      // take -player_pos.fvec scaled by 1000.0f;
+      warp_in_pos = Player_obj->orient.fvec;
+      vm_vec_scale( &warp_in_pos, -1000.0f );
+   }
+   */
 
-    //	Choose position to warp in ship.
-    //	Temporary, but changed by MK because it used to be exactly behind the player.
-    //	This could cause an Assert if the player immediately targeted it (before moving).
-    //	Tend to put in front of the player to aid him in flying towards the ship.
+    //   Choose position to warp in ship.
+    //   Temporary, but changed by MK because it used to be exactly behind the player.
+    //   This could cause an Assert if the player immediately targeted it (before moving).
+    //   Tend to put in front of the player to aid him in flying towards the ship.
 
     if (!get_warp_in_pos(&warp_in_pos, requester_objp, 1.0f, 0.1f, 1.0f))
         if (!get_warp_in_pos(&warp_in_pos, requester_objp, 1.0f, 0.2f, -1.0f))
@@ -4711,9 +4711,9 @@ mission_warp_in_support_ship(object *requester_objp)
     // the species of the caller ship.
     Assert((requester_species == SPECIES_TERRAN) ||
            (requester_species == SPECIES_VASUDAN));
-    //	if ( (Game_mode & GM_NORMAL) && (requester_species == SPECIES_VASUDAN) )	{	// make vasundan's use the terran support ship
-    //		requester_species = SPECIES_TERRAN;
-    //	}
+    //   if ( (Game_mode & GM_NORMAL) && (requester_species == SPECIES_VASUDAN) )   {  // make vasundan's use the terran support ship
+    //      requester_species = SPECIES_TERRAN;
+    //   }
 
     // get index of correct species support ship
     for (i = 0; i < Num_ship_types; i++) {

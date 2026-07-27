@@ -224,7 +224,7 @@ persona_parse()
 
             // save the Terran Command persona in a global
             if (Personas[Num_personas].flags & PERSONA_FLAG_COMMAND) {
-                //				Assert ( Command_persona == -1 );
+                //            Assert ( Command_persona == -1 );
                 Command_persona = Num_personas;
             }
 
@@ -474,8 +474,8 @@ message_mission_shutdown()
 
 // functions to deal with queuing messages to the message system.
 
-//	Compare function for system qsort() for sorting message queue entries based on priority.
-//	Return values set to sort array in _decreasing_ order.  If priorities equal, sort based
+// Compare function for system qsort() for sorting message queue entries based on priority.
+// Return values set to sort array in _decreasing_ order.  If priorities equal, sort based
 // on time added into queue
 int
 message_queue_priority_compare(const void *a, const void *b)
@@ -690,7 +690,7 @@ message_load_wave(int index, const char *filename)
 }
 
 // Play wave file associated with message
-// input: m		=>		pointer to message description
+// input: m    =>    pointer to message description
 //
 // note: changes Messave_wave_duration, Playing_messages[].wave, and Message_waves[].num
 void
@@ -760,9 +760,9 @@ message_play_wave(message_q *q)
 }
 
 // Determine the starting frame for the animation
-// input:	time	=>		time of voice clip, in ms
-//				ani	=>		pointer to anim data
-//				reverse	=>	flag to indicate that the start should be time ms from the end (used for death screams)
+// input:   time  =>    time of voice clip, in ms
+//          ani   =>    pointer to anim data
+//          reverse  => flag to indicate that the start should be time ms from the end (used for death screams)
 int
 message_calc_anim_start_frame(int time, anim *ani, int reverse)
 {
@@ -805,8 +805,8 @@ message_calc_anim_start_frame(int time, anim *ani, int reverse)
 }
 
 // Play animation associated with message
-// input:	m		=>		pointer to message description
-//				q		=>		message queue data
+// input:   m     =>    pointer to message description
+//          q     =>    message queue data
 //
 // note: changes Messave_wave_duration, Playing_messages[].wave, and Message_waves[].num
 void
@@ -960,7 +960,7 @@ message_queue_process()
 
             wave_done = 1;
 
-            //			if ( (Playing_messages[i].wave != -1) && snd_is_playing(Playing_messages[i].wave) )
+            //       if ( (Playing_messages[i].wave != -1) && snd_is_playing(Playing_messages[i].wave) )
             if ((Playing_messages[i].wave != -1) &&
                 (snd_time_remaining(Playing_messages[i].wave) > 250))
                 wave_done = 0;
@@ -1207,7 +1207,7 @@ message_queue_process()
         goto all_done;
     }
 
-    //	Don't play death scream unless a small ship.
+    //   Don't play death scream unless a small ship.
     if (q->builtin_type == MESSAGE_WINGMAN_SCREAM) {
         int t = Ship_info[Ships[Message_shipnum].ship_info_index].flags;
         int t2 = SIF_SMALL_SHIP;
@@ -1689,11 +1689,11 @@ message_maybe_distort()
 // if the player communications systems are heavily damaged, distort incoming messages.
 //
 // first case: Message_wave_duration == 0 (this occurs when there is no associated voice playback)
-//					Blank out random runs of characters in the message
+//             Blank out random runs of characters in the message
 //
 // second case: Message_wave_duration > 0 (occurs when voice playback accompainies message)
-//					 Blank out portions of the sound based on Distort_num, this this is that same
-//					 data that will be used to blank out portions of the audio playback
+//              Blank out portions of the sound based on Distort_num, this this is that same
+//              data that will be used to blank out portions of the audio playback
 //
 void
 message_maybe_distort_text(char *text)

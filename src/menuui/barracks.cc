@@ -593,7 +593,7 @@ barracks_pilot_accepted()
     // set his image
     player_set_squad_bitmap(Cur_pilot, Cur_pilot->squad_filename);
 
-    //	Skill_level = get_default_skill_level();
+    //   Skill_level = get_default_skill_level();
 
     // MWA -- I think that we should be writing Cur_pilot here.
     write_pilot_file(Cur_pilot);

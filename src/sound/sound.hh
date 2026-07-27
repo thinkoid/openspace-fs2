@@ -53,7 +53,7 @@ extern float Master_voice_volume; // 0 -> 1.0
 extern int Snd_sram; // System memory consumed by sound data
 extern int Snd_hram; // Soundcard memory consumed by sound data
 
-//int	snd_load( char *filename, int hardware=0, int three_d=0, int *sig=NULL );
+//int snd_load( char *filename, int hardware=0, int three_d=0, int *sig=NULL );
 int snd_load(game_snd *gs, int allow_hardware_load = 0);
 
 int snd_unload(int sndnum);

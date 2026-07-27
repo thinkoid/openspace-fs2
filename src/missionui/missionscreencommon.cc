@@ -46,9 +46,9 @@ int Drop_icon_mflag, Drop_on_wing_mflag, Brief_mouse_up_flag;
 int Mouse_down_last_frame = 0;
 
 // Timers used to flash buttons after timeouts
-#define MSC_FLASH_AFTER_TIME 60000 //	time before flashing a button
+#define MSC_FLASH_AFTER_TIME 60000 //  time before flashing a button
 #define MSC_FLASH_INTERVAL 200 // time between flashes
-int Flash_timer; //	timestamp used to start flashing
+int Flash_timer; //  timestamp used to start flashing
 int Flash_toggle; // timestamp used to toggle flashing
 int Flash_bright; // state of button to flash
 
@@ -173,10 +173,10 @@ common_check_buttons()
     }
 
     /*
-	// AL 11-23-97: let a joystick button press commit
-	if ( joy_down_count(0) || joy_down_count(1) ) {
-		Commit_pressed = 1;
-	}
+   // AL 11-23-97: let a joystick button press commit
+   if ( joy_down_count(0) || joy_down_count(1) ) {
+      Commit_pressed = 1;
+   }
 */
 }
 
@@ -468,21 +468,21 @@ common_select_init()
 #ifndef DEMO // not for FS2_DEMO
 
     /*
-	if ( current_detail_level() >= (NUM_DEFAULT_DETAIL_LEVELS-2) ) {
+   if ( current_detail_level() >= (NUM_DEFAULT_DETAIL_LEVELS-2) ) {
 
-		anim_play_struct aps;
+      anim_play_struct aps;
 
-		// Load in the background transition anim
-		Background_anim = anim_load("BriefTrans", 1);	// 1 as last parm means file is mem-mapped
+      // Load in the background transition anim
+      Background_anim = anim_load("BriefTrans", 1);   // 1 as last parm means file is mem-mapped
 
-		Assert( Background_anim != NULL );
-		anim_play_init(&aps, Background_anim, 0, 0);
-		aps.framerate_independent = 1;
-		aps.skip_frames = 0;
-		Background_anim_instance = anim_play(&aps);
-		Background_playing = 1;		// start playing the Background anim
-	}
-	*/
+      Assert( Background_anim != NULL );
+      anim_play_init(&aps, Background_anim, 0, 0);
+      aps.framerate_independent = 1;
+      aps.skip_frames = 0;
+      Background_anim_instance = anim_play(&aps);
+      Background_playing = 1;    // start playing the Background anim
+   }
+   */
     Current_screen = Next_screen = ON_BRIEFING_SELECT;
 
     // load in the icons for the wing slots
@@ -606,22 +606,22 @@ common_select_do(float frametime)
     common_music_do();
 
     /*
-	if ( Background_playing ) {
+   if ( Background_playing ) {
 
-		if ( Background_anim_instance->frame_num == BUTTON_SLIDE_IN_FRAME ) {
-			gamesnd_play_iface(SND_BTN_SLIDE);
-		}	
-	
-		if ( Background_anim_instance->frame_num == Background_anim_instance->stop_at ) {
-			// Free up the big honking background animation, since we won't be playing it again
-			anim_release_render_instance(Background_anim_instance);
-			anim_free(Background_anim);
+      if ( Background_anim_instance->frame_num == BUTTON_SLIDE_IN_FRAME ) {
+         gamesnd_play_iface(SND_BTN_SLIDE);
+      }  
+   
+      if ( Background_anim_instance->frame_num == Background_anim_instance->stop_at ) {
+         // Free up the big honking background animation, since we won't be playing it again
+         anim_release_render_instance(Background_anim_instance);
+         anim_free(Background_anim);
 
-			Background_playing = 0;		
-			Current_screen = Next_screen = ON_BRIEFING_SELECT;
-		}
-	}
-	*/
+         Background_playing = 0;    
+         Current_screen = Next_screen = ON_BRIEFING_SELECT;
+      }
+   }
+   */
 
     if (Current_screen != Next_screen) {
         switch (Next_screen) {
@@ -665,7 +665,7 @@ common_render(float frametime)
 // -------------------------------------------------------------------------------------
 // common_render_selected_screen_button()
 //
-//	A very ugly piece of special purpose code.  This is used to draw the pressed button
+// A very ugly piece of special purpose code.  This is used to draw the pressed button
 // frame for whatever stage of the briefing/ship select/weapons loadout we are on.
 //
 void
@@ -744,12 +744,12 @@ common_check_keys(int k)
 
         // return to the main menu
         /*
-			int return_to_menu, pf_flags;
-			pf_flags = PF_USE_AFFIRMATIVE_ICON|PF_USE_NEGATIVE_ICON;
-			return_to_menu = popup(pf_flags, 2, POPUP_NO, POPUP_YES, XSTR( "Do you want to return to the Main Hall?\n(Your campaign position will be saved)", -1));
-			if ( return_to_menu == 1 ) {
-				gameseq_post_event(GS_EVENT_MAIN_MENU);
-			}
+         int return_to_menu, pf_flags;
+         pf_flags = PF_USE_AFFIRMATIVE_ICON|PF_USE_NEGATIVE_ICON;
+         return_to_menu = popup(pf_flags, 2, POPUP_NO, POPUP_YES, XSTR( "Do you want to return to the Main Hall?\n(Your campaign position will be saved)", -1));
+         if ( return_to_menu == 1 ) {
+            gameseq_post_event(GS_EVENT_MAIN_MENU);
+         }
 */
         gameseq_post_event(GS_EVENT_MAIN_MENU);
         break;
@@ -918,18 +918,18 @@ common_select_close()
 
     // free the anim's that were loaded into memory
     /*
-	if ( Background_anim ) {
-		anim_free(Background_anim);
-		Background_anim = NULL;
-	}
-	*/
+   if ( Background_anim ) {
+      anim_free(Background_anim);
+      Background_anim = NULL;
+   }
+   */
 
     common_music_close();
     Common_select_inited = 0;
 }
 
 // ------------------------------------------------------------------------
-//	load_wing_icons() creates the bitmaps for wing icons
+// load_wing_icons() creates the bitmaps for wing icons
 //
 void
 load_wing_icons(char *filename)
@@ -944,11 +944,11 @@ load_wing_icons(char *filename)
 
     Wing_slot_disabled_bitmap = first_frame;
     Wing_slot_empty_bitmap = first_frame + 1;
-    //	Wing_slot_player_empty_bitmap = first_frame + 2;
+    //   Wing_slot_player_empty_bitmap = first_frame + 2;
 }
 
 // ------------------------------------------------------------------------
-//	common_scroll_up_pressed()
+// common_scroll_up_pressed()
 //
 int
 common_scroll_up_pressed(int *start, int size, int max_show)
@@ -966,7 +966,7 @@ common_scroll_up_pressed(int *start, int size, int max_show)
 }
 
 // ------------------------------------------------------------------------
-//	common_scroll_down_pressed()
+// common_scroll_down_pressed()
 //
 int
 common_scroll_down_pressed(int *start, int size, int max_show)
@@ -989,10 +989,10 @@ loadout_data
     Player_loadout; // what the ship and weapon loadout is... used since we want to use the
 // same loadout if the mission is played again
 
-//wss_unit	Wss_slots[MAX_WSS_SLOTS];				// slot data struct
-//int		Wl_pool[MAX_WEAPON_TYPES];				// weapon pool
-//int		Ss_pool[MAX_SHIP_TYPES];				// ship pool
-//int		Wss_num_wings;								// number of player wings
+//wss_unit  Wss_slots[MAX_WSS_SLOTS];           // slot data struct
+//int    Wl_pool[MAX_WEAPON_TYPES];          // weapon pool
+//int    Ss_pool[MAX_SHIP_TYPES];            // ship pool
+//int    Wss_num_wings;                      // number of player wings
 
 wss_unit Wss_slots_teams[MAX_TEAMS][MAX_WSS_SLOTS];
 int Wl_pool_teams[MAX_TEAMS][MAX_WEAPON_TYPES];

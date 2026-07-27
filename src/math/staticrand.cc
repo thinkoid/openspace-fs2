@@ -13,7 +13,7 @@
 int Semirand_inited = 0;
 int Semirand[SEMIRAND_MAX];
 
-//	Initialize Semirand array.
+// Initialize Semirand array.
 void
 init_semirand()
 {
@@ -25,7 +25,7 @@ init_semirand()
         Semirand[i] = (myrand() << 15) + myrand();
 }
 
-//	Return a fairly random 32 bit value given a reasonably small number.
+// Return a fairly random 32 bit value given a reasonably small number.
 int
 static_rand(int num)
 {
@@ -41,7 +41,7 @@ static_rand(int num)
     return Semirand[a] ^ Semirand[b] ^ Semirand[c];
 }
 
-//	Return a random value in 0.0f .. 1.0f- (ie, it will never return 1.0f).
+// Return a random value in 0.0f .. 1.0f- (ie, it will never return 1.0f).
 float
 static_randf(int num)
 {

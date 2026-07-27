@@ -18,20 +18,20 @@ get drawn go thru the 2d/texture mapper libraries only.   This will make
 supporting accelerators and psx easier.   Colors will always be set with
 the color set functions.
 
-gr_surface_flip()	switch onscreen, offscreen
+gr_surface_flip() switch onscreen, offscreen
 
-gr_set_clip(x,y,w,h)	// sets the clipping region
-gr_reset_clip(x,y,w,h)	// sets the clipping region
+gr_set_clip(x,y,w,h) // sets the clipping region
+gr_reset_clip(x,y,w,h)  // sets the clipping region
 gr_set_color --? 8bpp, 15bpp?
 gr_set_font(int fontnum)
 // see GR_ALPHABLEND defines for values for alphablend_mode
 // see GR_BITBLT_MODE defines for bitblt_mode.
 // Alpha = scaler for intensity
-gr_set_bitmap( int bitmap_num, int alphblend_mode, int bitblt_mode, float alpha )	
+gr_set_bitmap( int bitmap_num, int alphblend_mode, int bitblt_mode, float alpha )   
 gr_set_shader( int value )  0=normal -256=darken, 256=brighten
 gr_set_palette( ubyte * palette ) 
 
-gr_clear()	// clears entire clipping region
+gr_clear()  // clears entire clipping region
 gr_bitmap(x,y)
 gr_bitmap_ex(x,y,w,h,sx,sy)
 gr_rect(x,y,w,h)
@@ -409,8 +409,8 @@ gr_set_bitmap(int bitmap_num, int alphablend = GR_ALPHABLEND_NONE,
 #define gr_create_shader GR_CALL(gr_screen.gf_create_shader)
 #define gr_set_shader GR_CALL(gr_screen.gf_set_shader)
 #define gr_clear GR_CALL(gr_screen.gf_clear)
-// #define gr_bitmap				GR_CALL(gr_screen.gf_bitmap)
-// #define gr_bitmap_ex			GR_CALL(gr_screen.gf_bitmap_ex)
+// #define gr_bitmap          GR_CALL(gr_screen.gf_bitmap)
+// #define gr_bitmap_ex       GR_CALL(gr_screen.gf_bitmap_ex)
 #define gr_aabitmap GR_CALL(gr_screen.gf_aabitmap)
 #define gr_aabitmap_ex GR_CALL(gr_screen.gf_aabitmap_ex)
 #define gr_rect GR_CALL(gr_screen.gf_rect)

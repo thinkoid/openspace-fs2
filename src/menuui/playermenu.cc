@@ -46,7 +46,7 @@ static char *Demo_title_bitmap_filename = NOX("DemoTitle1");
 // PLAYER SELECT defines
 //
 
-//#define MAX_PLAYER_SELECT_LINES		8							// max # of pilots displayed at once
+//#define MAX_PLAYER_SELECT_LINES      8                    // max # of pilots displayed at once
 int Player_select_max_lines[GR_NUM_RESOLUTIONS] = {
     // max # of pilots displayed at once
     8, // GR_640
@@ -108,7 +108,7 @@ static barracks_buttons
           barracks_buttons("CPB_01", 172, 205, 175, 240, 1),
           barracks_buttons("CPB_02", 226, 205, 229, 240, 2),
 
-          // scroll up, scroll down,	and accept (respectively)
+          // scroll up, scroll down,   and accept (respectively)
           barracks_buttons("CPB_03", 429, 213, -1, -1, 3),
           barracks_buttons("CPB_04", 456, 213, -1, -1, 4),
           barracks_buttons("CPB_05", 481, 207, 484, 246, 5),
@@ -146,7 +146,7 @@ UI_BUTTON
     Player_select_list_region; // button for detecting mouse clicks on this screen
 UI_INPUTBOX Player_select_input_box; // input box for adding new pilot names
 
-// #define PLAYER_SELECT_PALETTE_FNAME					NOX("InterfacePalette")
+// #define PLAYER_SELECT_PALETTE_FNAME             NOX("InterfacePalette")
 int Player_select_background_bitmap; // bitmap for this screen
 int Player_select_palette; // palette bitmap for this screen (software mode needs it)
 int Player_select_autoaccept = 0;
@@ -243,17 +243,17 @@ player_select_init()
 
 #ifdef FS2_DEMO
     /*
-	Demo_title_bitmap = bm_load(Demo_title_bitmap_filename);
-	if ( Demo_title_bitmap >= 0 ) {
+   Demo_title_bitmap = bm_load(Demo_title_bitmap_filename);
+   if ( Demo_title_bitmap >= 0 ) {
 #ifndef HARDWARE_ONLY
-		palette_use_bm_palette(Demo_title_bitmap);
+      palette_use_bm_palette(Demo_title_bitmap);
 #endif
-		Demo_title_active = 1;
-		Demo_title_expire_timestamp = timestamp(5000);
-	} else {
-		Demo_title_active = 0;
-	}
-	*/
+      Demo_title_active = 1;
+      Demo_title_expire_timestamp = timestamp(5000);
+   } else {
+      Demo_title_active = 0;
+   }
+   */
     Demo_title_active = 0;
 #endif
 
@@ -375,9 +375,9 @@ player_select_init()
     Player_select_initial_count = -1;
     memset(Player_select_very_first_pilot_callsign, 0, CALLSIGN_LEN + 2);
 
-    //	if(Player_select_num_pilots == 0){
-    //		Player_select_autoaccept = 1;
-    //	}
+    //   if(Player_select_num_pilots == 0){
+    //      Player_select_autoaccept = 1;
+    //   }
 
     player_select_init_player_stuff(PLAYER_SELECT_MODE_SINGLE);
 
@@ -494,16 +494,16 @@ player_select_do()
 #endif
 
     /*
-	gr_set_color(255, 0, 0);
-	vector whee[5];
-	vector *arr[5] = {&whee[0], &whee[1], &whee[2], &whee[3], &whee[4]};
-	whee[0].x = 10; whee[0].y = 10; whee[0].z = 0.0f;
-	whee[1].x = 50; whee[1].y = 50; whee[1].z = 0.0f;
-	whee[2].x = 50; whee[2].y = 90; whee[2].z = 0.0f;
-	whee[3].x = 90; whee[3].y = 130; whee[3].z = 0.0f;
-	whee[4].x = 180; whee[4].y = 130; whee[4].z = 0.0f;
-	gr_pline_special(arr, 5, 2);
-	*/
+   gr_set_color(255, 0, 0);
+   vector whee[5];
+   vector *arr[5] = {&whee[0], &whee[1], &whee[2], &whee[3], &whee[4]};
+   whee[0].x = 10; whee[0].y = 10; whee[0].z = 0.0f;
+   whee[1].x = 50; whee[1].y = 50; whee[1].z = 0.0f;
+   whee[2].x = 50; whee[2].y = 90; whee[2].z = 0.0f;
+   whee[3].x = 90; whee[3].y = 130; whee[3].z = 0.0f;
+   whee[4].x = 180; whee[4].y = 130; whee[4].z = 0.0f;
+   gr_pline_special(arr, 5, 2);
+   */
 
     gr_flip();
 }
@@ -533,7 +533,7 @@ player_select_close()
         Player_select_background_bitmap = -1;
     }
     // if(Player_select_palette >= 0){
-    // 	bm_release(Player_select_palette);
+    //   bm_release(Player_select_palette);
     //Player_select_palette = -1;
     // }
 
@@ -653,8 +653,8 @@ player_select_button_pressed(int n)
             // clear the player out
             // JH: What the hell?  How do you clone a pilot if you clear out the source you are copying
             // from?  These next 2 lines are pure stupidity, so I commented them out!
-            //			memset(Player,0,sizeof(player));
-            //			Player = NULL;
+            //       memset(Player,0,sizeof(player));
+            //       Player = NULL;
 
             // display some text on the bottom of the dialog
             player_select_set_bottom_text(
@@ -1152,7 +1152,7 @@ player_select_display_copyright()
     int sx, sy, w;
     char Copyright_msg1[256], Copyright_msg2[256];
 
-    //	strcpy(Copyright_msg1, XSTR("Descent: FreeSpace - The Great War, Copyright c 1998, Volition, Inc.", -1));
+    //   strcpy(Copyright_msg1, XSTR("Descent: FreeSpace - The Great War, Copyright c 1998, Volition, Inc.", -1));
     gr_set_color_fast(&Color_white);
 
     sprintf(Copyright_msg1, NOX("FreeSpace 2"));

@@ -18,10 +18,10 @@
 
 struct object;
 
-//	Part of the player died system.
+// Part of the player died system.
 extern vector Dead_camera_pos, Original_vec_to_deader;
 
-//	States for player death sequence, stuffed in Player_died_state.
+// States for player death sequence, stuffed in Player_died_state.
 #define PDS_NONE 1
 #define PDS_DIED 2
 #define PDS_EJECTED 3
@@ -43,8 +43,8 @@ extern vector Dead_camera_pos, Original_vec_to_deader;
 #endif
 
 #define HULL_DAMAGE_THRESHOLD_PERCENT                                            \
-    0.25f //	Apply damage to hull, not shield if shield < this
-#define HP_SCALE 1.2 //	1.2 means die when 20% of hits remaining
+    0.25f //   Apply damage to hull, not shield if shield < this
+#define HP_SCALE 1.2 // 1.2 means die when 20% of hits remaining
 #define MAX_SHIP_HITS 8 // hits to kill a ship
 #define MAX_SHIP_DETAIL_LEVELS                                                   \
     5 // maximum detail levels that a ship can render at
@@ -96,7 +96,7 @@ typedef struct
 
 // ship weapon flags
 #define SW_FLAG_BEAM_FREE (1 << 0) // if this is a beam weapon, its free to fire
-#define SW_FLAG_TURRET_LOCK (1 << 1) //	is this turret is free to fire or locked
+#define SW_FLAG_TURRET_LOCK (1 << 1) //   is this turret is free to fire or locked
 #define SW_FLAG_TAGGED_ONLY (1 << 2) // only fire if target is tagged
 
 typedef struct
@@ -126,9 +126,9 @@ typedef struct
     int secondary_bank_rearm_time
         [MAX_SECONDARY_BANKS]; // timestamp which indicates when bank can get new missile
 
-    int last_fired_weapon_index; //	Index of last fired secondary weapon.  Used for remote detonates.
-    int last_fired_weapon_signature; //	Signature of last fired weapon.
-    int detonate_weapon_time; //	time at which last fired weapon can be detonated
+    int last_fired_weapon_index; // Index of last fired secondary weapon.  Used for remote detonates.
+    int last_fired_weapon_signature; //   Signature of last fired weapon.
+    int detonate_weapon_time; // time at which last fired weapon can be detonated
     int ai_class;
 
     int flags; // see SW_FLAG_* defines above
@@ -140,25 +140,25 @@ typedef struct
 typedef struct ship_subsys
 {
     struct ship_subsys *next,
-        *prev; //	Index of next and previous objects in list.
+        *prev; // Index of next and previous objects in list.
     model_subsystem *
         system_info; // pointer to static data for this subsystem -- see model.h for definition
     float current_hits; // current number of hits this subsystem has left.
 
     // turret info
     vector
-        turret_last_fire_direction; //	direction pointing last time this turret fired
-    int turret_next_enemy_check_stamp; //	time at which to next look for a new enemy.
+        turret_last_fire_direction; // direction pointing last time this turret fired
+    int turret_next_enemy_check_stamp; // time at which to next look for a new enemy.
     int turret_next_fire_stamp; // next time this turret can fire
-    int turret_enemy_objnum; //	object index of ship this turret is firing upon
-    int turret_enemy_sig; //	signature of object ship this turret is firing upon
+    int turret_enemy_objnum; //  object index of ship this turret is firing upon
+    int turret_enemy_sig; //  signature of object ship this turret is firing upon
     int turret_next_fire_pos; // counter which tells us which gun position to fire from next
-    float turret_time_enemy_in_range; //	Number of seconds enemy in view cone, accuracy improves over time.
-    ship_subsys *targeted_subsys; //	subsystem this turret is attacking
+    float turret_time_enemy_in_range; //  Number of seconds enemy in view cone, accuracy improves over time.
+    ship_subsys *targeted_subsys; //   subsystem this turret is attacking
 
-    int turret_pick_big_attack_point_timestamp; //	Next time to pick an attack point for this turret
+    int turret_pick_big_attack_point_timestamp; // Next time to pick an attack point for this turret
     vector
-        turret_big_attack_point; //	local coordinate of point for this turret to attack on enemy
+        turret_big_attack_point; // local coordinate of point for this turret to attack on enemy
 
     // swarm (rapid fire) info
     int turret_swarm_info_index;
@@ -216,9 +216,9 @@ extern color IFF_colors[MAX_IFF_COLORS][2];
 #include <ship/ai.hh> // ship_subsys must be declared before we include this.
 #include <weapon/weapon.hh> // ship_subsys must be declared before we include this.
 
-//#define	MAX_SHIP_SUBOBJECTS		50
+//#define   MAX_SHIP_SUBOBJECTS     50
 
-//extern ship_subobj	Ship_subsystems[MAX_SHIP_SUBOBJECTS];
+//extern ship_subobj Ship_subsystems[MAX_SHIP_SUBOBJECTS];
 
 // states for the flags variable within the ship structure
 // low bits are for mission file savable flags..
@@ -346,14 +346,14 @@ typedef struct ship
     int next_fireball;
 
     int next_hit_spark;
-    int num_hits; //	Note, this is the number of spark emitter positions!
+    int num_hits; // Note, this is the number of spark emitter positions!
     ship_spark sparks[MAX_SHIP_HITS];
 
     int special_exp_index;
 
     char ship_name[NAME_LENGTH];
 
-    int team; //	Which team it's on, HOSTILE, FRIENDLY, UNKNOWN, NEUTRAL
+    int team; //  Which team it's on, HOSTILE, FRIENDLY, UNKNOWN, NEUTRAL
 
     fix time_cargo_revealed; // time at which the cargo was revealed
 
@@ -374,13 +374,13 @@ typedef struct ship
     // of a particular subsystem, like engines).  The subsys_info struct is information for particular
     // types of subsystems.  (i.e. the list might contain 3 engines.  There will be one subsys_info entry
     // describing the state of all engines combined) -- MWA 4/1/97
-    ship_subsys subsys_list; //	linked list of subsystems for this ship.
+    ship_subsys subsys_list; //  linked list of subsystems for this ship.
     ship_subsys *last_targeted_subobject
         [MAX_PLAYERS]; // Last subobject that has been targeted.  NULL if none;(player specific)
     ship_subsys_info
         subsys_info[SUBSYSTEM_MAX]; // info on particular generic types of subsystems
 
-    float *shield_integrity; //	Integrity at each triangle in shield mesh.
+    float *shield_integrity; //  Integrity at each triangle in shield mesh.
 
     // ETS fields
     int shield_recharge_index; // index into array holding the shield recharge rate
@@ -396,23 +396,23 @@ typedef struct ship
     float afterburner_fuel; // amount of afterburner fuel remaining (capacity is stored
     // as afterburner_fuel_capacity in ship_info).
 
-    int cmeasure_count; //	Number of charges of countermeasures this ship can hold.
-    int current_cmeasure; //	Currently selected countermeasure.
+    int cmeasure_count; // Number of charges of countermeasures this ship can hold.
+    int current_cmeasure; //  Currently selected countermeasure.
 
-    int cmeasure_fire_stamp; //	Time at which can fire countermeasure.
+    int cmeasure_fire_stamp; //  Time at which can fire countermeasure.
 
-    float target_shields_delta; //	Target for shield recharge system.
-    float target_weapon_energy_delta; //	Target for recharge system.
+    float target_shields_delta; //  Target for shield recharge system.
+    float target_weapon_energy_delta; //  Target for recharge system.
     ship_weapon weapons;
 
-    int shield_hits; //	Number of hits on shield this frame.
+    int shield_hits; // Number of hits on shield this frame.
 
     float wash_intensity;
     vector wash_rot_axis;
     int wash_timestamp;
 
     // store blast information about shockwaves that hit the ship
-    //	ship_shockwave	sw;
+    //   ship_shockwave sw;
 
     int num_swarm_missiles_to_fire; // number of swarm missiles that need to be launched
     int next_swarm_fire; // timestamp of next swarm missile to fire
@@ -558,7 +558,7 @@ extern int ship_find_exited_ship_by_signature(int signature);
 
 #define SIF_NO_FRED (1 << 30) // not available in fred
 
-#define MAX_SHIP_FLAGS 8 //	Number of flags for flags field in ship_info struct
+#define MAX_SHIP_FLAGS 8 //   Number of flags for flags field in ship_info struct
 #define SIF_DEFAULT_VALUE (SIF_DO_COLLISION_CHECK)
 #define SIF_ALL_SHIP_TYPES                                                       \
     (SIF_CARGO | SIF_FIGHTER | SIF_BOMBER | SIF_CRUISER | SIF_FREIGHTER |        \
@@ -634,21 +634,21 @@ typedef struct ship_info
     float damp; // drag
     float rotdamp; // rotational drag
     vector
-        max_vel; //	max velocity of the ship in the linear directions -- read from ships.tbl
+        max_vel; //  max velocity of the ship in the linear directions -- read from ships.tbl
     vector
-        afterburner_max_vel; //	max velocity of the ship in the linear directions when afterburners are engaged -- read from ships.tbl
+        afterburner_max_vel; //  max velocity of the ship in the linear directions when afterburners are engaged -- read from ships.tbl
     vector max_rotvel; // maximum rotational velocity
     vector
         rotation_time; // time to rotate in x/y/z dimension traveling at max rotvel
-    float srotation_time; //	scalar, computed at runtime as (rotation_time.x + rotation_time.y)/2
+    float srotation_time; //  scalar, computed at runtime as (rotation_time.x + rotation_time.y)/2
     float max_rear_vel; // max speed ship can go backwards.
     float forward_accel;
     float afterburner_forward_accel; // forward acceleration with afterburner engaged
     float forward_decel;
     float slide_accel;
     float slide_decel;
-    int flags; //	See SIF_xxxx
-    int ai_class; //	Index into Ai_classes[].  Defined in ai.tbl
+    int flags; // See SIF_xxxx
+    int ai_class; // Index into Ai_classes[].  Defined in ai.tbl
     float shields;
     float max_speed, min_speed, max_accel;
 
@@ -673,12 +673,12 @@ typedef struct ship_info
     // Afterburner fields
     float afterburner_fuel_capacity; // maximum afterburner fuel that can be stored
     float afterburner_burn_rate; // rate in fuel/second that afterburner consumes fuel
-    float afterburner_recover_rate; //	rate in fuel/second that afterburner recovers fuel
+    float afterburner_recover_rate; // rate in fuel/second that afterburner recovers fuel
 
-    int cmeasure_max; //	Number of charges of countermeasures this ship can hold.
+    int cmeasure_max; //   Number of charges of countermeasures this ship can hold.
 
     int num_primary_banks; // Actual number of primary banks (property of model)
-    int num_secondary_banks; //	Actual number of secondary banks (property of model)
+    int num_secondary_banks; //  Actual number of secondary banks (property of model)
     int primary_bank_weapons
         [MAX_PRIMARY_BANKS]; // Weapon_info[] index for the weapon in the bank
     int secondary_bank_weapons
@@ -787,7 +787,7 @@ extern engine_wash_info Engine_wash_info[MAX_ENGINE_WASH_TYPES];
     (1                                                                           \
      << 12) // this wing never existed because something prevented it from being created (like its mother ship being destroyed)
 
-//	Defines a wing of ships.
+// Defines a wing of ships.
 typedef struct wing
 {
     char name[NAME_LENGTH];
@@ -865,7 +865,7 @@ extern ship_counts Ship_counts[MAX_SHIP_TYPE_COUNTS];
 #define WING_INDEX(wingp) (wingp - Wings)
 #define SHIP_INDEX(shipp) (shipp - Ships)
 
-extern void ship_init(); // called once	at game start
+extern void ship_init(); // called once   at game start
 extern void ship_level_init(); // called before the start of each level
 
 //returns -1 if failed
@@ -880,7 +880,7 @@ extern int ship_check_collision_fast(object *obj, object *other_obj,
                                      vector *hitpos);
 extern int ship_get_num_ships();
 
-extern int ship_fire_primary_debug(object *objp); //	Fire the debug laser.
+extern int ship_fire_primary_debug(object *objp); //  Fire the debug laser.
 extern int ship_fire_primary(object *objp, int stream_weapons, int force = 0);
 extern int ship_fire_secondary(object *objp, int allow_swarm = 0);
 extern int ship_launch_countermeasure(object *objp, int rand_val = -1);
@@ -898,11 +898,11 @@ extern void ship_recalc_subsys_strength(ship *shipp);
 extern void subsys_set(int objnum, int ignore_subsys_info = 0);
 extern void physics_ship_init(object *objp);
 
-//	Note: This is not a general purpose routine.
-//	It is specifically used for targeting.
-//	It only returns a subsystem position if it has shields.
-//	Return true/false for subsystem found/not found.
-//	Stuff vector *pos with absolute position.
+// Note: This is not a general purpose routine.
+// It is specifically used for targeting.
+// It only returns a subsystem position if it has shields.
+// Return true/false for subsystem found/not found.
+// Stuff vector *pos with absolute position.
 extern int get_subsystem_pos(vector *pos, object *objp, ship_subsys *subsysp);
 
 extern int ship_info_lookup(char *name);
@@ -929,15 +929,15 @@ extern int
 extern int Player_ship_precedence
     [MAX_PLAYER_SHIP_CHOICES]; // Array of ship types, precedence list for player ship/wing selection
 
-//	Do the special effect for energy dissipating into the shield for a hit.
-//	model_num	= index in Polygon_models[]
-//	centerp		= pos of object, sort of the center of the shield
-//	tcp			= hit point, probably the global hit_point set in polygon_check_face
-//	tr0			= index of polygon in shield pointer in polymodel.
+// Do the special effect for energy dissipating into the shield for a hit.
+// model_num   = index in Polygon_models[]
+// centerp     = pos of object, sort of the center of the shield
+// tcp         = hit point, probably the global hit_point set in polygon_check_face
+// tr0         = index of polygon in shield pointer in polymodel.
 extern void create_shield_explosion(int objnum, int model_num, matrix *orient,
                                     vector *centerp, vector *tcp, int tr0);
 
-//	Initialize shield hit system.
+// Initialize shield hit system.
 extern void shield_hit_init();
 extern void create_shield_explosion_all(object *objp);
 extern void shield_frame_init();
@@ -1004,7 +1004,7 @@ extern int ship_query_general_type(int ship);
 extern int ship_query_general_type(ship *shipp);
 extern int ship_docking_valid(int docker, int dockee);
 extern int
-get_quadrant(vector *hit_pnt); //	Return quadrant num of last hit ponit.
+get_quadrant(vector *hit_pnt); //   Return quadrant num of last hit ponit.
 
 extern void ship_obj_list_rebuild(); // only called by save/restore code
 extern int ship_query_state(char *name);
@@ -1083,22 +1083,22 @@ int is_support_allowed(object *objp);
 // and its normal.   This uses the current turret angles.  We are keeping track of which
 // gun to fire next in the ship specific info for this turret subobject.  Use this info
 // to determine which position to fire from next.
-//	Stuffs:
-//		*gpos: absolute position of gun firing point
-//		*gvec: vector fro *gpos to *targetp
+// Stuffs:
+//    *gpos: absolute position of gun firing point
+//    *gvec: vector fro *gpos to *targetp
 void ship_get_global_turret_gun_info(object *objp, ship_subsys *ssp, vector *gpos,
                                      vector *gvec, int use_angles,
                                      vector *targetp);
 
-//	Given an object and a turret on that object, return the global position and forward vector
-//	of the turret.   The gun normal is the unrotated gun normal, (the center of the FOV cone), not
+// Given an object and a turret on that object, return the global position and forward vector
+// of the turret.   The gun normal is the unrotated gun normal, (the center of the FOV cone), not
 // the actual gun normal given using the current turret heading.  But it _is_ rotated into the model's orientation
-//	in global space.
+// in global space.
 void ship_get_global_turret_info(object *objp, model_subsystem *tp, vector *gpos,
                                  vector *gvec);
 
 // return 1 if objp is in fov of the specified turret, tp.  Otherwise return 0.
-//	dist = distance from turret to center point of object
+// dist = distance from turret to center point of object
 int object_in_turret_fov(object *objp, model_subsystem *tp, vector *tvec,
                          vector *tpos, float dist);
 

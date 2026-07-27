@@ -187,7 +187,7 @@ int hud_support_find_closest(int objnum);
 void hud_toggle_contrast();
 void hud_set_contrast(int high);
 
-//	Return mask of enemies.
+// Return mask of enemies.
 int opposing_team_mask(int team_mask);
 
 #endif /* __HUD_H__ */

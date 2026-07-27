@@ -24,7 +24,7 @@
     4 // Used for the big explosion when a ship breaks into pieces
 #define FIREBALL_EXPLOSION_LARGE2                                                \
     5 // Used for the big explosion when a ship breaks into pieces
-// #define FIREBALL_EXPLOSION_LARGE3	6				// Used for the big explosion when a ship breaks into pieces
+// #define FIREBALL_EXPLOSION_LARGE3   6           // Used for the big explosion when a ship breaks into pieces
 #define MAX_FIREBALL_TYPES 6 // How many types there are
 
 #define FIREBALL_NUM_LARGE_EXPLOSIONS 2

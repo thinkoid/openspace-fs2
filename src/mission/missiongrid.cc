@@ -63,8 +63,8 @@ grid_read_camera_controls(control_info *ci, float frametime)
     ci->vertical = (key_down_timef(KEY_PADMINUS) - key_down_timef(KEY_PADPLUS));
 }
 
-//	Project the viewer's position onto the grid plane.  If more than threshold distance
-//	from grid center, move grid center.
+// Project the viewer's position onto the grid plane.  If more than threshold distance
+// from grid center, move grid center.
 void
 maybe_create_new_grid(grid *gridp, vector *pos, matrix *orient, int force)
 {
@@ -116,27 +116,27 @@ maybe_create_new_grid(grid *gridp, vector *pos, matrix *orient, int force)
     }
 }
 
-//	Create a grid
-//	*forward is vector pointing forward
-//	*right is vector pointing right
-//	*center is center point of grid
-//	length is length of grid
-//	width is width of grid
-//	square_size is size of a grid square
-//	For example:
-//		*forward = (0.0, 0.0, 1.0)
-//		*right   = (1.0, 0.0, 0.0)
-//		*center = (0.0, 0.0, 0.0)
-//		nrows = 10
-//		ncols =  50.0
-//		square_size = 10.0
-//	will generate a grid of squares 10 long by 5 wide.
-//	Each grid square will be 10.0 x 10.0 units.
-//	The center of the grid will be at the global origin.
-//	The grid will be parallel to the xz plane (because the normal is 0,1,0).
-//	(In fact, it will be the xz plane because it is centered on the origin.)
+// Create a grid
+// *forward is vector pointing forward
+// *right is vector pointing right
+// *center is center point of grid
+// length is length of grid
+// width is width of grid
+// square_size is size of a grid square
+// For example:
+//    *forward = (0.0, 0.0, 1.0)
+//    *right   = (1.0, 0.0, 0.0)
+//    *center = (0.0, 0.0, 0.0)
+//    nrows = 10
+//    ncols =  50.0
+//    square_size = 10.0
+// will generate a grid of squares 10 long by 5 wide.
+// Each grid square will be 10.0 x 10.0 units.
+// The center of the grid will be at the global origin.
+// The grid will be parallel to the xz plane (because the normal is 0,1,0).
+// (In fact, it will be the xz plane because it is centered on the origin.)
 //
-//	Stuffs grid in *gridp.  If gridp == NULL, mallocs and returns a grid.
+// Stuffs grid in *gridp.  If gridp == NULL, mallocs and returns a grid.
 grid *
 create_grid(grid *gridp, vector *forward, vector *right, vector *center,
             int nrows, int ncols, float square_size)
@@ -156,7 +156,7 @@ create_grid(grid *gridp, vector *forward, vector *right, vector *center,
     gridp->center = *center;
     gridp->square_size = square_size;
 
-    //	Create the plane equation.
+    //   Create the plane equation.
     Assert(!IS_VEC_NULL(forward));
     Assert(!IS_VEC_NULL(right));
 
@@ -227,7 +227,7 @@ create_grid(grid *gridp, vector *forward, vector *right, vector *center,
     return gridp;
 }
 
-//	Create a nice grid -- centered at origin, 10x10, 10.0 size squares, in xz plane.
+// Create a nice grid -- centered at origin, 10x10, 10.0 size squares, in xz plane.
 grid *
 create_default_grid(void)
 {
@@ -242,7 +242,7 @@ create_default_grid(void)
     return rgrid;
 }
 
-//	Rotate and project points and draw a line.
+// Rotate and project points and draw a line.
 void
 rpd_line(vector *v0, vector *v1)
 {
@@ -263,7 +263,7 @@ modify_grid(grid *gridp)
 void
 grid_render_elevation_line(vector *pos, grid *gridp)
 {
-    vector gpos; //	Location of point on grid.
+    vector gpos; //  Location of point on grid.
     vector tpos;
     float dxz;
     plane tplane;
@@ -284,7 +284,7 @@ grid_render_elevation_line(vector *pos, grid *gridp)
     else
         gr_set_color(255, 255, 255); // white
 
-    rpd_line(&gpos, pos); //	Line from grid to object center.
+    rpd_line(&gpos, pos); //  Line from grid to object center.
 
     tpos = gpos;
 

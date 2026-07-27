@@ -65,24 +65,24 @@ fl_round_2048(float x)
 /*
 inline float fl_sqrt( float x)
 {
-	float retval;
+   float retval;
 
-	_asm fld x
-	_asm fsqrt
-	_asm fstp retval
-	
-	return retval;
+   _asm fld x
+   _asm fsqrt
+   _asm fstp retval
+   
+   return retval;
 }
 
 float fl_isqrt( float x )
 {
-	float retval;
+   float retval;
 
-	_asm fld x
-	_asm fsqrt
-	_asm fstp retval
-	
-	return 1.0f / retval;
+   _asm fld x
+   _asm fsqrt
+   _asm fstp retval
+   
+   return 1.0f / retval;
 } 
 */
 

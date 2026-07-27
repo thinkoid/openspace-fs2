@@ -107,7 +107,7 @@ cscrew_maybe_fire_missile(int shipnum)
 // ------------------------------------------------------------------
 // cscrew_create()
 //
-//	Get a free corkscrew missile entry, and initialize the struct members
+// Get a free corkscrew missile entry, and initialize the struct members
 //
 int
 cscrew_create(object *obj)
@@ -265,7 +265,7 @@ cscrew_display_dcf()
     dc_printf("Corkscrew settings\n\n");
     dc_printf("Delay (cscrew_delay) : %d\n", Corkscrew_missile_delay);
     dc_printf("Count (cscrew_count) : %d\n", Corkscrew_num_missiles_fired);
-    dc_printf("Radius (cscrew_radius) :	%f\n", Corkscrew_radius);
+    dc_printf("Radius (cscrew_radius) :\t%f\n", Corkscrew_radius);
     dc_printf("Twist (cscrew_twist) : %f\n", Corkscrew_twist);
     if (Corkscrew_helix) {
         dc_printf("Helix (cscrew_helix): ON\n");

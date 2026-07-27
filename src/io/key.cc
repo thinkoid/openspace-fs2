@@ -43,7 +43,7 @@ keyboard key_data;
 
 int key_inited = 0;
 
-//int Backspace_debug=1;	// global flag that will enable/disable the backspace key from stopping execution
+//int Backspace_debug=1;   // global flag that will enable/disable the backspace key from stopping execution
 // This flag was created since the backspace key is also used to correct mistakes
 // when typing in your pilots callsign.  This global flag is checked before execution
 // is stopped.
@@ -249,9 +249,9 @@ void
 key_turn_on_numlock()
 { }
 
-//	Convert a BIOS scancode to ASCII.
-//	If scancode >= 127, returns 255, meaning there is no corresponding ASCII code.
-//	Uses ascii_table and shifted_ascii_table to translate scancode to ASCII.
+// Convert a BIOS scancode to ASCII.
+// If scancode >= 127, returns 255, meaning there is no corresponding ASCII code.
+// Uses ascii_table and shifted_ascii_table to translate scancode to ASCII.
 int
 key_to_ascii(int keycode)
 {
@@ -272,8 +272,8 @@ key_to_ascii(int keycode)
         return ascii_table[keycode];
 }
 
-//	Flush the keyboard buffer.
-//	Clear the keyboard array (keyd_pressed).
+// Flush the keyboard buffer.
+// Clear the keyboard array (keyd_pressed).
 void
 key_flush()
 {
@@ -305,9 +305,9 @@ key_flush()
     }
 }
 
-//	A nifty function which performs the function:
-//		n = (n+1) % KEY_BUFFER_SIZE
-//	(assuming positive values of n).
+// A nifty function which performs the function:
+//    n = (n+1) % KEY_BUFFER_SIZE
+// (assuming positive values of n).
 int
 add_one(int n)
 {
@@ -333,9 +333,9 @@ key_checkch()
     return is_one_waiting;
 }
 
-//	Return key scancode if a key has been pressed,
-//	else return 0.
-//	Reads keys out of the key buffer and updates keyhead.
+// Return key scancode if a key has been pressed,
+// else return 0.
+// Reads keys out of the key buffer and updates keyhead.
 int
 key_inkey()
 {
@@ -352,7 +352,7 @@ key_inkey()
     return key;
 }
 
-//	Unget a key.  Puts it back in the input queue.
+// Unget a key.  Puts it back in the input queue.
 void
 key_outkey(int key)
 {
@@ -372,9 +372,9 @@ key_outkey(int key)
     key_data.keytail = bufp;
 }
 
-//	Return amount of time last key was held down.
-//	This is currently (July 17, 1996) bogus because our timing is
-//	not accurate.
+// Return amount of time last key was held down.
+// This is currently (July 17, 1996) bogus because our timing is
+// not accurate.
 int
 key_inkey_time(uint *time)
 {
@@ -394,8 +394,8 @@ key_inkey_time(uint *time)
     return key;
 }
 
-//	Returns scancode of last key pressed, if any (returns 0 if no key pressed)
-//	but does not update keyhead pointer.
+// Returns scancode of last key pressed, if any (returns 0 if no key pressed)
+// but does not update keyhead pointer.
 int
 key_peekkey()
 {
@@ -412,7 +412,7 @@ key_peekkey()
 }
 
 // If not installed, uses BIOS and returns getch();
-//	Else returns pending key (or waits for one if none waiting).
+// Else returns pending key (or waits for one if none waiting).
 int
 key_getch()
 {
@@ -432,7 +432,7 @@ key_getch()
     return in;
 }
 
-//	Set global shift_status with modifier results (shift, ctrl, alt).
+// Set global shift_status with modifier results (shift, ctrl, alt).
 uint
 key_get_shift_status()
 {
@@ -467,8 +467,8 @@ key_get_shift_status()
     return shift_status;
 }
 
-//	Returns amount of time key (specified by "code") has been down since last call.
-//	Returns float, unlike key_down_time() which returns a fix.
+// Returns amount of time key (specified by "code") has been down since last call.
+// Returns float, unlike key_down_time() which returns a fix.
 float
 key_down_timef(uint scancode)
 {
@@ -547,7 +547,7 @@ key_check(int key)
     return key_data.down_check[key];
 }
 
-//	Add a key up or down code to the key buffer.  state=1 -> down, state=0 -> up
+// Add a key up or down code to the key buffer.  state=1 -> down, state=0 -> up
 // latency => time difference in ms between when key was actually pressed and now
 //void key_mark( uint code, int state )
 void
@@ -621,7 +621,7 @@ key_mark(uint code, int state, uint latency)
         keyd_pressed[scancode] = 0;
         key_data.NumUps[scancode]++;
 
-        //	What is the point of this code?  "temp" is never used!
+        //  What is the point of this code?  "temp" is never used!
         temp = 0;
         temp |= keyd_pressed[KEY_LSHIFT] || keyd_pressed[KEY_RSHIFT];
         temp |= keyd_pressed[KEY_LALT] || keyd_pressed[KEY_RALT];
@@ -772,8 +772,8 @@ key_got_focus()
 
 // Restricts the keys that are accepted from the keyboard
 //
-//	filter_array	=>		array of keys to act as a filter
-//	num				=>		number of keys in filter_array
+// filter_array   =>    array of keys to act as a filter
+// num            =>    number of keys in filter_array
 //
 void
 key_set_filter(int *filter_array, int num)

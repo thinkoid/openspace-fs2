@@ -111,8 +111,8 @@ static int Gameplay_help_inited = 0;
 static int Current_help_page;
 
 // generate a line for the on-line help for a control item with specified id
-// input:	id		=>	index for control item within Control_config[]
-//				buf	=> buffer with enough space to hold ouput string
+// input:   id    => index for control item within Control_config[]
+//          buf   => buffer with enough space to hold ouput string
 char *
 gameplay_help_control_text(int id, char *buf)
 {
@@ -174,7 +174,7 @@ gameplay_help_blit_control_line(int x, int y, int id)
 
     gr_string(x, y, buf);
 
-    //	gr_string(x+KEY_DESCRIPTION_OFFSET,y,ci->text);
+    //   gr_string(x+KEY_DESCRIPTION_OFFSET,y,ci->text);
     gr_string(x + KEY_DESCRIPTION_OFFSET, y,
               XSTR(ci->text, CONTROL_CONFIG_XSTR + id));
 }
@@ -300,7 +300,7 @@ gameplay_help_process_key(int k)
 
     case KEY_SHIFTED | KEY_TAB:
         Buttons[gr_screen.res][PREVIOUS_PAGE_BUTTON].button.press_button();
-        //			gameplay_help_goto_prev_screen();
+        //        gameplay_help_goto_prev_screen();
         break;
 
     default:
@@ -715,11 +715,11 @@ gameplay_help_draw_text()
         y_offset += separation;
         gameplay_help_blit_control_line(x_offset, y_offset, ETS_EQUALIZE);
         /*
-			y_offset += separation;
-			gameplay_help_blit_control_line(x_offset, y_offset,XFER_LASER);
+         y_offset += separation;
+         gameplay_help_blit_control_line(x_offset, y_offset,XFER_LASER);
 
-			y_offset += separation;
-			gameplay_help_blit_control_line(x_offset, y_offset,XFER_SHIELD);
+         y_offset += separation;
+         gameplay_help_blit_control_line(x_offset, y_offset,XFER_SHIELD);
 */
         break;
 
@@ -843,7 +843,7 @@ gameplay_help_draw_text()
 
         break;
 
-    } //	end switch
+    } // end switch
 }
 
 // gameplay_help_do_frame() is the function that displays help when acutally playing the game

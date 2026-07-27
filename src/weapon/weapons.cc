@@ -106,7 +106,7 @@ char *Weapon_names[MAX_WEAPON_TYPES];
 
 int First_secondary_index = -1;
 
-#define MAX_SPAWN_WEAPONS 10 //	Up to 10 weapons can spawn weapons.
+#define MAX_SPAWN_WEAPONS 10 //  Up to 10 weapons can spawn weapons.
 
 int Num_spawn_types;
 char Spawn_names[MAX_SPAWN_WEAPONS][NAME_LENGTH];
@@ -305,7 +305,7 @@ missile_obj_return_address(int index)
     return &Missile_objs[index];
 }
 
-//	Return the index of Weapon_info[].name that is *name.
+// Return the index of Weapon_info[].name that is *name.
 int
 weapon_info_lookup(char *name)
 {
@@ -320,7 +320,7 @@ weapon_info_lookup(char *name)
 
 #define DEFAULT_WEAPON_SPAWN_COUNT 10
 
-//	Parse the weapon flags.
+// Parse the weapon flags.
 void
 parse_wi_flags(weapon_info *weaponp)
 {
@@ -497,9 +497,9 @@ parse_weapon()
         wip->tech_desc = strdup(buf);
     }
 
-    //	Read the model file.  It can be a POF file or none.
-    //	If there is no model file (Model file: = "none") then we use our special
-    //	laser renderer which requires inner, middle and outer information.
+    //   Read the model file.  It can be a POF file or none.
+    //   If there is no model file (Model file: = "none") then we use our special
+    //   laser renderer which requires inner, middle and outer information.
     required_string("$Model file:");
     stuff_string(wip->pofbitmap_name, F_NAME, NULL);
     diag_printf("Model pof file -- %s\n", wip->pofbitmap_name);
@@ -509,7 +509,7 @@ parse_weapon()
         wip->laser_bitmap = -1;
     }
     else {
-        //	No POF or AVI file specified, render as special laser type.
+        //  No POF or AVI file specified, render as special laser type.
         ubyte r, g, b;
 
         wip->render_type = WRT_LASER;
@@ -732,7 +732,7 @@ parse_weapon()
         stuff_int(&wip->flyby_snd);
     }
 
-    //	Secondary weapons are required to have a rearm rate.
+    //   Secondary weapons are required to have a rearm rate.
     if (First_secondary_index != -1) {
         required_string("$Rearm Rate:");
         stuff_float(&wip->rearm_rate);
@@ -776,7 +776,7 @@ parse_weapon()
         required_string("+Bitmap:");
         stuff_string(trail_name, F_NAME, NULL);
         ti->bitmap = bm_load(trail_name);
-        // wip->delta_time = fl2i(1000.0f*wip->max_life)/(NUM_TRAIL_SECTIONS+1);		// time between sections.  max_life / num_sections basically.
+        // wip->delta_time = fl2i(1000.0f*wip->max_life)/(NUM_TRAIL_SECTIONS+1);    // time between sections.  max_life / num_sections basically.
     }
 
     // read in filename for icon that is used in weapons selection
@@ -1017,12 +1017,12 @@ parse_cmeasure()
     required_string("$Name:");
     stuff_string(cmeasurep->cmeasure_name, F_NAME, NULL);
 
-    /*$Name:					Type One
-$Velocity:				20.0				;; speed relative to ship, rear-fired until POF info added, MK, 5/22/97
-$Fire Wait:				0.5
-$Lifetime Min:			1.0				;; Minimum lifetime
-$Lifetime Max:			2.0				;; Maximum lifetime.  Actual lifetime is rand(min..max).
-$LaunchSnd:				counter_1.wav,	.8, 10, 300	;; countermeasure 1 fired (sound is 3d)
+    /*$Name:               Type One
+$Velocity:           20.0           ;; speed relative to ship, rear-fired until POF info added, MK, 5/22/97
+$Fire Wait:          0.5
+$Lifetime Min:       1.0            ;; Minimum lifetime
+$Lifetime Max:       2.0            ;; Maximum lifetime.  Actual lifetime is rand(min..max).
+$LaunchSnd:          counter_1.wav, .8, 10, 300 ;; countermeasure 1 fired (sound is 3d)
 */
 
     required_string("$Velocity:");
@@ -1045,7 +1045,7 @@ $LaunchSnd:				counter_1.wav,	.8, 10, 300	;; countermeasure 1 fired (sound is 3d
     cmeasurep->model_num = -1;
 }
 
-//	For all weapons that spawn weapons, given an index at weaponp->spawn_type,
+// For all weapons that spawn weapons, given an index at weaponp->spawn_type,
 // convert the strings in Spawn_names to indices in the Weapon_types array.
 void
 translate_spawn_types()
@@ -1270,7 +1270,7 @@ weapon_render(object *obj)
         if ((wip->wi_flags & WIF_THRUSTER) && (wp->thruster_bitmap > -1)) {
             float ft;
 
-            //	Add noise to thruster geometry.
+            // Add noise to thruster geometry.
             //ft = obj->phys_info.forward_thrust;
             ft = 1.0f; // Always use 1.0f for missiles
             ft *= (1.0f + frand() / 5.0f - 1.0f / 10.0f);
@@ -1286,21 +1286,21 @@ weapon_render(object *obj)
 
         // render a missile plume as well
         /*
-				static int plume = -1;	
-				extern float Interp_thrust_twist;
-				extern float Interp_thrust_twist2;
-				if(plume == -1){
-					plume = model_load("plume01.pof", -1, NULL);
-				}
-				if(plume != -1){
-					Interp_thrust_twist = tw;
-					Interp_thrust_twist2 = tw2;
-					model_set_alpha(plume_alpha);
-					model_render(plume, &obj->orient, &obj->pos, MR_ALL_XPARENT);
-					Interp_thrust_twist = -1.0f;
-					Interp_thrust_twist2 = -1.0f;
-				}
-				*/
+            static int plume = -1;  
+            extern float Interp_thrust_twist;
+            extern float Interp_thrust_twist2;
+            if(plume == -1){
+               plume = model_load("plume01.pof", -1, NULL);
+            }
+            if(plume != -1){
+               Interp_thrust_twist = tw;
+               Interp_thrust_twist2 = tw2;
+               model_set_alpha(plume_alpha);
+               model_render(plume, &obj->orient, &obj->pos, MR_ALL_XPARENT);
+               Interp_thrust_twist = -1.0f;
+               Interp_thrust_twist2 = -1.0f;
+            }
+            */
     } break;
 
     default:
@@ -1372,7 +1372,7 @@ weapon_maybe_play_warning(weapon *wp)
 
 #define CMEASURE_DETONATE_DISTANCE 40.0f
 
-//	Detonate all missiles near this countermeasure.
+// Detonate all missiles near this countermeasure.
 void
 detonate_nearby_missiles(cmeasure *cmp)
 {
@@ -1406,7 +1406,7 @@ detonate_nearby_missiles(cmeasure *cmp)
     }
 }
 
-//	Find an object for weapon #num (object *weapon_objp) to home on due to heat.
+// Find an object for weapon #num (object *weapon_objp) to home on due to heat.
 void
 find_homing_object(object *weapon_objp, int num)
 {
@@ -1423,7 +1423,7 @@ find_homing_object(object *weapon_objp, int num)
 
     wp->homing_object = &obj_used_list;
 
-    //	Scan all objects, find a weapon to home on.
+    //   Scan all objects, find a weapon to home on.
     for (objp = GET_FIRST(&obj_used_list); objp != END_OF_LIST(&obj_used_list);
          objp = GET_NEXT(objp)) {
         if ((objp->type == OBJ_SHIP) || (objp->type == OBJ_CMEASURE)) {
@@ -1444,8 +1444,8 @@ find_homing_object(object *weapon_objp, int num)
                         continue;
                     }
 
-                    //	MK, 9/4/99.
-                    //	If this is a player object, make sure there aren't already too many homers.
+                    //  MK, 9/4/99.
+                    //  If this is a player object, make sure there aren't already too many homers.
                     int num_homers = compute_num_homing_objects(objp);
                     if (Max_allowed_player_homers[Game_skill_level] < num_homers)
                         continue;
@@ -1472,14 +1472,14 @@ find_homing_object(object *weapon_objp, int num)
         }
     }
 
-    //	if (wp->homing_object->type == OBJ_CMEASURE)
-    //		nprintf(("AI", "Frame %i: Weapon #%i homing on cmeasure #%i\n", Framecount, num, objp-Objects));
+    //   if (wp->homing_object->type == OBJ_CMEASURE)
+    //      nprintf(("AI", "Frame %i: Weapon #%i homing on cmeasure #%i\n", Framecount, num, objp-Objects));
 
     if (wp->homing_object == Player_obj)
         weapon_maybe_play_warning(wp);
 }
 
-//	Scan all countermeasures.  Maybe make weapon_objp home on it.
+// Scan all countermeasures.  Maybe make weapon_objp home on it.
 void
 find_homing_object_cmeasures_1(object *weapon_objp)
 {
@@ -1491,7 +1491,7 @@ find_homing_object_cmeasures_1(object *weapon_objp)
     wp = &Weapons[weapon_objp->instance];
     wip = &Weapon_info[wp->weapon_info_index];
 
-    best_dot = wip->fov; //	Note, setting to this avoids comparison below.
+    best_dot = wip->fov; //   Note, setting to this avoids comparison below.
 
     for (objp = GET_FIRST(&obj_used_list); objp != END_OF_LIST(&obj_used_list);
          objp = GET_NEXT(objp)) {
@@ -1505,23 +1505,23 @@ find_homing_object_cmeasures_1(object *weapon_objp)
                 if (wip->wi_flags & WIF_HOMING_ASPECT) {
                     chance =
                         1.0f /
-                        2.0f; //	aspect seeker this likely to chase a countermeasure
+                        2.0f; // aspect seeker this likely to chase a countermeasure
                 }
                 else {
                     chance =
                         1.0f /
-                        1.5f; //	heat seeker this likely to chase a countermeasure
+                        1.5f; // heat seeker this likely to chase a countermeasure
                 }
                 if ((objp->signature != wp->cmeasure_ignore_objnum) &&
                     (objp->signature != wp->cmeasure_chase_objnum)) {
                     if (frand() < chance) {
                         wp->cmeasure_ignore_objnum =
-                            objp->signature; //	Don't process this countermeasure again.
+                            objp->signature; // Don't process this countermeasure again.
                         //nprintf(("Jim", "Frame %i: Weapon #%i ignoring cmeasure #%i\n", Framecount, OBJ_INDEX(weapon_objp), objp->signature));
                     }
                     else {
                         wp->cmeasure_chase_objnum =
-                            objp->signature; //	Don't process this countermeasure again.
+                            objp->signature; // Don't process this countermeasure again.
                         //nprintf(("Jim", "Frame %i: Weapon #%i CHASING cmeasure #%i\n", Framecount, OBJ_INDEX(weapon_objp), objp->signature));
                     }
                 }
@@ -1541,8 +1541,8 @@ find_homing_object_cmeasures_1(object *weapon_objp)
     }
 }
 
-//	Someone launched countermeasures.
-//	For all heat-seeking homing objects, see if should favor tracking a countermeasure instead.
+// Someone launched countermeasures.
+// For all heat-seeking homing objects, see if should favor tracking a countermeasure instead.
 void
 find_homing_object_cmeasures()
 {
@@ -1571,7 +1571,7 @@ find_homing_object_cmeasures()
     }
 }
 
-//	Find object with signature "sig" and make weapon home on it.
+// Find object with signature "sig" and make weapon home on it.
 void
 find_homing_object_by_sig(object *weapon_objp, int sig)
 {
@@ -1595,7 +1595,7 @@ find_homing_object_by_sig(object *weapon_objp, int sig)
     }
 }
 
-//	Make weapon num home.  It's also object *obj.
+// Make weapon num home.  It's also object *obj.
 void
 weapon_home(object *obj, int num, float frame_time)
 {
@@ -1609,11 +1609,11 @@ weapon_home(object *obj, int num, float frame_time)
     wip = &Weapon_info[wp->weapon_info_index];
     hobjp = Weapons[num].homing_object;
 
-    //	If not 1/2 second gone by, don't home yet.
+    //   If not 1/2 second gone by, don't home yet.
     if ((hobjp == &obj_used_list) ||
         (f2fl(Missiontime - wp->creation_time) < 0.25f)) {
-        //	If this is a heat seeking homing missile and 1/2 second has elapsed since firing
-        //	and we don't have a target (else we wouldn't be inside the IF), find a new target.
+        //  If this is a heat seeking homing missile and 1/2 second has elapsed since firing
+        //  and we don't have a target (else we wouldn't be inside the IF), find a new target.
         if (wip->wi_flags & WIF_HOMING_HEAT)
             if (f2fl(Missiontime - wp->creation_time) > 0.5f)
                 find_homing_object(obj, num);
@@ -1630,14 +1630,14 @@ weapon_home(object *obj, int num, float frame_time)
                               obj->phys_info.speed);
         }
 
-        /*	Removed code that makes bombs drop for a bit.  They looked odd and it was confusing.  People wondered where their weapons went.
-		//	Make bombs drop down for first second of life.
-		if (wip->wi_flags & WIF_BOMB) {
-			if (wip->lifetime - wp->lifeleft < 0.5f) {
-				float	time_scale = wip->lifetime - wp->lifeleft;
-				vm_vec_scale_add2(&obj->phys_info.desired_vel, &obj->orient.uvec, (time_scale - 0.5f) * max(10.0f, obj->phys_info.speed/2.0f));
-			}
-		}
+        /*  Removed code that makes bombs drop for a bit.  They looked odd and it was confusing.  People wondered where their weapons went.
+      // Make bombs drop down for first second of life.
+      if (wip->wi_flags & WIF_BOMB) {
+         if (wip->lifetime - wp->lifeleft < 0.5f) {
+            float time_scale = wip->lifetime - wp->lifeleft;
+            vm_vec_scale_add2(&obj->phys_info.desired_vel, &obj->orient.uvec, (time_scale - 0.5f) * max(10.0f, obj->phys_info.speed/2.0f));
+         }
+      }
 */
         return;
     }
@@ -1662,10 +1662,10 @@ weapon_home(object *obj, int num, float frame_time)
     }
 
     /*
-	if (hobjp->type == OBJ_NONE) {
-		find_homing_object(obj, num);
-		return;
-	}
+   if (hobjp->type == OBJ_NONE) {
+      find_homing_object(obj, num);
+      return;
+   }
 */
 
     switch (hobjp->type) {
@@ -1700,8 +1700,8 @@ weapon_home(object *obj, int num, float frame_time)
         return;
     }
 
-    //	See if this weapon is the nearest homing object to the object it is homing on.
-    //	If so, update some fields in the target object's ai_info.
+    //   See if this weapon is the nearest homing object to the object it is homing on.
+    //   If so, update some fields in the target object's ai_info.
     if (hobjp != &obj_used_list) {
         float dist;
 
@@ -1720,7 +1720,7 @@ weapon_home(object *obj, int num, float frame_time)
         }
     }
 
-    //	If the object it is homing on is still valid, home some more!
+    //   If the object it is homing on is still valid, home some more!
     if (hobjp != &obj_used_list) {
         float old_dot, vel;
         vector vec_to_goal;
@@ -1730,8 +1730,8 @@ weapon_home(object *obj, int num, float frame_time)
 
         // the homing missile may be seeking a subsystem on a ship.  If so, we need to calculate the
         // world coordinates of that subsystem so the homing missile can seek it out.
-        //	For now, March 7, 1997, MK, heat seeking homing missiles will be able to home on
-        //	any subsystem.  Probably makes sense for them to only home on certain kinds of subsystems.
+        //  For now, March 7, 1997, MK, heat seeking homing missiles will be able to home on
+        //  any subsystem.  Probably makes sense for them to only home on certain kinds of subsystems.
         if (wp->homing_subsys != NULL) {
             get_subsystem_world_pos(hobjp, Weapons[num].homing_subsys,
                                     &target_pos);
@@ -1750,7 +1750,7 @@ weapon_home(object *obj, int num, float frame_time)
 
                     cmp = &Cmeasures[hobjp->instance];
 
-                    //	Make this missile detonate soon.  Not right away, not sure why.  Seems better.
+                    //  Make this missile detonate soon.  Not right away, not sure why.  Seems better.
                     if (cmp->team != wp->team) {
                         detonate_nearby_missiles(cmp);
                         //nprintf(("AI", "Frame %i: Weapon %i hit cmeasure, will die!\n", Framecount, wp-Weapons));
@@ -1768,8 +1768,8 @@ weapon_home(object *obj, int num, float frame_time)
                 pick_homing_point = 1;
             }
 
-            //	Update homing position if it hasn't been set, you're within 500 meters, or every half second, approximately.
-            //	For large objects, don't lead them.
+            // Update homing position if it hasn't been set, you're within 500 meters, or every half second, approximately.
+            // For large objects, don't lead them.
             if (hobjp->radius < 40.0f) {
                 target_pos = hobjp->pos;
                 wp->homing_pos = target_pos;
@@ -1823,13 +1823,13 @@ weapon_home(object *obj, int num, float frame_time)
                 target_pos = wp->homing_pos;
         }
 
-        //	Couldn't find a lock.
+        //  Couldn't find a lock.
         if (IS_VEC_NULL(&target_pos))
             return;
 
-        //	Cause aspect seeking weapon to home at target's predicted position.
-        //	But don't use predicted position if dot product small or negative.
-        //	If do this, with a ship headed towards missile, could choose a point behind missile.``1
+        //  Cause aspect seeking weapon to home at target's predicted position.
+        //  But don't use predicted position if dot product small or negative.
+        //  If do this, with a ship headed towards missile, could choose a point behind missile.``1
         float dist_to_target, time_to_target;
 
         dist_to_target = vm_vec_normalized_dir(&vec_to_goal, &target_pos,
@@ -1842,9 +1842,9 @@ weapon_home(object *obj, int num, float frame_time)
 
         old_dot = vm_vec_dot(&tvec, &vec_to_goal);
 
-        //	If a weapon has missed its target, detonate it.
-        //	This solves the problem of a weapon circling the center of a subsystem that has been blown away.
-        //	Problem: It does not do impact damage, just proximity damage.
+        //  If a weapon has missed its target, detonate it.
+        //  This solves the problem of a weapon circling the center of a subsystem that has been blown away.
+        //  Problem: It does not do impact damage, just proximity damage.
         if ((dist_to_target <
              flFrametime * obj->phys_info.speed * 4.0f + 10.0f) &&
             (old_dot < 0.0f)) {
@@ -1864,8 +1864,8 @@ weapon_home(object *obj, int num, float frame_time)
             }
         }
 
-        //	Only lead target if more than one second away.  Otherwise can miss target.  I think this
-        //	is what's causing Harbingers to miss the super destroyer. -- MK, 4/15/98
+        //  Only lead target if more than one second away.  Otherwise can miss target.  I think this
+        //  is what's causing Harbingers to miss the super destroyer. -- MK, 4/15/98
         if ((wip->wi_flags & WIF_HOMING_ASPECT) && (old_dot > 0.1f) &&
             (time_to_target > 0.1f))
             vm_vec_scale_add2(&target_pos, &hobjp->phys_info.vel,
@@ -1875,33 +1875,33 @@ weapon_home(object *obj, int num, float frame_time)
 
         // nprintf(("AI", "Weapon %i, lifeleft = %7.3f, dist = %7.3f, dot = %6.3f\n", num, Weapons[num].lifeleft, vm_vec_dist_quick(&obj->pos, &Weapons[num].homing_object->pos), old_dot));
 
-        //	If a HEAT seeking (rather than ASPECT seeking) homing missile, verify that target is in viewcone.
+        //  If a HEAT seeking (rather than ASPECT seeking) homing missile, verify that target is in viewcone.
         if (wip->wi_flags & WIF_HOMING_HEAT) {
             if ((old_dot < wip->fov) &&
                 (dist_to_target >
                  wip->inner_radius *
-                     1.1f)) { //	Delay finding new target one frame to allow detonation.
+                     1.1f)) { // Delay finding new target one frame to allow detonation.
                 find_homing_object(obj, num);
-                return; //	Maybe found a new homing object.  Return, process more next frame.
+                return; // Maybe found a new homing object.  Return, process more next frame.
             }
-            else //	Subtract out life based on how far from target this missile points.
+            else //  Subtract out life based on how far from target this missile points.
                 if (wip->fov < 0.95f) {
                     wp->lifeleft -= flFrametime * (0.95f - old_dot);
                     //Should only happen when time is compressed.
                     //if (flFrametime * (1.0f - old_dot) > 1.0f)
-                    //	Int3();
+                    //  Int3();
                 }
         }
         else if (wip->wi_flags &
-                 WIF_HOMING_ASPECT) { //	subtract life as if max turn is 90 degrees.
+                 WIF_HOMING_ASPECT) { //  subtract life as if max turn is 90 degrees.
             if (wip->fov < 0.95f)
                 wp->lifeleft -= flFrametime * (0.95f - old_dot);
         }
         else
-            Assert(0); //	Hmm, a homing missile, but not aspect or heat?
+            Assert(0); //  Hmm, a homing missile, but not aspect or heat?
 
-        //	Control speed based on dot product to goal.  If close to straight ahead, move
-        //	at max speed, else move slower based on how far from ahead.
+        //  Control speed based on dot product to goal.  If close to straight ahead, move
+        //  at max speed, else move slower based on how far from ahead.
         if (old_dot < 0.90f) {
             obj->phys_info.speed = max(0.2f, old_dot * (float)fabs(old_dot));
             if (obj->phys_info.speed < wip->max_speed * 0.75f)
@@ -1910,7 +1910,7 @@ weapon_home(object *obj, int num, float frame_time)
         else
             obj->phys_info.speed = wip->max_speed;
 
-        //	For first second of weapon's life, it doesn't fly at top speed.  It ramps up.
+        //  For first second of weapon's life, it doesn't fly at top speed.  It ramps up.
         if (Missiontime - wp->creation_time < i2f(1)) {
             float t;
 
@@ -1925,7 +1925,7 @@ weapon_home(object *obj, int num, float frame_time)
 
         // turn the missile towards the target only if non-swarm.  Homing swarm missiles choose
         // a different vector to turn towards, this is done in swarm_update_direction().
-        //		if ( !(wip->wi_flags & WIF_SWARM) ) {
+        //     if ( !(wip->wi_flags & WIF_SWARM) ) {
         if (wp->swarm_index < 0) {
             // nprintf(("AI", "Dot, dist = %7.3f, %7.3f, target pos = %7.3f %7.3f %7.3f\n", old_dot, vm_vec_dist_quick(&obj->pos, &target_pos), target_pos.x, target_pos.y, target_pos.z));
             ai_turn_towards_vector(&target_pos, obj, frame_time, wip->turn_time,
@@ -1936,12 +1936,12 @@ weapon_home(object *obj, int num, float frame_time)
                               vel);
         }
 
-    /*		//	If this weapon shot past its target, make it detonate.
-		if ((old_dot < 0.0f) && (dist_to_target < 50.0f)) {
-			if (wp->lifeleft > 0.01f)
-				wp->lifeleft = 0.01f;
-		}
-*/	}
+    /*      // If this weapon shot past its target, make it detonate.
+      if ((old_dot < 0.0f) && (dist_to_target < 50.0f)) {
+         if (wp->lifeleft > 0.01f)
+            wp->lifeleft = 0.01f;
+      }
+*/ }
 }
 
 // as Mike K did with ships -- break weapon into process_pre and process_post for code to execute
@@ -2010,7 +2010,7 @@ weapon_maybe_play_flyby_sound(object *weapon_objp, weapon *wp)
             // ensure that laser is moving in similar direction to fvec
             dot = vm_vec_dot(&vec_to_weapon, &weapon_objp->orient.fvec);
 
-            //			nprintf(("Alan", "Weapon dot: %.2f\n", dot));
+            //       nprintf(("Alan", "Weapon dot: %.2f\n", dot));
             if ((dot < -0.80) && (dot > -0.98)) {
                 snd_play_3d(&Snds[SND_WEAPON_FLYBY], &weapon_objp->pos,
                             &Eye_position);
@@ -2097,7 +2097,7 @@ weapon_process_post(object *obj, float frame_time)
     weapon_maybe_play_flyby_sound(obj, wp);
 #endif
 
-    //	If our target is still valid, then update some info.
+    //   If our target is still valid, then update some info.
     if (wp->target_num != -1) {
         if (Objects[wp->target_num].signature == wp->target_sig) {
             float cur_dist;
@@ -2128,9 +2128,9 @@ weapon_process_post(object *obj, float frame_time)
                 // nprintf(("AI", "Miss dot = %7.3f, dist = %7.3f, lead_scale = %7.3f\n", dot, cur_dist, lead_scale));
                 wp->target_num = -1;
 
-                //	Learn!  If over-shooting or under-shooting, compensate.
-                //	Really need to compensate for left/right errors.  This does no good against someone circling
-                //	in a plane perpendicular to the attacker's forward vector.
+                //   Learn!  If over-shooting or under-shooting, compensate.
+                //   Really need to compensate for left/right errors.  This does no good against someone circling
+                //   in a plane perpendicular to the attacker's forward vector.
                 if (parent_aip != NULL) {
                     if (cur_dist > 100.0f)
                         parent_aip->lead_scale = 0.0f;
@@ -2158,14 +2158,14 @@ weapon_process_post(object *obj, float frame_time)
     if (wip->wi_flags & WIF_HOMING) {
         weapon_home(obj, num, frame_time);
 
-        /*		if (wip->wi_flags & WIF_BOMB) {
-			if (wip->lifetime - obj->lifeleft < 1.0f) {
-				
-			}
-		}
+        /*     if (wip->wi_flags & WIF_BOMB) {
+         if (wip->lifetime - obj->lifeleft < 1.0f) {
+            
+         }
+      }
 */
         // If this is a swarm type missile,
-        //		if ( wip->wi_flags & WIF_SWARM )
+        //     if ( wip->wi_flags & WIF_SWARM )
         if (wp->swarm_index >= 0) {
             swarm_update_direction(obj, frame_time);
         }
@@ -2176,7 +2176,7 @@ weapon_process_post(object *obj, float frame_time)
     }
 }
 
-//	Update weapon tracking information.
+// Update weapon tracking information.
 void
 weapon_set_tracking_info(int weapon_objnum, int parent_objnum, int target_objnum,
                          int target_is_locked, ship_subsys *target_subsys)
@@ -2227,8 +2227,8 @@ weapon_set_tracking_info(int weapon_objnum, int parent_objnum, int target_objnum
                 weapon_maybe_play_warning(wp);
             }
             else if (wip->wi_flags & WIF_HOMING_HEAT) {
-                //	Make a heat seeking missile try to home.  If the target is outside the view cone, it will
-                //	immediately drop it and try to find one in its view cone.
+                //   Make a heat seeking missile try to home.  If the target is outside the view cone, it will
+                //   immediately drop it and try to find one in its view cone.
                 if (target_objnum != -1) {
                     wp->homing_object = &Objects[target_objnum];
                     weapon_maybe_play_warning(wp);
@@ -2244,12 +2244,12 @@ weapon_set_tracking_info(int weapon_objnum, int parent_objnum, int target_objnum
             wp->target_sig = -1;
         }
 
-        //	If missile is locked on target, increase its lifetime by 20% since missiles can be fired at limit of range
-        //	as defined by velocity*lifeleft, but missiles often slow down a bit, plus can be fired at a moving away target.
-        //	Confusing to many players when their missiles run out of gas before getting to target.
+        //  If missile is locked on target, increase its lifetime by 20% since missiles can be fired at limit of range
+        //  as defined by velocity*lifeleft, but missiles often slow down a bit, plus can be fired at a moving away target.
+        //  Confusing to many players when their missiles run out of gas before getting to target.
         // DB - removed 7:14 pm 9/6/99. was totally messing up lifetimes for all weapons.
-        //	MK, 7:11 am, 9/7/99.  Put it back in, but with a proper check here to make sure it's an aspect seeker and
-        //	put a sanity check in the color changing laser code that was broken by this code.
+        //  MK, 7:11 am, 9/7/99.  Put it back in, but with a proper check here to make sure it's an aspect seeker and
+        //  put a sanity check in the color changing laser code that was broken by this code.
         if (target_is_locked && (wp->target_num != -1) &&
             (wip->wi_flags & WIF_HOMING_ASPECT)) {
             wp->lifeleft *= 1.2f;
@@ -2282,7 +2282,7 @@ weapon_create(vector *pos, matrix *orient, int weapon_id, int parent_objnum,
     if (Num_weapons >= MAX_WEAPONS - 5) {
         //No, do remove for AI ships -- MK, 3/12/98  // don't need to try and delete weapons for ai ships
         //if ( !(Objects[parent_objnum].flags & OF_PLAYER_SHIP) )
-        //	return -1;
+        //  return -1;
 
         num_deleted = collide_remove_weapons();
         nprintf(("WARNING", "Deleted %d weapons because of lack of slots\n",
@@ -2335,7 +2335,7 @@ weapon_create(vector *pos, matrix *orient, int weapon_id, int parent_objnum,
     wp->lifeleft = wip->lifetime;
 
     wp->objnum = objnum;
-    wp->homing_object = &obj_used_list; //	Assume not homing on anything.
+    wp->homing_object = &obj_used_list; //   Assume not homing on anything.
     wp->homing_subsys = NULL;
     wp->creation_time = Missiontime;
     wp->group_id = group_id;
@@ -2343,7 +2343,7 @@ weapon_create(vector *pos, matrix *orient, int weapon_id, int parent_objnum,
     // we don't necessarily need a parent
     if (parent_objp != NULL) {
         Assert(parent_objp->type ==
-               OBJ_SHIP); //	Get Mike, a non-ship has fired a weapon!
+               OBJ_SHIP); //  Get Mike, a non-ship has fired a weapon!
         Assert((parent_objp->instance >= 0) &&
                (parent_objp->instance < MAX_SHIPS));
         wp->team = Ships[parent_objp->instance].team;
@@ -2380,7 +2380,7 @@ weapon_create(vector *pos, matrix *orient, int weapon_id, int parent_objnum,
         wp->particle_spew_time = -1;
     }
 
-    //	Make remote detonate missiles look like they're getting detonated by firer simply by giving them variable lifetimes.
+    //   Make remote detonate missiles look like they're getting detonated by firer simply by giving them variable lifetimes.
     if (!(Objects[parent_objnum].flags & OF_PLAYER_SHIP) &&
         (wip->wi_flags & WIF_REMOTE)) {
         float rand_val;
@@ -2416,12 +2416,12 @@ weapon_create(vector *pos, matrix *orient, int weapon_id, int parent_objnum,
         objp->radius = wip->laser_head_radius;
     }
 
-    //	Set desired velocity and initial velocity.
-    //	For lasers, velocity is always the same.
-    //	For missiles, it is a small amount plus the firing ship's velocity.
-    //	For missiles, the velocity trends towards some goal.
-    //	Note: If you change how speed works here, such as adding in speed of parent ship, you'll need to change the AI code
-    //	that predicts collision points.  See Mike Kulas or Dave Andsager.  (Or see ai_get_weapon_speed().)
+    //   Set desired velocity and initial velocity.
+    //   For lasers, velocity is always the same.
+    //   For missiles, it is a small amount plus the firing ship's velocity.
+    //   For missiles, the velocity trends towards some goal.
+    //   Note: If you change how speed works here, such as adding in speed of parent ship, you'll need to change the AI code
+    //   that predicts collision points.  See Mike Kulas or Dave Andsager.  (Or see ai_get_weapon_speed().)
     if (!(wip->wi_flags & WIF_HOMING)) {
         vm_vec_copy_scale(&objp->phys_info.desired_vel, &objp->orient.fvec,
                           objp->phys_info.max_vel.z);
@@ -2429,9 +2429,9 @@ weapon_create(vector *pos, matrix *orient, int weapon_id, int parent_objnum,
         objp->phys_info.speed = vm_vec_mag(&objp->phys_info.desired_vel);
     }
     else {
-        //	For weapons that home, set velocity to sum of forward component of parent's velocity and 1/4 weapon's max speed.
-        //	Note that it is important to extract the forward component of the parent's velocity to factor out sliding, else
-        //	the missile will not be moving forward.
+        //  For weapons that home, set velocity to sum of forward component of parent's velocity and 1/4 weapon's max speed.
+        //  Note that it is important to extract the forward component of the parent's velocity to factor out sliding, else
+        //  the missile will not be moving forward.
         if (parent_objp != NULL) {
             vm_vec_copy_scale(&objp->phys_info.desired_vel, &objp->orient.fvec,
                               vm_vec_dot(&parent_objp->phys_info.vel,
@@ -2486,7 +2486,7 @@ weapon_create(vector *pos, matrix *orient, int weapon_id, int parent_objnum,
 
     wp->pick_big_attack_point_timestamp = timestamp(1);
 
-    //	Set detail levels for POF-type weapons.
+    //   Set detail levels for POF-type weapons.
     if (Weapon_info[wp->weapon_info_index].model_num != -1) {
         polymodel *pm;
         int i;
@@ -2506,7 +2506,7 @@ weapon_create(vector *pos, matrix *orient, int weapon_id, int parent_objnum,
     return objnum;
 }
 
-//	Spawn child weapons from object *objp.
+// Spawn child weapons from object *objp.
 void
 spawn_child_weapons(object *objp)
 {
@@ -2547,7 +2547,7 @@ spawn_child_weapons(object *objp)
         weapon_objnum = weapon_create(&pos, &orient, child_id, parent_num, 1, -1,
                                       wp->weapon_flags & WF_LOCKED_WHEN_FIRED);
 
-        //	Assign a little randomness to lifeleft so they don't all disappear at the same time.
+        //  Assign a little randomness to lifeleft so they don't all disappear at the same time.
         if (weapon_objnum != -1) {
             float rand_val;
 
@@ -2681,9 +2681,9 @@ weapon_hit_do_sound(object *hit_obj, weapon_info *wip, vector *hitpos)
 
 // distrupt any subsystems that fall into damage sphere of this Electronics missile
 //
-// input:	ship_obj		=>		pointer to ship that holds subsystem
-//				blast_pos	=>		world pos of weapon blast
-//				wi_index		=>		weapon info index of weapon causing blast
+// input:   ship_obj    =>    pointer to ship that holds subsystem
+//          blast_pos   =>    world pos of weapon blast
+//          wi_index    =>    weapon info index of weapon causing blast
 void
 weapon_do_electronics_affect(object *ship_objp, vector *blast_pos, int wi_index)
 {
@@ -2713,24 +2713,24 @@ weapon_do_electronics_affect(object *ship_objp, vector *blast_pos, int wi_index)
     }
 }
 
-//	----------------------------------------------------------------------
-//	weapon_area_calc_damage()
+// ----------------------------------------------------------------------
+// weapon_area_calc_damage()
 //
 // Calculate teh damage for an object based on the location of an area-effect
 // explosion.
 //
-// input:		objp			=>		object pointer ship receiving blast effect
-//					pos			=>		world pos of blast center
-//					inner_rad	=>		smallest radius at which full damage is done
-//					outer_rad	=>		radius at which no damage is done
-//					max_blast	=>		maximum blast possible from explosion
-//					max_damage	=>		maximum damage possible from explosion
-//					blast			=>		OUTPUT PARAMETER: receives blast value from explosion
-//					damage		=>		OUTPUT PARAMETER: receives damage value from explosion
-//					limit			=>		a limit on the area, needed for shockwave damage
+// input:      objp        =>    object pointer ship receiving blast effect
+//             pos         =>    world pos of blast center
+//             inner_rad   =>    smallest radius at which full damage is done
+//             outer_rad   =>    radius at which no damage is done
+//             max_blast   =>    maximum blast possible from explosion
+//             max_damage  =>    maximum damage possible from explosion
+//             blast       =>    OUTPUT PARAMETER: receives blast value from explosion
+//             damage      =>    OUTPUT PARAMETER: receives damage value from explosion
+//             limit       =>    a limit on the area, needed for shockwave damage
 //
-//	returns:		no damage occurred	=>		-1
-//					damage occured			=>		0
+// returns:    no damage occurred   =>    -1
+//             damage occured       =>    0
 //
 int
 weapon_area_calc_damage(object *objp, vector *pos, float inner_rad,
@@ -2766,7 +2766,7 @@ weapon_area_calc_damage(object *objp, vector *pos, float inner_rad,
         Assert(dist_to_outer_rad_squared <= total_dist_squared);
         *damage = max_damage * dist_to_outer_rad_squared / total_dist_squared;
 
-        //		*damage = (min_dist - outer_rad) * max_damage/(inner_rad - outer_rad);
+        //     *damage = (min_dist - outer_rad) * max_damage/(inner_rad - outer_rad);
         *blast = (min_dist - outer_rad) * max_blast / (inner_rad - outer_rad);
     }
 
@@ -2775,16 +2775,16 @@ weapon_area_calc_damage(object *objp, vector *pos, float inner_rad,
     return 0;
 }
 
-//	----------------------------------------------------------------------
-//	weapon_area_apply_blast()
+// ----------------------------------------------------------------------
+// weapon_area_apply_blast()
 //
 // Apply the blast effects of an explosion to a ship
 //
-// input:	force_apply_pos	=>		world pos of where force is applied to object
-//				ship_obj				=>		object pointer of ship receiving the blast
-//				blast_pos			=>		world pos of blast center
-//				blast					=>		force of blast
-//				make_shockwave		=>		boolean, whether to create a shockwave or not
+// input:   force_apply_pos   =>    world pos of where force is applied to object
+//          ship_obj          =>    object pointer of ship receiving the blast
+//          blast_pos         =>    world pos of blast center
+//          blast             =>    force of blast
+//          make_shockwave    =>    boolean, whether to create a shockwave or not
 //
 void
 weapon_area_apply_blast(vector *force_apply_pos, object *ship_obj,
@@ -2813,14 +2813,14 @@ weapon_area_apply_blast(vector *force_apply_pos, object *ship_obj,
     }
 }
 
-//	----------------------------------------------------------------------
-//	weapon_do_area_effect()
+// ----------------------------------------------------------------------
+// weapon_do_area_effect()
 //
 // Do the area effect for a weapon
 //
-// input:	wobjp			=>		object pointer to weapon causing explosion
-//				pos			=>		world pos of explosion center
-//				other_obj	=>		object pointer to ship that weapon impacted on (can be NULL)
+// input:   wobjp       =>    object pointer to weapon causing explosion
+//          pos         =>    world pos of explosion center
+//          other_obj   =>    object pointer to ship that weapon impacted on (can be NULL)
 //
 void
 weapon_do_area_effect(object *wobjp, vector *pos, object *other_obj)
@@ -2881,8 +2881,8 @@ weapon_do_area_effect(object *wobjp, vector *pos, object *other_obj)
     }
 }
 
-//	----------------------------------------------------------------------
-//	weapon_hit()
+// ----------------------------------------------------------------------
+// weapon_hit()
 //
 // This function is called when a weapon hits something (or, in the case of
 // missiles explodes for any particular reason)
@@ -2947,7 +2947,7 @@ weapon_hit(object *weapon_obj, object *other_obj, vector *hitpos)
             sci.rot_angle = 0.0f;
 
             shockwave_create(OBJ_INDEX(weapon_obj), hitpos, &sci, sw_flag);
-            //			snd_play_3d( &Snds[SND_SHOCKWAVE_IMPACT], hitpos, &Eye_position );
+            //       snd_play_3d( &Snds[SND_SHOCKWAVE_IMPACT], hitpos, &Eye_position );
         }
         else {
             weapon_do_area_effect(weapon_obj, hitpos, other_obj);
@@ -2982,7 +2982,7 @@ weapon_detonate(object *objp)
     weapon_hit(objp, NULL, &objp->pos);
 }
 
-//	Return the Weapon_info[] index of the weapon with name *name.
+// Return the Weapon_info[] index of the weapon with name *name.
 int
 weapon_name_lookup(char *name)
 {
@@ -3062,11 +3062,11 @@ weapons_page_in()
         }
 
         // If this has an impact vclip page it in.
-        //		if ( wip->impact_explosion_ani > -1 )	{
-        //			int nframes, fps;
-        //			bm_get_info( wip->impact_explosion_ani, NULL, NULL, NULL, &nframes, &fps );
-        //			bm_page_in_xparent_texture( wip->impact_explosion_ani, nframes );
-        //		}
+        //     if ( wip->impact_explosion_ani > -1 )  {
+        //        int nframes, fps;
+        //        bm_get_info( wip->impact_explosion_ani, NULL, NULL, NULL, &nframes, &fps );
+        //        bm_page_in_xparent_texture( wip->impact_explosion_ani, nframes );
+        //     }
 
         // trail bitmaps
         if ((wip->wi_flags & WIF_TRAIL) && (wip->tr_info.bitmap > -1)) {
@@ -3232,7 +3232,7 @@ weapon_maybe_spew_particle(object *obj)
             direct = obj->orient.fvec;
             vm_vec_negate(&direct);
 
-            //	randomly perturb x, y and z
+            // randomly perturb x, y and z
 
             // uvec
             ang = fl_radian(frand_range(-90.0f, 90.0f));

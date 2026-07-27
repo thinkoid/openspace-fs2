@@ -50,7 +50,7 @@ int key_up_count(int scancode);
 int key_checkch();
 int key_check(int key);
 
-//	Put "key" back in the input buffer.
+// Put "key" back in the input buffer.
 void key_outkey(int key);
 
 // used to restrict keys that are read into keyboard buffer
@@ -64,11 +64,11 @@ extern int Key_normal_game;
 #define KEY_ALTED 0x2000
 #define KEY_CTRLED 0x4000
 #define KEY_DEBUGGED 0x8000
-#define KEY_DEBUGGED1 0x0800 //	Cheat bit in release version of game.
+#define KEY_DEBUGGED1 0x0800 //  Cheat bit in release version of game.
 #define KEY_MASK 0x00FF
 
 #define KEY_DEBUG_KEY                                                            \
-    0x29 //	KEY_LAPOSTRO (shifted = tilde, near upper-left of keyboard)
+    0x29 // KEY_LAPOSTRO (shifted = tilde, near upper-left of keyboard)
 
 #define KEY_0 0x0B
 #define KEY_1 0x02

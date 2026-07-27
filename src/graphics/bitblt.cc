@@ -38,8 +38,8 @@ gr8_aabitmap_ex(int x, int y, int w, int h, int sx, int sy)
     if (!Current_alphacolor)
         return;
 
-    //	mprintf(( "x=%d, y=%d, w=%d, h=%d\n", x, y, w, h ));
-    //	mprintf(( "sx=%d, sy=%d, bw=%d, bh=%d\n", sx, sy, bmp->w, bmp->h ));
+    //   mprintf(( "x=%d, y=%d, w=%d, h=%d\n", x, y, w, h ));
+    //   mprintf(( "sx=%d, sy=%d, bw=%d, bh=%d\n", sx, sy, bmp->w, bmp->h ));
 
     bmp = bm_lock(
         gr_screen.current_bitmap, 8,

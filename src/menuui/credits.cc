@@ -441,23 +441,23 @@ credits_close()
     int i;
 
     /*
-	if (CreditsWin01 != -1){
-		bm_unload(CreditsWin01);
-		CreditsWin01 = -1;
-	}
-	if (CreditsWin02 != -1){
-		bm_unload(CreditsWin02);
-		CreditsWin02 = -1;
-	}
-	if (CreditsWin03 != -1){
-		bm_unload(CreditsWin03);
-		CreditsWin03 = -1;
-	}
-	if (CreditsWin04 != -1){
-		bm_unload(CreditsWin04);
-		CreditsWin04 = -1;
-	}
-	*/
+   if (CreditsWin01 != -1){
+      bm_unload(CreditsWin01);
+      CreditsWin01 = -1;
+   }
+   if (CreditsWin02 != -1){
+      bm_unload(CreditsWin02);
+      CreditsWin02 = -1;
+   }
+   if (CreditsWin03 != -1){
+      bm_unload(CreditsWin03);
+      CreditsWin03 = -1;
+   }
+   if (CreditsWin04 != -1){
+      bm_unload(CreditsWin04);
+      CreditsWin04 = -1;
+   }
+   */
 
     for (i = 0; i < NUM_IMAGES; i++) {
         if (Credits_bmps[i] >= 0) {
@@ -595,26 +595,26 @@ credits_do_frame(float frametime)
     }
 
     /*
-	if (CreditsWin01 != -1) {
-		gr_set_bitmap(CreditsWin01);
-		gr_bitmap(233, 5);
-	}
+   if (CreditsWin01 != -1) {
+      gr_set_bitmap(CreditsWin01);
+      gr_bitmap(233, 5);
+   }
 
-	if (CreditsWin02 != -1) {
-		gr_set_bitmap(CreditsWin02);
-		gr_bitmap(616, 8);
-	}
+   if (CreditsWin02 != -1) {
+      gr_set_bitmap(CreditsWin02);
+      gr_bitmap(616, 8);
+   }
 
-	if (CreditsWin03 != -1) {
-		gr_set_bitmap(CreditsWin03);
-		gr_bitmap(233, 299);
-	}
+   if (CreditsWin03 != -1) {
+      gr_set_bitmap(CreditsWin03);
+      gr_bitmap(233, 299);
+   }
 
-	if (CreditsWin04 != -1) {
-		gr_set_bitmap(CreditsWin04);
-		gr_bitmap(215, 8);
-	}
-	*/
+   if (CreditsWin04 != -1) {
+      gr_set_bitmap(CreditsWin04);
+      gr_bitmap(215, 8);
+   }
+   */
 
     Ui_window.draw();
 

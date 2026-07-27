@@ -49,10 +49,10 @@
 #include <mission/missionmessage.hh>
 
 /*
-#define OBJECTIVES_X	65
-#define OBJECTIVES_Y	137
-#define OBJECTIVES_W	508
-#define OBJECTIVES_H	233
+#define OBJECTIVES_X 65
+#define OBJECTIVES_Y 137
+#define OBJECTIVES_W 508
+#define OBJECTIVES_H 233
 */
 
 static int Brief_goals_coords[GR_NUM_RESOLUTIONS][4] = {
@@ -154,7 +154,7 @@ char *Closeup_button_filename[GR_NUM_RESOLUTIONS] = {
 
 int Closeup_button_hotspot = 14;
 
-//static int			Closeup_button_coords[2] = {CLOSEUP_X+164,CLOSEUP_Y+227};
+//static int         Closeup_button_coords[2] = {CLOSEUP_X+164,CLOSEUP_Y+227};
 int Closeup_button_coords[GR_NUM_RESOLUTIONS][2] = {
     { 374, 316 }, // GR_640
     { 599, 506 } // GR_1024
@@ -351,7 +351,7 @@ brief_skip_training_pressed()
 extern void demo_reset_trailer_timer();
 #endif
 // --------------------------------------------------------------------------------------
-//	brief_do_next_pressed()
+// brief_do_next_pressed()
 //
 //
 void
@@ -385,7 +385,7 @@ brief_do_next_pressed(int play_sound)
 }
 
 // --------------------------------------------------------------------------------------
-//	brief_do_prev_pressed()
+// brief_do_prev_pressed()
 //
 //
 void
@@ -405,7 +405,7 @@ brief_do_prev_pressed()
 }
 
 // --------------------------------------------------------------------------------------
-//	brief_do_start_pressed()
+// brief_do_start_pressed()
 //
 //
 void
@@ -424,7 +424,7 @@ brief_do_start_pressed()
 }
 
 // --------------------------------------------------------------------------------------
-//	brief_do_end_pressed()
+// brief_do_end_pressed()
 //
 //
 void
@@ -592,7 +592,7 @@ brief_buttons_init()
     int i;
 
     //if ( Briefing->num_stages <= 0 )
-    //	return;
+    //   return;
 
     for (i = 0; i < NUM_BRIEF_BUTTONS; i++) {
         b = &Brief_buttons[gr_screen.res][i].button;
@@ -680,7 +680,7 @@ brief_buttons_init()
 }
 
 // --------------------------------------------------------------------------------------
-//	brief_get_closeup_icon()
+// brief_get_closeup_icon()
 //
 //
 uintptr_t
@@ -703,7 +703,7 @@ brief_turn_off_closeup_icon()
 }
 
 // --------------------------------------------------------------------------------------
-//	brief_load_bitmaps()
+// brief_load_bitmaps()
 //
 //
 void
@@ -718,7 +718,7 @@ brief_load_bitmaps()
 }
 
 // --------------------------------------------------------------------------------------
-//	brief_ui_init()
+// brief_ui_init()
 //
 //
 void
@@ -734,7 +734,7 @@ brief_ui_init()
 }
 
 // --------------------------------------------------------------------------------------
-//	brief_set_default_closeup()
+// brief_set_default_closeup()
 //
 //
 void
@@ -981,34 +981,34 @@ void
 brief_render_closeup_text()
 {
     /*
-	brief_icon	*bi;
-	char			line[MAX_ICON_TEXT_LINE_LEN];
-	int			n_lines, i, render_x, render_y;
-	int			n_chars[MAX_ICON_TEXT_LINES];
-	char			*p_str[MAX_ICON_TEXT_LINES];
+   brief_icon  *bi;
+   char        line[MAX_ICON_TEXT_LINE_LEN];
+   int         n_lines, i, render_x, render_y;
+   int         n_chars[MAX_ICON_TEXT_LINES];
+   char        *p_str[MAX_ICON_TEXT_LINES];
 
-	if ( Closeup_icon == NULL ) {
-		Int3();
-		return;
-	}
+   if ( Closeup_icon == NULL ) {
+      Int3();
+      return;
+   }
 
-	bi = Closeup_icon;
+   bi = Closeup_icon;
 
-	render_x = Closeup_region[0];
-	render_y = Closeup_region[1] + CLOSEUP_IMG_H;
-	
-	gr_set_clip(render_x+CLOSEUP_TEXT_OFFSET, render_y, CLOSEUP_W,CLOSEUP_TEXT_H);
-	gr_set_color_fast(&Color_white);
+   render_x = Closeup_region[0];
+   render_y = Closeup_region[1] + CLOSEUP_IMG_H;
+   
+   gr_set_clip(render_x+CLOSEUP_TEXT_OFFSET, render_y, CLOSEUP_W,CLOSEUP_TEXT_H);
+   gr_set_color_fast(&Color_white);
 
-//	n_lines = split_str(bi->text, CLOSEUP_W - 2*CLOSEUP_TEXT_OFFSET, n_chars, p_str, MAX_ICON_TEXT_LINES);
-	Assert(n_lines != -1);
+// n_lines = split_str(bi->text, CLOSEUP_W - 2*CLOSEUP_TEXT_OFFSET, n_chars, p_str, MAX_ICON_TEXT_LINES);
+   Assert(n_lines != -1);
 
-	for ( i = 0; i < n_lines; i++ ) {
-		Assert(n_chars[i] < MAX_ICON_TEXT_LINE_LEN);
-		strncpy(line, p_str[i], n_chars[i]);
-		line[n_chars[i]] = 0;
-		gr_printf(0,0+i*Closeup_font_height,line);
-	}
+   for ( i = 0; i < n_lines; i++ ) {
+      Assert(n_chars[i] < MAX_ICON_TEXT_LINE_LEN);
+      strncpy(line, p_str[i], n_chars[i]);
+      line[n_chars[i]] = 0;
+      gr_printf(0,0+i*Closeup_font_height,line);
+   }
 */
 }
 
@@ -1080,7 +1080,7 @@ brief_render_closeup(int ship_class, float frametime)
     gr_set_color_fast(&Color_bright_white);
 
     gr_printf(0x8000, 2, Closeup_icon->closeup_label);
-    //	brief_render_closeup_text();
+    //   brief_render_closeup_text();
 
     Closeup_close_button.enable();
     Closeup_close_button.unhide();
@@ -1091,7 +1091,7 @@ brief_render_closeup(int ship_class, float frametime)
 // -------------------------------------------------------------------------------------
 // brief_render()
 //
-//	frametime is in seconds
+// frametime is in seconds
 void
 brief_render(float frametime)
 {
@@ -1235,8 +1235,8 @@ brief_truncate_label(char *src)
 // -------------------------------------------------------------------------------------
 // brief_setup_closeup()
 //
-// exit: 0	=>		set-up icon sucessfully
-//			-1	=>		could not setup closeup icon
+// exit: 0  =>    set-up icon sucessfully
+//       -1 =>    could not setup closeup icon
 int
 brief_setup_closeup(brief_icon *bi)
 {
@@ -1255,12 +1255,12 @@ brief_setup_closeup(brief_icon *bi)
         Closeup_icon = NULL;
         return -1;
         /*
-		strcpy(pof_filename, NOX("planet.pof"));
-		strcpy(Closeup_icon->closeup_label, XSTR("planet",-1));
-		vm_vec_make(&Closeup_cam_pos, 0.0f, 0.0f, -8300.0f);
-		Closeup_zoom = 0.5f;
-		Closeup_one_revolution_time = ONE_REV_TIME * 3;
-		*/
+      strcpy(pof_filename, NOX("planet.pof"));
+      strcpy(Closeup_icon->closeup_label, XSTR("planet",-1));
+      vm_vec_make(&Closeup_cam_pos, 0.0f, 0.0f, -8300.0f);
+      Closeup_zoom = 0.5f;
+      Closeup_one_revolution_time = ONE_REV_TIME * 3;
+      */
         break;
     case ICON_ASTEROID_FIELD:
 #ifndef FS2_DEMO
@@ -1333,8 +1333,8 @@ brief_setup_closeup(brief_icon *bi)
 // -------------------------------------------------------------------------------------
 // brief_update_closeup_icon()
 //
-//	input:	mode	=>		how to update the closeup view
-//								0 -> disable
+// input:   mode  =>    how to update the closeup view
+//                      0 -> disable
 //
 void
 brief_update_closeup_icon(int mode)
@@ -1771,7 +1771,7 @@ brief_do_frame(float frametime)
 }
 
 // --------------------------------------------------------------------------------------
-//	brief_unload_bitmaps()
+// brief_unload_bitmaps()
 //
 //
 void

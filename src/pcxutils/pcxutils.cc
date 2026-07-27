@@ -82,7 +82,7 @@ pcx_read_header(char *real_filename, int *w, int *h, ubyte *pal)
 // int Pcx_load_offset = 0;
 // int Pcx_load_size = 0;
 
-// #define GET_BUF()			do { buffer = &Pcx_load[Pcx_load_offset]; if(Pcx_load_offset + buffer_size > Pcx_load_size) { buffer_size = Pcx_load_size - Pcx_load_offset; } } while(0);
+// #define GET_BUF()       do { buffer = &Pcx_load[Pcx_load_offset]; if(Pcx_load_offset + buffer_size > Pcx_load_size) { buffer_size = Pcx_load_size - Pcx_load_offset; } } while(0);
 int
 pcx_read_bitmap_8bpp(char *real_filename, ubyte *org_data, ubyte *palette)
 {
@@ -133,7 +133,7 @@ pcx_read_bitmap_8bpp(char *real_filename, ubyte *org_data, ubyte *palette)
     buffer_size = 1024;
     buffer_pos = 0;
 
-    //	Assert( buffer_size == 1024 );	// AL: removed to avoid optimized warning 'unreachable code'
+    //   Assert( buffer_size == 1024 );   // AL: removed to avoid optimized warning 'unreachable code'
     buffer_size = cfread(buffer, 1, buffer_size, PCXfile);
 
     count = 0;
@@ -225,7 +225,7 @@ pcx_read_bitmap_16bpp(char *real_filename, ubyte *org_data)
     buffer_size = 1024;
     buffer_pos = 0;
 
-    //	Assert( buffer_size == 1024 );	// AL: removed to avoid optimized warning 'unreachable code'
+    //   Assert( buffer_size == 1024 );   // AL: removed to avoid optimized warning 'unreachable code'
     buffer_size = cfread(buffer, 1, buffer_size, PCXfile);
 
     count = 0;
@@ -342,7 +342,7 @@ pcx_read_bitmap_16bpp_aabitmap(char *real_filename, ubyte *org_data)
     buffer_size = 1024;
     buffer_pos = 0;
 
-    //	Assert( buffer_size == 1024 );	// AL: removed to avoid optimized warning 'unreachable code'
+    //   Assert( buffer_size == 1024 );   // AL: removed to avoid optimized warning 'unreachable code'
     buffer_size = cfread(buffer, 1, buffer_size, PCXfile);
 
     count = 0;
@@ -441,7 +441,7 @@ pcx_read_bitmap_16bpp_nondark(char *real_filename, ubyte *org_data)
     buffer_size = 1024;
     buffer_pos = 0;
 
-    //	Assert( buffer_size == 1024 );	// AL: removed to avoid optimized warning 'unreachable code'
+    //   Assert( buffer_size == 1024 );   // AL: removed to avoid optimized warning 'unreachable code'
     buffer_size = cfread(buffer, 1, buffer_size, PCXfile);
 
     count = 0;
@@ -625,13 +625,13 @@ pcx_write_bitmap(char *real_filename, int w, int h, ubyte **row_ptrs,
     }
 
     // Write the extended palette
-    //	for (i=0; i<768; i++ )
-    //		palette[i] <<= 2;
+    //   for (i=0; i<768; i++ )
+    //      palette[i] <<= 2;
 
     retval = fwrite(palette, 768, 1, PCXfile);
 
-    //	for (i=0; i<768; i++ )
-    //		palette[i] >>= 2;
+    //   for (i=0; i<768; i++ )
+    //      palette[i] >>= 2;
 
     if (retval != 1) {
         fclose(PCXfile);

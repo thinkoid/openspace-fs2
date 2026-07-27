@@ -121,7 +121,7 @@ gr_set_palette_internal(char *name, ubyte *palette, int restrict_font_to_128)
         memmove(Gr_current_palette, palette, 768);
     }
 
-    //	mprintf(("Setting new palette\n" ));
+    //   mprintf(("Setting new palette\n" ));
 
     if (Gr_inited) {
         if (gr_screen.gf_set_palette) {
@@ -194,7 +194,7 @@ gr_detect_cpu(int *cpu, int *mmx, int *amd3d, int *katmai)
 
     (void)cpu_vender; // only the commented-out AMD 3Dnow check read it
 
-    //RegEAX	.  Bits 11:8 is family
+    //RegEAX   .  Bits 11:8 is family
     *cpu = (RegEAX >> 8) & 0xF;
 
     if (*cpu < 5) {
@@ -202,7 +202,7 @@ gr_detect_cpu(int *cpu, int *mmx, int *amd3d, int *katmai)
         *mmx = 0;
     }
 
-    //RegEAX	.  Bits 11:8 is family
+    //RegEAX   .  Bits 11:8 is family
     *cpu = (RegEAX >> 8) & 0xF;
 
     // Check for MMX.  Retail confirmed the CPUID bit by executing an "emms"
@@ -220,59 +220,59 @@ gr_detect_cpu(int *cpu, int *mmx, int *amd3d, int *katmai)
 
     // Check for Amd 3dnow
     /*
-	if ( !stricmp( cpu_vender, NOX("AuthenticAMD")) )	{
+   if ( !stricmp( cpu_vender, NOX("AuthenticAMD")) )  {
 
-		_asm {
-			mov eax, 0x80000000      // setup CPUID to return extended number of functions
+      _asm {
+         mov eax, 0x80000000      // setup CPUID to return extended number of functions
 
-			CPUID           // code bytes = 0fh,  0a2h
+         CPUID           // code bytes = 0fh,  0a2h
 
-			mov RegEAX, eax	// highest extended function value
-		}
+         mov RegEAX, eax   // highest extended function value
+      }
 
-		if ( RegEAX > 0x80000000 )	{
+      if ( RegEAX > 0x80000000 ) {
 
-			_asm {
-				mov eax, 0x80000001      // setup CPUID to return extended flags
+         _asm {
+            mov eax, 0x80000001      // setup CPUID to return extended flags
 
-				CPUID           // code bytes = 0fh,  0a2h
+            CPUID           // code bytes = 0fh,  0a2h
 
-				mov RegEAX, eax	// family, etc returned in eax
-				mov RegEDX, edx	// flags in edx
-			}
+            mov RegEAX, eax   // family, etc returned in eax
+            mov RegEDX, edx   // flags in edx
+         }
 
-			if (RegEDX & 0x80000000)               // bit 31 is set for AMD-3D technology
-			{
-				// try executing some 3Dnow instructions
-				__try { 
+         if (RegEDX & 0x80000000)               // bit 31 is set for AMD-3D technology
+         {
+            // try executing some 3Dnow instructions
+            __try { 
 
-					float x = (float)1.25;            
-					float y = (float)1.25;            
-					float z;                      
+               float x = (float)1.25;            
+               float y = (float)1.25;            
+               float z;                      
 
-					_asm {
-						movd		mm1, x
-						movd		mm2, y                  
-						PFMUL(AMD_M1, AMD_M2);               
-						movd		z, mm1
-						femms
-						emms
-					}
+               _asm {
+                  movd     mm1, x
+                  movd     mm2, y                  
+                  PFMUL(AMD_M1, AMD_M2);               
+                  movd     z, mm1
+                  femms
+                  emms
+               }
 
-					int should_be_156 = int(z*100);
+               int should_be_156 = int(z*100);
 
-					if ( should_be_156 == 156 )	{
-						*amd3d = 1;
-					}
+               if ( should_be_156 == 156 )   {
+                  *amd3d = 1;
+               }
 
-				}          
+            }          
 
-				__except(EXCEPTION_EXECUTE_HANDLER) { }
-			}
+            __except(EXCEPTION_EXECUTE_HANDLER) { }
+         }
 
-		}		
-	}
-	*/
+      }     
+   }
+   */
 }
 
 // --------------------------------------------------------------------------
@@ -287,7 +287,7 @@ gr_init(int res, int mode, int depth, int fred_x, int fred_y)
 
     mprintf(("GR_CPU: Family %d, MMX=%s\n", Gr_cpu, (Gr_mmx ? "Yes" : "No")));
 
-    //	gr_test();
+    //   gr_test();
 
     if (!Gr_inited)
         atexit(gr_close);

@@ -1,23 +1,23 @@
 /****************************************************************************
 
-    MODULE:     	SWD_GUID.HPP
-	Tab Settings:	5 9
-	Copyright 1995, 1996, Microsoft Corporation, 	All Rights Reserved.
+    MODULE:         SWD_GUID.HPP
+    Tab Settings:   5 9
+    Copyright 1995, 1996, Microsoft Corporation,    All Rights Reserved.
 
-    PURPOSE:		CLSIDs and IIDs defined for DirectInputForce
+    PURPOSE:        CLSIDs and IIDs defined for DirectInputForce
 
     FUNCTIONS:
 
-	Author(s):	Name:
-	----------	----------------
+    Author(s):  Name:
+    ----------  ----------------
 
-	Revision History:
-	-----------------
-	Version 	Date        Author  Comments
-	-------     ------  	-----   -------------------------------------------
-   	1.0    		06-Feb-97   MEA     original, Based on SWForce
-				23-Feb-97	MEA		Modified for DirectInput FF Device Driver
-	1.1			14-Apr-97	MEA		Added GUID_RTCSpring
+    Revision History:
+    -----------------
+    Version     Date        Author  Comments
+    -------     ------      -----   -------------------------------------------
+    1.0         06-Feb-97   MEA     original, Based on SWForce
+                23-Feb-97   MEA     Modified for DirectInput FF Device Driver
+    1.1         14-Apr-97   MEA     Added GUID_RTCSpring
 
 ****************************************************************************/
 #ifndef _SWD_GUID_SEEN

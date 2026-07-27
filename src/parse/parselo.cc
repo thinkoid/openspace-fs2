@@ -40,7 +40,7 @@ char Mission_text_raw[MISSION_TEXT_SIZE];
 char *Mp;
 char *token_found;
 
-//	Return true if this character is white space, else false.
+// Return true if this character is white space, else false.
 int
 is_white_space(char ch)
 {
@@ -54,8 +54,8 @@ is_gray_space(char ch)
     return ((ch == ' ') || (ch == '\t'));
 }
 
-//	Advance global Mp (mission pointer) past all current white space.
-//	Leaves Mp pointing at first non white space character.
+// Advance global Mp (mission pointer) past all current white space.
+// Leaves Mp pointing at first non white space character.
 void
 ignore_white_space()
 {
@@ -70,10 +70,10 @@ ignore_gray_space()
         Mp++;
 }
 
-//	Truncate *str, eliminating all trailing white space.
-//	Eg: "abc   "   becomes "abc"
-//		 "abc abc " becomes "abc abc"
-//		 "abc \t"   becomes "abc"
+// Truncate *str, eliminating all trailing white space.
+// Eg: "abc   "   becomes "abc"
+//     "abc abc " becomes "abc abc"
+//     "abc \t"   becomes "abc"
 void
 drop_trailing_white_space(char *str)
 {
@@ -87,7 +87,7 @@ drop_trailing_white_space(char *str)
     str[i + 1] = 0;
 }
 
-//	Eliminate any leading whitespace in str
+// Eliminate any leading whitespace in str
 void
 drop_leading_white_space(char *str)
 {
@@ -128,7 +128,7 @@ drop_white_space(char *str)
     return str;
 }
 
-//	Advances Mp past current token.
+// Advances Mp past current token.
 void
 skip_token()
 {
@@ -138,8 +138,8 @@ skip_token()
         Mp++;
 }
 
-//	Display a diagnostic message if Verbose is set.
-//	(Verbose is set if -v command line switch is present.)
+// Display a diagnostic message if Verbose is set.
+// (Verbose is set if -v command line switch is present.)
 void
 diag_printf(char *format, ...)
 {
@@ -153,7 +153,7 @@ diag_printf(char *format, ...)
     nprintf(("Parse", "%s", buffer));
 }
 
-//	Grab and return (a pointer to) a bunch of tokens, terminating at
+// Grab and return (a pointer to) a bunch of tokens, terminating at
 // ERROR_LENGTH chars, or end of line.
 char *
 next_tokens()
@@ -170,9 +170,9 @@ next_tokens()
     return Error_str;
 }
 
-//	Return the line number given by the current mission pointer, ie Mp.
-//	A very slow function (scans all processed text), but who cares how long
-//	an error reporting function takes?
+// Return the line number given by the current mission pointer, ie Mp.
+// A very slow function (scans all processed text), but who cares how long
+// an error reporting function takes?
 int
 get_line_num()
 {
@@ -215,10 +215,10 @@ get_line_num()
     return count;
 }
 
-//	Call this function to display an error message.
-//	error_level == 0 means this is just a warning.
-//	!0 means it's an error message.
-//	Prints line number and other useful information.
+// Call this function to display an error message.
+// error_level == 0 means this is just a warning.
+// !0 means it's an error message.
+// Prints line number and other useful information.
 void
 error_display(int error_level, char *format, ...)
 {
@@ -248,7 +248,7 @@ error_display(int error_level, char *format, ...)
             error_text, buffer);
 }
 
-//	Advance Mp to the next eoln character.
+// Advance Mp to the next eoln character.
 void
 advance_to_eoln(char *more_terminators)
 {
@@ -340,8 +340,8 @@ skip_to_start_of_strings(char *pstr1, char *pstr2)
 // If not found, display an error message, but try up to RS_MAX_TRIES times
 // to find the string.  (This is the groundwork for ignoring non-understood
 // lines.
-//	If unable to find the required string after RS_MAX_TRIES tries, then
-//	abort using longjmp to parse_abort.
+// If unable to find the required string after RS_MAX_TRIES tries, then
+// abort using longjmp to parse_abort.
 int
 required_string(char *pstr)
 {
@@ -394,8 +394,8 @@ check_for_string_raw(char *pstr)
 }
 
 // Find an optional string.
-//	If found, return 1, else return 0.
-//	If found, point past string, else don't update pointer.
+// If found, return 1, else return 0.
+// If found, point past string, else don't update pointer.
 int
 optional_string(char *pstr)
 {
@@ -482,9 +482,9 @@ optional_string_fred(char *pstr, char *end, char *end2)
     return 1;
 }
 
-//	Return 0 or 1 for str1 match, str2 match.  Return -1 if neither matches.
-//	Does not update Mp if token found.  If not found, advances, trying to
-//	find the string.  Doesn't advance past the found string.
+// Return 0 or 1 for str1 match, str2 match.  Return -1 if neither matches.
+// Does not update Mp if token found.  If not found, advances, trying to
+// find the string.  Doesn't advance past the found string.
 int
 required_string_either(char *str1, char *str2)
 {
@@ -526,9 +526,9 @@ required_string_either(char *str1, char *str2)
     // exit (1);
 }
 
-//	Return 0 or 1 for str1 match, str2 match.  Return -1 if neither matches.
-//	Does not update Mp if token found.  If not found, advances, trying to
-//	find the string.  Doesn't advance past the found string.
+// Return 0 or 1 for str1 match, str2 match.  Return -1 if neither matches.
+// Does not update Mp if token found.  If not found, advances, trying to
+// find the string.  Doesn't advance past the found string.
 int
 required_string_3(char *str1, char *str2, char *str3)
 {
@@ -593,8 +593,8 @@ required_string_either_fred(char *str1, char *str2)
     // exit (1);
 }
 
-//	Copy characters from instr to outstr until eoln is found, or until max
-//	characters have been copied (including terminator).
+// Copy characters from instr to outstr until eoln is found, or until max
+// characters have been copied (including terminator).
 void
 copy_to_eoln(char *outstr, char *more_terminators, char *instr, int max)
 {
@@ -624,8 +624,8 @@ copy_to_eoln(char *outstr, char *more_terminators, char *instr, int max)
     *outstr = 0;
 }
 
-//	Copy characters from instr to outstr until next white space is found, or until max
-//	characters have been copied (including terminator).
+// Copy characters from instr to outstr until next white space is found, or until max
+// characters have been copied (including terminator).
 void
 copy_to_next_white(char *outstr, char *instr, int max)
 {
@@ -653,8 +653,8 @@ copy_to_next_white(char *outstr, char *instr, int max)
     *outstr = 0;
 }
 
-//	Copy text until a certain string is matched.
-//	For example, this is used to copy mission notes, scanning until $END NOTES:
+// Copy text until a certain string is matched.
+// For example, this is used to copy mission notes, scanning until $END NOTES:
 // is found.
 void
 copy_text_until(char *outstr, char *instr, char *endstr, int max_chars)
@@ -694,8 +694,8 @@ stuff_string_white(char *pstr)
     advance_to_next_white();
 }
 
-//	Stuff a string into a string buffer.
-//	Supports various FreeSpace primitive types.  If 'len' is supplied, it will override
+// Stuff a string into a string buffer.
+// Supports various FreeSpace primitive types.  If 'len' is supplied, it will override
 // the default string length if using the F_NAME case.
 void
 stuff_string(char *pstr, int type, char *terminators, int len)
@@ -824,7 +824,7 @@ stuff_string_line(char *pstr, int len)
 #define MAX_TMP_STRING_LENGTH 16384
 
 // Exactly the same as stuff string only Malloc's the buffer.
-//	Supports various FreeSpace primitive types.  If 'len' is supplied, it will override
+// Supports various FreeSpace primitive types.  If 'len' is supplied, it will override
 // the default string length if using the F_NAME case.
 char *
 stuff_and_malloc_string(int type, char *terminators, int len)
@@ -1019,41 +1019,41 @@ strip_comments(char *readp, int in_comment)
 #if 0
 void strip_all_comments( char *readp, char *writep )
 {
-	int	ch;
-	//char	*writep = readp;
+   int   ch;
+   //char   *writep = readp;
 
-	while ( *readp != EOF_CHAR ) {
-		ch = *readp;
-		if ( ch == COMMENT_CHAR ) {
-			while ( *readp != EOLN )
-				readp++;
+   while ( *readp != EOF_CHAR ) {
+      ch = *readp;
+      if ( ch == COMMENT_CHAR ) {
+         while ( *readp != EOLN )
+            readp++;
 
-			*writep = EOLN;
-			writep++;
-			// get to next character after EOLN
-			readp++;
-		} else if ( (ch == '/') && (readp[1] == '*')) {			// Start of multi-line comment
-			int done;
-			
-			done = 0;
-			while ( !done ) {
-				while ( *readp != '*' )
-					readp++;
-				if ( readp[1] == '/' ) {
-					readp += 2;
-					done = 1;
-				} else {
-					readp++;
-				}
-			}
-		} else {
-			*writep = (char)ch;
-			*writep++;
-			readp++;
-		}
-	}
+         *writep = EOLN;
+         writep++;
+         // get to next character after EOLN
+         readp++;
+      } else if ( (ch == '/') && (readp[1] == '*')) {       // Start of multi-line comment
+         int done;
+         
+         done = 0;
+         while ( !done ) {
+            while ( *readp != '*' )
+               readp++;
+            if ( readp[1] == '/' ) {
+               readp += 2;
+               done = 1;
+            } else {
+               readp++;
+            }
+         }
+      } else {
+         *writep = (char)ch;
+         *writep++;
+         readp++;
+      }
+   }
 
-	*writep = (char)EOF_CHAR;
+   *writep = (char)EOF_CHAR;
 }
 #endif
 
@@ -1089,9 +1089,9 @@ parse_get_line(char *lineout, int max_line_len, char *start, int max_size,
     return num_chars_read;
 }
 
-//	Read mission text, stripping comments.
-//	When a comment is found, it is removed.  If an entire line
-//	consisted of a comment, a blank line is left in the input file.
+// Read mission text, stripping comments.
+// When a comment is found, it is removed.  If an entire line
+// consisted of a comment, a blank line is left in the input file.
 void
 read_file_text(char *filename, int mode)
 {
@@ -1136,8 +1136,8 @@ read_file_text(char *filename, int mode)
 
     cfclose(mf);
 
-    //	If you hit this assert, it is probably telling you the obvious.  The file
-    //	you are trying to read is truly too large.  Look at *filename to see the file name.
+    //   If you hit this assert, it is probably telling you the obvious.  The file
+    //   you are trying to read is truly too large.  Look at *filename to see the file name.
     Assert(file_len < MISSION_TEXT_SIZE);
 
     // strip comments from raw text, reading into Mission_text
@@ -1166,28 +1166,28 @@ read_file_text(char *filename, int mode)
                 *mp++ = *str++;
         }
 
-        //		strcpy(mp, outbuf);
-        //		mp += strlen(outbuf);
+        //     strcpy(mp, outbuf);
+        //     mp += strlen(outbuf);
     }
 
     *mp = *mp2 = (char)EOF_CHAR;
     /*
-	while (cfgets(outbuf, BUF_SIZE, mf) != NULL) {
-		if (strlen(outbuf) >= BUF_SIZE-1)
-			error_display(0, "Input string too long.  Max is %i characters.\n%.256s\n", BUF_SIZE, outbuf);
+   while (cfgets(outbuf, BUF_SIZE, mf) != NULL) {
+      if (strlen(outbuf) >= BUF_SIZE-1)
+         error_display(0, "Input string too long.  Max is %i characters.\n%.256s\n", BUF_SIZE, outbuf);
 
-		//	If you hit this assert, it is probably telling you the obvious.  The file
-		//	you are trying to read is truly too large.  Look at *filename to see the file name.
-		Assert(mp2 - Mission_text_raw + strlen(outbuf) < MISSION_TEXT_SIZE);
-		strcpy(mp2, outbuf);
-		mp2 += strlen(outbuf);
+      // If you hit this assert, it is probably telling you the obvious.  The file
+      // you are trying to read is truly too large.  Look at *filename to see the file name.
+      Assert(mp2 - Mission_text_raw + strlen(outbuf) < MISSION_TEXT_SIZE);
+      strcpy(mp2, outbuf);
+      mp2 += strlen(outbuf);
 
-		in_comment = strip_comments(outbuf, in_comment);
-		strcpy(mp, outbuf);
-		mp += strlen(outbuf);
-	}
-	
-	*mp = *mp2 = (char)EOF_CHAR;
+      in_comment = strip_comments(outbuf, in_comment);
+      strcpy(mp, outbuf);
+      mp += strlen(outbuf);
+   }
+   
+   *mp = *mp2 = (char)EOF_CHAR;
 */
 }
 
@@ -1240,8 +1240,8 @@ atoi2()
         return atoi(Mp);
 }
 
-//	Stuff a floating point value pointed at by Mp.
-//	Advances past float characters.
+// Stuff a floating point value pointed at by Mp.
+// Advances past float characters.
 void
 stuff_float(float *f)
 {
@@ -1258,8 +1258,8 @@ stuff_float(float *f)
     diag_printf("Stuffed float: %f\n", *f);
 }
 
-//	Stuff an integer value pointed at by Mp.
-//	Advances past integer characters.
+// Stuff an integer value pointed at by Mp.
+// Advances past integer characters.
 void
 stuff_int(int *i)
 {
@@ -1308,8 +1308,8 @@ stuff_boolean(int *i)
     }
 }
 
-//	Stuff an integer value pointed at by Mp.
-//	Advances past integer characters.
+// Stuff an integer value pointed at by Mp.
+// Advances past integer characters.
 void
 stuff_byte(ubyte *i)
 {
@@ -1360,9 +1360,9 @@ stuff_string_list(char slp[][NAME_LENGTH], int max_strings)
     return count;
 }
 
-//	Stuffs an integer list.
-//	This is of the form ( i* )
-//	  where i is an integer.
+// Stuffs an integer list.
+// This is of the form ( i* )
+//   where i is an integer.
 // For example, (1) () (1 2 3) ( 1 ) are legal integer lists.
 int
 stuff_int_list(int *ilp, int max_ints, int lookup_type)
@@ -1460,11 +1460,11 @@ stuff_int_list(int *ilp, int max_ints, int lookup_type)
     return count;
 }
 
-//	Marks an integer list.
-//	This is of the form ( i* )
-//	  where i is an integer.
-//	If a specified string is found in the lookup and its value is 7, then the 7th value
-//	in the array is set.
+// Marks an integer list.
+// This is of the form ( i* )
+//   where i is an integer.
+// If a specified string is found in the lookup and its value is 7, then the 7th value
+// in the array is set.
 void
 mark_int_list(int *ilp, int max_ints, int lookup_type)
 {
@@ -1509,7 +1509,7 @@ mark_int_list(int *ilp, int max_ints, int lookup_type)
                 Error(LOCATION,
                       "Unable to find string \"%s\" in mark_int_list.\n", str);
 
-            //			ilp[num] = 1;
+            //       ilp[num] = 1;
         }
         else {
             int tval;
@@ -1525,7 +1525,7 @@ mark_int_list(int *ilp, int max_ints, int lookup_type)
     Mp++;
 }
 
-//	Stuff a vector, which is 3 floats.
+// Stuff a vector, which is 3 floats.
 void
 stuff_vector(vector *vp)
 {
@@ -1559,11 +1559,11 @@ stuff_parenthesized_vector(vector *vp)
     }
 }
 
-//	Stuffs vector list.
-//	This is of the form ( (vector)* )
-//	  where vector is a vector
+// Stuffs vector list.
+// This is of the form ( (vector)* )
+//   where vector is a vector
 // For example, ( (1 2 3) (2 3 4) (2 3 5) )
-//		 is a vector list of three vectors.
+//     is a vector list of three vectors.
 int
 stuff_vector_list(vector *vlp, int max_vecs)
 {
@@ -1593,7 +1593,7 @@ stuff_vector_list(vector *vlp, int max_vecs)
     return count;
 }
 
-//	Stuff a matrix, which is 3 vectors.
+// Stuff a matrix, which is 3 vectors.
 void
 stuff_matrix(matrix *mp)
 {
@@ -1602,11 +1602,11 @@ stuff_matrix(matrix *mp)
     stuff_vector(&mp->fvec);
 }
 
-//	Given a string, find it in a string array.
-//	*descrtiption is only used for diagnostics in case it can't be found.
-//	*str1 is the string to be found.
-//	*strlist is the list of strings to search.
-//	max is the number of entries in *strlist to scan.
+// Given a string, find it in a string array.
+// *descrtiption is only used for diagnostics in case it can't be found.
+// *str1 is the string to be found.
+// *strlist is the list of strings to search.
+// max is the number of entries in *strlist to scan.
 int
 string_lookup(char *str1, char *strlist[], int max, char *description,
               int say_errors)
@@ -1626,7 +1626,7 @@ string_lookup(char *str1, char *strlist[], int max, char *description,
     return -1;
 }
 
-//	Find a required string (*id), then stuff the text of type f_type that
+// Find a required string (*id), then stuff the text of type f_type that
 // follows it at *addr.  *strlist[] contains the strings it should try to
 // match.
 void
@@ -1640,8 +1640,8 @@ find_and_stuff(char *id, int *addr, int f_type, char *strlist[], int max,
     *addr = string_lookup(token, strlist, max, description, 1);
 }
 
-//	Mp points at a string.
-//	Find the string in the list of strings *strlist[].
+// Mp points at a string.
+// Find the string in the list of strings *strlist[].
 // Returns the index of the match, -1 if none.
 int
 match_and_stuff(int f_type, char *strlist[], int max, char *description)
@@ -1774,17 +1774,17 @@ split_str_once(char *src, int max_pixel_w)
 //
 // Supports \n's in the strings!
 //
-// parameters:		src			=>		source string to be broken up
-//						max_pixel_w	=>		max width of line in pixels
-//						n_chars		=>		output array that will hold number of characters in each line
-//						p_str			=>		output array of pointers to start of lines within src
-//						max_lines	=>		limit of number of lines to break src up into
-//						ignore_char	=>		OPTIONAL parameter (default val -1).  Ignore words starting with this character
-//												This is useful when you want to ignore embedded control information that starts
-//												with a specific character, like $ or #
+// parameters:    src         =>    source string to be broken up
+//                max_pixel_w =>    max width of line in pixels
+//                n_chars     =>    output array that will hold number of characters in each line
+//                p_str       =>    output array of pointers to start of lines within src
+//                max_lines   =>    limit of number of lines to break src up into
+//                ignore_char =>    OPTIONAL parameter (default val -1).  Ignore words starting with this character
+//                                  This is useful when you want to ignore embedded control information that starts
+//                                  with a specific character, like $ or #
 //
-//	returns:			number of lines src is broken into
-//						-1 is returned when an error occurs
+// returns:       number of lines src is broken into
+//                -1 is returned when an error occurs
 //
 int
 split_str(char *src, int max_pixel_w, int *n_chars, char **p_str, int max_lines,

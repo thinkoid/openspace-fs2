@@ -134,22 +134,22 @@
 #endif
 #endif
 
-//	Revision history.
-//	Full version:
-//    1.00.04	5/26/98	MWA -- going final (12 pm)
-//    1.00.03	5/26/98	MWA -- going final (3 am)
-//    1.00.02	5/25/98	MWA -- going final
-//    1.00.01	5/25/98	MWA -- going final
-//		0.90		5/21/98	MWA -- getting ready for final.
-//		0.10		4/9/98.  Set by MK.
+// Revision history.
+// Full version:
+//    1.00.04  5/26/98  MWA -- going final (12 pm)
+//    1.00.03  5/26/98  MWA -- going final (3 am)
+//    1.00.02  5/25/98  MWA -- going final
+//    1.00.01  5/25/98  MWA -- going final
+//    0.90     5/21/98  MWA -- getting ready for final.
+//    0.10     4/9/98.  Set by MK.
 //
-//	Demo version: (obsolete since DEMO codebase split from tree)
-//		0.03		4/10/98	AL.	Interplay rev
-//		0.02		4/8/98	MK.	Increased when this system was modified.
-//		0.01		4/7/98?	AL.	First release to Interplay QA.
+// Demo version: (obsolete since DEMO codebase split from tree)
+//    0.03     4/10/98  AL.   Interplay rev
+//    0.02     4/8/98   MK.   Increased when this system was modified.
+//    0.01     4/7/98?  AL.   First release to Interplay QA.
 //
-//	OEM version:
-//		1.00		5/28/98	AL.	First release to Interplay QA.
+// OEM version:
+//    1.00     5/28/98  AL.   First release to Interplay QA.
 
 void game_level_init(int seed = -1);
 void game_post_level_init();
@@ -177,7 +177,7 @@ typedef struct big_expl_flash
 int Game_skill_level = DEFAULT_SKILL_LEVEL;
 
 #define VIEWER_ZOOM_DEFAULT                                                      \
-    0.75f //	Default viewer zoom, 0.625 as per multi-lateral agreement on 3/24/97
+    0.75f //   Default viewer zoom, 0.625 as per multi-lateral agreement on 3/24/97
 float Viewer_zoom = VIEWER_ZOOM_DEFAULT;
 
 #define EXE_FNAME ("fs2.exe")
@@ -678,7 +678,7 @@ big_explosion_flash(float flash)
     Big_expl_flash.cur_flash_intensity = 0.0f;
 }
 
-//	Amount to diminish palette towards normal, per second.
+// Amount to diminish palette towards normal, per second.
 #define DIMINISH_RATE 0.75f
 #define SUN_DIMINISH_RATE 6.00f
 
@@ -943,7 +943,7 @@ game_level_close()
 }
 
 // intializes game stuff and loads the mission.  Returns 0 on failure, 1 on success
-// input: seed =>	DEFAULT PARAMETER (value -1).  Only set by demo playback code.
+// input: seed => DEFAULT PARAMETER (value -1).  Only set by demo playback code.
 void
 game_level_init(int seed)
 {
@@ -967,13 +967,13 @@ game_level_init(int seed)
     Game_shudder_time = -1;
 
     // Initialize the game subsystems
-    //	timestamp_reset();			// Must be inited before everything else
+    //   timestamp_reset();         // Must be inited before everything else
     game_reset_time(); // resets time, and resets saved time too
     obj_init(); // Must be inited before the other systems
     model_free_all(); // Free all existing models
     mission_brief_common_init(); // Free all existing briefing/debriefing text
     weapon_level_init();
-    ai_level_init(); //	Call this before ship_init() because it reads ai.tbl.
+    ai_level_init(); // Call this before ship_init() because it reads ai.tbl.
     ship_level_init();
     player_level_init();
     shipfx_flash_init(); // Init the ship gun flash system.
@@ -982,7 +982,7 @@ game_level_init(int seed)
     fireball_init();
     debris_init();
     cmeasure_init();
-    shield_hit_init(); //	Initialize system for showing shield hits
+    shield_hit_init(); //  Initialize system for showing shield hits
     radar_mission_init();
     mission_init_goals();
     mission_log_init();
@@ -997,9 +997,9 @@ game_level_init(int seed)
     control_config_clear_used_status();
     collide_ship_ship_sounds_init();
     Missiontime = 0;
-    Pre_player_entry = 1; //	Means the player has not yet entered.
-    Entry_delay_time = 0; //	Could get overwritten in mission read.
-    fireball_preload(); //	page in warphole bitmaps
+    Pre_player_entry = 1; //  Means the player has not yet entered.
+    Entry_delay_time = 0; //  Could get overwritten in mission read.
+    fireball_preload(); // page in warphole bitmaps
     observer_init();
     flak_level_init(); // initialize flak - bitmaps, etc
     ct_level_init(); // initialize ships contrails, etc
@@ -1045,7 +1045,7 @@ game_load_palette()
     Assert(Mission_palette >= 0);
     Assert(Mission_palette <= 98);
 
-    // if ( The_mission.flags & MISSION_FLAG_SUBSPACE )	{
+    // if ( The_mission.flags & MISSION_FLAG_SUBSPACE )  {
     // strcpy( palette_filename, NOX("gamepalette-subspace") );
     // } else {
     // sprintf( palette_filename, NOX("gamepalette%d-%02d"), HUD_config.color+1, Mission_palette+1 );
@@ -1225,22 +1225,22 @@ void
 game_assign_sound_environment()
 {
     /*
-	if (The_mission.flags & MISSION_FLAG_SUBSPACE) {
-		Game_sound_env.id = SND_ENV_DRUGGED;
-		Game_sound_env.volume = 0.800f;
-		Game_sound_env.damping = 1.188f;
-		Game_sound_env.decay = 6.392f;
+   if (The_mission.flags & MISSION_FLAG_SUBSPACE) {
+      Game_sound_env.id = SND_ENV_DRUGGED;
+      Game_sound_env.volume = 0.800f;
+      Game_sound_env.damping = 1.188f;
+      Game_sound_env.decay = 6.392f;
 #ifndef FS2_DEMO
-	} else if (Num_asteroids > 30) {
-		Game_sound_env.id = SND_ENV_AUDITORIUM;
-		Game_sound_env.volume = 0.603f;
-		Game_sound_env.damping = 0.5f;
-		Game_sound_env.decay = 4.279f;
+   } else if (Num_asteroids > 30) {
+      Game_sound_env.id = SND_ENV_AUDITORIUM;
+      Game_sound_env.volume = 0.603f;
+      Game_sound_env.damping = 0.5f;
+      Game_sound_env.decay = 4.279f;
 #endif
-	} else {
-		Game_sound_env = Game_default_sound_env;
-	}
-	*/
+   } else {
+      Game_sound_env = Game_default_sound_env;
+   }
+   */
 
     Game_sound_env = Game_default_sound_env;
     Game_sound_env_update_timestamp = timestamp(1);
@@ -1579,27 +1579,27 @@ game_init()
 
     // time a bunch of cfopens
     /*
-	s2 = timer_get_milliseconds();	
-	CFILE *whee;
-	for(int idx=0; idx<10000; idx++){
-		whee = cfopen("capital01.pof", "rb", CFILE_NORMAL, CF_TYPE_MODELS);
-		if(whee != NULL){
-			cfclose(whee);
-		}
-		whee = NULL;
-		//cf_exist("capital01.pof", CF_TYPE_MODELS);
-	}
-	e2 = timer_get_milliseconds();	
-	*/
+   s2 = timer_get_milliseconds();   
+   CFILE *whee;
+   for(int idx=0; idx<10000; idx++){
+      whee = cfopen("capital01.pof", "rb", CFILE_NORMAL, CF_TYPE_MODELS);
+      if(whee != NULL){
+         cfclose(whee);
+      }
+      whee = NULL;
+      //cf_exist("capital01.pof", CF_TYPE_MODELS);
+   }
+   e2 = timer_get_milliseconds();   
+   */
 
     os_init(Osreg_class_name, Osreg_app_name);
     os_set_title(Osreg_title);
 
     // initialize localization module. Make sure this is down AFTER initialzing OS.
-    //	int t1 = timer_get_milliseconds();
+    //   int t1 = timer_get_milliseconds();
     lcl_init();
     lcl_xstr_init();
-    //	mprintf(("LCL_INIT() TOOK %d MS\n", timer_get_milliseconds()-t1));
+    //   mprintf(("LCL_INIT() TOOK %d MS\n", timer_get_milliseconds()-t1));
 
     // verify that he has a valid ships.tbl (will Game_ships_tbl_valid if so)
     verify_ships_tbl();
@@ -1745,7 +1745,7 @@ game_init()
     player_init();
     mission_campaign_init(); // load in the default campaign
     anim_init();
-    //	navmap_init();						// init the navigation map system
+    //   navmap_init();                // init the navigation map system
     context_help_init();
     techroom_intel_init(); // parse species.tbl, load intel info
     init_animating_pointer();
@@ -1770,7 +1770,7 @@ game_init()
     alpha_colors_init();
 
     Viewer_mode = 0;
-    //	Game_music_paused = 0;
+    //   Game_music_paused = 0;
     Game_paused = 0;
 
     // timeBeginPeriod(1) -- Win32 timer-resolution tweak, not needed
@@ -1862,9 +1862,9 @@ game_show_framerate()
     // possibly show control checking info
     control_check_indicate();
 
-    //	int bitmaps_used_this_frame, bitmaps_new_this_frame;
-    //	bm_get_frame_usage(&bitmaps_used_this_frame,&bitmaps_new_this_frame);
-    //	MONITOR_INC(BmpUsed, bitmaps_used_this_frame);
+    //   int bitmaps_used_this_frame, bitmaps_new_this_frame;
+    //   bm_get_frame_usage(&bitmaps_used_this_frame,&bitmaps_new_this_frame);
+    //   MONITOR_INC(BmpUsed, bitmaps_used_this_frame);
     // MONITOR_INC(BmpNew, bitmaps_new_this_frame);
 
 #ifndef NDEBUG
@@ -1876,8 +1876,8 @@ game_show_framerate()
 
         gr_set_color_fast(&HUD_color_debug);
 
-        //		gr_printf( sx, sy, "BPP: %d", gr_screen.bits_per_pixel );
-        //		sy += dy;
+        //     gr_printf( sx, sy, "BPP: %d", gr_screen.bits_per_pixel );
+        //     sy += dy;
         gr_printf(sx, sy, NOX("DMA: %s"), transfer_text);
         sy += dy;
         gr_printf(sx, sy, NOX("POLYP: %d"), modelstats_num_polys);
@@ -2104,7 +2104,7 @@ game_set_view_clip()
         // Set the clip region for the letterbox "dead view"
         int yborder = gr_screen.max_h / 4;
 
-        //	Numeric constants encouraged by J "pig farmer" S, who shall remain semi-anonymous.
+        //  Numeric constants encouraged by J "pig farmer" S, who shall remain semi-anonymous.
         // J.S. I've changed my ways!! See the new "no constants" code!!!
         gr_set_clip(0, yborder, gr_screen.max_w, gr_screen.max_h - yborder * 2);
     }
@@ -2542,7 +2542,7 @@ game_whack_apply(float x, float y)
     Game_hit_x += x;
     Game_hit_y += y;
 
-    //	mprintf(( "WHACK = %.1f, %.1f\n", Game_hit_x, Game_hit_y ));
+    //   mprintf(( "WHACK = %.1f, %.1f\n", Game_hit_x, Game_hit_y ));
 }
 
 // call to apply a "shudder"
@@ -2566,7 +2566,7 @@ apply_hud_shake(matrix *eye_orient)
         tangles.h = 0.0f;
         tangles.b = 0.0f;
 
-        //	Make eye shake due to afterburner
+        //  Make eye shake due to afterburner
         if (!timestamp_elapsed(pi->afterburner_decay)) {
             int dtime;
 
@@ -2633,10 +2633,10 @@ extern void compute_slew_matrix(
     matrix *orient,
     angles *a); // TODO: move code to proper place and extern in header file
 
-//	Player's velocity just before he blew up.  Used to keep camera target moving.
+// Player's velocity just before he blew up.  Used to keep camera target moving.
 vector Dead_player_last_vel = { 1.0f, 1.0f, 1.0f };
 
-//	Set eye_pos and eye_orient based on view mode.
+// Set eye_pos and eye_orient based on view mode.
 void
 game_render_frame_setup(vector *eye_pos, matrix *eye_orient)
 {
@@ -2701,7 +2701,7 @@ game_render_frame_setup(vector *eye_pos, matrix *eye_orient)
             int view_from_player = 1;
 
             if (Viewer_mode & VM_OTHER_SHIP) {
-                //	View from target.
+                //   View from target.
                 Viewer_obj = &Objects[Player_ai->target_objnum];
 
                 last_Viewer_objnum = Player_ai->target_objnum;
@@ -2716,7 +2716,7 @@ game_render_frame_setup(vector *eye_pos, matrix *eye_orient)
             }
 
             if (view_from_player) {
-                //	View target from player ship.
+                //   View target from player ship.
                 Viewer_obj = NULL;
                 *eye_pos = Player_obj->pos;
                 vm_vec_normalized_dir(
@@ -2747,7 +2747,7 @@ game_render_frame_setup(vector *eye_pos, matrix *eye_orient)
                 view_pos = Objects[Player_ai->target_objnum].pos;
             }
             else {
-                //	Make camera follow explosion, but gradually slow down.
+                //   Make camera follow explosion, but gradually slow down.
                 vm_vec_scale_add2(&Player_obj->pos, &Dead_player_last_vel,
                                   flFrametime);
                 view_pos = Player_obj->pos;
@@ -2779,7 +2779,7 @@ game_render_frame_setup(vector *eye_pos, matrix *eye_orient)
         supernova_set_view(eye_pos, eye_orient);
     }
     else {
-        //	If already blown up, these other modes can override.
+        //  If already blown up, these other modes can override.
         if (!(Game_mode & (GM_DEAD | GM_DEAD_BLEW_UP))) {
             Viewer_mode &= ~VM_DEAD_VIEW;
 
@@ -2815,7 +2815,7 @@ game_render_frame_setup(vector *eye_pos, matrix *eye_orient)
                                    NULL);
                 Viewer_obj = NULL;
 
-                //	Modify the orientation based on head orientation.
+                //   Modify the orientation based on head orientation.
                 compute_slew_matrix(eye_orient, &Viewer_slew_angles);
             }
             else if (Viewer_mode & VM_CHASE) {
@@ -2848,7 +2848,7 @@ game_render_frame_setup(vector *eye_pos, matrix *eye_orient)
                 vm_vector_2_matrix(eye_orient, &eye_dir, &tmp_up, NULL);
                 Viewer_obj = NULL;
 
-                //	Modify the orientation based on head orientation.
+                //   Modify the orientation based on head orientation.
                 compute_slew_matrix(eye_orient, &Viewer_slew_angles);
             }
             else if (Viewer_mode & VM_WARP_CHASE) {
@@ -2920,7 +2920,7 @@ game_render_frame(vector *eye_pos, matrix *eye_orient)
     trail_render_all(); // render missilie trails after everything else.
     mflash_render_all(); // render all muzzle flashes
 
-    //	Why do we not show the shield effect in these modes?  Seems ok.
+    //   Why do we not show the shield effect in these modes?  Seems ok.
     //if (!(Viewer_mode & (VM_EXTERNAL | VM_SLEWED | VM_CHASE | VM_DEAD_VIEW))) {
     render_shields();
     //}
@@ -2962,7 +2962,7 @@ game_render_frame(vector *eye_pos, matrix *eye_orient)
     g3_end_frame();
 }
 
-//#define JOHNS_DEBUG_CODE	1
+//#define JOHNS_DEBUG_CODE 1
 
 #ifdef JOHNS_DEBUG_CODE
 void
@@ -3108,7 +3108,7 @@ game_maybe_dump_frame()
 
 extern int Player_dead_state;
 
-//	Flip the page and time how long it took.
+// Flip the page and time how long it took.
 void
 game_flip_page_and_time_it()
 {
@@ -3189,7 +3189,7 @@ game_simulation_frame()
 
     // check for cargo reveal (this has an internal timestamp, so only runs every N ms)
     // AL: 3-15-98: It was decided to not let AI ships inspect cargo
-    //	ship_check_cargo_all();
+    //   ship_check_cargo_all();
     mission_eval_goals();
 
     // always check training objectives
@@ -3202,7 +3202,7 @@ game_simulation_frame()
 
     message_maybe_distort(); // maybe distort incoming message if comms damaged
     player_repair_frame(
-        flFrametime); //	AI objects get repaired in ai_process, called from move code...deal with player.
+        flFrametime); //   AI objects get repaired in ai_process, called from move code...deal with player.
     player_process_pending_praise(); // maybe send off a delayed praise message to the player
     player_maybe_play_all_alone_msg(); // mabye tell the player he is all alone
 
@@ -3399,7 +3399,7 @@ game_frame()
         ; //nprintf(("AI", "Framecount = %i, time = %7.3f\n", Framecount, f2fl(Missiontime)));
     }
 
-    //	Note: These are done even before the player enters, else buffers can overflow.
+    //   Note: These are done even before the player enters, else buffers can overflow.
     radar_frame_init();
 
     shield_frame_init();
@@ -3513,8 +3513,8 @@ game_frame()
 
 #define MAX_FRAMETIME                                                            \
     (F1_0 / 4) // Frametime gets saturated at this.  Changed by MK on 11/1/97.
-        //	Some bug was causing Frametime to always get saturated at 2.0 seconds after the player
-        //	died.  This resulted in screwed up death sequences.
+        //  Some bug was causing Frametime to always get saturated at 2.0 seconds after the player
+        //  died.  This resulted in screwed up death sequences.
 
 fix Last_time =
     0; // The absolute time of game at end of last frame (beginning of this frame)
@@ -3528,7 +3528,7 @@ int saved_timestamp_ticker = -1;
 void
 game_reset_time()
 {
-    //	Last_time = timer_get_fixed_seconds();
+    //   Last_time = timer_get_fixed_seconds();
     game_start_time();
     timestamp_reset();
     game_stop_time();
@@ -3612,11 +3612,11 @@ game_set_frametime(int state)
     else
         Frametime = thistime - Last_time;
 
-    //	Frametime = F1_0 / 30;
+    //   Frametime = F1_0 / 30;
 
-    fix debug_frametime = Frametime; //	Just used to display frametime.
+    fix debug_frametime = Frametime; //   Just used to display frametime.
 
-    //	If player hasn't entered mission yet, make frame take 1/4 second.
+    //   If player hasn't entered mission yet, make frame take 1/4 second.
     if ((Pre_player_entry) && (state == GS_STATE_GAME_PLAY))
         Frametime = F1_0 / 4;
 #ifndef NDEBUG
@@ -3675,9 +3675,9 @@ game_set_frametime(int state)
     //if(!(Game_mode & GM_PLAYING_DEMO)){
     timestamp_inc(flFrametime);
 
-    /*	if ((Framecount > 0) && (Framecount < 10)) {
-		mprintf(("Frame %2i: frametime = %.3f (%.3f)\n", Framecount, f2fl(Frametime), f2fl(debug_frametime)));
-	}
+    /*   if ((Framecount > 0) && (Framecount < 10)) {
+      mprintf(("Frame %2i: frametime = %.3f (%.3f)\n", Framecount, f2fl(Frametime), f2fl(debug_frametime)));
+   }
 */
 }
 
@@ -3763,45 +3763,45 @@ void
 demo_maybe_show_trailer(int k)
 {
     /*
-	// if key pressed, reset demo trailer timer
-	if ( k > 0 ) {
-		demo_reset_trailer_timer();
-		return;
-	}
+   // if key pressed, reset demo trailer timer
+   if ( k > 0 ) {
+      demo_reset_trailer_timer();
+      return;
+   }
 
-	// if mouse moved, reset demo trailer timer
-	int dx = 0, dy = 0;
+   // if mouse moved, reset demo trailer timer
+   int dx = 0, dy = 0;
 
-	mouse_get_delta(&dx, &dy);
-	if ( (dx > 0) || (dy > 0) ) {
-		demo_reset_trailer_timer();
-		return;
-	}
+   mouse_get_delta(&dx, &dy);
+   if ( (dx > 0) || (dy > 0) ) {
+      demo_reset_trailer_timer();
+      return;
+   }
 
-	// if joystick has moved, reset demo trailer timer
-	dx = 0;
-	dy = 0;
-	joy_get_delta(&dx, &dy);
-	if ( (dx > 0) || (dy > 0) ) {
-		demo_reset_trailer_timer();
-		return;
-	}
+   // if joystick has moved, reset demo trailer timer
+   dx = 0;
+   dy = 0;
+   joy_get_delta(&dx, &dy);
+   if ( (dx > 0) || (dy > 0) ) {
+      demo_reset_trailer_timer();
+      return;
+   }
 
-	// NOTE: reseting the trailer timer on mouse/joystick presses is handled in
-	//       the low-level code.  Ugly, I know... but was the simplest and most
-	//       robust solution.
-		
-	// if 30 seconds since last demo trailer time reset, launch movie
-	if ( os_foreground() ) {
-		int now = timer_get_milliseconds();
-		if ( (now - Demo_show_trailer_timestamp) > DEMO_TRAILER_TIMEOUT_MS ) {
-//		if ( (now - Demo_show_trailer_timestamp) > 10000 ) {
-			// play movie here
-			movie_play( NOX("fstrailer2.mve") );
-			demo_reset_trailer_timer();
-		}
-	}
-	*/
+   // NOTE: reseting the trailer timer on mouse/joystick presses is handled in
+   //       the low-level code.  Ugly, I know... but was the simplest and most
+   //       robust solution.
+      
+   // if 30 seconds since last demo trailer time reset, launch movie
+   if ( os_foreground() ) {
+      int now = timer_get_milliseconds();
+      if ( (now - Demo_show_trailer_timestamp) > DEMO_TRAILER_TIMEOUT_MS ) {
+//    if ( (now - Demo_show_trailer_timestamp) > 10000 ) {
+         // play movie here
+         movie_play( NOX("fstrailer2.mve") );
+         demo_reset_trailer_timer();
+      }
+   }
+   */
 }
 
 #endif
@@ -3880,7 +3880,7 @@ game_poll()
 
     state = gameseq_get_state();
 
-    //	if ( k ) nprintf(( "General", "Key = %x\n", k ));
+    //   if ( k ) nprintf(( "General", "Key = %x\n", k ));
 
     switch (k) {
     case KEY_DEBUGGED + KEY_BACKSP:
@@ -3893,7 +3893,7 @@ game_poll()
         break;
 
     case KEY_F2:
-        //			if (state != GS_STATE_INITIAL_PLAYER_SELECT) {
+        //        if (state != GS_STATE_INITIAL_PLAYER_SELECT) {
 
         switch (state) {
         case GS_STATE_INITIAL_PLAYER_SELECT:
@@ -4035,7 +4035,7 @@ camera_move()
 
     Camera_velocity = new_vel;
 
-    //	mprintf(( "Camera velocity = %.1f,%.1f, %.1f\n", Camera_velocity.x, Camera_velocity.y, Camera_velocity.z ));
+    //   mprintf(( "Camera velocity = %.1f,%.1f, %.1f\n", Camera_velocity.x, Camera_velocity.y, Camera_velocity.z ));
 
     vm_vec_add2(&Camera_pos, &delta_pos);
 
@@ -4235,19 +4235,19 @@ game_process_event(int current_state, int event)
     case GS_EVENT_CAMPAIGN_CHEAT:
         if (!mission_load_up_campaign()) {
             /*
-				// bash campaign value
-				extern char Main_hall_campaign_cheat[512];
-				int idx;
-				
-				// look for the mission
-				for(idx=0; idx<Campaign.num_missions; idx++){
-					if(!stricmp(Campaign.missions[idx].name, Main_hall_campaign_cheat)){
-						Campaign.next_mission = idx;
-						Campaign.prev_mission = idx - 1;
-						break;
-					}
-				}
-				*/
+            // bash campaign value
+            extern char Main_hall_campaign_cheat[512];
+            int idx;
+            
+            // look for the mission
+            for(idx=0; idx<Campaign.num_missions; idx++){
+               if(!stricmp(Campaign.missions[idx].name, Main_hall_campaign_cheat)){
+                  Campaign.next_mission = idx;
+                  Campaign.prev_mission = idx - 1;
+                  break;
+               }
+            }
+            */
 
             // continue
             readyroom_continue_campaign();
@@ -4779,9 +4779,9 @@ game_enter_state(int old_state, int new_state)
         break;
 
     case GS_STATE_DEBUG_PAUSED:
-        //		game_stop_time();
-        //		os_set_title("FreeSpace - PAUSED");
-        //		break;
+        //     game_stop_time();
+        //     os_set_title("FreeSpace - PAUSED");
+        //     break;
         //
     case GS_STATE_TRAINING_PAUSED:
 #ifndef NDEBUG
@@ -4905,7 +4905,7 @@ game_enter_state(int old_state, int new_state)
         emp_stop_local();
 
         Players[Player_num].flags &=
-            ~PLAYER_FLAGS_AUTO_TARGETING; //	Prevent immediate switch to a hostile ship.
+            ~PLAYER_FLAGS_AUTO_TARGETING; // Prevent immediate switch to a hostile ship.
         Game_mode |= GM_DEAD_BLEW_UP;
         Show_viewing_from_self = 0;
 
@@ -5450,8 +5450,8 @@ main(int argc, char *argv[])
         // movie_play( NOX("intro.mve"), 0);
         /*
 #ifndef NDEBUG
-		if ( Cmdline_show_movies )
-			movie_play( NOX("intro.mve"), 0 );
+      if ( Cmdline_show_movies )
+         movie_play( NOX("intro.mve"), 0 );
 #endif
 */
 #endif
@@ -5592,7 +5592,7 @@ init_animating_pointer()
 //
 // Called at game init to load in the frames for the animating mouse pointer
 //
-// input:	filename	=>	filename of animation file that holds the animation
+// input:   filename => filename of animation file that holds the animation
 //
 void
 load_animating_pointer(char *filename, int dx, int dy)
@@ -5663,7 +5663,7 @@ game_render_mouse(float frametime)
 //
 // Sets mouse.cpp globals Mouse_hidden and Mouse_moved based on the state of the game.
 //
-// input:	frametime => elapsed frame time in seconds since last call
+// input:   frametime => elapsed frame time in seconds since last call
 //
 void
 game_maybe_draw_mouse(float frametime)
@@ -5919,7 +5919,7 @@ int Num_models_needing_splitting = 0;
 void
 Time_model(int modelnum)
 {
-    //	mprintf(( "Timing ship '%s'\n", si->name ));
+    //   mprintf(( "Timing ship '%s'\n", si->name ));
 
     vector eye_pos, model_pos;
     matrix eye_orient, model_orient;
@@ -5994,7 +5994,7 @@ Time_model(int modelnum)
         vm_matrix_x_matrix(&model_orient, &vmd_identity_matrix, &m1);
 
         gr_reset_clip();
-        //		gr_clear();
+        //     gr_clear();
 
         g3_start_frame(1);
 
@@ -6006,7 +6006,7 @@ Time_model(int modelnum)
                      MR_LOCK_DETAIL); //|MR_NO_POLYS );
 
         g3_end_frame();
-        //		gr_flip();
+        //     gr_flip();
 
         framecount++;
         ta.h += 0.1f;
@@ -6031,9 +6031,9 @@ Time_model(int modelnum)
     fprintf(Time_fp, "\"%s\"\t%.0f\t%d\t%d\t%d\t%d\n", pof_file,
             i2fl(framecount) / f2fl(t2 - t1), bitmaps_used_this_frame,
             modelstats_num_polys, modelstats_num_verts, Tmap_npixels);
-    //	fprintf( Time_fp, "%.0f\t%d\t%d\t%d\t%d\n", i2fl(framecount)/f2fl(t2-t1), bitmaps_used_this_frame, modelstats_num_polys, modelstats_num_verts, Tmap_npixels );
+    //   fprintf( Time_fp, "%.0f\t%d\t%d\t%d\t%d\n", i2fl(framecount)/f2fl(t2-t1), bitmaps_used_this_frame, modelstats_num_polys, modelstats_num_verts, Tmap_npixels );
 
-    //	key_getch();
+    //   key_getch();
 }
 
 int Time_models = 0;
@@ -6073,7 +6073,7 @@ Do_model_timings_test()
         return;
 
     fprintf(Time_fp, "Name\tFPS\tTRAM\tPolys\tVerts\tPixels\n");
-    //	fprintf( Time_fp, "FPS\tTRAM\tPolys\tVerts\tPixels\n" );
+    //   fprintf( Time_fp, "FPS\tTRAM\tPolys\tVerts\tPixels\n" );
 
     for (i = 0; i < MAX_POLYGON_MODELS; i++) {
         if (model_used[i]) {
@@ -6148,7 +6148,7 @@ game_format_time(fix m_time, char *time_str)
     strcat(time_str, tmp);
 }
 
-//	Stuff version string in *str.
+// Stuff version string in *str.
 void
 get_version_string(char *str)
 {
@@ -6168,33 +6168,33 @@ get_version_string(char *str)
 #endif
     //XSTR:ON
     /*
-	HMODULE hMod;
-	DWORD bogus_handle;
-	char myname[_MAX_PATH];
-	int namelen, major, minor, build, waste;
-	unsigned int buf_size;
-	DWORD version_size;
-	char *infop;
-	VOID *bufp;
-	BOOL result;
+   HMODULE hMod;
+   DWORD bogus_handle;
+   char myname[_MAX_PATH];
+   int namelen, major, minor, build, waste;
+   unsigned int buf_size;
+   DWORD version_size;
+   char *infop;
+   VOID *bufp;
+   BOOL result;
 
-	// Find my EXE file name
-	hMod = GetModuleHandle(NULL);
-	namelen = GetModuleFileName( hMod, myname, _MAX_PATH );
+   // Find my EXE file name
+   hMod = GetModuleHandle(NULL);
+   namelen = GetModuleFileName( hMod, myname, _MAX_PATH );
 
-	version_size = GetFileVersionInfoSize(myname, &bogus_handle );
-	infop = (char *)malloc(version_size);
-	result = GetFileVersionInfo( myname, 0, version_size, (LPVOID)infop );
+   version_size = GetFileVersionInfoSize(myname, &bogus_handle );
+   infop = (char *)malloc(version_size);
+   result = GetFileVersionInfo( myname, 0, version_size, (LPVOID)infop );
 
-	// get the product version
-	result = VerQueryValue((LPVOID)infop, TEXT("\\StringFileInfo\\040904b0\\ProductVersion"), &bufp, &buf_size );
-	sscanf( (char *)bufp, "%d, %d, %d, %d", &major, &minor, &build, &waste );
+   // get the product version
+   result = VerQueryValue((LPVOID)infop, TEXT("\\StringFileInfo\\040904b0\\ProductVersion"), &bufp, &buf_size );
+   sscanf( (char *)bufp, "%d, %d, %d, %d", &major, &minor, &build, &waste );
 #ifdef DEMO
-	sprintf(str,"Dv%d.%02d",major, minor);
+   sprintf(str,"Dv%d.%02d",major, minor);
 #else
-	sprintf(str,"v%d.%02d",major, minor);
+   sprintf(str,"v%d.%02d",major, minor);
 #endif
-	*/
+   */
 }
 
 void
@@ -6236,7 +6236,7 @@ static char
 
 static int Oem_normal_cursor = -1;
 static int Oem_web_cursor = -1;
-//#define OEM_UPSELL_URL		"http://www.interplay-store.com/"
+//#define OEM_UPSELL_URL      "http://www.interplay-store.com/"
 #define OEM_UPSELL_URL                                                           \
     "http://www.interplay.com/cgi-bin/oemlinks.pl/pid=483421&cid=18384"
 
@@ -6410,7 +6410,7 @@ oem_upsell_show_screens()
 
 #ifdef FS2_DEMO
 
-//#define NUM_DEMO_UPSELL_SCREENS				4
+//#define NUM_DEMO_UPSELL_SCREENS            4
 
 #define NUM_DEMO_UPSELL_SCREENS 2
 #define DEMO_UPSELL_SCREEN_DELAY 3000
@@ -6450,14 +6450,14 @@ demo_upsell_next_screen()
     }
 
     /*
-	if ( Demo_upsell_screen_number < NUM_DEMO_UPSELL_SCREENS ) {
-		if ( Demo_upsell_bitmap_filenames[gr_screen.res][Demo_upsell_screen_number] >= 0 ) {
+   if ( Demo_upsell_screen_number < NUM_DEMO_UPSELL_SCREENS ) {
+      if ( Demo_upsell_bitmap_filenames[gr_screen.res][Demo_upsell_screen_number] >= 0 ) {
 #ifndef HARDWARE_ONLY
-			palette_use_bm_palette(Demo_upsell_bitmaps[gr_screen.res][Demo_upsell_screen_number]);
+         palette_use_bm_palette(Demo_upsell_bitmaps[gr_screen.res][Demo_upsell_screen_number]);
 #endif
-		}
-	}
-	*/
+      }
+   }
+   */
 }
 
 void
@@ -6517,10 +6517,10 @@ demo_upsell_show_screens()
 
         // don't time out, wait for keypress
         /*
-		if ( current_time > Demo_upsell_show_next_bitmap_time ) {
-			demo_upsell_next_screen();
-			k = 0;
-		}*/
+      if ( current_time > Demo_upsell_show_next_bitmap_time ) {
+         demo_upsell_next_screen();
+         k = 0;
+      }*/
 
         if (k > 0) {
             demo_upsell_next_screen();
@@ -6673,12 +6673,12 @@ init_cdrom()
     rval = set_cdrom_path(i);
 
 /*
-	if ( rval ) {
-		nprintf(("CD", "Using %s for FreeSpace CD\n", CDROM_dir));
-	} else {
-		nprintf(("CD", "FreeSpace CD not found\n"));
-	}
-	*/
+   if ( rval ) {
+      nprintf(("CD", "Using %s for FreeSpace CD\n", CDROM_dir));
+   } else {
+      nprintf(("CD", "FreeSpace CD not found\n"));
+   }
+   */
 #endif
 
     return rval;
@@ -6696,8 +6696,8 @@ game_cd_changed()
 }
 
 // check if _any_ FreeSpace2 CDs are in the drive
-// return: 1	=> CD now in drive
-//			  0	=>	Could not find CD, they refuse to put it in the drive
+// return: 1   => CD now in drive
+//         0   => Could not find CD, they refuse to put it in the drive
 int
 game_do_cd_check(char *volume_name)
 {
@@ -6709,8 +6709,8 @@ game_do_cd_check(char *volume_name)
 }
 
 // check if _any_ FreeSpace2 CDs are in the drive
-// return: 1	=> CD now in drive
-//			  0	=>	Could not find CD, they refuse to put it in the drive
+// return: 1   => CD now in drive
+//         0   => Could not find CD, they refuse to put it in the drive
 int
 game_do_cd_check_specific(char *volume_name, int cdnum)
 {
@@ -6750,12 +6750,12 @@ game_do_cd_mission_check(char *filename)
 #define NUM_SHIPS_TBL_CHECKSUMS 1
 /*
 int Game_ships_tbl_checksums[NUM_SHIPS_TBL_CHECKSUMS] = {
-	-463907578,						// US - beta 1
-	1696074201,						// FS2 demo
+   -463907578,                // US - beta 1
+   1696074201,                // FS2 demo
 };
 */
 int Game_ships_tbl_checksums[NUM_SHIPS_TBL_CHECKSUMS] = {
-    //	-1022810006,					// 1.0 FULL
+    //   -1022810006,               // 1.0 FULL
     -1254285366 // 1.2 FULL (German)
 };
 
@@ -6764,9 +6764,9 @@ verify_ships_tbl()
 {
     /*
 #ifdef NDEBUG
-	Game_ships_tbl_valid = 1;
+   Game_ships_tbl_valid = 1;
 #else
-	*/
+   */
     uint file_checksum;
     int idx;
 
@@ -6818,12 +6818,12 @@ DCF(shipspew, "display the checksum for the current ships.tbl")
 #define NUM_WEAPONS_TBL_CHECKSUMS 1
 /*
 int Game_weapons_tbl_checksums[NUM_WEAPONS_TBL_CHECKSUMS] = {
-	141718090,				// US - beta 1
-	-266420030,				// demo 1
+   141718090,           // US - beta 1
+   -266420030,          // demo 1
 };
 */
 int Game_weapons_tbl_checksums[NUM_WEAPONS_TBL_CHECKSUMS] = {
-    //	399297860,				// 1.0 FULL
+    //   399297860,           // 1.0 FULL
     -553984927 // 1.2 FULL (german)
 };
 
@@ -6832,9 +6832,9 @@ verify_weapons_tbl()
 {
     /*
 #ifdef NDEBUG
-	Game_weapons_tbl_valid = 1;
+   Game_weapons_tbl_valid = 1;
 #else
-	*/
+   */
     uint file_checksum;
     int idx;
 

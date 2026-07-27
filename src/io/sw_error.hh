@@ -1,22 +1,22 @@
 /****************************************************************************
 
-    MODULE:     	SW_Error.HPP
-	Tab settings: 	5 9
-	Copyright 1995, 1996, Microsoft Corporation, 	All Rights Reserved.
+    MODULE:         SW_Error.HPP
+    Tab settings:   5 9
+    Copyright 1995, 1996, Microsoft Corporation,    All Rights Reserved.
 
-    PURPOSE:    	Header for Error Codes
+    PURPOSE:        Header for Error Codes
     
-	FUNCTIONS:
+    FUNCTIONS:
 
-	Author(s):	Name:
-	----------	----------------
-		MEA		Manolito E. Adan
+    Author(s):  Name:
+    ----------  ----------------
+        MEA     Manolito E. Adan
 
-	Revision History:
-	-----------------
-	Version Date            Author  Comments
-	-------     ------  	-----   -------------------------------------------
-   	1.0    	22-Jan-96       MEA     original
+    Revision History:
+    -----------------
+    Version Date            Author  Comments
+    -------     ------      -----   -------------------------------------------
+    1.0     22-Jan-96       MEA     original
 
 ****************************************************************************/
 #ifndef SW_Error_SEEN
@@ -28,8 +28,8 @@
 
 /*
 typedef struct _SF_ERROR {
-	HRESULT	HCode;			// HRESULT code
-	ULONG	ulDriverCode;	// Error code from device driver
+    HRESULT HCode;          // HRESULT code
+    ULONG   ulDriverCode;   // Error code from device driver
 } SF_ERROR, *PSF_ERROR;
 */
 

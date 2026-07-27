@@ -215,8 +215,8 @@ popupdead_play_default_change_sound()
 }
 
 // do any key processing here
-// exit:	-1		=>	nothing was done
-//			>=0	=> a choice was selected
+// exit: -1    => nothing was done
+//       >=0   => a choice was selected
 int
 popupdead_process_keys(int k)
 {
@@ -278,8 +278,8 @@ popupdead_process_keys(int k)
 }
 
 // see if any popup buttons have been pressed
-// exit: -1						=> no buttons pressed
-//			>=0					=>	button index that was pressed
+// exit: -1                => no buttons pressed
+//       >=0               => button index that was pressed
 int
 popupdead_check_buttons()
 {
@@ -423,14 +423,14 @@ popupdead_do_frame(float frametime)
     int k, choice;
 
     /*
-	if (Popupdead_skip_active) {
-		// do the skip mission popup, and thats all
-		if (popupdead_skip_do_frame() == 1) {
-			return 2;	// fake the "go to briefing" choice
-		} else {
-			return -1;	// fake no choice
-		}
-	}
+   if (Popupdead_skip_active) {
+      // do the skip mission popup, and thats all
+      if (popupdead_skip_do_frame() == 1) {
+         return 2;   // fake the "go to briefing" choice
+      } else {
+         return -1;  // fake no choice
+      }
+   }
 */
     if (!Popupdead_active) {
         return -1;

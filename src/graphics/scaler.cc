@@ -47,11 +47,11 @@ typedef void (*scaler_span_fn)(ubyte *sbits, ubyte *dbits, ubyte *lookup,
 /*
 void test_code()
 {
-	_asm mov ax, [esi+0xabcdef12]
-	_asm cmp ax, 255
-	_asm je  0xabcdef12
-	_asm mov [edi+0xabcdef12], ax
-	_asm mov ax, [esi+0xabcdef12]
+   _asm mov ax, [esi+0xabcdef12]
+   _asm cmp ax, 255
+   _asm je  0xabcdef12
+   _asm mov [edi+0xabcdef12], ax
+   _asm mov ax, [esi+0xabcdef12]
 }
 */
 
@@ -108,43 +108,43 @@ scaler_span8_stippled(ubyte *sbits, ubyte *dbits, ubyte *lookup, uint *zbuf,
 /*
 void test_code1()
 {
-	_asm mov ebx, -1
-	_asm xor eax, eax
-	_asm xor ebx, ebx
-	_asm mov	bl, BYTE PTR [edi-1412567278]
-	_asm add ebx, eax
-	_asm mov ebx, [ecx+ebx]	; blend it
-	_asm cmp ebp, [edx]
-	_asm add edx, 4
-	_asm jl [0xABCDEF12]
+   _asm mov ebx, -1
+   _asm xor eax, eax
+   _asm xor ebx, ebx
+   _asm mov bl, BYTE PTR [edi-1412567278]
+   _asm add ebx, eax
+   _asm mov ebx, [ecx+ebx] ; blend it
+   _asm cmp ebp, [edx]
+   _asm add edx, 4
+   _asm jl [0xABCDEF12]
 
-//     xor eax, eax			; avoid ppro partial register stall
+//     xor eax, eax        ; avoid ppro partial register stall
 //     mov ah, [esi+????]   ; get the foreground pixel
 //     ; the following lines might be repeated
-//     xor ebx, ebx			; avoid ppro partial register stall
+//     xor ebx, ebx        ; avoid ppro partial register stall
 //     mov bl, [edi+????]   ; get the background pixel
-//     mov ebx, [ecx+ebx]	; blend it
+//     mov ebx, [ecx+ebx]  ; blend it
 //     mov [edi+????], bl   ; write it
 }
 */
 
 /*
-  00130	b8 00 00 00 00	mov	eax, 0
-  00135	8a a6 12 ef cd ab		mov	ah, BYTE PTR [esi-1412567278]
-  0013b	8a 87 12 ef cd ab		mov	al, BYTE PTR [edi-1412567278]
-  00141	8a 1c 01	            mov	bl, BYTE PTR [ecx+eax]
-  00141	8b 1c 01					mov	ebx, DWORD PTR [ecx+eax]
-  00144	88 9f 12 ef cd ab		mov	BYTE PTR [edi-1412567278], bl
+  00130  b8 00 00 00 00 mov   eax, 0
+  00135  8a a6 12 ef cd ab    mov   ah, BYTE PTR [esi-1412567278]
+  0013b  8a 87 12 ef cd ab    mov   al, BYTE PTR [edi-1412567278]
+  00141  8a 1c 01             mov   bl, BYTE PTR [ecx+eax]
+  00141  8b 1c 01             mov   ebx, DWORD PTR [ecx+eax]
+  00144  88 9f 12 ef cd ab    mov   BYTE PTR [edi-1412567278], bl
 
 
-  00130	33 c0		xor	eax, eax
-  00132	33 db		xor	ebx, ebx
-  00134	8a 9f 12 ef cd	ab		mov	bl, BYTE PTR [edi-1412567278]
-  0013a	03 d8		add	ebx, eax
-  0013c	8b 1c 19	mov	ebx, DWORD PTR [ecx+ebx]
+  00130  33 c0    xor   eax, eax
+  00132  33 db    xor   ebx, ebx
+  00134  8a 9f 12 ef cd ab    mov   bl, BYTE PTR [edi-1412567278]
+  0013a  03 d8    add   ebx, eax
+  0013c  8b 1c 19 mov   ebx, DWORD PTR [ecx+ebx]
 
-  0013f	3b 2a		cmp	ebp, DWORD PTR [edx]
-  00141	83 c2 04	add	edx, 4
+  0013f  3b 2a    cmp   ebp, DWORD PTR [edx]
+  00141  83 c2 04 add   edx, 4
 
 
 */
@@ -159,17 +159,17 @@ void test_code1()
 //     mov ah, [esi+????]   ; get the foreground pixel
 //     ; the following lines might be repeated
 //     mov al, [edi+????]   ; get the background pixel
-//     mov bl, [ecx+eax]	; blend it
+//     mov bl, [ecx+eax]   ; blend it
 //     mov [edi+????], bl   ; write it
 //     ...
 
 //============= Pentium Pro code =============
-//     xor eax, eax			; avoid ppro partial register stall
+//     xor eax, eax        ; avoid ppro partial register stall
 //     mov ah, [esi+????]   ; get the foreground pixel
 //     ; the following lines might be repeated
-//     xor ebx, ebx			; avoid ppro partial register stall
+//     xor ebx, ebx        ; avoid ppro partial register stall
 //     mov bl, [edi+????]   ; get the background pixel
-//     mov ebx, [ecx+ebx]	; blend it
+//     mov ebx, [ecx+ebx]  ; blend it
 //     mov [edi+????], bl   ; write it
 
 // Both CPU variants blended through the same table:
@@ -195,15 +195,15 @@ scaler_span8_alpha(ubyte *sbits, ubyte *dbits, ubyte *lookup, uint *zbuf, uint g
 }
 
 /*
-				for (x=0; x<w; x++ )			{
-					if ( fx_w > *zbuf )	{
-						uint c = sbits[ tmp_u >> 16 ]<<8;
-						*dbits = *((ubyte *)(lookup + (*dbits | c)));
-					}
-					dbits++;
-					zbuf++;
-					tmp_u += du;
-				}
+            for (x=0; x<w; x++ )       {
+               if ( fx_w > *zbuf )  {
+                  uint c = sbits[ tmp_u >> 16 ]<<8;
+                  *dbits = *((ubyte *)(lookup + (*dbits | c)));
+               }
+               dbits++;
+               zbuf++;
+               tmp_u += du;
+            }
 */
 
 //----------------------------------------------------
@@ -213,24 +213,24 @@ scaler_span8_alpha(ubyte *sbits, ubyte *dbits, ubyte *lookup, uint *zbuf, uint g
 // mov eax, 0
 //     mov ah, [esi+????]   ; get the foreground pixel
 //     ; the following lines might be repeated
-//     cmp	fx_w, [edx+?????]
+//     cmp  fx_w, [edx+?????]
 //     jle  @f
 //     mov al, [edi+????]   ; get the background pixel
-//     mov bl, [ecx+eax]	; blend it
+//     mov bl, [ecx+eax]   ; blend it
 //     mov [edi+????], bl   ; write it
 //  @@:
 //     ...
 
 //void test_code1()
 //{
-//	_asm cmp 0xFFFFFFFF, [edx+0xabcdef12]
-//	_asm cmp ebp, [edx+0xabcdef12]
-//	_asm jle	0xabcdef12
+// _asm cmp 0xFFFFFFFF, [edx+0xabcdef12]
+// _asm cmp ebp, [edx+0xabcdef12]
+// _asm jle 0xabcdef12
 //}
-//; 302  : 	_asm cmp ebp, [edx+0xabcdef12]
-//  00244	3b aa 12 ef cd ab		cmp	ebp, DWORD PTR [edx-1412567278]
-//; 303  : 	_asm jle	0xabcdef12
-//  0024a	0f 8e 12 ef cd ab		jle	-1412567278		; abcdef12H
+//; 302  :  _asm cmp ebp, [edx+0xabcdef12]
+//  00244   3b aa 12 ef cd ab    cmp   ebp, DWORD PTR [edx-1412567278]
+//; 303  :  _asm jle 0xabcdef12
+//  0024a   0f 8e 12 ef cd ab    jle   -1412567278    ; abcdef12H
 
 // Same blend as scaler_span8_alpha, gated per pixel on the z test
 // "cmp ebp, [edx+x*4] / jle skip":  draw when gz > zbuf[x], as a
@@ -365,11 +365,11 @@ gr8_scaler(vertex *va, vertex *vb)
     int is_stippled = 0;
 
     /*
-	if ( !Detail.alpha_effects )	{
-		is_stippled = 1;
-		Gr_scaler_zbuffering = 0;
-	}
-	*/
+   if ( !Detail.alpha_effects )  {
+      is_stippled = 1;
+      Gr_scaler_zbuffering = 0;
+   }
+   */
 
     if (is_stippled) {
         bp = bm_lock(gr_screen.current_bitmap, 8, 0);
@@ -451,36 +451,36 @@ gr8_scaler(vertex *va, vertex *vb)
             Int3();
 
             /*
-			int x, tmp_u;
-			tmp_u = u;
+         int x, tmp_u;
+         tmp_u = u;
 
-			for (x=0; x<w; x++ )			{
-				if ( fx_w > *zbuf )	{
-					ubyte c = sbits[ tmp_u >> 16 ];
-					if ( c != TRANSPARENCY_COLOR_8 ) *dbits = c;
-				}
-				zbuf++;
-				dbits++;
-				tmp_u += du;
-			}
-			*/
+         for (x=0; x<w; x++ )       {
+            if ( fx_w > *zbuf )  {
+               ubyte c = sbits[ tmp_u >> 16 ];
+               if ( c != TRANSPARENCY_COLOR_8 ) *dbits = c;
+            }
+            zbuf++;
+            dbits++;
+            tmp_u += du;
+         }
+         */
         }
         else {
-            /*			{
-				int x, tmp_u;
-				tmp_u = u;
+            /*       {
+            int x, tmp_u;
+            tmp_u = u;
 
-	
-				for (x=0; x<w; x++ )			{
-					if ( fx_w > *zbuf )	{
-						uint c = sbits[ tmp_u >> 16 ]<<8;
-						*dbits = *((ubyte *)(lookup + (*dbits | c)));
-					}
-					dbits++;
-					zbuf++;
-					tmp_u += du;
-				}
-			} 
+   
+            for (x=0; x<w; x++ )       {
+               if ( fx_w > *zbuf )  {
+                  uint c = sbits[ tmp_u >> 16 ]<<8;
+                  *dbits = *((ubyte *)(lookup + (*dbits | c)));
+               }
+               dbits++;
+               zbuf++;
+               tmp_u += du;
+            }
+         } 
 */
             // was: ecx=lookup, esi=sbits, edi=dbits, edx=zbuf,
             // ebp=Gr_global_z, call the compiled span
@@ -562,7 +562,7 @@ gr8_aascaler(vertex *va, vertex *vb)
     float xmin, xmax, ymin, ymax;
     int dx0, dy0, dx1, dy1;
 
-    //if ( !Current_alphacolor )	return;
+    //if ( !Current_alphacolor ) return;
 
     MONITOR_INC(ScalerNumCalls, 1);
 

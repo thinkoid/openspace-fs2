@@ -263,7 +263,7 @@ light_add_directional(vector *dir, float intensity, float r, float g, float b)
     l->affected_objnum = -1;
 
     Assert(Num_light_levels <= 1);
-    //	Relevent_lights[Num_relevent_lights[Num_light_levels-1]++][Num_light_levels-1] = l;
+    //   Relevent_lights[Num_relevent_lights[Num_light_levels-1]++][Num_light_levels-1] = l;
 
     if (Static_light_count < MAX_STATIC_LIGHTS) {
         Static_light[Static_light_count++] = l;
@@ -282,7 +282,7 @@ light_add_point(vector *pos, float rad1, float rad2, float intensity, float r,
     if (!Lighting_flag)
         return;
 
-    //	if ( keyd_pressed[KEY_LSHIFT] ) return;
+    //   if ( keyd_pressed[KEY_LSHIFT] ) return;
 
     if (Num_lights >= MAX_LIGHTS) {
         mprintf(("Out of lights!\n"));
@@ -305,7 +305,7 @@ light_add_point(vector *pos, float rad1, float rad2, float intensity, float r,
     l->affected_objnum = -1;
 
     Assert(Num_light_levels <= 1);
-    //	Relevent_lights[Num_relevent_lights[Num_light_levels-1]++][Num_light_levels-1] = l;
+    //   Relevent_lights[Num_relevent_lights[Num_light_levels-1]++][Num_light_levels-1] = l;
 }
 
 void
@@ -320,7 +320,7 @@ light_add_point_unique(vector *pos, float rad1, float rad2, float intensity,
     if (!Lighting_flag)
         return;
 
-    //	if ( keyd_pressed[KEY_LSHIFT] ) return;
+    //   if ( keyd_pressed[KEY_LSHIFT] ) return;
 
     if (Num_lights >= MAX_LIGHTS) {
         mprintf(("Out of lights!\n"));
@@ -358,7 +358,7 @@ light_add_tube(vector *p0, vector *p1, float r1, float r2, float intensity,
     if (!Lighting_flag)
         return;
 
-    //	if ( keyd_pressed[KEY_LSHIFT] ) return;
+    //   if ( keyd_pressed[KEY_LSHIFT] ) return;
 
     if (Num_lights >= MAX_LIGHTS) {
         mprintf(("Out of lights!\n"));
@@ -453,7 +453,7 @@ light_filter_push(int objnum, vector *pos, float rad)
             }
             // otherwise check all relevant objects
             else {
-                // if ( (l->ignore_objnum<0) || (l->ignore_objnum != objnum) )	{
+                // if ( (l->ignore_objnum<0) || (l->ignore_objnum != objnum) )   {
                 vector to_light;
                 float dist_squared, max_dist_squared;
                 vm_vec_sub(&to_light, &l->vec, pos);
@@ -518,11 +518,11 @@ light_filter_push_box(vector *min, vector *max)
     n2 = Num_light_levels;
     Num_light_levels++;
 
-    //	static int mll = -1;
-    //	if ( Num_light_levels > mll )	{
-    //		mll = Num_light_levels;
-    //		mprintf(( "Max level = %d\n", mll ));
-    //	}
+    //   static int mll = -1;
+    //   if ( Num_light_levels > mll ) {
+    //      mll = Num_light_levels;
+    //      mprintf(( "Max level = %d\n", mll ));
+    //   }
 
     Assert(Num_light_levels < MAX_LIGHT_LEVELS);
 
@@ -591,10 +591,10 @@ light_rotate_all()
         light_rotate(Static_light[i]);
     }
 
-    //	l = Lights;
-    //	for (i=0; i<Num_lights; i++, l++ )	{
-    //		light_rotate(l);
-    //	}
+    //   l = Lights;
+    //   for (i=0; i<Num_lights; i++, l++ )  {
+    //      light_rotate(l);
+    //   }
 }
 
 // return the # of global light sources
@@ -853,7 +853,7 @@ light_apply_rgb(ubyte *param_r, ubyte *param_g, ubyte *param_b, vector *pos,
         }
 
         dot = vm_vec_dot(&to_light, norm);
-        //		dot = 1.0f;
+        //     dot = 1.0f;
         if (dot > 0.0f) {
             // indicating that we already calculated the distance (vm_vec_dist_to_line(...) does this for us)
             if (dist < 0.0f) {
@@ -923,11 +923,11 @@ light_apply_rgb(ubyte *param_r, ubyte *param_g, ubyte *param_b, vector *pos,
 float light_apply( vector *pos, vector * norm )
 {
 #if 1
-	float r,g,b;
-	light_apply_rgb( &r, &g, &b, pos, norm );
-	return (r+g+b) / 3.0f;
+   float r,g,b;
+   light_apply_rgb( &r, &g, &b, pos, norm );
+   return (r+g+b) / 3.0f;
 #else
-	return light_apply_ramp( pos, norm );
+   return light_apply_ramp( pos, norm );
 #endif
 
 }

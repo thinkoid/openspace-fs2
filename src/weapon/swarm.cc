@@ -153,7 +153,7 @@ swarm_maybe_fire_missile(int shipnum)
 // ------------------------------------------------------------------
 // swarm_create()
 //
-//	Get a free swarm missile entry, and initialize the struct members
+// Get a free swarm missile entry, and initialize the struct members
 //
 int
 swarm_create()
@@ -203,7 +203,7 @@ swarm_delete(int i)
 // ------------------------------------------------------------------
 // swarm_update_direction()
 //
-//	Check if we want to update the direction of a swarm missile.
+// Check if we want to update the direction of a swarm missile.
 //
 void
 swarm_update_direction(object *objp, float frametime)
@@ -398,7 +398,7 @@ swarm_new_target_calced:
 // ------------------------------------------------------------------
 // turret_swarm_create()
 //
-//	Get a free swarm missile entry, and initialize the struct members
+// Get a free swarm missile entry, and initialize the struct members
 //
 int
 turret_swarm_create()

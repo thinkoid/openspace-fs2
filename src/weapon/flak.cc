@@ -281,7 +281,7 @@ DCF(flak, "show flak dcf commands")
     dc_printf(
         "flak_err <float>      : set the radius of error for flak targeting\n");
     dc_printf(
-        "flak_range <float>		: set the radius of error for detonation of a flak shell\n");
+        "flak_range <float>\t\t: set the radius of error for detonation of a flak shell\n");
     dc_printf(
         "flak_rad <float>      : set the radius for the muzzle flash on a flak gun\n");
 }

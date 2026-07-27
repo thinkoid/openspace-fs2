@@ -70,7 +70,7 @@ extern int Mouse_down_last_frame;
 extern int Wing_slot_empty_bitmap;
 extern int Wing_slot_disabled_bitmap;
 
-extern int Flash_timer; //	timestamp used to start flashing
+extern int Flash_timer; // timestamp used to start flashing
 extern int Flash_toggle; // timestamp used to toggle flashing
 extern int Flash_bright; // state of button to flash
 

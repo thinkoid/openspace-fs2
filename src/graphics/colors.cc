@@ -37,7 +37,7 @@ calc_alphacolor_hud_type(alphacolor *ac)
 
     Assert(Alphacolors_intited);
 
-    //	mprintf(( "Calculating alphacolor for %d,%d,%d,%d\n", ac->r, ac->g, ac->b, ac->alpha ));
+    //   mprintf(( "Calculating alphacolor for %d,%d,%d,%d\n", ac->r, ac->g, ac->b, ac->alpha ));
 
     falpha = i2fl(ac->alpha) / 255.0f;
     if (falpha < 0.0f)
@@ -173,7 +173,7 @@ calc_alphacolor_blend_type(alphacolor *ac)
 
     Assert(Alphacolors_intited);
 
-    //	mprintf(( "Calculating alphacolor for %d,%d,%d,%d\n", ac->r, ac->g, ac->b, ac->alpha ));
+    //   mprintf(( "Calculating alphacolor for %d,%d,%d,%d\n", ac->r, ac->g, ac->b, ac->alpha ));
 
     alpha = ac->alpha >> 4;
     if (alpha < 0)
@@ -425,9 +425,9 @@ grx_set_color(int r, int g, int b)
     Assert((g >= 0) && (g < 256));
     Assert((b >= 0) && (b < 256));
 
-    //	if ( r!=0 || g!=0 || b!=0 )	{
-    //		mprintf(( "Setcolor: %d,%d,%d\n", r,g,b ));
-    //	}
+    //   if ( r!=0 || g!=0 || b!=0 )   {
+    //      mprintf(( "Setcolor: %d,%d,%d\n", r,g,b ));
+    //   }
     grx_init_color(&gr_screen.current_color, r, g, b);
     Current_alphacolor = NULL;
 }
@@ -443,7 +443,7 @@ calc_alphacolor_hud_type_old(alphacolor_old *ac)
 
     // Assert(Alphacolors_intited);
 
-    //	mprintf(( "Calculating alphacolor for %d,%d,%d,%d\n", ac->r, ac->g, ac->b, ac->alpha ));
+    //   mprintf(( "Calculating alphacolor for %d,%d,%d,%d\n", ac->r, ac->g, ac->b, ac->alpha ));
 
     falpha = i2fl(ac->alpha) / 255.0f;
     if (falpha < 0.0f)

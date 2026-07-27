@@ -258,7 +258,7 @@ emp_start_ship(object *ship_obj, float intensity, float time)
     // determining pre-existing EMP intensity (if any)
     start_intensity = shipp->emp_intensity < 0.0f ? 0.0f : shipp->emp_intensity;
 
-    // setup values (capping them if necessary)	(make sure that we un-normalize start_intensity)
+    // setup values (capping them if necessary) (make sure that we un-normalize start_intensity)
     if (intensity + (start_intensity * EMP_INTENSITY_MAX) >= EMP_INTENSITY_MAX) {
         intensity = EMP_INTENSITY_MAX - 1.0f;
     }
@@ -535,7 +535,7 @@ emp_maybe_reformat_text(char *text, int max_len, int gauge_id)
     if ((wt->stamp == -1) || timestamp_elapsed(wt->stamp)) {
         // reformat specific gauges differently
         switch (gauge_id) {
-        //	weapons
+        //  weapons
         case EG_WEAPON_TITLE:
         case EG_WEAPON_P1:
         case EG_WEAPON_P2:

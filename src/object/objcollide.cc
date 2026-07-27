@@ -20,8 +20,8 @@
 #define MAX_PAIRS 3000
 #else
 #define MAX_PAIRS                                                                \
-    8000 //	Reduced from 10,000 to 6,000 by MK on 4/1/98.
-        //	Most I saw was 3400 in sm1-06a, the asteriod mission.  No other mission came close.
+    8000 // Reduced from 10,000 to 6,000 by MK on 4/1/98.
+        //  Most I saw was 3400 in sm1-06a, the asteriod mission.  No other mission came close.
 #endif
 
 // the next 3 variables are used for pair statistics
@@ -43,7 +43,7 @@ obj_reset_pairs()
 {
     int i;
 
-    //	mprintf(( "Resetting object pairs...\n" ));
+    //   mprintf(( "Resetting object pairs...\n" ));
 
     pair_used_list.a = pair_used_list.b = NULL;
     pair_used_list.next = NULL;
@@ -108,8 +108,8 @@ obj_add_pair(object *A, object *B, int check_time, int add_to_end)
         return; // This object doesn't collide with anything
 
     // Make sure you're not checking a parent with it's kid or vicy-versy
-    //	if ( A->parent_sig == B->signature && !(A->type == OBJ_SHIP && B->type == OBJ_DEBRIS) ) return;
-    //	if ( B->parent_sig == A->signature && !(A->type == OBJ_DEBRIS && B->type == OBJ_SHIP) ) return;
+    //   if ( A->parent_sig == B->signature && !(A->type == OBJ_SHIP && B->type == OBJ_DEBRIS) ) return;
+    //   if ( B->parent_sig == A->signature && !(A->type == OBJ_DEBRIS && B->type == OBJ_SHIP) ) return;
     if (reject_obj_pair_on_parent(A, B)) {
         return;
     }
@@ -142,28 +142,28 @@ obj_add_pair(object *A, object *B, int check_time, int add_to_end)
         break;
     case COLLISION_OF(OBJ_ASTEROID, OBJ_WEAPON):
         // Only check collision's with player weapons
-        //		if ( Objects[B->parent].flags & OF_PLAYER_SHIP ) {
+        //     if ( Objects[B->parent].flags & OF_PLAYER_SHIP ) {
         check_collision = collide_asteroid_weapon;
-        //		}
+        //     }
         break;
     case COLLISION_OF(OBJ_WEAPON, OBJ_ASTEROID):
         swapped = 1;
         // Only check collision's with player weapons
-        //		if ( Objects[A->parent].flags & OF_PLAYER_SHIP ) {
+        //     if ( Objects[A->parent].flags & OF_PLAYER_SHIP ) {
         check_collision = collide_asteroid_weapon;
-        //		}
+        //     }
         break;
     case COLLISION_OF(OBJ_ASTEROID, OBJ_SHIP):
         // Only check collisions with player ships
-        //		if ( B->flags & OF_PLAYER_SHIP )	{
+        //     if ( B->flags & OF_PLAYER_SHIP ) {
         check_collision = collide_asteroid_ship;
-        //		}
+        //     }
         break;
     case COLLISION_OF(OBJ_SHIP, OBJ_ASTEROID):
         // Only check collisions with player ships
-        //		if ( A->flags & OF_PLAYER_SHIP )	{
+        //     if ( A->flags & OF_PLAYER_SHIP ) {
         check_collision = collide_asteroid_ship;
-        //		}
+        //     }
         swapped = 1;
         break;
     case COLLISION_OF(OBJ_SHIP, OBJ_SHIP):
@@ -222,18 +222,18 @@ obj_add_pair(object *A, object *B, int check_time, int add_to_end)
             }
         }
         /*
-		int	atype, btype;
+      int   atype, btype;
 
-		atype = Weapon_info[Weapons[A->instance].weapon_info_index].subtype;
-		btype = Weapon_info[Weapons[B->instance].weapon_info_index].subtype;
+      atype = Weapon_info[Weapons[A->instance].weapon_info_index].subtype;
+      btype = Weapon_info[Weapons[B->instance].weapon_info_index].subtype;
 
-		if ((atype == WP_LASER) && (btype == WP_MISSILE))
-			check_collision = collide_weapon_weapon;
-		else if ((atype == WP_MISSILE) && (btype == WP_LASER)) {
-			check_collision = collide_weapon_weapon;
-			swapped = 1;
-		} else if ((atype == WP_MISSILE) && (btype == WP_MISSILE))
-			check_collision = collide_weapon_weapon;
+      if ((atype == WP_LASER) && (btype == WP_MISSILE))
+         check_collision = collide_weapon_weapon;
+      else if ((atype == WP_MISSILE) && (btype == WP_LASER)) {
+         check_collision = collide_weapon_weapon;
+         swapped = 1;
+      } else if ((atype == WP_MISSILE) && (btype == WP_MISSILE))
+         check_collision = collide_weapon_weapon;
 */
 
         break;
@@ -354,10 +354,10 @@ obj_add_pair(object *A, object *B, int check_time, int add_to_end)
     }
 
     Num_pairs++;
-    /*	if (Num_pairs > Num_pairs_hwm) {
-		Num_pairs_hwm = Num_pairs;
-		//nprintf(("AI", "Num_pairs high water mark = %i\n", Num_pairs_hwm));
-	}
+    /*   if (Num_pairs > Num_pairs_hwm) {
+      Num_pairs_hwm = Num_pairs;
+      //nprintf(("AI", "Num_pairs high water mark = %i\n", Num_pairs_hwm));
+   }
 */
 
     A->num_pairs++;
@@ -402,9 +402,9 @@ obj_check_all_collisions()
             if ((*tmp->check_collision)(tmp)) {
 // We never need to check this pair again.
 #if 0 //def DONT_REMOVE_PAIRS
-					// Never check it again, but keep the pair around
-					// (useful for debugging)
-					tmp->next_check_time = timestamp(-1);
+               // Never check it again, but keep the pair around
+               // (useful for debugging)
+               tmp->next_check_time = timestamp(-1);
 #else
                 // Never check it again, so remove the pair
                 removed = 1;
@@ -457,15 +457,15 @@ obj_check_all_collisions()
     // What percent of the pairs did we check?
     // FYI: (n*(n-1))/2 is the total number of checks required for comparing n objects.
 
-    //	if ( org_pairs > 1 )	{
-    //		Object_checked_percentage = (i2fl(n)*100.0f) / i2fl(org_pairs);
-    //	} else {
-    //		Object_checked_percentage = 0.0f;
-    //	}
+    //   if ( org_pairs > 1 ) {
+    //      Object_checked_percentage = (i2fl(n)*100.0f) / i2fl(org_pairs);
+    //   } else {
+    //      Object_checked_percentage = 0.0f;
+    //   }
 }
 
-//	See if two lines intersect by doing recursive subdivision.
-//	Bails out if larger distance traveled is less than sum of radii + 1.0f.
+// See if two lines intersect by doing recursive subdivision.
+// Bails out if larger distance traveled is less than sum of radii + 1.0f.
 int
 collide_subdivide(vector *p0, vector *p1, float prad, vector *q0, vector *q1,
                   float qrad)
@@ -477,7 +477,7 @@ collide_subdivide(vector *p0, vector *p1, float prad, vector *q0, vector *q1,
 
     ab_dist = vm_vec_dist(p1, q1);
 
-    //	See if their spheres intersect
+    //   See if their spheres intersect
     if (ab_dist < a_dist + b_dist + prad + qrad) {
         if (ab_dist < prad + qrad)
             return 1;
@@ -502,15 +502,15 @@ collide_subdivide(vector *p0, vector *p1, float prad, vector *q0, vector *q1,
         return 0;
 }
 
-//	Return true if object A is expected to collide with object B within time duration
-//	For purposes of this check, the first object moves from current location to predicted
-//	location.  The second object is assumed to be where it will be at time duration, NOT
-//	where it currently is.
-//	radius_scale is used to control the precision of the check.
-//		If 0.0, then use polygon models to perform check, slow and accurate
-//		If !0.0, then use as a scale on the radius of the objects.  1.0 is Descent style
-//			collisions.  Larger values can be used to be sloppy about the collisions which
-//			is useful if a moving object wants to prevent a collision.
+// Return true if object A is expected to collide with object B within time duration
+// For purposes of this check, the first object moves from current location to predicted
+// location.  The second object is assumed to be where it will be at time duration, NOT
+// where it currently is.
+// radius_scale is used to control the precision of the check.
+//    If 0.0, then use polygon models to perform check, slow and accurate
+//    If !0.0, then use as a scale on the radius of the objects.  1.0 is Descent style
+//       collisions.  Larger values can be used to be sloppy about the collisions which
+//       is useful if a moving object wants to prevent a collision.
 int
 objects_will_collide(object *A, object *B, float duration, float radius_scale)
 {
@@ -530,7 +530,7 @@ objects_will_collide(object *A, object *B, float duration, float radius_scale)
         size_A = A->radius * radius_scale;
         size_B = B->radius * radius_scale;
 
-        //	If A is moving, check along vector.
+        //  If A is moving, check along vector.
         if (A->phys_info.speed != 0.0f) {
             r = find_nearest_point_on_line(&nearest_point, &A->pos, &A_future.pos,
                                            &B->pos);
@@ -549,7 +549,7 @@ objects_will_collide(object *A, object *B, float duration, float radius_scale)
     }
 }
 
-//	Return true if the vector from *start_pos to *end_pos is within objp->radius*radius_scale of *objp
+// Return true if the vector from *start_pos to *end_pos is within objp->radius*radius_scale of *objp
 int
 vector_object_collision(vector *start_pos, vector *end_pos, object *objp,
                         float radius_scale)
@@ -576,7 +576,7 @@ weapon_will_never_hit(object *weapon, object *other, obj_pair *current_pair)
 {
     Assert(weapon->type == OBJ_WEAPON);
 
-    //	mprintf(( "Frame: %d,  Weapon=%d, Other=%d, pair=$%08x\n", G3_frame_count, OBJ_INDEX(weapon), OBJ_INDEX(other), current_pair ));
+    //   mprintf(( "Frame: %d,  Weapon=%d, Other=%d, pair=$%08x\n", G3_frame_count, OBJ_INDEX(weapon), OBJ_INDEX(other), current_pair ));
 
     // Do some checks for weapons that don't turn
     if (!(Weapon_info[Weapons[weapon->instance].weapon_info_index].wi_flags &
@@ -625,7 +625,7 @@ weapon_will_never_hit(object *weapon, object *other, obj_pair *current_pair)
     if (current_pair) {
         // Find the time it will take before these get within each others distances.
         // tmp->next_check_time = timestamp(500);
-        //vector	max_vel;			//maximum foward velocity in x,y,z
+        //vector  max_vel;       //maximum foward velocity in x,y,z
 
         float max_vel_weapon, max_vel_other;
         max_vel_weapon = weapon->phys_info.max_vel.z;
@@ -742,9 +742,9 @@ weapon_will_never_hit(object *weapon, object *other, obj_pair *current_pair)
     return 0;
 }
 
-//	Return true if vector from *curpos to *goalpos intersects with object *goalobjp
-//	Else, return false.
-//	radius is radius of object moving from curpos to goalpos.
+// Return true if vector from *curpos to *goalpos intersects with object *goalobjp
+// Else, return false.
+// radius is radius of object moving from curpos to goalpos.
 int
 pp_collide(vector *curpos, vector *goalpos, object *goalobjp, float radius)
 {
@@ -770,8 +770,8 @@ pp_collide(vector *curpos, vector *goalpos, object *goalobjp, float radius)
     return mc.num_hits;
 }
 
-//	Setup and call pp_collide for collide_predict_large_ship
-//	Returns true if objp will collide with objp2 before it reaches goal_pos.
+// Setup and call pp_collide for collide_predict_large_ship
+// Returns true if objp will collide with objp2 before it reaches goal_pos.
 int
 cpls_aux(vector *goal_pos, object *objp2, object *objp)
 {
@@ -789,8 +789,8 @@ cpls_aux(vector *goal_pos, object *objp2, object *objp)
         return 0;
 }
 
-//	Return true if objp will collide with some large object.
-//	Don't check for an object this ship is docked to.
+// Return true if objp will collide with some large object.
+// Don't check for an object this ship is docked to.
 int
 collide_predict_large_ship(object *objp, float distance)
 {
@@ -836,7 +836,7 @@ collide_predict_large_ship(object *objp, float distance)
                 count =
                     (int)(d1 /
                           (objp2->radius +
-                           objp->radius)); //	Scale up distance, else looks like there would be a collision.
+                           objp->radius)); //   Scale up distance, else looks like there would be a collision.
                 pos = cur_pos;
                 vm_vec_normalized_dir(&delvec, &goal_pos, &cur_pos);
                 vm_vec_scale(&delvec, d1 / count);

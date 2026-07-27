@@ -31,15 +31,15 @@
 #include <globalincs/alphacolors.hh>
 
 #define MAX_TRAINING_MSG_LINES 10
-//#define TRAINING_MSG_WINDOW_X			174
-//#define TRAINING_MSG_WINDOW_Y			40
+//#define TRAINING_MSG_WINDOW_X        174
+//#define TRAINING_MSG_WINDOW_Y        40
 #define TRAINING_MSG_WINDOW_WIDTH 266
 #define TRAINING_LINE_WIDTH 250 // width in pixels of actual text
 #define TRAINING_TIMING 150 // milliseconds per character to display messages
 #define TRAINING_TIMING_BASE 1000 // Minimum milliseconds to display any message
-//#define TRAINING_OBJ_WND_X				0		// offset of left edge of window
-//#define TRAINING_OBJ_WND_Y				180	// offset of top edge of window
-//#define TRAINING_OBJ_WND_Y				187	// offset of top edge of window
+//#define TRAINING_OBJ_WND_X           0     // offset of left edge of window
+//#define TRAINING_OBJ_WND_Y           180   // offset of top edge of window
+//#define TRAINING_OBJ_WND_Y           187   // offset of top edge of window
 #define TRAINING_OBJ_WND_WIDTH 170 // number of pixels wide window is.
 #define TRAINING_OBJ_LINE_WIDTH 150 // number of pixels wide text can be
 #define TRAINING_OBJ_LINES 50 // number of lines to track in objective list
@@ -197,7 +197,7 @@ training_obj_display()
         if (Training_obj_lines[i + offset] & TRAINING_OBJ_LINES_KEY) {
             message_translate_tokens(
                 buf, Mission_events[z].objective_key_text); // remap keys
-            //			gr_set_color_fast(&Color_normal);
+            //       gr_set_color_fast(&Color_normal);
             c = &Color_bright_green;
         }
         else {
@@ -208,17 +208,17 @@ training_obj_display()
 
             switch (mission_get_event_status(z)) {
             case EVENT_CURRENT:
-                //				gr_set_color_fast(&Color_bright_white);
+                //            gr_set_color_fast(&Color_bright_white);
                 c = &Color_bright_white;
                 break;
 
             case EVENT_FAILED:
-                //				gr_set_color_fast(&Color_bright_red);
+                //            gr_set_color_fast(&Color_bright_red);
                 c = &Color_bright_red;
                 break;
 
             case EVENT_SATISFIED:
-                //				gr_set_color_fast(&Color_bright_blue);
+                //            gr_set_color_fast(&Color_bright_blue);
                 t = Mission_events[z].satisfied_time;
                 if (t + i2f(2) > Missiontime) {
                     if (Missiontime % fl2f(.4f) < fl2f(.2f)) {
@@ -364,7 +364,7 @@ sort_training_objectives()
         return;
     }
 
-    // go through lines 0 to offset-1 and check if there are any CURRENT or	RECENTLY_KNOWN events that should be shown
+    // go through lines 0 to offset-1 and check if there are any CURRENT or   RECENTLY_KNOWN events that should be shown
     int num_offset_events = 0;
     for (i = 0; i < offset; i++) {
         event_status = mission_get_event_status(TRAINING_OBJ_LINES_MASK(i));
@@ -711,7 +711,7 @@ message_play_training_voice(int index)
                     if (Training_voice_handle < 0) {
                         nprintf(("Warning", "Unable to load voice file %s\n",
                                  Message_waves[index].name));
-                        //	Warning(LOCATION, "Unable to load voice file %s\n", Message_waves[index].name);
+                        // Warning(LOCATION, "Unable to load voice file %s\n", Message_waves[index].name);
                     }
                 }
             } // Training_voice should be valid and loaded now
@@ -788,16 +788,16 @@ message_training_setup(int m, int length)
 // adds simple text to the directives display
 /*id message_training_add_simple( char *text )
 {
-	int i;
+   int i;
 
-	training_process_msg(text);
-	HUD_add_to_scrollback(Training_buf, HUD_SOURCE_TRAINING);
-	Training_num_lines = split_str(Training_buf, TRAINING_LINE_WIDTH, Training_line_sizes, Training_lines, MAX_TRAINING_MSG_LINES);
-	Assert(Training_num_lines > 0);
-	for (i=0; i<Training_num_lines; i++)
-		Training_lines[i][Training_line_sizes[i]] = 0;
+   training_process_msg(text);
+   HUD_add_to_scrollback(Training_buf, HUD_SOURCE_TRAINING);
+   Training_num_lines = split_str(Training_buf, TRAINING_LINE_WIDTH, Training_line_sizes, Training_lines, MAX_TRAINING_MSG_LINES);
+   Assert(Training_num_lines > 0);
+   for (i=0; i<Training_num_lines; i++)
+      Training_lines[i][Training_line_sizes[i]] = 0;
 
-	Training_msg_timestamp = timestamp(5000);
+   Training_msg_timestamp = timestamp(5000);
 } */
 
 // add a message to the que to be sent later.
@@ -943,12 +943,12 @@ message_training_display()
     }
 
     Training_msg_method = 0;
-    //	if (Training_msg_method) {
-    //		char *msg = "Press a key to continue";
+    //   if (Training_msg_method) {
+    //      char *msg = "Press a key to continue";
 
-    //		gr_get_string_size(&i, NULL, msg);
-    //		gr_printf(TRAINING_MSG_WINDOW_X + TRAINING_MSG_WINDOW_WIDTH / 2 - i / 2, TRAINING_MSG_WINDOW_Y + (Training_num_lines + 2) * height, msg);
-    //	}
+    //      gr_get_string_size(&i, NULL, msg);
+    //      gr_printf(TRAINING_MSG_WINDOW_X + TRAINING_MSG_WINDOW_WIDTH / 2 - i / 2, TRAINING_MSG_WINDOW_Y + (Training_num_lines + 2) * height, msg);
+    //   }
 
     if ((Training_voice >= 0) && (Training_num_lines > 0) &&
         !(Training_msg_timestamp)) {
@@ -1002,9 +1002,9 @@ void
 training_fail()
 {
     Training_failure = 1;
-    //	JasonH: Add code here to suspend training and display a directive to warp out.
-    //	Suspend training.
-    //	Give directive to warp out.
-    //	Also ensure that a special failure debriefing is given.  Must mention firing at instructor.
-    //	Ask Sandeep to write it (or you can).
+    //   JasonH: Add code here to suspend training and display a directive to warp out.
+    //   Suspend training.
+    //   Give directive to warp out.
+    //   Also ensure that a special failure debriefing is given.  Must mention firing at instructor.
+    //   Ask Sandeep to write it (or you can).
 }

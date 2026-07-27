@@ -38,7 +38,7 @@ lang_info Lcl_languages[LCL_NUM_LANGUAGES] = {
 };
 
 //#if defined(GERMAN_BUILD)
-//#define DEFAULT_LANGUAGE							"German"
+//#define DEFAULT_LANGUAGE                   "German"
 //#else
 #define DEFAULT_LANGUAGE "English"
 //#endif
@@ -99,10 +99,10 @@ int Ts_id_text_size;
 
 // file pointers for optimized string lookups
 // some example times for Freespace2 startup with granularities (mostly .tbl files, ~500 strings in the table file, many looked up more than once)
-// granularity 20			:		13 secs
-// granularity 10			:		11 secs
-// granularity 5			:		9 secs
-// granularity 2			:		7-8 secs
+// granularity 20       :     13 secs
+// granularity 10       :     11 secs
+// granularity 5        :     9 secs
+// granularity 2        :     7-8 secs
 #define LCL_GRANULARITY                                                          \
     1 // how many strings between each pointer (lower granularities should give faster lookup times)
 #define LCL_MAX_POINTERS 4500 // max # of pointers

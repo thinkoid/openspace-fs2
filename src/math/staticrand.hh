@@ -11,7 +11,7 @@
 
 #define SEMIRAND_MAX_LOG 4
 #define SEMIRAND_MAX                                                             \
-    (2 << SEMIRAND_MAX_LOG) //	Do not change this!  Change SEMIRAND_MAX_LOG!
+    (2 << SEMIRAND_MAX_LOG) //   Do not change this!  Change SEMIRAND_MAX_LOG!
 
 extern int
     Semirand[SEMIRAND_MAX]; // this array is saved by the ai code on save/restore

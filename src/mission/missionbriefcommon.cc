@@ -120,11 +120,11 @@ static matrix Current_cam_orient; // current camera orientation
 static matrix Target_cam_orient; // desired camera orientation
 static matrix Start_cam_orient; // start camera orientation
 static vector Start_cam_pos; // position of camera at the start of a translation
-static vector Cam_vel; //	camera velocity
+static vector Cam_vel; //  camera velocity
 static vector Current_lookat_pos; // lookat point
 static vector Target_lookat_pos; // lookat point
 static vector Start_lookat_pos;
-static vector Lookat_vel; //	lookat point velocity
+static vector Lookat_vel; //  lookat point velocity
 
 static float Start_cam_move; // time at which camera started moving (seconds)
 static float
@@ -288,7 +288,7 @@ brief_set_icon_color(int team)
 }
 
 // --------------------------------------------------------------------------------------
-//	brief_move_icon_reset()
+// brief_move_icon_reset()
 //
 //
 void
@@ -408,7 +408,7 @@ mission_brief_common_reset()
 }
 
 // --------------------------------------------------------------------------------------
-//	brief_reset()
+// brief_reset()
 //
 //
 void
@@ -423,7 +423,7 @@ brief_reset()
 }
 
 // --------------------------------------------------------------------------------------
-//	debrief_reset()
+// debrief_reset()
 //
 //
 void
@@ -443,9 +443,9 @@ debrief_reset()
 }
 
 // --------------------------------------------------------------------------------------
-//	brief_init_screen()
+// brief_init_screen()
 //
-//	Set up the screen regions.
+// Set up the screen regions.
 //
 void
 brief_init_screen()
@@ -457,27 +457,27 @@ brief_init_screen()
     bscreen.map_y2 = Brief_grid_coords[gr_screen.res][1] +
                      Brief_grid_coords[gr_screen.res][3];
     /*
-	bscreen.map_x1			= BRIEF_GRID3_X1;
-	bscreen.map_x2			= BRIEF_GRID0_X2;
-	bscreen.map_y1			= BRIEF_GRID3_Y1;
-	bscreen.map_y2			= BRIEF_GRID0_Y2+4;
-	bscreen.btext_x1		= BRIEF_TEXT_X1;
-	bscreen.btext_x2		= BRIEF_TEXT_X2;
-	bscreen.btext_y1		= BRIEF_TEXT_Y1;
-	bscreen.btext_y2		= BRIEF_TEXT_Y2;
-	bscreen.cup_x1			= BRIEF_CUP_X1;
-	bscreen.cup_y1			= BRIEF_CUP_Y1;
-	bscreen.cup_x2			= BRIEF_CUP_X2;
-	bscreen.cup_y2			= BRIEF_CUP_Y2;
-	bscreen.cupinfo_x1	= BRIEF_CUPINFO_X1;
-	bscreen.cupinfo_y1	= BRIEF_CUPINFO_Y1;
-	bscreen.cupinfo_x2	= BRIEF_CUPINFO_X2;
-	bscreen.cupinfo_y2	= BRIEF_CUPINFO_Y2;
-	*/
+   bscreen.map_x1       = BRIEF_GRID3_X1;
+   bscreen.map_x2       = BRIEF_GRID0_X2;
+   bscreen.map_y1       = BRIEF_GRID3_Y1;
+   bscreen.map_y2       = BRIEF_GRID0_Y2+4;
+   bscreen.btext_x1     = BRIEF_TEXT_X1;
+   bscreen.btext_x2     = BRIEF_TEXT_X2;
+   bscreen.btext_y1     = BRIEF_TEXT_Y1;
+   bscreen.btext_y2     = BRIEF_TEXT_Y2;
+   bscreen.cup_x1       = BRIEF_CUP_X1;
+   bscreen.cup_y1       = BRIEF_CUP_Y1;
+   bscreen.cup_x2       = BRIEF_CUP_X2;
+   bscreen.cup_y2       = BRIEF_CUP_Y2;
+   bscreen.cupinfo_x1   = BRIEF_CUPINFO_X1;
+   bscreen.cupinfo_y1   = BRIEF_CUPINFO_Y1;
+   bscreen.cupinfo_x2   = BRIEF_CUPINFO_X2;
+   bscreen.cupinfo_y2   = BRIEF_CUPINFO_Y2;
+   */
 }
 
 // --------------------------------------------------------------------------------------
-//	brief_init_icons()
+// brief_init_icons()
 //
 //
 void
@@ -509,7 +509,7 @@ brief_init_anims()
 }
 
 // ------------------------------------------------------------------------
-//	brief_unload_icons()
+// brief_unload_icons()
 //
 //
 void
@@ -550,7 +550,7 @@ brief_icon_used_in_briefing(int icon_type)
 }
 
 // --------------------------------------------------------------------------------------
-//	brief_parse_icon_tbl()
+// brief_parse_icon_tbl()
 //
 //
 void
@@ -624,7 +624,7 @@ brief_parse_icon_tbl()
 }
 
 // --------------------------------------------------------------------------------------
-//	brief_close_map()
+// brief_close_map()
 //
 //
 void
@@ -707,7 +707,7 @@ brief_preload_anims()
 }
 
 // --------------------------------------------------------------------------------------
-//	brief_init_map()
+// brief_init_map()
 //
 //
 void
@@ -851,12 +851,12 @@ brief_render_icon_line(int stage_num, int line_num)
 // -------------------------------------------------------------------------------------
 // Draw a briefing icon
 //
-// parameters:		stage_num		=>		briefing stage number (start at 0)
-//						icon_num			=>		icon number in stage
-//						frametime		=>		time elapsed in seconds
-//						selected			=>		FRED only (will be 0 or non-zero)
-//						w_scale_factor	=>		scale icon in width by this amount (default 1.0f)
-//						h_scale_factor	=>		scale icon in height by this amount (default 1.0f)
+// parameters:    stage_num      =>    briefing stage number (start at 0)
+//                icon_num       =>    icon number in stage
+//                frametime      =>    time elapsed in seconds
+//                selected       =>    FRED only (will be 0 or non-zero)
+//                w_scale_factor =>    scale icon in width by this amount (default 1.0f)
+//                h_scale_factor =>    scale icon in height by this amount (default 1.0f)
 void
 brief_render_icon(int stage_num, int icon_num, float frametime, int selected,
                   float w_scale_factor, float h_scale_factor)
@@ -937,17 +937,17 @@ brief_render_icon(int stage_num, int icon_num, float frametime, int selected,
         closeup_icon = (brief_icon *)brief_get_closeup_icon();
         if (bi == closeup_icon || selected) {
             icon_bitmap = ib->first_frame + 1;
-            //			gr_set_bitmap(ib->first_frame+1);
+            //       gr_set_bitmap(ib->first_frame+1);
         }
         else {
             icon_bitmap = ib->first_frame;
-            //			gr_set_bitmap(ib->first_frame);
+            //       gr_set_bitmap(ib->first_frame);
         }
 
         // draw icon centered at draw position
-        //		bx = fl2i(tv.sx - ib->icon_w/2.0f);
-        //		by = fl2i(tv.sy - ib->icon_h/2.0f);
-        //		bc = bx + fl2i(ib->icon_w/2.0f);
+        //     bx = fl2i(tv.sx - ib->icon_w/2.0f);
+        //     by = fl2i(tv.sy - ib->icon_h/2.0f);
+        //     bc = bx + fl2i(ib->icon_w/2.0f);
         //gr_aabitmap(bx, by);
 
         float scaled_w, scaled_h;
@@ -1011,7 +1011,7 @@ brief_render_icon(int stage_num, int icon_num, float frametime, int selected,
             if (ha->first_frame >= 0) {
                 ha->sx = bx;
                 ha->sy = by;
-                //				hud_set_iff_color(bi->team);
+                //            hud_set_iff_color(bi->team);
                 brief_set_icon_color(bi->team);
 
                 if (hud_anim_render(ha, frametime, 1, 0, 0, 1) == 0) {
@@ -1100,7 +1100,7 @@ brief_render_icons(int stage_num, float frametime)
 // ------------------------------------------------------------------------------------
 // brief_start_highlight_anims()
 //
-//	see if there are any highlight animations to play
+// see if there are any highlight animations to play
 //
 void
 brief_start_highlight_anims(int stage_num)
@@ -1147,7 +1147,7 @@ brief_render_map(int stage_num, float frametime)
                 bscreen.map_y2 - bscreen.map_y1 - 2);
 
     // REMOVED by neilk: removed gr_clear for FS2 because interface no longer calls for black background on grid
-    //	gr_clear();
+    //   gr_clear();
 
     if (stage_num >= Briefing->num_stages) {
         gr_reset_clip();
@@ -1328,15 +1328,15 @@ brief_render_line(int line_num, int x, int y, int instance)
         }
 
         // JAS: Not needed?
-        //		// now erase the part we don't want to be bright white
-        //		gr_set_color_fast(&Color_black);
-        //		if (i > BRIGHTEN_LEAD) {
-        //			line[i - BRIGHTEN_LEAD] = 0;
-        //			gr_get_string_size(&w, &h, line);
-        //			gr_set_clip(x, y, w, gr_get_font_height());
-        //			gr_clear();
-        //			gr_reset_clip();
-        //		}
+        //     // now erase the part we don't want to be bright white
+        //     gr_set_color_fast(&Color_black);
+        //     if (i > BRIGHTEN_LEAD) {
+        //        line[i - BRIGHTEN_LEAD] = 0;
+        //        gr_get_string_size(&w, &h, line);
+        //        gr_set_clip(x, y, w, gr_get_font_height());
+        //        gr_clear();
+        //        gr_reset_clip();
+        //     }
     }
 }
 
@@ -1353,9 +1353,9 @@ brief_text_wipe_finished()
 // -------------------------------------------------------------------------------------
 // brief_render_text()
 //
-// input:	frametime	=>	Time in seconds of previous frame
-//				instance		=>	Optional parameter.  Used to indicate which text stream is used.
-//									This value is 0 unless multiple text streams are required
+// input:   frametime   => Time in seconds of previous frame
+//          instance    => Optional parameter.  Used to indicate which text stream is used.
+//                         This value is 0 unless multiple text streams are required
 int
 brief_render_text(int line_offset, int x, int y, int h, float frametime,
                   int instance, int line_spacing)
@@ -1401,8 +1401,8 @@ brief_render_text(int line_offset, int x, int y, int h, float frametime,
 void
 brief_render_elements(vector *pos, grid *gridp)
 {
-    vector gpos; //	Location of point on grid.
-    //	vector	tpos;
+    vector gpos; //  Location of point on grid.
+    //   vector   tpos;
     float dxz;
     plane tplane;
     vector *gv;
@@ -1427,22 +1427,22 @@ brief_render_elements(vector *pos, grid *gridp)
 
     // AL 11-20-97: don't draw elevation lines.. they are confusing
     /*
-	brief_rpd_line(&gpos, pos);	//	Line from grid to object center.
+   brief_rpd_line(&gpos, pos);   // Line from grid to object center.
 
-	tpos = gpos;
+   tpos = gpos;
 
-	vm_vec_scale_add2(&gpos, &gridp->gmatrix.rvec, -dxz/2);
-	vm_vec_scale_add2(&gpos, &gridp->gmatrix.fvec, -dxz/2);
-	
-	vm_vec_scale_add2(&tpos, &gridp->gmatrix.rvec, dxz/2);
-	vm_vec_scale_add2(&tpos, &gridp->gmatrix.fvec, dxz/2);
-	
-	brief_rpd_line(&gpos, &tpos);
+   vm_vec_scale_add2(&gpos, &gridp->gmatrix.rvec, -dxz/2);
+   vm_vec_scale_add2(&gpos, &gridp->gmatrix.fvec, -dxz/2);
+   
+   vm_vec_scale_add2(&tpos, &gridp->gmatrix.rvec, dxz/2);
+   vm_vec_scale_add2(&tpos, &gridp->gmatrix.fvec, dxz/2);
+   
+   brief_rpd_line(&gpos, &tpos);
 
-	vm_vec_scale_add2(&gpos, &gridp->gmatrix.rvec, dxz);
-	vm_vec_scale_add2(&tpos, &gridp->gmatrix.rvec, -dxz);
+   vm_vec_scale_add2(&gpos, &gridp->gmatrix.rvec, dxz);
+   vm_vec_scale_add2(&tpos, &gridp->gmatrix.rvec, -dxz);
 
-	brief_rpd_line(&gpos, &tpos);
+   brief_rpd_line(&gpos, &tpos);
 */
 }
 
@@ -1468,9 +1468,9 @@ brief_reset_icons(int stage_num)
 // ------------------------------------------------------------------------------------
 // brief_set_camera_target()
 //
-//	input:	pos		=>		target position for the camera
-//				orient	=>		target orientation for the camera
-//				time		=>		time in ms to reach target
+// input:   pos      =>    target position for the camera
+//          orient   =>    target orientation for the camera
+//          time     =>    time in ms to reach target
 //
 void
 brief_set_camera_target(vector *pos, matrix *orient, int time)
@@ -1507,7 +1507,7 @@ brief_set_camera_target(vector *pos, matrix *orient, int time)
 
     // calculate camera velocity
     vm_vec_sub(&Cam_vel, pos, &Current_cam_pos);
-    //	vm_vec_scale(&Cam_vel, 1.0f/time_in_seconds);
+    //   vm_vec_scale(&Cam_vel, 1.0f/time_in_seconds);
     if (!IS_VEC_NULL(&Cam_vel)) {
         vm_vec_normalize(&Cam_vel);
     }
@@ -1522,8 +1522,8 @@ brief_set_camera_target(vector *pos, matrix *orient, int time)
 
     Total_dist = vm_vec_dist(&Start_cam_pos, &Target_cam_pos);
 
-    //	Peak_speed=Total_dist/Total_move_time*1.5f;
-    //	Cam_accel = Peak_speed/Total_move_time*3.0f;
+    //   Peak_speed=Total_dist/Total_move_time*1.5f;
+    //   Cam_accel = Peak_speed/Total_move_time*3.0f;
 
     Peak_speed = Total_dist / Total_move_time * 2.0f;
     Cam_accel = 4 * Total_dist / (Total_move_time * Total_move_time);
@@ -1573,9 +1573,9 @@ brief_set_text_color(int color_index)
 }
 
 // Set up the Colored_text array.
-// input:		index		=>		Index into Brief_text[] for source text.
-//					instance	=>		Which instance of Colored_text[] to use.
-//										Value is 0 unless multiple text streams are required.
+// input:      index    =>    Index into Brief_text[] for source text.
+//             instance =>    Which instance of Colored_text[] to use.
+//                            Value is 0 unless multiple text streams are required.
 int
 brief_text_colorize(int index, int instance)
 {
@@ -1623,10 +1623,10 @@ brief_text_colorize(int index, int instance)
 // ------------------------------------------------------------------------------------
 // brief_color_text_init()
 //
-//	input:	src		=>		paragraph of text to process
-//				w			=>		max width of line in pixels
-//				instance	=>		optional parameter, used when multiple text streams are required
-//									(default value is 0)
+// input:   src      =>    paragraph of text to process
+//          w        =>    max width of line in pixels
+//          instance =>    optional parameter, used when multiple text streams are required
+//                         (default value is 0)
 int
 brief_color_text_init(char *src, int w, int instance)
 {
@@ -1659,8 +1659,8 @@ brief_color_text_init(char *src, int w, int instance)
 // ------------------------------------------------------------------------------------
 // brief_get_free_move_icon()
 //
-//	returns:		failure	=>		-1
-//					success	=>		handle to a free move icon struct
+// returns:    failure  =>    -1
+//             success  =>    handle to a free move icon struct
 //
 int
 brief_get_free_move_icon()
@@ -1682,9 +1682,9 @@ brief_get_free_move_icon()
 // ------------------------------------------------------------------------------------
 // brief_set_move_list()
 //
-//	input:	new_stage		=>		new stage number that briefing is now moving to
-//				current_stage	=>		current stage that the briefing is on
-//				time				=>		time in seconds
+// input:   new_stage      =>    new stage number that briefing is now moving to
+//          current_stage  =>    current stage that the briefing is on
+//          time           =>    time in seconds
 //
 int
 brief_set_move_list(int new_stage, int current_stage, float time)
@@ -1794,10 +1794,10 @@ brief_clear_fade_out_icons()
 // ------------------------------------------------------------------------------------
 // brief_set_new_stage()
 //
-//	input:	pos			=>		target position for the camera
-//				orient		=>		target orientation for the camera
-//				time			=>		time in ms to reach target
-//				stage_num	=>		stage number of briefing (start numbering at 0)
+// input:   pos         =>    target position for the camera
+//          orient      =>    target orientation for the camera
+//          time        =>    time in ms to reach target
+//          stage_num   =>    stage number of briefing (start numbering at 0)
 //
 
 void
@@ -1958,15 +1958,15 @@ brief_camera_move(float frametime, int stage_num)
     Elapsed_time += frametime;
 
     if (Cam_target_reached) {
-        //		Current_cam_pos = Target_cam_pos;
-        //		Current_lookat_pos = Target_lookat_pos;
-        //		Current_cam_orient = Target_cam_orient;
+        //     Current_cam_pos = Target_cam_pos;
+        //     Current_lookat_pos = Target_lookat_pos;
+        //     Current_cam_orient = Target_cam_orient;
         return;
     }
 
     // Update orientation
     if ((Elapsed_time < Total_move_time)) {
-        //		interpolate_matrix(&Current_cam_orient, &Target_cam_orient, &Start_cam_orient, Elapsed_time, Total_move_time );
+        //     interpolate_matrix(&Current_cam_orient, &Target_cam_orient, &Start_cam_orient, Elapsed_time, Total_move_time );
         vm_matrix_interpolate(&Target_cam_orient, &Current_cam_orient, &W_init,
                               frametime, &result, &w_out, &Vel_limit, &Acc_limit);
         Current_cam_orient = result;
@@ -1974,20 +1974,20 @@ brief_camera_move(float frametime, int stage_num)
     }
 
     /*
-	// interpolate lookat position
-	if ( vm_vec_cmp( &Current_lookat_pos, &Target_lookat_pos ) ) {
-		vm_vec_copy_scale(&dist_moved, &Lookat_vel, Elapsed_time);
-		vm_vec_add(&Current_lookat_pos, &Start_lookat_pos, &dist_moved);
+   // interpolate lookat position
+   if ( vm_vec_cmp( &Current_lookat_pos, &Target_lookat_pos ) ) {
+      vm_vec_copy_scale(&dist_moved, &Lookat_vel, Elapsed_time);
+      vm_vec_add(&Current_lookat_pos, &Start_lookat_pos, &dist_moved);
 
-		if ( camera_pos_past_target(&Start_lookat_pos, &Current_lookat_pos, &Target_lookat_pos) ) {
-			Current_lookat_pos = Target_lookat_pos;
-		}
-	}
+      if ( camera_pos_past_target(&Start_lookat_pos, &Current_lookat_pos, &Target_lookat_pos) ) {
+         Current_lookat_pos = Target_lookat_pos;
+      }
+   }
 
-	cur_dist = Start_dist + Dist_change_rate * Elapsed_time;
-	vm_vec_copy_scale(&dist_moved, &Current_cam_orient.fvec, -cur_dist);
-	vm_vec_add(&Current_cam_pos, &Current_lookat_pos, &dist_moved);
-	*/
+   cur_dist = Start_dist + Dist_change_rate * Elapsed_time;
+   vm_vec_copy_scale(&dist_moved, &Current_cam_orient.fvec, -cur_dist);
+   vm_vec_add(&Current_cam_pos, &Current_lookat_pos, &dist_moved);
+   */
 
     // use absolute pos to update position
     if (vm_vec_cmp(&Current_cam_pos, &Target_cam_pos)) {
@@ -2016,8 +2016,8 @@ brief_camera_move(float frametime, int stage_num)
     }
 }
 
-//	Project the viewer's position onto the grid plane.  If more than threshold distance
-//	from grid center, move grid center.
+// Project the viewer's position onto the grid plane.  If more than threshold distance
+// from grid center, move grid center.
 void
 brief_maybe_create_new_grid(grid *gridp, vector *pos, matrix *orient, int force)
 {
@@ -2070,27 +2070,27 @@ brief_maybe_create_new_grid(grid *gridp, vector *pos, matrix *orient, int force)
     }
 }
 
-//	Create a grid
-//	*forward is vector pointing forward
-//	*right is vector pointing right
-//	*center is center point of grid
-//	length is length of grid
-//	width is width of grid
-//	square_size is size of a grid square
-//	For example:
-//		*forward = (0.0, 0.0, 1.0)
-//		*right   = (1.0, 0.0, 0.0)
-//		*center = (0.0, 0.0, 0.0)
-//		nrows = 10
-//		ncols =  50.0
-//		square_size = 10.0
-//	will generate a grid of squares 10 long by 5 wide.
-//	Each grid square will be 10.0 x 10.0 units.
-//	The center of the grid will be at the global origin.
-//	The grid will be parallel to the xz plane (because the normal is 0,1,0).
-//	(In fact, it will be the xz plane because it is centered on the origin.)
+// Create a grid
+// *forward is vector pointing forward
+// *right is vector pointing right
+// *center is center point of grid
+// length is length of grid
+// width is width of grid
+// square_size is size of a grid square
+// For example:
+//    *forward = (0.0, 0.0, 1.0)
+//    *right   = (1.0, 0.0, 0.0)
+//    *center = (0.0, 0.0, 0.0)
+//    nrows = 10
+//    ncols =  50.0
+//    square_size = 10.0
+// will generate a grid of squares 10 long by 5 wide.
+// Each grid square will be 10.0 x 10.0 units.
+// The center of the grid will be at the global origin.
+// The grid will be parallel to the xz plane (because the normal is 0,1,0).
+// (In fact, it will be the xz plane because it is centered on the origin.)
 //
-//	Stuffs grid in *gridp.  If gridp == NULL, mallocs and returns a grid.
+// Stuffs grid in *gridp.  If gridp == NULL, mallocs and returns a grid.
 grid *
 brief_create_grid(grid *gridp, vector *forward, vector *right, vector *center,
                   int nrows, int ncols, float square_size)
@@ -2110,7 +2110,7 @@ brief_create_grid(grid *gridp, vector *forward, vector *right, vector *center,
     gridp->center = *center;
     gridp->square_size = square_size;
 
-    //	Create the plane equation.
+    //   Create the plane equation.
     Assert(!IS_VEC_NULL(forward));
     Assert(!IS_VEC_NULL(right));
 
@@ -2181,7 +2181,7 @@ brief_create_grid(grid *gridp, vector *forward, vector *right, vector *center,
     return gridp;
 }
 
-//	Create a nice grid -- centered at origin, 10x10, 10.0 size squares, in xz plane.
+// Create a nice grid -- centered at origin, 10x10, 10.0 size squares, in xz plane.
 grid *
 brief_create_default_grid(void)
 {
@@ -2198,7 +2198,7 @@ brief_create_default_grid(void)
     return rgrid;
 }
 
-//	Rotate and project points and draw a line.
+// Rotate and project points and draw a line.
 void
 brief_rpd_line(vector *v0, vector *v1)
 {
@@ -2207,18 +2207,18 @@ brief_rpd_line(vector *v0, vector *v1)
     g3_rotate_vertex(&tv1, v1);
 
     /*
-	g3_project_vertex(&tv0);	
-	g3_project_vertex(&tv1);
+   g3_project_vertex(&tv0);   
+   g3_project_vertex(&tv1);
 
-	if ( (tv0.flags & PF_OVERFLOW) || (tv1.flags & PF_OVERFLOW) )
-		return;
+   if ( (tv0.flags & PF_OVERFLOW) || (tv1.flags & PF_OVERFLOW) )
+      return;
 */
 
     gr_set_color_fast(&Color_grey);
     g3_draw_line(&tv0, &tv1);
 }
 
-//	Renders a grid defined in a grid struct
+// Renders a grid defined in a grid struct
 void
 brief_render_grid(grid *gridp)
 {
@@ -2232,13 +2232,13 @@ brief_render_grid(grid *gridp)
     }
 
     gr_set_color(30, 30, 30);
-    //	SET_DARK;
+    //   SET_DARK;
 
-    //	Draw the column lines.
+    //   Draw the column lines.
     for (i = 0; i <= ncols; i++)
         brief_rpd_line(&gridp->gpoints1[i], &gridp->gpoints2[i]);
 
-    //	Draw the row lines.
+    //   Draw the row lines.
     for (i = 0; i <= nrows; i++)
         brief_rpd_line(&gridp->gpoints3[i], &gridp->gpoints4[i]);
 
@@ -2246,13 +2246,13 @@ brief_render_grid(grid *gridp)
     nrows = gridp->nrows / 2;
 
     // now draw the larger, brighter gridlines that is x10 the scale of smaller one.
-    //	SET_MEDIUM;
+    //   SET_MEDIUM;
     /*
-	for (i=0; i<=ncols; i++)
-		brief_rpd_line(&gridp->gpoints5[i], &gridp->gpoints6[i]);
+   for (i=0; i<=ncols; i++)
+      brief_rpd_line(&gridp->gpoints5[i], &gridp->gpoints6[i]);
 
-	for (i=0; i<=nrows; i++)
-		brief_rpd_line(&gridp->gpoints7[i], &gridp->gpoints8[i]);
+   for (i=0; i<=nrows; i++)
+      brief_rpd_line(&gridp->gpoints7[i], &gridp->gpoints8[i]);
 */
 }
 
@@ -2341,7 +2341,7 @@ brief_voice_load_all()
         bs = &Briefing->stages[i];
         if (strnicmp(bs->voice, NOX("none"), 4)) {
             brief_load_voice_file(i, bs->voice);
-            //			Brief_voices[i] = audiostream_open( bs->voice, ASF_VOICE );
+            //       Brief_voices[i] = audiostream_open( bs->voice, ASF_VOICE );
         }
     }
 }

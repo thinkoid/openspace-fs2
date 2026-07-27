@@ -20,7 +20,7 @@ typedef struct grid
     matrix gmatrix;
     physics_info physics;
     float square_size;
-    float planeD; //	D component of plane equation (A, B, C are uvec in gmatrix)
+    float planeD; // D component of plane equation (A, B, C are uvec in gmatrix)
     vector
         gpoints1[MAX_GRIDLINE_POINTS]; // 1 -4 are edge gridpoints for small grid.
     vector gpoints2[MAX_GRIDLINE_POINTS];

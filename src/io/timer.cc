@@ -159,8 +159,8 @@ timestamp(int delta_ms)
     return t2;
 }
 
-//	Returns milliseconds until timestamp will elapse.
-//	Negative value gives milliseconds ago that timestamp elapsed.
+// Returns milliseconds until timestamp will elapse.
+// Negative value gives milliseconds ago that timestamp elapsed.
 int
 timestamp_until(int stamp)
 {
@@ -171,17 +171,17 @@ timestamp_until(int stamp)
     return stamp - timestamp_ticker;
 
     /*
-	uint	delta;
+   uint  delta;
 
-	delta = stamp - timestamp_ticker;
-	
+   delta = stamp - timestamp_ticker;
+   
 
-	if (delta > UINT_MAX/2)
-		delta = UINT_MAX - delta + 1;
-	else if (delta < - ( (int) (UINT_MAX/2)))
-		delta = UINT_MAX + delta + 1;
+   if (delta > UINT_MAX/2)
+      delta = UINT_MAX - delta + 1;
+   else if (delta < - ( (int) (UINT_MAX/2)))
+      delta = UINT_MAX + delta + 1;
 
-	return delta;
+   return delta;
 */
 }
 

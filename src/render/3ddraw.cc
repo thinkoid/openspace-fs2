@@ -48,7 +48,7 @@ must_clip_line(vertex *p0, vertex *p1, ubyte codes_or, uint flags)
         goto free_points;
 
     //gr_line(fl2i(p0->sx),fl2i(p0->sy),fl2i(p1->sx),fl2i(p1->sy));
-    //	gr_line_float(p0->sx,p0->sy,p1->sx,p1->sy);
+    //   gr_line_float(p0->sx,p0->sy,p1->sx,p1->sy);
 
     gr_aaline(p0, p1);
 
@@ -86,18 +86,18 @@ g3_draw_line(vertex *p0, vertex *p1)
         g3_project_vertex(p0);
 
     if (p0->flags & PF_OVERFLOW)
-        //		return 1;
+        //     return 1;
         return must_clip_line(p0, p1, codes_or, 0);
 
     if (!(p1->flags & PF_PROJECTED))
         g3_project_vertex(p1);
 
     if (p1->flags & PF_OVERFLOW)
-        //		return 1;
+        //     return 1;
         return must_clip_line(p0, p1, codes_or, 0);
 
-    //	gr_line(fl2i(p0->sx),fl2i(p0->sy),fl2i(p1->sx),fl2i(p1->sy));
-    //	gr_line_float(p0->sx,p0->sy,p1->sx,p1->sy);
+    //   gr_line(fl2i(p0->sx),fl2i(p0->sy),fl2i(p1->sx),fl2i(p1->sy));
+    //   gr_line_float(p0->sx,p0->sy,p1->sx,p1->sy);
 
     gr_aaline(p0, p1);
 
@@ -202,7 +202,7 @@ g3_draw_poly(int nv, vertex **pointlist, uint tmap_flags)
                     g3_project_vertex(p);
 
                 if (p->flags & PF_OVERFLOW) {
-                    //Int3();		//should not overflow after clip
+                    //Int3();    //should not overflow after clip
                     //printf( "overflow in must_clip_tmap_face\n" );
                     goto free_points;
                 }
@@ -227,7 +227,7 @@ g3_draw_poly(int nv, vertex **pointlist, uint tmap_flags)
                 g3_project_vertex(p);
 
             if (p->flags & PF_OVERFLOW) {
-                //Int3();		//should not overflow after clip
+                //Int3();     //should not overflow after clip
                 //printf( "3d: Point overflowed, but flags say OK!\n" );
                 return 255;
             }
@@ -282,7 +282,7 @@ g3_draw_poly_constant_sw(int nv, vertex **pointlist, uint tmap_flags,
                     g3_project_vertex(p);
 
                 if (p->flags & PF_OVERFLOW) {
-                    //Int3();		//should not overflow after clip
+                    //Int3();    //should not overflow after clip
                     //printf( "overflow in must_clip_tmap_face\n" );
                     goto free_points;
                 }
@@ -294,12 +294,12 @@ g3_draw_poly_constant_sw(int nv, vertex **pointlist, uint tmap_flags,
 
             // draw lines connecting the faces
             /*
-			gr_set_color_fast(&Color_bright_green);
-			for(i=0; i<nv-1; i++){
-				g3_draw_line(bufptr[i], bufptr[i+1]);
-			} 
-			g3_draw_line(bufptr[0], bufptr[i]);
-			*/
+         gr_set_color_fast(&Color_bright_green);
+         for(i=0; i<nv-1; i++){
+            g3_draw_line(bufptr[i], bufptr[i+1]);
+         } 
+         g3_draw_line(bufptr[0], bufptr[i]);
+         */
         }
 
     free_points:;
@@ -320,7 +320,7 @@ g3_draw_poly_constant_sw(int nv, vertex **pointlist, uint tmap_flags,
                 g3_project_vertex(p);
 
             if (p->flags & PF_OVERFLOW) {
-                //Int3();		//should not overflow after clip
+                //Int3();     //should not overflow after clip
                 //printf( "3d: Point overflowed, but flags say OK!\n" );
                 return 255;
             }
@@ -332,12 +332,12 @@ g3_draw_poly_constant_sw(int nv, vertex **pointlist, uint tmap_flags,
 
         // draw lines connecting the faces
         /*
-		gr_set_color_fast(&Color_bright_green);
-		for(i=0; i<nv-1; i++){
-			g3_draw_line(bufptr[i], bufptr[i+1]);
-		} 
-		g3_draw_line(bufptr[0], bufptr[i]);
-		*/
+      gr_set_color_fast(&Color_bright_green);
+      for(i=0; i<nv-1; i++){
+         g3_draw_line(bufptr[i], bufptr[i+1]);
+      } 
+      g3_draw_line(bufptr[0], bufptr[i]);
+      */
     }
     return 0; //say it drew
 }
@@ -542,20 +542,20 @@ g3_draw_rotated_bitmap(vertex *pnt, float angle, float rad, uint tmap_flags)
     int i;
 
     /*
-	if ( !Detail.alpha_effects )	{
-		int ang;
-		if ( angle < PI/2 )	{
-			ang = 0;
-		} else if ( angle < PI )	{
-			ang = 1;
-		} else if ( angle < PI+PI/2 )	{
-			ang = 2;
-		} else {
-			ang = 3;
-		}
-		return g3_draw_bitmap( pnt, ang, rad, tmap_flags );
-	}
-	*/
+   if ( !Detail.alpha_effects )  {
+      int ang;
+      if ( angle < PI/2 )  {
+         ang = 0;
+      } else if ( angle < PI )   {
+         ang = 1;
+      } else if ( angle < PI+PI/2 ) {
+         ang = 2;
+      } else {
+         ang = 3;
+      }
+      return g3_draw_bitmap( pnt, ang, rad, tmap_flags );
+   }
+   */
 
     Assert(G3_count == 1);
 
@@ -564,7 +564,7 @@ g3_draw_rotated_bitmap(vertex *pnt, float angle, float rad, uint tmap_flags)
         angle += PI2;
     else if (angle > PI2)
         angle -= PI2;
-    //	angle = 0.0f;
+    //   angle = 0.0f;
 
     sa = (float)sin(angle);
     ca = (float)cos(angle);
@@ -717,7 +717,7 @@ g3_draw_poly_constant_sw_area(int nv, vertex **pointlist, uint tmap_flags,
                     g3_project_vertex(p);
 
                 if (p->flags & PF_OVERFLOW) {
-                    //Int3();		//should not overflow after clip
+                    //Int3();    //should not overflow after clip
                     //printf( "overflow in must_clip_tmap_face\n" );
                     goto free_points;
                 }
@@ -884,31 +884,31 @@ g3_draw_horizon_line()
     int s1, s2;
     int cpnt;
     horz_pt horz_pts[4]; // 0 = left, 1 = right
-    //	int top_color, bot_color;
-    //	int color_swap;		//flag for if we swapped
-    //	int sky_ground_flag;	//0=both, 1=all sky, -1=all gnd
+    //   int top_color, bot_color;
+    //   int color_swap;      //flag for if we swapped
+    //   int sky_ground_flag; //0=both, 1=all sky, -1=all gnd
 
     vector horizon_vec;
 
     float up_right, down_right, down_left, up_left;
 
-    //	color_swap = 0;		//assume no swap
-    //	sky_ground_flag = 0;	//assume both
+    //   color_swap = 0;      //assume no swap
+    //   sky_ground_flag = 0; //assume both
 
-    //	if ( View_matrix.uvec.y < 0.0f )
-    //		color_swap = 1;
-    //	else if ( View_matrix.uvec.y == 0.0f )	{
-    //		if ( View_matrix.uvec.x > 0.0f )
-    //			color_swap = 1;
-    //	}
+    //   if ( View_matrix.uvec.y < 0.0f )
+    //      color_swap = 1;
+    //   else if ( View_matrix.uvec.y == 0.0f ) {
+    //      if ( View_matrix.uvec.x > 0.0f )
+    //         color_swap = 1;
+    //   }
 
-    //	if (color_swap)	{
-    //		top_color  = ground_color;
-    //		bot_color = sky_color;
-    //	} else {
-    //		top_color  = sky_color;
-    //		bot_color = ground_color;
-    //	}
+    //   if (color_swap)   {
+    //      top_color  = ground_color;
+    //      bot_color = sky_color;
+    //   } else {
+    //      top_color  = sky_color;
+    //      bot_color = ground_color;
+    //   }
 
     Assert(G3_count == 1);
 
@@ -927,20 +927,20 @@ g3_draw_horizon_line()
     //check flags for all sky or all ground.
     if ((up_right < 0.0f) && (down_right < 0.0f) && (down_left < 0.0f) &&
         (up_left < 0.0f)) {
-        //		mprintf(( "All ground.\n" ));
+        //     mprintf(( "All ground.\n" ));
         return;
     }
 
     if ((up_right > 0.0f) && (down_right > 0.0f) && (down_left > 0.0f) &&
         (up_left > 0.0f)) {
-        //		mprintf(( "All sky.\n" ));
+        //     mprintf(( "All sky.\n" ));
         return;
     }
 
     //mprintf(( "Horizon vec = %.4f, %.4f, %.4f\n", horizon_vec.x, horizon_vec.y, horizon_vec.z ));
     //mprintf(( "%.4f, %.4f, %.4f, %.4f\n", up_right, down_right, down_left, up_left ));
 
-    //	mprintf(( "u: %.4f %.4f %.4f  c: %.4f %.4f %.4f %.4f\n",Unscaled_matrix.uvec.y,Unscaled_matrix.uvec.z,Unscaled_matrix.uvec.x,up_left,up_right,down_right,down_left ));
+    //   mprintf(( "u: %.4f %.4f %.4f  c: %.4f %.4f %.4f %.4f\n",Unscaled_matrix.uvec.y,Unscaled_matrix.uvec.z,Unscaled_matrix.uvec.x,up_left,up_right,down_right,down_left ));
     // check for intesection with each of four edges & compute horizon line
     cpnt = 0;
 
@@ -1005,185 +1005,185 @@ g3_draw_horizon_line()
 
 /*
 
-horizon_poly	dw	5 dup (?,?)	;max of 5 points
+horizon_poly   dw 5 dup (?,?) ;max of 5 points
 
 ;for g3_compute_horz_vecs
-xfrac	fix	?
-yfrac	fix	?
+xfrac fix   ?
+yfrac fix   ?
 
-vec_ptr	dd	?
-corner_num	dd	?
+vec_ptr  dd ?
+corner_num  dd ?
 
 ;for compute corner vec
-m13	fix	?	;m1-m3
-m46	fix	?
-m79	fix	?
-m56	fix	?
-m23	fix	?
-m89	fix	?
+m13   fix   ?  ;m1-m3
+m46   fix   ?
+m79   fix   ?
+m56   fix   ?
+m23   fix   ?
+m89   fix   ?
 
-_DATA	ends
+_DATA ends
 
 
-_TEXT	segment	dword public USE32 'CODE'
+_TEXT segment  dword public USE32 'CODE'
 
-	extn	gr_setcolor_,gr_clear_canvas_
-	extn	gr_upoly_tmap_
+   extn  gr_setcolor_,gr_clear_canvas_
+   extn  gr_upoly_tmap_
 
 ;draw a polygon (one half of horizon) from the horizon line
-draw_horz_poly:	lea	ebx,horizon_poly
+draw_horz_poly:   lea   ebx,horizon_poly
 
 ;copy horizon line as first points in poly
 
-	mov	eax,[edi]
-	mov	[ebx],eax
-	mov	eax,4[edi]
-	mov	4[ebx],eax
+   mov   eax,[edi]
+   mov   [ebx],eax
+   mov   eax,4[edi]
+   mov   4[ebx],eax
 
-	mov	eax,[esi]
-	mov	8[ebx],eax
-	mov	eax,4[esi]
-	mov	12[ebx],eax
+   mov   eax,[esi]
+   mov   8[ebx],eax
+   mov   eax,4[esi]
+   mov   12[ebx],eax
 
 ;add corners to polygon
 
-	mov	eax,8[esi]	;edge number of start edge
+   mov   eax,8[esi]  ;edge number of start edge
 
-	mov	ecx,8[edi]	;edge number of end point
-	sub	ecx,eax	;number of edges
-	jns	edgenum_ok
-	add	ecx,4
+   mov   ecx,8[edi]  ;edge number of end point
+   sub   ecx,eax  ;number of edges
+   jns   edgenum_ok
+   add   ecx,4
 edgenum_ok:
-	mov	edx,ecx	;save count
-	sal	eax,3	;edge * 8
-	lea	esi,corners[eax]	;first corner
-	lea	edi,16[ebx]	;rest of poly
-corner_loop:	movsd
-	movsd		;copy a corner
-	cmp	esi,offset corners+8*4	;end of list?
-	jne	no_wrap
-	lea	esi,corners
-no_wrap:	loop	corner_loop
+   mov   edx,ecx  ;save count
+   sal   eax,3 ;edge * 8
+   lea   esi,corners[eax]  ;first corner
+   lea   edi,16[ebx] ;rest of poly
+corner_loop:   movsd
+   movsd    ;copy a corner
+   cmp   esi,offset corners+8*4  ;end of list?
+   jne   no_wrap
+   lea   esi,corners
+no_wrap: loop  corner_loop
 
 ;now draw the polygon
-	mov	eax,edx	;get corner count
-	add	eax,2	;..plus horz line end points
-	lea	edx,horizon_poly	;get the points
-;;	call	gr_poly_	;draw it!
+   mov   eax,edx  ;get corner count
+   add   eax,2 ;..plus horz line end points
+   lea   edx,horizon_poly  ;get the points
+;; call  gr_poly_ ;draw it!
  call gr_upoly_tmap_
-	ret
+   ret
 
 ;return information on the polygon that is the sky. 
 ;takes ebx=ptr to x,y pairs, ecx=ptr to vecs for each point
 ;returns eax=number of points
 ;IMPORTANT: g3_draw_horizon() must be called before this routine.
 g3_compute_sky_polygon:
-	test	sky_ground_flag,-1	;what was drawn
-	js	was_all_ground
-	jg	was_all_sky	
+   test  sky_ground_flag,-1   ;what was drawn
+   js was_all_ground
+   jg was_all_sky 
 
-	pushm	ebx,ecx,edx,esi,edi
+   pushm ebx,ecx,edx,esi,edi
 
-	lea	esi,left_point
-	lea	edi,right_point
-	test	color_swap,-1
-	jz	no_swap_ends
-	xchg	esi,edi	;sky isn't top
+   lea   esi,left_point
+   lea   edi,right_point
+   test  color_swap,-1
+   jz no_swap_ends
+   xchg  esi,edi  ;sky isn't top
 no_swap_ends:
 
 ;copy horizon line as first points in poly
 
-	mov	eax,[edi]	;copy end point
-	mov	[ebx],eax
-	mov	eax,4[edi]
-	mov	4[ebx],eax
+   mov   eax,[edi]   ;copy end point
+   mov   [ebx],eax
+   mov   eax,4[edi]
+   mov   4[ebx],eax
 
-	mov	eax,[esi]	;copy start point
-	mov	8[ebx],eax
-	mov	eax,4[esi]
-	mov	12[ebx],eax
+   mov   eax,[esi]   ;copy start point
+   mov   8[ebx],eax
+   mov   eax,4[esi]
+   mov   12[ebx],eax
 
-	pushm	ebx,ecx
-	push	edi	;save end point
-	push	esi	;save start point
-	mov	esi,edi	;end point is first point
-	mov	edi,ecx	;dest buffer
-	call	compute_horz_end_vec
+   pushm ebx,ecx
+   push  edi   ;save end point
+   push  esi   ;save start point
+   mov   esi,edi  ;end point is first point
+   mov   edi,ecx  ;dest buffer
+   call  compute_horz_end_vec
 
-	pop	esi	;get back start point
-	add	edi,12	;2nd vec
-	call	compute_horz_end_vec
+   pop   esi   ;get back start point
+   add   edi,12   ;2nd vec
+   call  compute_horz_end_vec
 
-	pop	edi	;get back end point
-	popm	ebx,ecx
-	add	ebx,16	;past two x,y pairs
-	add	ecx,24	;past two vectors
+   pop   edi   ;get back end point
+   popm  ebx,ecx
+   add   ebx,16   ;past two x,y pairs
+   add   ecx,24   ;past two vectors
 
-	mov	vec_ptr,ecx
+   mov   vec_ptr,ecx
 
 ;add corners to polygon
 
-	mov	eax,8[esi]	;edge number of start edge
-	mov	corner_num,eax
+   mov   eax,8[esi]  ;edge number of start edge
+   mov   corner_num,eax
 
-	mov	ecx,8[edi]	;edge number of end point
-	sub	ecx,eax	;number of edges
-	jns	edgenum_ok2
-	add	ecx,4
+   mov   ecx,8[edi]  ;edge number of end point
+   sub   ecx,eax  ;number of edges
+   jns   edgenum_ok2
+   add   ecx,4
 edgenum_ok2:
-	push	ecx	;save count
-	sal	eax,3	;edge * 8
-	lea	esi,corners[eax]	;first corner
-	mov	edi,ebx	;rest of poly 2d points
+   push  ecx   ;save count
+   sal   eax,3 ;edge * 8
+   lea   esi,corners[eax]  ;first corner
+   mov   edi,ebx  ;rest of poly 2d points
 corner_loop2:
-	movsd
-	movsd		;copy a corner
-	cmp	esi,offset corners+8*4	;end of list?
-	jne	no_wrap2
-	lea	esi,corners
+   movsd
+   movsd    ;copy a corner
+   cmp   esi,offset corners+8*4  ;end of list?
+   jne   no_wrap2
+   lea   esi,corners
 no_wrap2:
-	pushm	ecx,esi,edi
-	mov	edi,vec_ptr
-	mov	eax,corner_num
-	call	compute_corner_vec
-	add	vec_ptr,12
-	inc	corner_num
-	popm	ecx,esi,edi
+   pushm ecx,esi,edi
+   mov   edi,vec_ptr
+   mov   eax,corner_num
+   call  compute_corner_vec
+   add   vec_ptr,12
+   inc   corner_num
+   popm  ecx,esi,edi
 
-	loop	corner_loop2
+   loop  corner_loop2
 
 ;now return with count
-	pop	eax	;get corner count
-	add	eax,2	;..plus horz line end points
+   pop   eax   ;get corner count
+   add   eax,2 ;..plus horz line end points
 
-	popm	ebx,ecx,edx,esi,edi
+   popm  ebx,ecx,edx,esi,edi
 
-	ret
+   ret
 
 ;we drew all ground, so there was no horizon drawn
-was_all_ground:	xor	eax,eax	;no points in poly
-	ret
+was_all_ground:   xor   eax,eax  ;no points in poly
+   ret
 
 ;we drew all sky, so find 4 corners
-was_all_sky:	pushm	ebx,ecx,edx,esi,edi
-	push	ecx
-	lea	esi,corners
-	mov	edi,ebx
-	mov	ecx,8
-	rep	movsd
-	pop	edi
+was_all_sky:   pushm ebx,ecx,edx,esi,edi
+   push  ecx
+   lea   esi,corners
+   mov   edi,ebx
+   mov   ecx,8
+   rep   movsd
+   pop   edi
 
-	mov	ecx,4
-	xor	eax,eax	;start corner 0
-sky_loop:	pushm	eax,ecx,edi
-	call	compute_corner_vec
-	popm	eax,ecx,edi
-	add	edi,12
-	inc	eax
-	loop	sky_loop
-	mov	eax,4	;4 corners
-	popm	ebx,ecx,edx,esi,edi
-	ret
+   mov   ecx,4
+   xor   eax,eax  ;start corner 0
+sky_loop:   pushm eax,ecx,edi
+   call  compute_corner_vec
+   popm  eax,ecx,edi
+   add   edi,12
+   inc   eax
+   loop  sky_loop
+   mov   eax,4 ;4 corners
+   popm  ebx,ecx,edx,esi,edi
+   ret
 
 ;compute vector describing horizon intersection with a point.
 ;takes esi=2d point, edi=vec. trashes eax,ebx,ecx,edx
@@ -1191,248 +1191,248 @@ compute_horz_end_vec:
 
 ;compute rotated x/z & y/z ratios
 
-	mov	eax,[esi]	;get x coord
-  	sub	eax,Canv_w2
-	fixdiv	Canv_w2
-	mov	xfrac,eax	;save
+   mov   eax,[esi]   ;get x coord
+   sub   eax,Canv_w2
+   fixdiv   Canv_w2
+   mov   xfrac,eax   ;save
 
-	mov	eax,4[esi]	;get y coord
-  	sub	eax,Canv_h2
-	fixdiv	Canv_h2
-	neg	eax	;y inversion
-	mov	yfrac,eax	;save
+   mov   eax,4[esi]  ;get y coord
+   sub   eax,Canv_h2
+   fixdiv   Canv_h2
+   neg   eax   ;y inversion
+   mov   yfrac,eax   ;save
 
 ;compute fraction unrotated x/z
 
-	mov	eax,xfrac
-	add	eax,yfrac
-	mov	ecx,eax	;save
-	fixmul	View_matrix.m9
-	sub	eax,View_matrix.m7
-	sub	eax,View_matrix.m8
-	mov	ebx,eax	;save numerator
+   mov   eax,xfrac
+   add   eax,yfrac
+   mov   ecx,eax  ;save
+   fixmul   View_matrix.m9
+   sub   eax,View_matrix.m7
+   sub   eax,View_matrix.m8
+   mov   ebx,eax  ;save numerator
 
-	mov	eax,ecx
-	fixmul	View_matrix.m3
-	mov	ecx,eax
-	mov	eax,View_matrix.m1
-	add	eax,View_matrix.m2
-	sub	eax,ecx
+   mov   eax,ecx
+   fixmul   View_matrix.m3
+   mov   ecx,eax
+   mov   eax,View_matrix.m1
+   add   eax,View_matrix.m2
+   sub   eax,ecx
 
 ;now eax/ebx = z/x. do divide in way to give result < 0
 
-	pushm	eax,ebx
-	abs_eax
-	xchg	eax,ebx
-	abs_eax
-	cmp	eax,ebx	;which is bigger?
-	popm	eax,ebx
-	jl	do_xz
+   pushm eax,ebx
+   abs_eax
+   xchg  eax,ebx
+   abs_eax
+   cmp   eax,ebx  ;which is bigger?
+   popm  eax,ebx
+   jl do_xz
 
 ;x is bigger, so do as z/x
 
-	fixdiv	ebx
-	
+   fixdiv   ebx
+   
 ;now eax = z/x ratio.  Compute vector by normalizing and correcting sign
 
-	push	eax	;save ratio
+   push  eax   ;save ratio
 
-	imul	eax	;compute z*z
-	inc	edx	;+ x*x (x==1)
-	call	quad_sqrt
+   imul  eax   ;compute z*z
+   inc   edx   ;+ x*x (x==1)
+   call  quad_sqrt
 
-	mov	ecx,eax	;mag in ecx
-	pop	eax	;get ratio, x part
+   mov   ecx,eax  ;mag in ecx
+   pop   eax   ;get ratio, x part
 
-	fixdiv	ecx
-	mov	[edi].z,eax
+   fixdiv   ecx
+   mov   [edi].z,eax
 
-	mov	eax,f1_0
-	fixdiv	ecx
+   mov   eax,f1_0
+   fixdiv   ecx
 
-	mov	[edi].x,eax
+   mov   [edi].x,eax
 
-	jmp	finish_end
+   jmp   finish_end
 
 ;z is bigger, so do as x/z
 do_xz:
-	xchg	eax,ebx
-	fixdiv	ebx
-	
+   xchg  eax,ebx
+   fixdiv   ebx
+   
 ;now eax = x/z ratio.  Compute vector by normalizing and correcting sign
 
-	push	eax	;save ratio
+   push  eax   ;save ratio
 
-	imul	eax	;compute x*x
-	inc	edx	;+ z*z (z==1)
-	call	quad_sqrt
+   imul  eax   ;compute x*x
+   inc   edx   ;+ z*z (z==1)
+   call  quad_sqrt
 
-	mov	ecx,eax	;mag in ecx
-	pop	eax	;get ratio, x part
+   mov   ecx,eax  ;mag in ecx
+   pop   eax   ;get ratio, x part
 
-	fixdiv	ecx
-	mov	[edi].x,eax
+   fixdiv   ecx
+   mov   [edi].x,eax
 
-	mov	eax,f1_0
-	fixdiv	ecx
+   mov   eax,f1_0
+   fixdiv   ecx
 
-	mov	[edi].z,eax
+   mov   [edi].z,eax
 
-finish_end:	xor	eax,eax	;y = 0
-	mov	[edi].y,eax
+finish_end: xor   eax,eax  ;y = 0
+   mov   [edi].y,eax
 
 ;now make sure that this vector is in front of you, not behind
 
-	mov	eax,[edi].x
-	imul	View_matrix.m3
-	mov	ebx,eax
-	mov	ecx,edx
-	mov	eax,[edi].z
-	imul	View_matrix.m9
-	add	eax,ebx
-	adc	edx,ecx
-	jns	vec_ok	;has positive z, ok
+   mov   eax,[edi].x
+   imul  View_matrix.m3
+   mov   ebx,eax
+   mov   ecx,edx
+   mov   eax,[edi].z
+   imul  View_matrix.m9
+   add   eax,ebx
+   adc   edx,ecx
+   jns   vec_ok   ;has positive z, ok
 
 ;z is neg, flip vector
 
-	neg	[edi].x
-	neg	[edi].z
+   neg   [edi].x
+   neg   [edi].z
 vec_ok:
-	ret
+   ret
 
 MIN_DEN equ 7fffh
 
-sub2	macro	dest,src
-	mov	eax,src
-	sal	eax,1
-	sub	dest,eax
-	endm
+sub2  macro dest,src
+   mov   eax,src
+   sal   eax,1
+   sub   dest,eax
+   endm
 
 ;compute vector decribing a corner of the screen.
 ;takes edi=vector, eax=corner num
 compute_corner_vec:
 
-	cmp	eax,4
-	jl	num_ok
-	sub	eax,4
+   cmp   eax,4
+   jl num_ok
+   sub   eax,4
 num_ok:
 
 ;compute all deltas
-	mov	ebx,View_matrix.m1
-	mov	ecx,View_matrix.m4
-	mov	edx,View_matrix.m7
+   mov   ebx,View_matrix.m1
+   mov   ecx,View_matrix.m4
+   mov   edx,View_matrix.m7
 
-	or	eax,eax
-	jz	neg_x
-	cmp	eax,3
-	jne	no_neg_x
+   or eax,eax
+   jz neg_x
+   cmp   eax,3
+   jne   no_neg_x
 neg_x:
-	neg	ebx
-	neg	ecx
-	neg	edx
-no_neg_x:	
-	sub	ebx,View_matrix.m3
-	mov	m13,ebx	;m1-m3
-	sub	ecx,View_matrix.m6
-	mov	m46,ecx	;m4-m6
-	sub	edx,View_matrix.m9
-	mov	m79,edx	;m7-m9
+   neg   ebx
+   neg   ecx
+   neg   edx
+no_neg_x:   
+   sub   ebx,View_matrix.m3
+   mov   m13,ebx  ;m1-m3
+   sub   ecx,View_matrix.m6
+   mov   m46,ecx  ;m4-m6
+   sub   edx,View_matrix.m9
+   mov   m79,edx  ;m7-m9
 
-	mov	ebx,View_matrix.m5
-	mov	ecx,View_matrix.m2
-	mov	edx,View_matrix.m8
+   mov   ebx,View_matrix.m5
+   mov   ecx,View_matrix.m2
+   mov   edx,View_matrix.m8
 
-	cmp	eax,2
-	jl	no_neg_y
+   cmp   eax,2
+   jl no_neg_y
 neg_y:
-	neg	ebx
-	neg	ecx
-	neg	edx
-no_neg_y:	
-	sub	ebx,View_matrix.m6
-	mov	m56,ebx	;m5-m6
-	sub	ecx,View_matrix.m3
-	mov	m23,ecx	;m2-m3
-	sub	edx,View_matrix.m9
-	mov	m89,edx	;m8-m9
+   neg   ebx
+   neg   ecx
+   neg   edx
+no_neg_y:   
+   sub   ebx,View_matrix.m6
+   mov   m56,ebx  ;m5-m6
+   sub   ecx,View_matrix.m3
+   mov   m23,ecx  ;m2-m3
+   sub   edx,View_matrix.m9
+   mov   m89,edx  ;m8-m9
 
 ;compute x/z ratio
 
 ;compute denomonator
 
-	mov	eax,m46
-	fixmul	m23
-	mov	ebx,eax	;save
+   mov   eax,m46
+   fixmul   m23
+   mov   ebx,eax  ;save
 
-	mov	eax,m56
-	fixmul	m13
-	sub	eax,ebx	;eax = denominator
+   mov   eax,m56
+   fixmul   m13
+   sub   eax,ebx  ;eax = denominator
 
 ;now we have the denominator.  If it is too small, try x/y, z/y or z/x, y/x
 
-	mov	ecx,eax	;save den
+   mov   ecx,eax  ;save den
 
-	abs_eax
-	cmp	eax,MIN_DEN
-	jl	z_too_small
+   abs_eax
+   cmp   eax,MIN_DEN
+   jl z_too_small
 
 z_too_small:
 
 ;now do x/z numerator
 
-	mov	eax,m79
-	fixmul	m56	;* (m5-m6)
-	mov	ebx,eax
+   mov   eax,m79
+   fixmul   m56   ;* (m5-m6)
+   mov   ebx,eax
 
-	mov	eax,m89
-	fixmul	m46	;* (m4-m6)
-	sub	eax,ebx
+   mov   eax,m89
+   fixmul   m46   ;* (m4-m6)
+   sub   eax,ebx
 
 ;now, eax/ecx = x/z ratio
 
-	fixdiv	ecx	;eax = x/z
+   fixdiv   ecx   ;eax = x/z
 
-	mov	[edi].x,eax	;save x
+   mov   [edi].x,eax ;save x
 
 ;now do y/z
 
-	mov	eax,m89
-	fixmul	m13
-	mov	ebx,eax
+   mov   eax,m89
+   fixmul   m13
+   mov   ebx,eax
 
-	mov	eax,m79
-	fixmul	m23
-	sub	eax,ebx
+   mov   eax,m79
+   fixmul   m23
+   sub   eax,ebx
 
 ;now eax/ecx = y/z ratio
 
-	fixdiv	ecx
+   fixdiv   ecx
 
-	mov	[edi].y,eax
+   mov   [edi].y,eax
 
-	mov	[edi].z,f1_0
+   mov   [edi].z,f1_0
 
-	mov	esi,edi
-	call	vm_vec_normalize
+   mov   esi,edi
+   call  vm_vec_normalize
 
 ;make sure this vec is pointing in right direction
 
-	lea	edi,View_matrix.fvec
-	call	vm_vec_dotprod
-	or	eax,eax	;check sign
-	jg	vec_sign_ok
+   lea   edi,View_matrix.fvec
+   call  vm_vec_dotprod
+   or eax,eax  ;check sign
+   jg vec_sign_ok
 
-	neg	[esi].x
-	neg	[esi].y
-	neg	[esi].z
+   neg   [esi].x
+   neg   [esi].y
+   neg   [esi].z
 vec_sign_ok:
 
-	ret
+   ret
 
 
-_TEXT	ends
+_TEXT ends
 
-	end
+   end
 
 */
 
@@ -1685,38 +1685,38 @@ g3_draw_2d_poly_bitmap(int x, int y, int w, int h, uint additional_tmap_flags)
     v[3].codes = 0;
 
     /*
-	v[0].sx = (float)x;
-	v[0].sy = (float)y;	
-	v[0].sw = 0.0f;
-	v[0].u = 0.5f / i2fl(bw);
-	v[0].v = 0.5f / i2fl(bh);
-	v[0].flags = PF_PROJECTED;
-	v[0].codes = 0;
+   v[0].sx = (float)x;
+   v[0].sy = (float)y;  
+   v[0].sw = 0.0f;
+   v[0].u = 0.5f / i2fl(bw);
+   v[0].v = 0.5f / i2fl(bh);
+   v[0].flags = PF_PROJECTED;
+   v[0].codes = 0;
 
-	v[1].sx = (float)(x + w);
-	v[1].sy = (float)y;	
-	v[1].sw = 0.0f;
-	v[1].u = 1.0f + (0.5f / i2fl(bw));
-	v[1].v = 0.0f + (0.5f / i2fl(bh));
-	v[1].flags = PF_PROJECTED;
-	v[1].codes = 0;
+   v[1].sx = (float)(x + w);
+   v[1].sy = (float)y;  
+   v[1].sw = 0.0f;
+   v[1].u = 1.0f + (0.5f / i2fl(bw));
+   v[1].v = 0.0f + (0.5f / i2fl(bh));
+   v[1].flags = PF_PROJECTED;
+   v[1].codes = 0;
 
-	v[2].sx = (float)(x + w);
-	v[2].sy = (float)(y + h);	
-	v[2].sw = 0.0f;
-	v[2].u = 1.0f + (0.5f / i2fl(bw));
-	v[2].v = 1.0f + (0.5f / i2fl(bh));
-	v[2].flags = PF_PROJECTED;
-	v[2].codes = 0;
+   v[2].sx = (float)(x + w);
+   v[2].sy = (float)(y + h);  
+   v[2].sw = 0.0f;
+   v[2].u = 1.0f + (0.5f / i2fl(bw));
+   v[2].v = 1.0f + (0.5f / i2fl(bh));
+   v[2].flags = PF_PROJECTED;
+   v[2].codes = 0;
 
-	v[3].sx = (float)x;
-	v[3].sy = (float)(y + h);	
-	v[3].sw = 0.0f;
-	v[3].u = 0.0f + (0.5f / i2fl(bw));
-	v[3].v = 1.0f + (0.5f / i2fl(bh));
-	v[3].flags = PF_PROJECTED;
-	v[3].codes = 0;	
-	*/
+   v[3].sx = (float)x;
+   v[3].sy = (float)(y + h);  
+   v[3].sw = 0.0f;
+   v[3].u = 0.0f + (0.5f / i2fl(bw));
+   v[3].v = 1.0f + (0.5f / i2fl(bh));
+   v[3].flags = PF_PROJECTED;
+   v[3].codes = 0;   
+   */
 
     // no filtering
     gr_filter_set(0);

@@ -458,11 +458,11 @@ cmd_brief_init(int team)
     Mouse_hidden--;
 
     /*
-	Palette_bmp = bm_load("BarracksPalette");	//CommandBriefPalette");
-	Assert(Palette_bmp);
-	bm_get_palette(Palette_bmp, Palette, Palette_name);  // get the palette for this bitmap
-	gr_set_palette(Palette_name, Palette, 1);
-	*/
+   Palette_bmp = bm_load("BarracksPalette"); //CommandBriefPalette");
+   Assert(Palette_bmp);
+   bm_get_palette(Palette_bmp, Palette, Palette_name);  // get the palette for this bitmap
+   gr_set_palette(Palette_name, Palette, 1);
+   */
 
     Ui_window.create(0, 0, gr_screen.max_w, gr_screen.max_h, 0);
     Ui_window.set_mask_bmap(Cmd_brief_mask[gr_screen.res]);
@@ -551,10 +551,10 @@ cmd_brief_close()
 
         Ui_window.destroy();
         /*
-		if (Palette_bmp){
-			bm_unload(Palette_bmp);
-		}
-		*/
+      if (Palette_bmp){
+         bm_unload(Palette_bmp);
+      }
+      */
 
         game_flush();
         Cmd_brief_inited = 0;
@@ -610,7 +610,7 @@ cmd_brief_do_frame(float frametime)
 
     if (cmd_brief_check_stage_done() && Player->auto_advance &&
         (Cur_stage < Cur_cmd_brief->num_stages - 1)) {
-        //		if (!Cur_anim_instance || (Cur_anim_instance->frame_num < Last_anim_frame_num))
+        //     if (!Cur_anim_instance || (Cur_anim_instance->frame_num < Last_anim_frame_num))
         if (!Cur_anim_instance || Cur_anim_instance->loop_count) {
             cmd_brief_new_stage(Cur_stage + 1);
         }

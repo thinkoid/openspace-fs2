@@ -80,12 +80,12 @@ ubyte
 g3_rotate_vertex(vertex *dest, vector *src)
 {
 #if 0
-	vector tempv;
-	Assert( G3_count == 1 );
-	vm_vec_sub(&tempv,src,&View_position);
-	vm_vec_rotate( (vector *)&dest->x, &tempv, &View_matrix );
-	dest->flags = 0;	//not projected
-	return g3_code_vertex(dest);
+   vector tempv;
+   Assert( G3_count == 1 );
+   vm_vec_sub(&tempv,src,&View_position);
+   vm_vec_rotate( (vector *)&dest->x, &tempv, &View_matrix );
+   dest->flags = 0;  //not projected
+   return g3_code_vertex(dest);
 #else
     float tx, ty, tz, x, y, z;
     ubyte codes;
@@ -260,76 +260,76 @@ g3_rotate_delta_vec(vector *dest, vector *src)
     return vm_vec_rotate(dest, src, &View_matrix);
 }
 
-//	vms_vector tempv;
-//	vms_matrix tempm;
+// vms_vector tempv;
+// vms_matrix tempm;
 //
-//	tempv.x =  fixmuldiv(fixdiv((sx<<16) - Canv_w2,Canv_w2),Matrix_scale.z,Matrix_scale.x);
-//	tempv.y = -fixmuldiv(fixdiv((sy<<16) - Canv_h2,Canv_h2),Matrix_scale.z,Matrix_scale.y);
-//	tempv.z = f1_0;
+// tempv.x =  fixmuldiv(fixdiv((sx<<16) - Canv_w2,Canv_w2),Matrix_scale.z,Matrix_scale.x);
+// tempv.y = -fixmuldiv(fixdiv((sy<<16) - Canv_h2,Canv_h2),Matrix_scale.z,Matrix_scale.y);
+// tempv.z = f1_0;
 //
-//	vm_vec_normalize(&tempv);
+// vm_vec_normalize(&tempv);
 //
-//	vm_copy_transpose_matrix(&tempm,&Unscaled_matrix);
+// vm_copy_transpose_matrix(&tempm,&Unscaled_matrix);
 //
-//	vm_vec_rotate(v,&tempv,&tempm);
+// vm_vec_rotate(v,&tempv,&tempm);
 
 /*
 
 //from a 2d point, compute the vector through that point
 void g3_point_2_vec(vector *v,int sx,int sy)
 {
-	vector tempv;
-	matrix tempm;
+   vector tempv;
+   matrix tempm;
 
-	tempv.x =  fixmuldiv(fixdiv((sx<<16) - Canv_w2,Canv_w2),Matrix_scale.z,Matrix_scale.x);
-	tempv.y = -fixmuldiv(fixdiv((sy<<16) - Canv_h2,Canv_h2),Matrix_scale.z,Matrix_scale.y);
-	tempv.z = f1_0;
+   tempv.x =  fixmuldiv(fixdiv((sx<<16) - Canv_w2,Canv_w2),Matrix_scale.z,Matrix_scale.x);
+   tempv.y = -fixmuldiv(fixdiv((sy<<16) - Canv_h2,Canv_h2),Matrix_scale.z,Matrix_scale.y);
+   tempv.z = f1_0;
 
-	vm_vec_normalize(&tempv);
+   vm_vec_normalize(&tempv);
 
-	vm_copy_transpose_matrix(&tempm,&Unscaled_matrix);
+   vm_copy_transpose_matrix(&tempm,&Unscaled_matrix);
 
-	vm_vec_rotate(v,&tempv,&tempm);
+   vm_vec_rotate(v,&tempv,&tempm);
 
 }
 
 //delta rotation functions
 vms_vector *g3_rotate_delta_x(vms_vector *dest,fix dx)
 {
-	dest->x = fixmul(View_matrix.rvec.x,dx);
-	dest->y = fixmul(View_matrix.uvec.x,dx);
-	dest->z = fixmul(View_matrix.fvec.x,dx);
+   dest->x = fixmul(View_matrix.rvec.x,dx);
+   dest->y = fixmul(View_matrix.uvec.x,dx);
+   dest->z = fixmul(View_matrix.fvec.x,dx);
 
-	return dest;
+   return dest;
 }
 
 vms_vector *g3_rotate_delta_y(vms_vector *dest,fix dy)
 {
-	dest->x = fixmul(View_matrix.rvec.y,dy);
-	dest->y = fixmul(View_matrix.uvec.y,dy);
-	dest->z = fixmul(View_matrix.fvec.y,dy);
+   dest->x = fixmul(View_matrix.rvec.y,dy);
+   dest->y = fixmul(View_matrix.uvec.y,dy);
+   dest->z = fixmul(View_matrix.fvec.y,dy);
 
-	return dest;
+   return dest;
 }
 
 vms_vector *g3_rotate_delta_z(vms_vector *dest,fix dz)
 {
-	dest->x = fixmul(View_matrix.rvec.z,dz);
-	dest->y = fixmul(View_matrix.uvec.z,dz);
-	dest->z = fixmul(View_matrix.fvec.z,dz);
+   dest->x = fixmul(View_matrix.rvec.z,dz);
+   dest->y = fixmul(View_matrix.uvec.z,dz);
+   dest->z = fixmul(View_matrix.fvec.z,dz);
 
-	return dest;
+   return dest;
 }
 
 
 
 ubyte g3_add_delta_vec(g3s_point *dest,g3s_point *src,vms_vector *deltav)
 {
-	vm_vec_add(&dest->p3_vec,&src->p3_vec,deltav);
+   vm_vec_add(&dest->p3_vec,&src->p3_vec,deltav);
 
-	dest->p3_flags = 0;		//not projected
+   dest->p3_flags = 0;     //not projected
 
-	return g3_code_point(dest);
+   return g3_code_point(dest);
 }
 */
 

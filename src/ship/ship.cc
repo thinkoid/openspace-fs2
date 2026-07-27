@@ -84,15 +84,15 @@ extern void ssm_create(vector *target, vector *start, int ssm_index);
 #define MAX_SHIP_SUBOBJECTS 360
 #else
 #define MAX_SHIP_SUBOBJECTS                                                      \
-    700 //	Reduced from 1000 to 400 by MK on 4/1/98.
+    700 //  Reduced from 1000 to 400 by MK on 4/1/98.
         // Highest I saw was 164 in sm2-03a which Sandeep says has a lot of ships.
         // JAS: sm3-01 needs 460.   You cannot know this number until *all* ships
         // have warped in.   So I put code in the paging code which knows all ships
         // that will warp in.
 #endif
 
-//#define MIN_COLLISION_MOVE_DIST		5.0
-//#define COLLISION_VEL_CONST			0.1
+//#define MIN_COLLISION_MOVE_DIST      5.0
+//#define COLLISION_VEL_CONST       0.1
 #define COLLISION_FRICTION_FACTOR                                                \
     0.0 // ratio of maximum friction impulse to repulsion impulse
 #define COLLISION_ROTATION_FACTOR 1.0 // increase in rotation from collision
@@ -104,7 +104,7 @@ int Ship_auto_repair = 1; // flag to indicate auto-repair of subsystem should oc
 extern void render_path_points(object *objp);
 #endif
 
-// mwa -- removed 11/24/97 int	num_ships = 0;
+// mwa -- removed 11/24/97 int   num_ships = 0;
 int num_wings = 0;
 int Num_reinforcements = 0;
 ship Ships[MAX_SHIPS];
@@ -423,9 +423,9 @@ parse_ship()
 
     sip = &Ship_info[Num_ship_types];
 
-    //	Defaults!
-    //	These should be specified in ships.tbl eventually!
-    //	End of defaults.
+    //   Defaults!
+    //   These should be specified in ships.tbl eventually!
+    //   End of defaults.
 
     required_string("$Name:");
     stuff_string(sip->name, F_NAME, NULL);
@@ -639,7 +639,7 @@ parse_ship()
         // actually say which weapons are allowed
         for (i = 0; i < num_allowed; i++) {
             if (allowed_weapons[i] >=
-                0) { //	MK, Bug fix, 9/6/99.  Used to be "allowed_weapons" not "allowed_weapons[i]".
+                0) { // MK, Bug fix, 9/6/99.  Used to be "allowed_weapons" not "allowed_weapons[i]".
                 sip->allowed_weapons[allowed_weapons[i]] |= 1;
             }
         }
@@ -658,7 +658,7 @@ parse_ship()
         }
     }
 
-    //	Get default primary bank weapons
+    //   Get default primary bank weapons
     for (i = 0; i < MAX_PRIMARY_BANKS; i++) {
         sip->primary_bank_weapons[i] = -1;
     }
@@ -697,7 +697,7 @@ parse_ship()
         }
     }
 
-    //	Get default secondary bank weapons
+    //   Get default secondary bank weapons
     for (i = 0; i < MAX_SECONDARY_BANKS; i++) {
         sip->secondary_bank_weapons[i] = -1;
     }
@@ -969,13 +969,13 @@ parse_ship()
                 sp->secondary_bank_capacity[i] = 0;
             }
 
-            //	Get default primary bank weapons
+            // Get default primary bank weapons
             if (optional_string("$Default PBanks:")) {
                 stuff_int_list(sp->primary_banks, MAX_PRIMARY_BANKS,
                                WEAPON_LIST_TYPE);
             }
 
-            //	Get default secondary bank weapons
+            // Get default secondary bank weapons
             if (optional_string("$Default SBanks:")) {
                 stuff_int_list(sp->secondary_banks, MAX_SECONDARY_BANKS,
                                WEAPON_LIST_TYPE);
@@ -1322,7 +1322,7 @@ physics_ship_init(object *objp)
     vm_vec_zero(&pi->rotvel);
     pi->speed = 0.0f;
     pi->heading = 0.0f;
-    //	pi->accel = 0.0f;
+    //   pi->accel = 0.0f;
     vm_set_identity(&pi->last_rotmat);
 }
 
@@ -1414,7 +1414,7 @@ ship_set(int ship_index, int objnum, int ship_type)
         }
         shipp->arc_next_time = -1;
     }
-    shipp->team = TEAM_FRIENDLY; //	Default friendly, probably get overridden.
+    shipp->team = TEAM_FRIENDLY; // Default friendly, probably get overridden.
     shipp->arrival_location = 0;
     shipp->arrival_distance = 0;
     shipp->arrival_anchor = -1;
@@ -1423,7 +1423,7 @@ ship_set(int ship_index, int objnum, int ship_type)
     shipp->departure_location = 0;
     shipp->departure_delay = 0;
     shipp->departure_cue = -1;
-    shipp->shield_hits = 0; //	No shield hits yet on this baby.
+    shipp->shield_hits = 0; //   No shield hits yet on this baby.
     shipp->current_max_speed = Ship_info[ship_type].max_speed;
 
     shipp->alt_type_index = -1;
@@ -1529,7 +1529,7 @@ ship_set(int ship_index, int objnum, int ship_type)
     ai_object_init(objp, shipp->ai_index);
     shipp->weapons.ai_class = Ai_info[shipp->ai_index].ai_class;
     shipp->shield_integrity = NULL;
-    //	shipp->sw.blast_duration = -1;	// init shockwave struct
+    //   shipp->sw.blast_duration = -1;   // init shockwave struct
     subsys_set(objnum);
     shipp->orders_accepted = ship_get_default_orders_accepted(sip);
     shipp->num_swarm_missiles_to_fire = 0;
@@ -1606,11 +1606,11 @@ ship_recalc_subsys_strength(ship *shipp)
     }
 
     /*
-	shipp->flags &= ~SF_DISARMED;
-	if ( (shipp->subsys_info[SUBSYSTEM_TURRET].num > 0) && (shipp->subsys_info[SUBSYSTEM_TURRET].current_hits == 0.0f) ){
-		shipp->flags |= SF_DISARMED;
-	}
-	*/
+   shipp->flags &= ~SF_DISARMED;
+   if ( (shipp->subsys_info[SUBSYSTEM_TURRET].num > 0) && (shipp->subsys_info[SUBSYSTEM_TURRET].current_hits == 0.0f) ){
+      shipp->flags |= SF_DISARMED;
+   }
+   */
 }
 
 // routine to possibly fixup the model subsystem information for this ship pointer.  Needed when
@@ -1625,13 +1625,13 @@ ship_copy_subsystem_fixup(ship_info *sip)
     // since we allow a model file to be shared between several ships, we must check to be sure that our
     // subsystems have been loaded properly
     /*
-	subsystems_needed = 0;
-	for (i = 0; i < sip->n_subsystems; i++ ) {
-		if ( sip->subsystems[i].model_num == -1 ){
-			subsystems_needed++;
-		}
-	}
-	*/
+   subsystems_needed = 0;
+   for (i = 0; i < sip->n_subsystems; i++ ) {
+      if ( sip->subsystems[i].model_num == -1 ){
+         subsystems_needed++;
+      }
+   }
+   */
 
     // if we need to get information for all our subsystems, we need to find another ship with the same model
     // number as our own and that has the model information
@@ -1656,7 +1656,7 @@ ship_copy_subsystem_fixup(ship_info *sip)
 }
 
 // ignore_subsys_info => default parameter with value of 0.  This is
-//								 only set to 1 by the save/restore code
+//                       only set to 1 by the save/restore code
 void
 subsys_set(int objnum, int ignore_subsys_info)
 {
@@ -1782,7 +1782,7 @@ subsys_set(int objnum, int ignore_subsys_info)
 
 #ifndef NDEBUG
 
-//	Render docking information, NOT while in object's reference frame.
+// Render docking information, NOT while in object's reference frame.
 void
 render_dock_bays(object *objp)
 {
@@ -1859,25 +1859,25 @@ ship_render(object *obj)
     Assert(num >= 0);
 
 #if 0
-	// show target when attacking big ship
-	vector temp, target;
-	ai_info *aip = &Ai_info[Ships[obj->instance].ai_index];
-	if ( (aip->target_objnum >= 0)  && (Ship_info[Ships[Objects[aip->target_objnum].instance].ship_info_index].flags & (SIF_SUPERCAP|SIF_CAPITAL|SIF_CRUISER)) ) {
-		vm_vec_unrotate(&temp, &aip->big_attack_point, &Objects[aip->target_objnum].orient);
-		vm_vec_add(&target, &temp, &Objects[aip->target_objnum].pos);
+   // show target when attacking big ship
+   vector temp, target;
+   ai_info *aip = &Ai_info[Ships[obj->instance].ai_index];
+   if ( (aip->target_objnum >= 0)  && (Ship_info[Ships[Objects[aip->target_objnum].instance].ship_info_index].flags & (SIF_SUPERCAP|SIF_CAPITAL|SIF_CRUISER)) ) {
+      vm_vec_unrotate(&temp, &aip->big_attack_point, &Objects[aip->target_objnum].orient);
+      vm_vec_add(&target, &temp, &Objects[aip->target_objnum].pos);
 
-		vertex v0, v1;
-		gr_set_color(128,0,0);
-		g3_rotate_vertex( &v0, &obj->pos );
-		g3_rotate_vertex( &v1, &target );
+      vertex v0, v1;
+      gr_set_color(128,0,0);
+      g3_rotate_vertex( &v0, &obj->pos );
+      g3_rotate_vertex( &v1, &target );
 
-		g3_draw_line(&v0, &v1);
+      g3_draw_line(&v0, &v1);
 
-		g3_draw_sphere(&v1, 5.0f);
-	}
+      g3_draw_sphere(&v1, 5.0f);
+   }
 #endif
 
-    //	if (Ships[num].subtype == SHIP_PLAYER ) return;
+    //   if (Ships[num].subtype == SHIP_PLAYER ) return;
     if (obj == Viewer_obj) {
         if (ship_show_velocity_dot && (obj == Player_obj)) {
             vector p0, v;
@@ -1960,13 +1960,13 @@ ship_render(object *obj)
         shipfx_large_blowup_render(shipp);
     }
     else {
-        //	ship_get_subsystem_strength( shipp, SUBSYSTEM_ENGINE)>ENGINE_MIN_STR
+        //  ship_get_subsystem_strength( shipp, SUBSYSTEM_ENGINE)>ENGINE_MIN_STR
 
         if ((shipp->thruster_bitmap > -1) && (!(shipp->flags & SF_DISABLED)) &&
             (!ship_subsys_disrupted(shipp, SUBSYSTEM_ENGINE))) {
             float ft;
 
-            //	Add noise to thruster geometry.
+            // Add noise to thruster geometry.
             ft = obj->phys_info.forward_thrust;
             ft *= (1.0f + frand() / 5.0f - 1.0f / 10.0f);
             if (ft > 1.0f)
@@ -2058,7 +2058,7 @@ ship_render(object *obj)
 
 #ifndef NDEBUG
         if (Show_shield_mesh)
-            ship_draw_shield(obj); //	Render the shield.
+            ship_draw_shield(obj); //  Render the shield.
 #endif
 
         if (clip_started) {
@@ -2066,10 +2066,10 @@ ship_render(object *obj)
         }
     }
 
-    /*	if (Mc.shield_hit_tri != -1) {
-		//render_shield_explosion(model_num, orient, pos, &Hit_point, Hit_tri);
-		Mc.shield_hit_tri = -1;
-	}
+    /*   if (Mc.shield_hit_tri != -1) {
+      //render_shield_explosion(model_num, orient, pos, &Hit_point, Hit_tri);
+      Mc.shield_hit_tri = -1;
+   }
 */
 
     ship_model_stop(obj);
@@ -2287,11 +2287,11 @@ ship_destroyed(int num)
         ship_wing_cleanup(num, wingp);
     }
 
-    //	Note, this call to ai_ship_destroy must come after ship_wing_cleanup for guarded wings to
-    //	properly note the destruction of a ship in their wing.
+    //   Note, this call to ai_ship_destroy must come after ship_wing_cleanup for guarded wings to
+    //   properly note the destruction of a ship in their wing.
     if (shipp->ai_index != -1) {
         ai_ship_destroy(num,
-                        SEF_DESTROYED); //	Do AI stuff for destruction of ship.
+                        SEF_DESTROYED); //   Do AI stuff for destruction of ship.
     }
 
     nprintf(("Alan", "SHIP DESTROYED: %s\n", shipp->ship_name));
@@ -2387,12 +2387,12 @@ ship_departed(int num)
 // --------------------------------------------------------------------------------------------------------------------
 // ship_explode_area_calc_damage
 //
-// input			pos1			=>		ship explosion position
-//					pos2			=>		other ship position
-//					inner_rad	=>		distance from ship center for which full damage is applied
-//					outer_rad	=>		distance from ship center for which no damage is applied
-//					max_damage	=>		maximum damage applied
-//					max_blast	=>		maximum impulse applied from blast
+// input       pos1        =>    ship explosion position
+//             pos2        =>    other ship position
+//             inner_rad   =>    distance from ship center for which full damage is applied
+//             outer_rad   =>    distance from ship center for which no damage is applied
+//             max_damage  =>    maximum damage applied
+//             max_blast   =>    maximum impulse applied from blast
 //
 // calculates the blast and damage applied to a ship from another ship blowing up.
 //
@@ -2428,12 +2428,12 @@ ship_explode_area_calc_damage(vector *pos1, vector *pos2, float inner_rad,
 // ship_blow_up_area_apply_blast
 // this function applies damage to ship close to others when a ship dies and blows up
 //
-//		inputs:	objp			=>		ship object pointers
-//					pos			=>		position of the ship when it finally blows up
-//					inner_rad	=>		distance from ship center for which full damage is applied
-//					outer_rad	=>		distance from ship center for which no damage is applied
-//					damage		=>		maximum damage applied
-//					blast			=>		maximum impulse applied from blast
+//    inputs:  objp        =>    ship object pointers
+//             pos         =>    position of the ship when it finally blows up
+//             inner_rad   =>    distance from ship center for which full damage is applied
+//             outer_rad   =>    distance from ship center for which no damage is applied
+//             damage      =>    maximum damage applied
+//             blast       =>    maximum impulse applied from blast
 
 void
 ship_blow_up_area_apply_blast(object *exp_objp)
@@ -2443,7 +2443,7 @@ ship_blow_up_area_apply_blast(object *exp_objp)
     float inner_rad, outer_rad, max_damage, max_blast, shockwave_speed;
     shockwave_create_info sci;
 
-    //	No area explosion in training missions.
+    //   No area explosion in training missions.
     if (The_mission.game_type & MISSION_TYPE_TRAINING) {
         return;
     }
@@ -2600,7 +2600,7 @@ do_dying_undock_physics(object *objp, ship *sp)
     }
 }
 
-//	Do the stuff we do in a frame for a ship that's in its death throes.
+// Do the stuff we do in a frame for a ship that's in its death throes.
 void
 ship_dying_frame(object *objp, int ship_num)
 {
@@ -2666,7 +2666,7 @@ ship_dying_frame(object *objp, int ship_num)
                 submodel_get_two_random_points(sp->modelnum, pm->detail[0], &pnt1,
                                                &pnt2);
 
-                //	vm_vec_avg( &tmp, &pnt1, &pnt2 ); [KNOSSOS get random in plane 1/1.414 in rad
+                //   vm_vec_avg( &tmp, &pnt1, &pnt2 ); [KNOSSOS get random in plane 1/1.414 in rad
                 model_find_world_point(&outpnt, &pnt1, sp->modelnum,
                                        pm->detail[0], &objp->orient, &objp->pos);
 
@@ -2718,7 +2718,7 @@ ship_dying_frame(object *objp, int ship_num)
                 pe.normal =
                     objp->orient.uvec; // What normal the particle emit around
                 pe.normal_variance =
-                    2.0f; //	How close they stick to that normal 0=on normal, 1=180, 2=360 degree
+                    2.0f; //  How close they stick to that normal 0=on normal, 1=180, 2=360 degree
                 pe.min_vel = 50.0f;
                 pe.max_vel = 350.0f;
                 pe.min_rad = 30.0f; // * objp->radius;
@@ -2778,7 +2778,7 @@ ship_dying_frame(object *objp, int ship_num)
             // if ship is docked, undock now.
             if (sp->dock_objnum_when_dead != -1) {
                 // other ship undocks
-                //	These asserts should no longer be needed and they cause a problem that is not obvious how to fix.
+                //   These asserts should no longer be needed and they cause a problem that is not obvious how to fix.
                 //Assert( !(Ai_info[Ships[dock_obj->instance].ai_index].ai_flags & AIF_DOCKED) );
                 //Assert( Ai_info[Ships[dock_obj->instance].ai_index].dock_objnum == -1 );
                 // MWA  Ai_info[Ships[dock_obj->instance].ai_index].ai_flags &= ~AIF_DOCKED;
@@ -2830,7 +2830,7 @@ ship_dying_frame(object *objp, int ship_num)
             pe.max_life = 4.0f; // How long the particles live
             pe.normal = objp->orient.uvec; // What normal the particle emit around
             pe.normal_variance =
-                2.0f; //	How close they stick to that normal 0=on normal, 1=180, 2=360 degree
+                2.0f; //   How close they stick to that normal 0=on normal, 1=180, 2=360 degree
             pe.min_vel = 0.0f; // How fast the slowest particle can move
             pe.max_vel = 20.0f; // How fast the fastest particle can move
             pe.min_rad = 0.1f; // Min radius
@@ -2881,7 +2881,7 @@ ship_dying_frame(object *objp, int ship_num)
                 sp->really_final_death_time = timestamp(
                     fl2i(explosion_life * 1000.0f) /
                     5); // Wait till 30% of vclip time before breaking the ship up.
-                //sp->really_final_death_time = timestamp(0);	// Make ship break apart the instant the explosion starts
+                //sp->really_final_death_time = timestamp(0);  // Make ship break apart the instant the explosion starts
             }
 
             sp->flags |= SF_EXPLODED;
@@ -2952,7 +2952,7 @@ ship_chase_shield_energy_targets(ship *shipp, object *obj, float frametime)
 
     delta = frametime * ETS_RECHARGE_RATE * sip->shields / 100.0f;
 
-    //	Chase target_shields and target_weapon_energy
+    //   Chase target_shields and target_weapon_energy
     if (shipp->target_shields_delta > 0.0f) {
         if (delta > shipp->target_shields_delta)
             delta = shipp->target_shields_delta;
@@ -3089,7 +3089,7 @@ ship_do_thruster_frame(ship *shipp, object *objp, float frametime)
     anim_index = sinfo->species * 2;
 
     if (objp->phys_info.flags & PF_AFTERBURNER_ON) {
-        anim_index++; //	select afterburner anim.
+        anim_index++; //   select afterburner anim.
         rate = 1.5f; // go at 1.5x faster when afterburners on
     }
     else {
@@ -3099,7 +3099,7 @@ ship_do_thruster_frame(ship *shipp, object *objp, float frametime)
         rate = 0.67f * (1.0f + objp->phys_info.forward_thrust);
     }
 
-    //	rate = 0.1f;
+    //   rate = 0.1f;
 
     Assert(anim_index > -1);
     Assert(anim_index < NUM_THRUST_ANIMS);
@@ -3125,13 +3125,13 @@ ship_do_thruster_frame(ship *shipp, object *objp, float frametime)
     if (framenum >= the_anim->num_frames)
         framenum = the_anim->num_frames - 1;
 
-    //	if ( anim_index == 0 )
-    //		mprintf(( "Frame = %d/%d, anim=%d\n", framenum+1,  the_anim->num_frames, anim_index ));
+    //   if ( anim_index == 0 )
+    //      mprintf(( "Frame = %d/%d, anim=%d\n", framenum+1,  the_anim->num_frames, anim_index ));
 
     // Get the bitmap for this frame
     shipp->thruster_bitmap = the_anim->first_frame + framenum;
 
-    //	mprintf(( "TF: %.2f\n", shipp->thruster_frame ));
+    //   mprintf(( "TF: %.2f\n", shipp->thruster_frame ));
 
     // Do it for glow bitmaps
     the_anim = &Thrust_glow_anims[anim_index];
@@ -3155,8 +3155,8 @@ ship_do_thruster_frame(ship *shipp, object *objp, float frametime)
     if (framenum >= the_anim->num_frames)
         framenum = the_anim->num_frames - 1;
 
-    //	if ( anim_index == 0 )
-    //		mprintf(( "Frame = %d/%d, anim=%d\n", framenum+1,  the_anim->num_frames, anim_index ));
+    //   if ( anim_index == 0 )
+    //      mprintf(( "Frame = %d/%d, anim=%d\n", framenum+1,  the_anim->num_frames, anim_index ));
 
     // Get the bitmap for this frame
     shipp->thruster_glow_bitmap = the_anim->first_frame; // + framenum;
@@ -3214,13 +3214,13 @@ ship_do_weapon_thruster_frame(weapon *weaponp, object *objp, float frametime)
     if (framenum >= the_anim->num_frames)
         framenum = the_anim->num_frames - 1;
 
-    //	if ( anim_index == 0 )
-    //		mprintf(( "Frame = %d/%d, anim=%d\n", framenum+1,  the_anim->num_frames, anim_index ));
+    //   if ( anim_index == 0 )
+    //      mprintf(( "Frame = %d/%d, anim=%d\n", framenum+1,  the_anim->num_frames, anim_index ));
 
     // Get the bitmap for this frame
     weaponp->thruster_bitmap = the_anim->first_frame + framenum;
 
-    //	mprintf(( "TF: %.2f\n", weaponp->thruster_frame ));
+    //   mprintf(( "TF: %.2f\n", weaponp->thruster_frame ));
 
     // Do it for glow bitmaps
     the_anim = &Thrust_glow_anims[anim_index];
@@ -3244,8 +3244,8 @@ ship_do_weapon_thruster_frame(weapon *weaponp, object *objp, float frametime)
     if (framenum >= the_anim->num_frames)
         framenum = the_anim->num_frames - 1;
 
-    //	if ( anim_index == 0 )
-    //		mprintf(( "Frame = %d/%d, anim=%d\n", framenum+1,  the_anim->num_frames, anim_index ));
+    //   if ( anim_index == 0 )
+    //      mprintf(( "Frame = %d/%d, anim=%d\n", framenum+1,  the_anim->num_frames, anim_index ));
 
     // Get the bitmap for this frame
     weaponp->thruster_glow_bitmap = the_anim->first_frame; // + framenum;
@@ -3365,7 +3365,7 @@ ship_check_player_distance_sub(player *p)
                                            MESSAGE_TIME_SOON, 0, 0);
         }
 
-        //		HUD_sourced_printf(HUD_SOURCE_TERRAN_CMD, XSTR("Terran Command: You're straying too far from battle pilot, return immediately or be taken from the battlefield.", -1));
+        //     HUD_sourced_printf(HUD_SOURCE_TERRAN_CMD, XSTR("Terran Command: You're straying too far from battle pilot, return immediately or be taken from the battlefield.", -1));
         if (p->distance_warning_count > PLAYER_DISTANCE_MAX_WARNINGS) {
             p->flags |= PLAYER_FLAGS_DIST_WARNING;
         }
@@ -3374,7 +3374,7 @@ ship_check_player_distance_sub(player *p)
     if (!(p->flags & PLAYER_FLAGS_FORCE_MISSION_OVER) &&
         ((p->distance_warning_count > PLAYER_DISTANCE_MAX_WARNINGS) ||
          (dist > PLAYER_MAX_DIST_END))) {
-        //		DKA 5/17/99 - DONT force warpout.  Won't work multiplayer.  Blow up ship.
+        //     DKA 5/17/99 - DONT force warpout.  Won't work multiplayer.  Blow up ship.
         if (!(p->flags & PLAYER_FLAGS_DIST_TO_BE_KILLED)) {
             message_send_builtin_to_player(MESSAGE_STRAY_WARNING_FINAL, NULL,
                                            MESSAGE_PRIORITY_HIGH,
@@ -3382,8 +3382,8 @@ ship_check_player_distance_sub(player *p)
             p->flags |= PLAYER_FLAGS_DIST_TO_BE_KILLED;
             p->distance_warning_time = timestamp(PLAYER_DEATH_DELTA_TIME);
         }
-        //		HUD_sourced_printf(HUD_SOURCE_TERRAN_CMD, XSTR("Terran Command: Sorry pilot, removing you from battle because of your insubordination!!!", -1));
-        //		gameseq_post_event(GS_EVENT_PLAYER_WARPOUT_START_FORCED);
+        //     HUD_sourced_printf(HUD_SOURCE_TERRAN_CMD, XSTR("Terran Command: Sorry pilot, removing you from battle because of your insubordination!!!", -1));
+        //     gameseq_post_event(GS_EVENT_PLAYER_WARPOUT_START_FORCED);
 
         // get hull strength and blow up
         if ((p->flags & PLAYER_FLAGS_DIST_TO_BE_KILLED) &&
@@ -3461,9 +3461,9 @@ ship_subsys_disrupted_maybe_check(ship *shipp)
 }
 
 // Determine if a given subsystem is disrupted (ie inoperable)
-// input:	ss		=>		pointer to ship subsystem
-// exit:		1		=>		subsystem is disrupted
-//				0		=>		subsystem is not disrupted
+// input:   ss    =>    pointer to ship subsystem
+// exit:    1     =>    subsystem is disrupted
+//          0     =>    subsystem is not disrupted
 int
 ship_subsys_disrupted(ship_subsys *ss)
 {
@@ -3481,8 +3481,8 @@ ship_subsys_disrupted(ship_subsys *ss)
 }
 
 // Disrupt a subsystem (ie make it inoperable for a time)
-// input:	ss		=>		ship subsystem to be disrupted
-//				time	=>		time in ms that subsystem should be disrupted
+// input:   ss    =>    ship subsystem to be disrupted
+//          time  =>    time in ms that subsystem should be disrupted
 void
 ship_subsys_set_disrupted(ship_subsys *ss, int time)
 {
@@ -3502,10 +3502,10 @@ ship_subsys_set_disrupted(ship_subsys *ss, int time)
 }
 
 // Determine if a given subsystem is disrupted (ie inoperable)
-// input:	sp		=>		pointer to ship containing subsystem
-//				type	=>		type of subsystem (SUBSYSTEM_*)
-// exit:		1		=>		subsystem is disrupted
-//				0		=>		subsystem is not disrupted
+// input:   sp    =>    pointer to ship containing subsystem
+//          type  =>    type of subsystem (SUBSYSTEM_*)
+// exit:    1     =>    subsystem is disrupted
+//          0     =>    subsystem is not disrupted
 //
 int
 ship_subsys_disrupted(ship *sp, int type)
@@ -3534,10 +3534,10 @@ lethality_decay(ai_info *aip)
     aip->lethality -= 100.0f * decay_rate * flFrametime;
     aip->lethality = max(-10.0f, aip->lethality);
 
-    //	if (aip->lethality < min_lethality) {
-    //		min_lethality = aip->lethality;
-    //		mprintf(("new lethality low: %.1f\n", min_lethality));
-    //	}
+    //   if (aip->lethality < min_lethality) {
+    //      min_lethality = aip->lethality;
+    //      mprintf(("new lethality low: %.1f\n", min_lethality));
+    //   }
 
 #ifndef NDEBUG
     if (Objects[Ships[aip->shipnum].objnum].flags & OF_PLAYER_SHIP) {
@@ -3564,7 +3564,7 @@ ship_process_pre(object *objp, float frametime)
 
 MONITOR(NumShips);
 
-//	Player ship uses this code, but does a quick out after doing a few things.
+// Player ship uses this code, but does a quick out after doing a few things.
 void
 ship_process_post(object *obj, float frametime)
 {
@@ -3618,7 +3618,7 @@ ship_process_post(object *obj, float frametime)
     if (obj != Player_obj) // don't plot myself.
         radar_plot_object(obj);
 
-    //	Do ship sparks.  Don't do sparks on my ship (since I cannot see it).
+    //   Do ship sparks.  Don't do sparks on my ship (since I cannot see it).
     // JAS: Actually in external view, you can see sparks, so I don't do sparks
     // on the Viewer_obj, not Player_obj.
     if ((obj != Viewer_obj) && timestamp_elapsed(Ships[num].next_hit_spark)) {
@@ -3634,11 +3634,11 @@ ship_process_post(object *obj, float frametime)
 
     ship_auto_repair_frame(num, frametime);
 
-    //	Do ship sparks.
-    //	if (timestamp_elapsed(Ships[num].next_hit_spark))	{
-    //		ship_spark(num);
-    //		Ships[num].next_hit_spark = timestamp_rand(100,500);
-    //	}
+    //   Do ship sparks.
+    //   if (timestamp_elapsed(Ships[num].next_hit_spark))  {
+    //      ship_spark(num);
+    //      Ships[num].next_hit_spark = timestamp_rand(100,500);
+    //   }
 
     shipfx_do_lightning_frame(shipp);
 
@@ -3684,7 +3684,7 @@ ship_process_post(object *obj, float frametime)
         shipfx_warpout_frame(obj, frametime);
     }
     else {
-        //	Do AI.
+        //  Do AI.
 
         // maybe fire swarm missiles
         // this code might call ship_fire_secondary
@@ -3728,9 +3728,9 @@ ship_process_post(object *obj, float frametime)
 }
 
 // ------------------------------------------------------------------------
-//	ship_set_default_weapons()
+// ship_set_default_weapons()
 //
-//	Set the ship level weapons based on the information contained in the ship
+// Set the ship level weapons based on the information contained in the ship
 // info.  Weapon assignments are checked against the model to ensure the models
 // and the ship info weapon data are in synch.
 //
@@ -3743,8 +3743,8 @@ ship_set_default_weapons(ship *shipp, ship_info *sip)
     polymodel *po;
     ship_weapon *swp = &shipp->weapons;
 
-    //	Copy primary and secondary weapons from ship_info to ship.
-    //	Later, this will happen in the weapon loadout screen.
+    //   Copy primary and secondary weapons from ship_info to ship.
+    //   Later, this will happen in the weapon loadout screen.
     for (i = 0; i < MAX_PRIMARY_BANKS; i++) {
         swp->primary_bank_weapons[i] = sip->primary_bank_weapons[i];
     }
@@ -3824,8 +3824,8 @@ ship_set_default_weapons(ship *shipp, ship_info *sip)
     }
 }
 
-//	A faster version of ship_check_collision that does not do checking at the polygon
-//	level.  Just checks to see if a vector will intersect a sphere.
+// A faster version of ship_check_collision that does not do checking at the polygon
+// level.  Just checks to see if a vector will intersect a sphere.
 int
 ship_check_collision_fast(object *obj, object *other_obj, vector *hitpos)
 {
@@ -3888,9 +3888,9 @@ ship_maybe_fixup_subsys_path(polymodel *pm, int path_num)
 // (used for attacking purposes)
 //
 // NOTE: path_num in model_subsystem has the follows the following convention:
-//			> 0	=> index into pm->paths[] for model that subsystem sits on
-//			-1		=> path is not yet determined (may or may not exist)
-//			-2		=> path doesn't yet exist for this subsystem
+//       > 0   => index into pm->paths[] for model that subsystem sits on
+//       -1    => path is not yet determined (may or may not exist)
+//       -2    => path doesn't yet exist for this subsystem
 void
 ship_set_subsys_path_nums(ship_info *sip, polymodel *pm)
 {
@@ -4032,8 +4032,8 @@ show_ship_subsys_count()
     }
 }
 
-//	Returns object index of ship.
-//	-1 means failed.
+// Returns object index of ship.
+// -1 means failed.
 int
 ship_create(matrix *orient, vector *pos, int ship_type)
 {
@@ -4146,7 +4146,7 @@ ship_create(matrix *orient, vector *pos, int ship_type)
     sprintf(shipp->ship_name, NOX("%s %d"), Ship_info[ship_type].name, n);
     ship_set_default_weapons(
         shipp,
-        sip); //	Moved up here because ship_set requires that weapon info be valid.  MK, 4/28/98
+        sip); //  Moved up here because ship_set requires that weapon info be valid.  MK, 4/28/98
     ship_set(n, objnum, ship_type);
 
     // fill in the path_num field inside the model_subsystem struct.  This is an index into
@@ -4154,9 +4154,9 @@ ship_create(matrix *orient, vector *pos, int ship_type)
     // (used for attacking purposes)
     //
     // NOTE: path_num in model_subsystem has the follows the following convention:
-    //			> 0	=> index into pm->paths[] for model that subsystem sits on
-    //			-1		=> path is not yet determined (may or may not exist)
-    //			-2		=> path doesn't yet exist for this subsystem
+    //         > 0   => index into pm->paths[] for model that subsystem sits on
+    //         -1    => path is not yet determined (may or may not exist)
+    //         -2    => path doesn't yet exist for this subsystem
     ship_set_subsys_path_nums(sip, pm);
 
     // set the path indicies for fighter bays on the ship (currently, only capital ships have fighter bays)
@@ -4168,7 +4168,7 @@ ship_create(matrix *orient, vector *pos, int ship_type)
 
     //ship_set_default_weapons(shipp, sip);
 
-    //	Allocate shield and initialize it.
+    //   Allocate shield and initialize it.
     if (pm->shield.ntris) {
         shipp->shield_integrity = (float *)malloc(sizeof(float) *
                                                   pm->shield.ntris);
@@ -4250,8 +4250,8 @@ ship_create(matrix *orient, vector *pos, int ship_type)
 //
 // Change the ship model for a ship to that for ship class 'ship_type'
 //
-// input:	n				=>		index of ship in Ships[] array
-//				ship_type	=>		ship class (index into Ship_info[])
+// input:   n           =>    index of ship in Ships[] array
+//          ship_type   =>    ship class (index into Ship_info[])
 //
 void
 ship_model_change(int n, int ship_type)
@@ -4301,8 +4301,8 @@ ship_model_change(int n, int ship_type)
 // Change the ship class on a ship, and changing all required information
 // for consistency (ie textures, subsystems, weapons, physics)
 //
-// input:	n				=>		index of ship in Ships[] array
-//				ship_type	=>		ship class (index into Ship_info[])
+// input:   n           =>    index of ship in Ships[] array
+//          ship_type   =>    ship class (index into Ship_info[])
 //
 void
 change_ship_type(int n, int ship_type)
@@ -4364,7 +4364,7 @@ change_ship_type(int n, int ship_type)
 }
 
 #ifndef NDEBUG
-//	Fire the debug laser
+// Fire the debug laser
 int
 ship_fire_primary_debug(object *objp)
 {
@@ -4378,7 +4378,7 @@ ship_fire_primary_debug(object *objp)
     // do timestamp stuff for next firing time
     shipp->weapons.next_primary_fire_stamp[0] = timestamp(250);
 
-    //	Debug code!  Make the single laser fire only one bolt and from the object center!
+    //   Debug code!  Make the single laser fire only one bolt and from the object center!
     for (i = 0; i < MAX_WEAPONS; i++)
         if (!stricmp(Weapon_info[i].name, NOX("Debug Laser")))
             break;
@@ -4397,7 +4397,7 @@ ship_fire_primary_debug(object *objp)
 }
 #endif
 
-//	Launch countermeasures from object *objp.
+// Launch countermeasures from object *objp.
 int
 ship_launch_countermeasure(object *objp, int rand_val)
 {
@@ -4412,7 +4412,7 @@ ship_launch_countermeasure(object *objp, int rand_val)
     }
 
     shipp->cmeasure_fire_stamp = timestamp(
-        CMEASURE_WAIT); //	Can launch every half second.
+        CMEASURE_WAIT); // Can launch every half second.
 #ifndef NDEBUG
     if (Weapon_energy_cheat) {
         shipp->cmeasure_count++;
@@ -4487,8 +4487,8 @@ ship_maybe_play_secondary_fail_sound(weapon_info *wip)
 // internal function.. see if weapon for ship can fire based on weapons subystem
 // strength.
 //
-// returns:		1	=>		weapon failed to fire
-//					0	=>		weapon can fire
+// returns:    1  =>    weapon failed to fire
+//             0  =>    weapon can fire
 int
 ship_weapon_maybe_fail(ship *sp)
 {
@@ -4578,7 +4578,7 @@ ship_fire_tracer(int weapon_objnum)
     particle_create(&pinfo);
 }
 
-//	Multiplicative delay factors for increasing skill levels.
+// Multiplicative delay factors for increasing skill levels.
 float Ship_fire_delay_scale_hostile[NUM_SKILL_LEVELS] = { 4.0f, 2.5f, 1.75f,
                                                           1.25f, 1.0f };
 float Ship_fire_delay_scale_friendly[NUM_SKILL_LEVELS] = { 2.0f, 1.4f, 1.25f,
@@ -4712,12 +4712,12 @@ ship_fire_primary(object *obj, int stream_weapons, int force)
         }
 
         next_fire_delay *= 1.0f + (num_primary_banks - 1) *
-                                      0.5f; //	50% time penalty if banks linked
+                                      0.5f; //  50% time penalty if banks linked
 
-        //	MK, 2/4/98: Since you probably were allowed to fire earlier, but couldn't fire until your frame interval
-        //	rolled around, subtract out up to half the previous frametime.
-        //	Note, unless we track whether the fire button has been held down, and not tapped, it's hard to
-        //	know how much time to subtract off.  It could be this fire is "late" because the user didn't want to fire.
+        //  MK, 2/4/98: Since you probably were allowed to fire earlier, but couldn't fire until your frame interval
+        //  rolled around, subtract out up to half the previous frametime.
+        //  Note, unless we track whether the fire button has been held down, and not tapped, it's hard to
+        //  know how much time to subtract off.  It could be this fire is "late" because the user didn't want to fire.
         if (next_fire_delay > 0.0f) {
             if (obj->flags & OF_PLAYER_SHIP) {
                 int t = timestamp_until(
@@ -4822,7 +4822,7 @@ ship_fire_primary(object *obj, int stream_weapons, int force)
                         snd_play(&Snds[winfo_p->launch_snd], 0.0f, 1.0f,
                                  SND_PRIORITY_MUST_PLAY);
                     }
-                    //				snd_play( &Snds[winfo_p->launch_snd] );
+                    //           snd_play( &Snds[winfo_p->launch_snd] );
                 }
             }
             else {
@@ -4955,11 +4955,11 @@ ship_process_targeting_lasers()
     }
 }
 
-//	Attempt to detonate weapon last fired by *shipp.
-//	Only used for weapons that support remote detonation.
-//	Return true if detonated, else return false.
-//	Calls weapon_hit() to detonate weapon.
-//	If it's a weapon that spawns particles, those will be released.
+// Attempt to detonate weapon last fired by *shipp.
+// Only used for weapons that support remote detonation.
+// Return true if detonated, else return false.
+// Calls weapon_hit() to detonate weapon.
+// If it's a weapon that spawns particles, those will be released.
 int
 maybe_detonate_weapon(ship_weapon *swp, object *src)
 {
@@ -4996,13 +4996,13 @@ maybe_detonate_weapon(ship_weapon *swp, object *src)
                 swp->last_fired_weapon_index = -1;
 
                 /*
-				if (src == Player_obj) {
-					char missile_name[NAME_LENGTH];
-					strcpy(missile_name, wip->name);
-					hud_end_string_at_first_hash_symbol(missile_name);
-					HUD_sourced_printf(HUD_SOURCE_HIDDEN, XSTR( "Detonated %s!", 486), missile_name);
-				}
-				*/
+            if (src == Player_obj) {
+               char missile_name[NAME_LENGTH];
+               strcpy(missile_name, wip->name);
+               hud_end_string_at_first_hash_symbol(missile_name);
+               HUD_sourced_printf(HUD_SOURCE_HIDDEN, XSTR( "Detonated %s!", 486), missile_name);
+            }
+            */
 
                 return 1;
             }
@@ -5012,8 +5012,8 @@ maybe_detonate_weapon(ship_weapon *swp, object *src)
     return 0;
 }
 
-//	Maybe detonate secondary weapon that's already out.
-//	Return true if we detonate it, false if not.
+// Maybe detonate secondary weapon that's already out.
+// Return true if we detonate it, false if not.
 int
 ship_fire_secondary_detonate(object *obj, ship_weapon *swp)
 {
@@ -5021,7 +5021,7 @@ ship_fire_secondary_detonate(object *obj, ship_weapon *swp)
         if (timestamp_elapsed(swp->detonate_weapon_time)) {
             object *first_objp = &Objects[swp->last_fired_weapon_index];
             if (maybe_detonate_weapon(swp, obj)) {
-                //	If dual fire was set, there could be another weapon to detonate.  Scan all weapons.
+                //   If dual fire was set, there could be another weapon to detonate.  Scan all weapons.
                 missile_obj *mo;
 
                 //nprintf(("AI", "Weapon %i detonated\n", first_objp-Objects));
@@ -5081,12 +5081,12 @@ ship_select_next_valid_secondary_bank(ship_weapon *swp)
 extern void ai_maybe_announce_shockwave_weapon(object *firing_objp,
                                                int weapon_index);
 
-//	Object *obj fires its secondary weapon, if it can.
-//	If its most recently fired weapon is a remotely detonatable weapon, detonate it.
-//	Returns number of weapons fired.  Note, for swarmers, returns 1 if it is allowed
-//	to fire the missiles when allow_swarm is NOT set.  They don't actually get fired on a call here unless allow_swarm is set.
-//	When you want to fire swarmers, you call this function with allow_swarm NOT set and frame interval
-//	code comes aruond and fires it.
+// Object *obj fires its secondary weapon, if it can.
+// If its most recently fired weapon is a remotely detonatable weapon, detonate it.
+// Returns number of weapons fired.  Note, for swarmers, returns 1 if it is allowed
+// to fire the missiles when allow_swarm is NOT set.  They don't actually get fired on a call here unless allow_swarm is set.
+// When you want to fire swarmers, you call this function with allow_swarm NOT set and frame interval
+// code comes aruond and fires it.
 // allow_swarm -> default value is 0... since swarm missiles are fired over several frames,
 //                need to avoid firing when normally called
 int
@@ -5154,9 +5154,9 @@ ship_fire_secondary(object *obj, int allow_swarm)
     wip = &Weapon_info[swp->secondary_bank_weapons[bank]];
 
     if (ship_fire_secondary_detonate(obj, swp)) {
-        //	For all banks, if ok to fire a weapon, make it wait a bit.
-        //	Solves problem of fire button likely being down next frame and
-        //	firing weapon despite fire causing detonation of existing weapon.
+        //  For all banks, if ok to fire a weapon, make it wait a bit.
+        //  Solves problem of fire button likely being down next frame and
+        //  firing weapon despite fire causing detonation of existing weapon.
         if (swp->current_secondary_bank >= 0) {
             if (timestamp_elapsed(swp->next_secondary_fire_stamp[bank])) {
                 swp->next_secondary_fire_stamp[bank] = timestamp(
@@ -5222,7 +5222,7 @@ ship_fire_secondary(object *obj, int allow_swarm)
         else {
             shipp->num_swarm_missiles_to_fire += wip->swarm_count;
         }
-        return 1; //	Note: Missiles didn't get fired, but the frame interval code will fire them.
+        return 1; // Note: Missiles didn't get fired, but the frame interval code will fire them.
     }
 
     // if trying to fire a corkscrew missile, make sure being called from right place
@@ -5230,7 +5230,7 @@ ship_fire_secondary(object *obj, int allow_swarm)
         shipp->num_corkscrew_to_fire =
             (ubyte)(shipp->num_corkscrew_to_fire +
                     (ubyte)Corkscrew_num_missiles_fired);
-        return 1; //	Note: Missiles didn't get fired, but the frame interval code will fire them.
+        return 1; // Note: Missiles didn't get fired, but the frame interval code will fire them.
     }
 
     swp->next_secondary_fire_stamp[bank] = timestamp(
@@ -5270,7 +5270,7 @@ ship_fire_secondary(object *obj, int allow_swarm)
         if (swp->secondary_bank_ammo[bank] <= 0) {
             if (shipp->objnum == OBJ_INDEX(Player_obj)) {
                 if (ship_maybe_play_secondary_fail_sound(wip)) {
-                    //					HUD_sourced_printf(HUD_SOURCE_HIDDEN, "No %s missiles left in bank", Weapon_info[swp->secondary_bank_weapons[bank]].name);
+                    //              HUD_sourced_printf(HUD_SOURCE_HIDDEN, "No %s missiles left in bank", Weapon_info[swp->secondary_bank_weapons[bank]].name);
                 }
             }
             else {
@@ -5327,7 +5327,7 @@ ship_fire_secondary(object *obj, int allow_swarm)
             num_fired++;
             swp->last_fired_weapon_index = weapon_num;
             swp->detonate_weapon_time = timestamp(
-                500); //	Can detonate 1/2 second later.
+                500); //   Can detonate 1/2 second later.
             if (weapon_num != -1) {
                 swp->last_fired_weapon_signature = Objects[weapon_num].signature;
             }
@@ -5373,7 +5373,7 @@ done_secondary:
             if (timestamp_elapsed(
                     swp->next_secondary_fire_stamp[swp->current_secondary_bank])) {
                 swp->next_secondary_fire_stamp[swp->current_secondary_bank] =
-                    timestamp(250); //	1/4 second delay until can fire
+                    timestamp(250); // 1/4 second delay until can fire
             }
             if (obj == Player_obj) {
                 snd_play(&Snds[SND_SECONDARY_CYCLE]);
@@ -5387,9 +5387,9 @@ done_secondary:
 // ------------------------------------------------------------------------------
 // ship_select_next_primary()
 //
-//	Return true if a new index gets selected.
+// Return true if a new index gets selected.
 //
-// parameters:		objp      => pointer to object for ship cycling primary
+// parameters:    objp      => pointer to object for ship cycling primary
 //                direction => forward == CYCLE_PRIMARY_NEXT, backward == CYCLE_PRIMARY_PREV
 //
 // NOTE: This code can be called for any arbitrary ship.  HUD messages and sounds are only used
@@ -5486,13 +5486,13 @@ ship_select_next_primary(object *objp, int direction)
 // ------------------------------------------------------------------------------
 // ship_select_next_secondary() selects the next secondary bank with missles
 //
-//	returns:		1	=> The secondary bank was switched
-//					0	=> The secondary bank stayed the same
+// returns:    1  => The secondary bank was switched
+//             0  => The secondary bank stayed the same
 //
 // If a secondary bank has no missles left, it is skipped.
 //
 // NOTE: This can be called for an arbitrary ship.  HUD messages and sounds are only used
-//			for the player ship.
+//       for the player ship.
 int
 ship_select_next_secondary(object *objp)
 {
@@ -5564,8 +5564,8 @@ ship_select_next_secondary(object *objp)
     return 0;
 }
 
-//	Stuff list of weapon indices for object *objp in list *outlist.
-//	Return number of weapons in list.
+// Stuff list of weapon indices for object *objp in list *outlist.
+// Return number of weapons in list.
 int
 get_available_secondary_weapons(object *objp, int *outlist, int *outbanklist)
 {
@@ -5586,7 +5586,7 @@ get_available_secondary_weapons(object *objp, int *outlist, int *outbanklist)
     return count;
 }
 
-//	Return the object index of the ship with name *name.
+// Return the object index of the ship with name *name.
 int
 wing_name_lookup(char *name, int ignore_count)
 {
@@ -5624,7 +5624,7 @@ wing_lookup(char *name)
     return -1;
 }
 
-//	Return the index of Ship_info[].name that is *name.
+// Return the index of Ship_info[].name that is *name.
 int
 ship_info_lookup(char *name)
 {
@@ -5637,7 +5637,7 @@ ship_info_lookup(char *name)
     return -1;
 }
 
-//	Return the index of Ship_info[].name which is the *base* ship of a ship copy
+// Return the index of Ship_info[].name which is the *base* ship of a ship copy
 int
 ship_info_base_lookup(int si_index)
 {
@@ -5655,7 +5655,7 @@ ship_info_base_lookup(int si_index)
     return i;
 }
 
-//	Return the ship index of the ship with name *name.
+// Return the ship index of the ship with name *name.
 int
 ship_name_lookup(char *name, int inc_players)
 {
@@ -5740,11 +5740,11 @@ ship_query_state(char *name)
     return 1;
 }
 
-//	Note: This is not a general purpose routine.
-//	It is specifically used for targeting.
-//	It only returns a subsystem position if it has shields.
-//	Return true/false for subsystem found/not found.
-//	Stuff vector *pos with absolute position.
+// Note: This is not a general purpose routine.
+// It is specifically used for targeting.
+// It only returns a subsystem position if it has shields.
+// Return true/false for subsystem found/not found.
+// Stuff vector *pos with absolute position.
 // subsysp is a pointer to the subsystem.
 int
 get_subsystem_pos(vector *pos, object *objp, ship_subsys *subsysp)
@@ -5921,7 +5921,7 @@ ship_find_num_turrets(object *objp)
     return n;
 }
 
-//	Modify the matrix orient by the slew angles a.
+// Modify the matrix orient by the slew angles a.
 void
 compute_slew_matrix(matrix *orient, angles *a)
 {
@@ -5963,7 +5963,7 @@ ship_get_eye(vector *eye_pos, matrix *eye_orient, object *obj)
 
     // check to be sure that we have a view eye to look at.....spit out nasty debug message
     if (pm->n_view_positions == 0) {
-        //		nprintf (("Warning", "No eye position found for model %s.  Find artist to get fixed.\n", pm->filename ));
+        //     nprintf (("Warning", "No eye position found for model %s.  Find artist to get fixed.\n", pm->filename ));
         *eye_pos = obj->pos;
         *eye_orient = obj->orient;
         return;
@@ -5977,12 +5977,12 @@ ship_get_eye(vector *eye_pos, matrix *eye_orient, object *obj)
     // if ( shipp->current_eye_index == 0 ) {
     *eye_orient = obj->orient;
     //} else {
-    // 	model_find_world_dir( &vec, &ep->norm, shipp->modelnum, ep->parent, &obj->orient, &obj->pos );
+    //   model_find_world_dir( &vec, &ep->norm, shipp->modelnum, ep->parent, &obj->orient, &obj->pos );
     // kind of bogus, but use the objects uvec to avoid totally stupid looking behavior.
-    //	vm_vector_2_matrix(eye_orient,&vec,&obj->orient.uvec,NULL);
+    //   vm_vector_2_matrix(eye_orient,&vec,&obj->orient.uvec,NULL);
     //}
 
-    //	Modify the orientation based on head orientation.
+    //   Modify the orientation based on head orientation.
     if (Viewer_obj == obj) {
         if (Viewer_mode & VM_PADLOCK_ANY) {
             player_get_padlock_orient(eye_orient);
@@ -5996,12 +5996,12 @@ ship_get_eye(vector *eye_pos, matrix *eye_orient, object *obj)
 // of attackers to make this decision.
 //
 // NOTE: This function takes into account how many ships are attacking a subsystem, and will
-//			prefer an ignored subsystem over a subsystem that is in line of sight, if the in-sight
-//			subsystem is attacked by more than MAX_SUBSYS_ATTACKERS
+//       prefer an ignored subsystem over a subsystem that is in line of sight, if the in-sight
+//       subsystem is attacked by more than MAX_SUBSYS_ATTACKERS
 // input:
-//				sp					=>		ship pointer to parent of subsystem
-//				subsys_type		=>		what kind of subsystem this is
-//				attacker_pos	=>		the world coords of the attacker of this subsystem
+//          sp             =>    ship pointer to parent of subsystem
+//          subsys_type    =>    what kind of subsystem this is
+//          attacker_pos   =>    the world coords of the attacker of this subsystem
 //
 // returns: pointer to subsystem if one found, NULL otherwise
 #define MAX_SUBSYS_ATTACKERS 3
@@ -6070,9 +6070,9 @@ ship_get_best_subsys_to_attack(ship *sp, int subsys_type, vector *attacker_pos)
 
 // function to return a pointer to the 'nth' ship_subsys structure in a ship's linked list
 // of ship_subsys'.
-// attacker_pos	=>	world pos of attacker (default value NULL).  If value is non-NULL, try
-//							to select the best subsystem to attack of that type (using line-of-sight)
-//							and based on the number of ships already attacking the subsystem
+// attacker_pos   => world pos of attacker (default value NULL).  If value is non-NULL, try
+//                   to select the best subsystem to attack of that type (using line-of-sight)
+//                   and based on the number of ships already attacking the subsystem
 ship_subsys *
 ship_get_indexed_subsys(ship *sp, int index, vector *attacker_pos)
 {
@@ -6121,7 +6121,7 @@ ship_get_indexed_subsys(ship *sp, int index, vector *attacker_pos)
     return NULL;
 }
 
-//	Given a pointer to a subsystem and an associated object, return the index.
+// Given a pointer to a subsystem and an associated object, return the index.
 int
 ship_get_index_from_subsys(ship_subsys *ssp, int objnum, int error_bypass)
 {
@@ -6188,7 +6188,7 @@ ship_get_subsystem_strength(ship *shipp, int type)
     if (shipp->subsys_info[type].total_hits == 0.0f)
         return 1.0f;
 
-    //	For a dying ship, all subsystem strengths are zero.
+    //   For a dying ship, all subsystem strengths are zero.
     if (Objects[shipp->objnum].hull_strength <= 0.0f)
         return 0.0f;
 
@@ -6253,8 +6253,8 @@ ship_set_subsystem_strength(ship *shipp, int type, float strength)
     shipp->subsys_info[type].current_hits = total_current_hits;
 }
 
-#define SHIELD_REPAIR_RATE 0.20f //	Percent of shield repaired per second.
-#define HULL_REPAIR_RATE 0.15f //	Percent of hull repaired per second.
+#define SHIELD_REPAIR_RATE 0.20f // Percent of shield repaired per second.
+#define HULL_REPAIR_RATE 0.15f //   Percent of hull repaired per second.
 #define SUBSYS_REPAIR_RATE 0.10f // Percent of subsystems repaired per second.
 
 // ==================================================================================
@@ -6285,7 +6285,7 @@ ship_do_rearm_frame(object *objp, float frametime)
 
     // AL 10-31-97: Add missing primary weapons to the ship.  This is required since designers
     //              want to have ships that start with no primaries, but can get them through
-    //					 rearm/repair
+    //                rearm/repair
     if (swp->num_primary_banks < sip->num_primary_banks) {
         for (i = swp->num_primary_banks; i < sip->num_primary_banks; i++) {
             swp->primary_bank_weapons[i] = sip->primary_bank_weapons[i];
@@ -6323,13 +6323,13 @@ ship_do_rearm_frame(object *objp, float frametime)
     repair_allocated = sip->initial_hull_strength * frametime * HULL_REPAIR_RATE;
 
     /*
-	AL 11-24-97: remove increase to hull integrity
+   AL 11-24-97: remove increase to hull integrity
 
-	objp->hull_strength += repair_allocated;
-	if ( objp->hull_strength > sip->initial_hull_strength ) {
-		repair_allocated -= ( sip->initial_hull_strength - objp->hull_strength);
-		objp->hull_strength = sip->initial_hull_strength;
-	}
+   objp->hull_strength += repair_allocated;
+   if ( objp->hull_strength > sip->initial_hull_strength ) {
+      repair_allocated -= ( sip->initial_hull_strength - objp->hull_strength);
+      objp->hull_strength = sip->initial_hull_strength;
+   }
 */
 
     // check the subsystems of the ship.
@@ -6445,7 +6445,7 @@ ship_do_rearm_frame(object *objp, float frametime)
     }
 
     // return 1 if at end of subsystem list, hull damage at 0, and shields full and all secondary banks full.
-    //	if ( ((ssp = END_OF_LIST(&shipp->subsys_list)) != NULL )&&(objp->hull_strength == sip->initial_hull_strength)&&(shields_full) ) {
+    //   if ( ((ssp = END_OF_LIST(&shipp->subsys_list)) != NULL )&&(objp->hull_strength == sip->initial_hull_strength)&&(shields_full) ) {
     if (subsys_all_ok && shields_full) {
         if (objp == Player_obj) {
             player_stop_repair_sound();
@@ -6583,7 +6583,7 @@ ship_close()
 // -------------------------------------------------------------------------------------------------
 // ship_assign_sound()
 //
-//	Assign object-linked sound to a particular ship
+// Assign object-linked sound to a particular ship
 //
 void
 ship_assign_sound(ship *sp)
@@ -6627,7 +6627,7 @@ ship_assign_sound(ship *sp)
 // -------------------------------------------------------------------------------------------------
 // ship_assign_sound_all()
 //
-//	Assign object-linked sounds to all ships currently in the obj_used_list
+// Assign object-linked sounds to all ships currently in the obj_used_list
 //
 void
 ship_assign_sound_all()
@@ -7072,7 +7072,7 @@ ship_docking_valid(int docker, int dockee)
 
 // function to return a random ship in a starting player wing.  Returns -1 if a suitable
 // one cannot be found
-// input:	max_dist	=>	OPTIONAL PARAMETER (default value 0.0f) max range ship can be from player
+// input:   max_dist => OPTIONAL PARAMETER (default value 0.0f) max range ship can be from player
 // input:   persona  => OPTIONAL PARAMETER (default to -1) which persona to get
 int
 ship_get_random_player_wing_ship(int flags, float max_dist, int persona_index,
@@ -7169,7 +7169,7 @@ ship_get_random_player_wing_ship(int flags, float max_dist, int persona_index,
 }
 
 // like above function, but returns a random ship in the given wing -- no restrictions
-// input:	max_dist	=>	OPTIONAL PARAMETER (default value 0.0f) max range ship can be from player
+// input:   max_dist => OPTIONAL PARAMETER (default value 0.0f) max range ship can be from player
 int
 ship_get_random_ship_in_wing(int wingnum, int flags, float max_dist,
                              int get_first)
@@ -7226,7 +7226,7 @@ ship_get_random_ship_in_wing(int wingnum, int flags, float max_dist,
 // cargo containers are not counted as ships for the purposes of this function.  Why???
 // because now it is only used for getting a random ship for a message and cargo containers
 // can't send mesages.  This function is an example of kind of bad coding :-(
-// input:	max_dist	=>	OPTIONAL PARAMETER (default value 0.0f) max range ship can be from player
+// input:   max_dist => OPTIONAL PARAMETER (default value 0.0f) max range ship can be from player
 int
 ship_get_random_team_ship(int team, int flags, float max_dist)
 {
@@ -7288,7 +7288,7 @@ ship_get_random_team_ship(int team, int flags, float max_dist)
 //
 // check if currently selected secondary bank has ammo
 //
-// input:	shipnum	=>	index into Ships[] array for ship to check
+// input:   shipnum  => index into Ships[] array for ship to check
 //
 int
 ship_secondary_bank_has_ammo(int shipnum)
@@ -7327,12 +7327,12 @@ ship_can_warp(ship *sp)
 }
 
 // Calculate the normal vector from a subsystem position and it's first path point
-// input:	sp	=>	pointer to ship that is parent of subsystem
-//				ss =>	pointer to subsystem of interest
-//				norm	=> output parameter... vector from subsys to first path point
+// input:   sp => pointer to ship that is parent of subsystem
+//          ss => pointer to subsystem of interest
+//          norm  => output parameter... vector from subsys to first path point
 //
-//	exit:		0	=>	a valid vector was placed in norm
-//				!0	=> an path normal could not be calculated
+// exit:    0  => a valid vector was placed in norm
+//          !0 => an path normal could not be calculated
 //
 int
 ship_return_subsys_path_normal(ship *sp, ship_subsys *ss, vector *gsubpos,
@@ -7346,7 +7346,7 @@ ship_return_subsys_path_normal(ship *sp, ship_subsys *ss, vector *gsubpos,
         pm = model_get(sp->modelnum);
         mp = &pm->paths[ss->system_info->path_num];
         if (mp->nverts >= 2) {
-            //			path_point = &mp->verts[mp->nverts-1].pos;
+            //       path_point = &mp->verts[mp->nverts-1].pos;
             path_point = &mp->verts[0].pos;
             // get path point in world coords
             vm_vec_unrotate(&gpath_point, path_point,
@@ -7360,20 +7360,20 @@ ship_return_subsys_path_normal(ship *sp, ship_subsys *ss, vector *gsubpos,
     return 1;
 }
 
-//	Determine if the subsystem can be viewed from eye_pos.  The method is to check where the
+// Determine if the subsystem can be viewed from eye_pos.  The method is to check where the
 // vector from eye_pos to the subsystem hits the ship.  If distance from the hit position and
 // the center of the subsystem is within a range (currently the subsystem radius) it is considered
 // in view (return true).  If not in view, return false.
 //
-// input:	objp		=>		object that is the ship with the subsystem on it
-//				subsys	=>		pointer to the subsystem of interest
-//				eye_pos	=>		world coord for the eye looking at the subsystem
-//				subsys_pos			=>	world coord for the center of the subsystem of interest
-//				do_facing_check	=>	OPTIONAL PARAMETER (default value is 1), do a dot product check to see if subsystem fvec is facing
-//											towards the eye position
-//				dot_out	=>		OPTIONAL PARAMETER, output parameter, will return dot between subsys fvec and subsys_to_eye_vec
-//									(only filled in if do_facing_check is true)
-//				vec_out	=>		OPTIONAL PARAMETER, vector from eye_pos to absolute subsys_pos.  (only filled in if do_facing_check is true)
+// input:   objp     =>    object that is the ship with the subsystem on it
+//          subsys   =>    pointer to the subsystem of interest
+//          eye_pos  =>    world coord for the eye looking at the subsystem
+//          subsys_pos        => world coord for the center of the subsystem of interest
+//          do_facing_check   => OPTIONAL PARAMETER (default value is 1), do a dot product check to see if subsystem fvec is facing
+//                               towards the eye position
+//          dot_out  =>    OPTIONAL PARAMETER, output parameter, will return dot between subsys fvec and subsys_to_eye_vec
+//                         (only filled in if do_facing_check is true)
+//          vec_out  =>    OPTIONAL PARAMETER, vector from eye_pos to absolute subsys_pos.  (only filled in if do_facing_check is true)
 int
 ship_subsystem_in_sight(object *objp, ship_subsys *subsys, vector *eye_pos,
                         vector *subsys_pos, int do_facing_check, float *dot_out,
@@ -7461,10 +7461,10 @@ ship_return_next_subsys(ship *shipp, int type, vector *attacker_pos)
 
 // Return the shield strength in the quadrant hit on hit_objp, based on global hitpos
 //
-// input:	hit_objp	=>	object pointer to ship getting hit
-//				hitpos	=> global position of impact
+// input:   hit_objp => object pointer to ship getting hit
+//          hitpos   => global position of impact
 //
-// exit:		strength of shields in the quadrant that was hit as a percentage, between 0 and 1.0
+// exit:    strength of shields in the quadrant that was hit as a percentage, between 0 and 1.0
 //
 // Assumes: that hitpos is a valid global hit position
 float
@@ -7510,9 +7510,9 @@ ship_quadrant_shield_strength(object *hit_objp, vector *hitpos)
 }
 
 // Determine if a ship is threatened by any dumbfire projectiles (laser or missile)
-// input:	sp	=>	pointer to ship that might be threatened
-// exit:		0 =>	no dumbfire threats
-//				1 =>	at least one dumbfire threat
+// input:   sp => pointer to ship that might be threatened
+// exit:    0 =>  no dumbfire threats
+//          1 =>  at least one dumbfire threat
 //
 // NOTE: Currently this function is only called periodically from the HUD code for the
 //       player ship.
@@ -7596,10 +7596,10 @@ ship_is_getting_locked(ship *shipp)
 }
 
 // Determine if a ship is threatened by attempted lock or actual lock
-// input:	sp	=>	pointer to ship that might be threatened
-// exit:		0 =>	no lock threats of any kind
-//				1 =>	at least one attempting lock (no actual locks)
-//				2 =>	at least one lock (possible other attempting locks)
+// input:   sp => pointer to ship that might be threatened
+// exit:    0 =>  no lock threats of any kind
+//          1 =>  at least one attempting lock (no actual locks)
+//          2 =>  at least one lock (possible other attempting locks)
 //
 // NOTE: Currently this function is only called periodically from the HUD code for the
 //       player ship.
@@ -7633,11 +7633,11 @@ bitmask_2_bitnum(int num)
 
 // Get a text description of a ships orders.
 //
-//	input:	outbuf	=>		buffer to hold orders string
-//				sp			=>		ship pointer to extract orders from
+// input:   outbuf   =>    buffer to hold orders string
+//          sp       =>    ship pointer to extract orders from
 //
-// exit:		NULL		=>		printable orders are not applicable
-//				non-NULL	=>		pointer to string that was passed in originally
+// exit:    NULL     =>    printable orders are not applicable
+//          non-NULL =>    pointer to string that was passed in originally
 //
 // This function is called from HUD code to get a text description
 // of what a ship's orders are.  Feel free to use this function if
@@ -7720,11 +7720,11 @@ ship_return_orders(char *outbuf, ship *sp)
 }
 
 // return the amount of time until ship reaches it's goal (in MM:SS format)
-//	input:	outbuf	=>		buffer to hold orders string
-//				sp			=>		ship pointer to extract orders from
+// input:   outbuf   =>    buffer to hold orders string
+//          sp       =>    ship pointer to extract orders from
 //
-// exit:		NULL		=>		printable orders are not applicable
-//				non-NULL	=>		pointer to string that was passed in originally
+// exit:    NULL     =>    printable orders are not applicable
+//          non-NULL =>    pointer to string that was passed in originally
 //
 // This function is called from HUD code to get a text description
 // of what a ship's orders are.  Feel free to use this function if
@@ -7782,15 +7782,15 @@ ship_return_time_to_goal(char *outbuf, ship *sp)
     }
 
     /*
-	} else if ( aip->goal_objnum >= 0 ) {
-		dist = vm_vec_dist_quick(&Objects[aip->goal_objnum].pos, &objp->pos);
-		min_speed = sip->max_speed/4.0f;
-	} else if ( aip->target_objnum >= 0 ) {
-		if ( aip->guard_objnum < 0 ) {
-			dist = vm_vec_dist_quick(&Objects[aip->target_objnum].pos, &objp->pos);
-			min_speed = sip->max_speed/4.0f;
-		}
-	}
+   } else if ( aip->goal_objnum >= 0 ) {
+      dist = vm_vec_dist_quick(&Objects[aip->goal_objnum].pos, &objp->pos);
+      min_speed = sip->max_speed/4.0f;
+   } else if ( aip->target_objnum >= 0 ) {
+      if ( aip->guard_objnum < 0 ) {
+         dist = vm_vec_dist_quick(&Objects[aip->target_objnum].pos, &objp->pos);
+         min_speed = sip->max_speed/4.0f;
+      }
+   }
 */
 
     if (time >= 0) {
@@ -7892,8 +7892,8 @@ ship_check_cargo_all()
 // information about the closest attacking ship comes for free, since this function is called
 // from HUD code which has already determined the closest enemy attacker and the distance.
 //
-// input:	enemy_sp	=>	ship pointer to the TEAM_ENEMY ship attacking the player
-//				dist		=>	the distance of the enemy to the player
+// input:   enemy_sp => ship pointer to the TEAM_ENEMY ship attacking the player
+//          dist     => the distance of the enemy to the player
 //
 // NOTE: there are no filters on enemy_sp, so it could be any ship type
 //
@@ -7959,41 +7959,41 @@ ship_maybe_warn_player(ship *enemy_sp, float dist)
 
     msg_type = MESSAGE_CHECK_6;
     /*
-		goto warn_player_done;
-	}
+      goto warn_player_done;
+   }
 
-	// see if attacking ship is in front of ship (then do nothing)
-	if ( fdot > 0.7 ) {
-		return;
-	}
+   // see if attacking ship is in front of ship (then do nothing)
+   if ( fdot > 0.7 ) {
+      return;
+   }
 
-	// ok, ship is on 3 or 9.  Find out which
-	rdot = vm_vec_dot(&Player_obj->orient.rvec, &vec_to_target);
-	if ( rdot > 0 ) {
-		on_right = 1;
-	} else {
-		on_right = 0;
-	}
+   // ok, ship is on 3 or 9.  Find out which
+   rdot = vm_vec_dot(&Player_obj->orient.rvec, &vec_to_target);
+   if ( rdot > 0 ) {
+      on_right = 1;
+   } else {
+      on_right = 0;
+   }
 
-	// now determine if ship is high or low
-	udot = vm_vec_dot(&Player_obj->orient.uvec, &vec_to_target);
-	if ( udot < -0.8 ) {
-		return;	// if ship is attacking from directly below, no warning given
-	}
+   // now determine if ship is high or low
+   udot = vm_vec_dot(&Player_obj->orient.uvec, &vec_to_target);
+   if ( udot < -0.8 ) {
+      return;  // if ship is attacking from directly below, no warning given
+   }
 
-	if ( udot > 0 ) {
-		if ( on_right ) {
-			msg_type = MESSAGE_CHECK_3_HIGH;
-		} else {
-			msg_type = MESSAGE_CHECK_9_HIGH;
-		}
-	} else {
-		if ( on_right ) {
-			msg_type = MESSAGE_CHECK_3_LOW;
-		} else {
-			msg_type = MESSAGE_CHECK_9_LOW;
-		}
-	}
+   if ( udot > 0 ) {
+      if ( on_right ) {
+         msg_type = MESSAGE_CHECK_3_HIGH;
+      } else {
+         msg_type = MESSAGE_CHECK_9_HIGH;
+      }
+   } else {
+      if ( on_right ) {
+         msg_type = MESSAGE_CHECK_3_LOW;
+      } else {
+         msg_type = MESSAGE_CHECK_9_LOW;
+      }
+   }
 
 warn_player_done:
 */
@@ -8009,7 +8009,7 @@ warn_player_done:
                                            MESSAGE_TIME_IMMEDIATE, 0, 0);
             Player->allow_warn_timestamp = timestamp(PLAYER_ALLOW_WARN_INTERVAL);
             Player->warn_count++;
-            //			nprintf(("Alan","Warning given for ship name: %s\n", enemy_sp->ship_name));
+            //       nprintf(("Alan","Warning given for ship name: %s\n", enemy_sp->ship_name));
         }
     }
 }
@@ -8256,7 +8256,7 @@ ship_maybe_tell_about_rearm(ship *sp)
         return;
     }
 
-    // AL 1-4-98:	If ship integrity is low, tell player you want to get repaired.  Otherwise, tell
+    // AL 1-4-98: If ship integrity is low, tell player you want to get repaired.  Otherwise, tell
     // the player you want to get re-armed.
 
     int message_type = -1;
@@ -8587,7 +8587,7 @@ ship_page_in()
 }
 
 // function to return true if support ships are allowed in the mission for the given object.
-//	Must be friendly and not Shivan.
+// Must be friendly and not Shivan.
 int
 is_support_allowed(object *objp)
 {

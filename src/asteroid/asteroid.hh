@@ -56,7 +56,7 @@ extern debris_struct Field_debris_info[];
 
 #define MAX_ASTEROID_POFS 3 // Max number of POFs per asteroid type
 
-#define AF_USED (1 << 0) //	Set means used.
+#define AF_USED (1 << 0) //   Set means used.
 
 typedef struct asteroid_info
 {
@@ -79,15 +79,15 @@ typedef struct asteroid
 {
     int flags;
     int objnum;
-    int type; //	In 0..Num_asteroid_types
+    int type; //  In 0..Num_asteroid_types
     int asteroid_subtype; // Which index into asteroid_info for modelnum and modelp
-    int check_for_wrap; //	timestamp to check for asteroid wrapping around field
+    int check_for_wrap; // timestamp to check for asteroid wrapping around field
     int check_for_collide; // timestamp to check for asteroid colliding with escort ships
     int final_death_time; // timestamp to swap in new models after explosion starts
     int collide_objnum; // set to objnum that asteroid will be impacting soon
     int collide_objsig; // object signature corresponding to collide_objnum
     vector death_hit_pos; // hit pos that caused death
-    int target_objnum; //	Yes, hah!  Asteroids can have targets.  See asteroid_aim_at_target().
+    int target_objnum; //  Yes, hah!  Asteroids can have targets.  See asteroid_aim_at_target().
 } asteroid;
 
 // TYPEDEF FOR SPECIES OF DEBRIS - BITFIELD
@@ -105,14 +105,14 @@ typedef enum { FT_ACTIVE, FT_PASSIVE } field_type;
 
 typedef struct asteroid_field
 {
-    vector min_bound; //	Minimum range of field.
-    vector max_bound; //	Maximum range of field.
+    vector min_bound; //   Minimum range of field.
+    vector max_bound; //   Maximum range of field.
     int has_inner_bound;
     vector inner_min_bound;
     vector inner_max_bound;
-    vector vel; //	Average asteroid moves at this velocity.
+    vector vel; //   Average asteroid moves at this velocity.
     float speed; // Average speed of field
-    int num_initial_asteroids; //	Number of asteroids at creation.
+    int num_initial_asteroids; //   Number of asteroids at creation.
     field_type field_type; // active throws and wraps, passive does not
     debris_genre debris_genre; // type of debris (ship or asteroid)  [generic type]
     int field_debris_type

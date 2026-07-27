@@ -84,7 +84,7 @@ hud_brackets_get_iff_color(int team)
     return color;
 }
 
-//	Called by draw_bounding_brackets.
+// Called by draw_bounding_brackets.
 void
 draw_brackets_square(int x1, int y1, int x2, int y2)
 {
@@ -237,7 +237,7 @@ draw_brackets_dashed_square_quick(int x1, int y1, int x2, int y2)
 }
 
 // draw_brackets_diamond()
-//	Called by draw_bounding_brackets.
+// Called by draw_bounding_brackets.
 
 void
 draw_brackets_diamond(int x1, int y1, int x2, int y2)
@@ -337,7 +337,7 @@ subsys_is_fighterbay(ship_subsys *ss)
     return 0;
 }
 
-//	Draw bounding brackets for a subobject.
+// Draw bounding brackets for a subobject.
 void
 draw_bounding_brackets_subobject()
 {
@@ -456,7 +456,7 @@ hud_target_show_dist_on_bracket(int x, int y, float distance)
 }
 
 // !!!!!!!!!!!!!!!
-//	Given an object number, return the number of ships attacking it.
+// Given an object number, return the number of ships attacking it.
 // MWA 5/26/98 -- copied from aicode num_attacking_ships()!!!
 // !!!!!!!!!!!!!!!
 int
@@ -541,7 +541,7 @@ draw_bounding_brackets(int x1, int y1, int x2, int y2, int w_correction,
                                         distance);
     }
 
-    //	Maybe show + for each additional fighter or bomber attacking target.
+    //   Maybe show + for each additional fighter or bomber attacking target.
     if ((target_objnum != -1) && hud_gauge_active(HUD_ATTACKING_TARGET_COUNT)) {
         int num_attacking = hud_bracket_num_ships_attacking(target_objnum);
 
@@ -554,7 +554,7 @@ draw_bounding_brackets(int x1, int y1, int x2, int y2, int w_correction,
             return;
         }
 
-        //	If a ship not on player's team, show one fewer plus since it is targeted and attacked by player.
+        //  If a ship not on player's team, show one fewer plus since it is targeted and attacked by player.
         int k = 0;
         if (Objects[target_objnum].type == OBJ_SHIP) {
             if (Ships[Objects[target_objnum].instance].team !=
@@ -574,7 +574,7 @@ draw_bounding_brackets(int x1, int y1, int x2, int y2, int w_correction,
                 num_blips = 4;
             }
 
-            //int	bitmap = get_blip_bitmap();
+            //int bitmap = get_blip_bitmap();
 
             if (Ships_attacking_bitmap > -1) {
                 if (num_blips > 3)

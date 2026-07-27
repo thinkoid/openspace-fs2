@@ -11,14 +11,14 @@
 #define _PSTYPES_H
 
 // Build defines.  Comment in/out for whatever build is necessary:
-// #define OEM_BUILD						// enable for OEM builds
-// #define MULTIPLAYER_BETA_BUILD				// enable for multiplayer beta build
-// #define E3_BUILD							// enable for 3dfx E3 build
-// #define PRESS_TOUR_BUILD			// enable for press tour build
-// #define FS2_DEMO					// enable demo build for FS2
-// #define PD_BUILD						// fred documentation/evaluation build
-//	#define FRENCH_BUILD				// build for French (obsolete)
-// #define GERMAN_BUILD				// build for German (this is now used)
+// #define OEM_BUILD                // enable for OEM builds
+// #define MULTIPLAYER_BETA_BUILD            // enable for multiplayer beta build
+// #define E3_BUILD                    // enable for 3dfx E3 build
+// #define PRESS_TOUR_BUILD         // enable for press tour build
+// #define FS2_DEMO              // enable demo build for FS2
+// #define PD_BUILD                 // fred documentation/evaluation build
+// #define FRENCH_BUILD          // build for French (obsolete)
+// #define GERMAN_BUILD          // build for German (this is now used)
 #define RELEASE_REAL // this means that it is an actual release candidate, not just an optimized/release build
 
 // uncomment this #define for DVD version (makes popups say DVD instead of CD 2 or whatever): JCF 5/10/2000
@@ -312,17 +312,17 @@ extern int Nebedit_running;
 /*
 DCF(toggle_it,"description")
 {
-	if (Dc_command)	{
-		This_var = !This_var;
-	}
+   if (Dc_command)   {
+      This_var = !This_var;
+   }
 
-	if (Dc_help)	{
-		dc_printf( "Usage: sample\nToggles This_var on/off.\n" );
-	}
+   if (Dc_help)   {
+      dc_printf( "Usage: sample\nToggles This_var on/off.\n" );
+   }
 
-	if (Dc_status)	{
-		dc_printf( "The status is %d.\n", This_var );
-	}
+   if (Dc_status) {
+      dc_printf( "The status is %d.\n", This_var );
+   }
 */
 
 class debug_command

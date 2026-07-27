@@ -30,10 +30,10 @@
 
 /*
 //macro set set a matrix to the identity. Note: NO RETURN VALUE
-#define vm_set_identity(m) do {m->rvec.x = m->uvec.y = m->fvec.z = (float)1.0;	\
-										m->rvec.y = m->rvec.z = \
-										m->uvec.x = m->uvec.z = \
-										m->fvec.x = m->fvec.y = (float)0.0;} while (0)
+#define vm_set_identity(m) do {m->rvec.x = m->uvec.y = m->fvec.z = (float)1.0;   \
+                              m->rvec.y = m->rvec.z = \
+                              m->uvec.x = m->uvec.z = \
+                              m->fvec.x = m->fvec.y = (float)0.0;} while (0)
 */
 extern void vm_set_identity(matrix *m);
 
@@ -249,8 +249,8 @@ float vm_vec_dist_quick(vector *v0, vector *v1);
 float vm_vec_copy_normalize(vector *dest, vector *src);
 float vm_vec_normalize(vector *v);
 
-//	This version of vector normalize checks for the null vector before normalization.
-//	If it is detected, it generates a Warning() and returns the vector 1, 0, 0.
+// This version of vector normalize checks for the null vector before normalization.
+// If it is detected, it generates a Warning() and returns the vector 1, 0, 0.
 float vm_vec_normalize_safe(vector *v);
 
 //normalize a vector. returns mag of source vec. uses approx mag
@@ -318,8 +318,8 @@ float vm_vec_delta_ang_norm(vector *v0, vector *v1, vector *fvec);
 //computes a matrix from a set of three angles.  returns ptr to matrix
 matrix *vm_angles_2_matrix(matrix *m, angles *a);
 
-//	Computes a matrix from a single angle.
-//	angle_index = 0,1,2 for p,b,h
+// Computes a matrix from a single angle.
+// angle_index = 0,1,2 for p,b,h
 matrix *vm_angle_2_matrix(matrix *m, float a, int angle_index);
 
 //computes a matrix from a forward vector and an angle
@@ -401,11 +401,11 @@ float vm_dist_to_plane(vector *checkp, vector *norm, vector *planep);
 //}
 void vm_trackball(int idx, int idy, matrix *RotMat);
 
-//	Find the point on the line between p0 and p1 that is nearest to int_pnt.
-//	Stuff result in nearest_point.
-//	Return value indicated where on the line *nearest_point lies.  Between 0.0f and 1.0f means it's
-//	in the line segment.  Positive means beyond *p1, negative means before *p0.  2.0f means it's
-//	beyond *p1 by 2x.
+// Find the point on the line between p0 and p1 that is nearest to int_pnt.
+// Stuff result in nearest_point.
+// Return value indicated where on the line *nearest_point lies.  Between 0.0f and 1.0f means it's
+// in the line segment.  Positive means beyond *p1, negative means before *p0.  2.0f means it's
+// beyond *p1 by 2x.
 float find_nearest_point_on_line(vector *nearest_point, vector *p0, vector *p1,
                                  vector *int_pnt);
 
@@ -416,14 +416,14 @@ void compute_point_on_plane(vector *q, plane *planep, vector *p);
 // ----------------------------------------------------------------------------
 // computes the point on a plane closest to a given point (which may be on the plane)
 //
-//		inputs:		new_point		=>		point on the plane [result]
-//						point				=>		point to compute closest plane point
-//						plane_normal	=>		plane normal
-//						plane_point		=>		plane point
+//    inputs:     new_point      =>    point on the plane [result]
+//                point          =>    point to compute closest plane point
+//                plane_normal   =>    plane normal
+//                plane_point    =>    plane point
 void vm_project_point_onto_plane(vector *new_point, vector *point,
                                  vector *plane_normal, vector *plane_point);
 
-//	Returns fairly random vector, "quick" normalized
+// Returns fairly random vector, "quick" normalized
 void vm_vec_rand_vec_quick(vector *rvec);
 
 // Given an point "in" rotate it by "angle" around an
@@ -450,7 +450,7 @@ int vm_check_matrix_for_zeros(matrix *m);
 // see if two vectors are identical
 int vm_vec_same(vector *v1, vector *v2);
 
-//	Interpolate from a start matrix toward a goal matrix, minimizing time between orientations.
+// Interpolate from a start matrix toward a goal matrix, minimizing time between orientations.
 // Moves at maximum rotational acceleration toward the goal when far and then max deceleration when close.
 // Subject to constaints on rotational velocity and angular accleleration.
 // Returns next_orientation valid at time delta_t.
@@ -459,7 +459,7 @@ void vm_matrix_interpolate(matrix *goal_orient, matrix *start_orient,
                            vector *rotvel_out, vector *rotvel_limit,
                            vector *acc_limit, int no_overshoot = 0);
 
-//	Interpolate from a start forward vec toward a goal forward vec, minimizing time between orientations.
+// Interpolate from a start forward vec toward a goal forward vec, minimizing time between orientations.
 // Moves at maximum rotational acceleration toward the goal when far and then max deceleration when close.
 // Subject to constaints on rotational velocity and angular accleleration.
 // Returns next forward vec valid at time delta_t.
@@ -487,10 +487,10 @@ vector *vm_rotate_vec_to_world(vector *world_vec, vector *body_vec,
 void vm_estimate_next_orientation(matrix *last_orient, matrix *current_orient,
                                   matrix *next_orient);
 
-//	Return true if all elements of *vec are legal, that is, not a NAN.
+// Return true if all elements of *vec are legal, that is, not a NAN.
 int is_valid_vec(vector *vec);
 
-//	Return true if all elements of *m are legal, that is, not a NAN.
+// Return true if all elements of *m are legal, that is, not a NAN.
 int is_valid_matrix(matrix *m);
 
 // Finds the rotation matrix corresponding to a rotation of theta about axis u

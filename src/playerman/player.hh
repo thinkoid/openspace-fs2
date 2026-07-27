@@ -20,7 +20,7 @@
 #include <io/keycontrol.hh> // for button_info
 
 #define CALLSIGN_LEN                                                             \
-    28 //	shortened from 32 to allow .plr to be attached without exceeding MAX_FILENAME_LEN
+    28 //   shortened from 32 to allow .plr to be attached without exceeding MAX_FILENAME_LEN
 #define SHORT_CALLSIGN_PIXEL_W 80 // max width of short_callsign[] in pixels
 #define MAX_KEYED_TARGETS 8 // number of hot keys available to assign targets to
 
@@ -52,7 +52,7 @@
     (1 << 10) // secondary weapons were linked last mission
 #define PLAYER_FLAGS_NO_CHECK_ALL_ALONE_MSG                                      \
     (1                                                                           \
-     << 11) //	player can't receive 'you're all alone...' message from Terran Command
+     << 11) // player can't receive 'you're all alone...' message from Terran Command
 #define PLAYER_FLAGS_KILLED_BY_EXPLOSION                                         \
     (1 << 12) // player was killed by an instantaneous area-effect explosion
 #define PLAYER_FLAGS_HAS_PLAYED_PXO                                              \
@@ -164,7 +164,7 @@ typedef struct player
     int lock_indicator_start_y; // 2D screen y-coordinate of where lock indicator originated
     int lock_indicator_visible; // flag indicating if the lock indicator is on screen or not
     float lock_time_to_target; // time left (in milliseconds) before minimum time to lock elapsed
-    float lock_dist_to_target; //	distance from lock indicator to target (in pixels)
+    float lock_dist_to_target; //   distance from lock indicator to target (in pixels)
 
     int last_ship_flown_si_index; // ship info index of ship most recently flown on a mission
 
@@ -173,16 +173,16 @@ typedef struct player
     control_info ci; // control info structure for this player
     scoring_struct stats; // scoring and stats info for the player
 
-    int friendly_hits; //	Number of times hit a friendly ship this mission.
-    float friendly_damage; //	Total friendly damage done in mission.  Diminishes over time.
-    fix friendly_last_hit_time; //	Missiontime of last hit on friendly.  Used to decay friendly damage.
-    fix last_warning_message_time; //	Time at which last message to player was sent regarding friendly damage.
+    int friendly_hits; //  Number of times hit a friendly ship this mission.
+    float friendly_damage; // Total friendly damage done in mission.  Diminishes over time.
+    fix friendly_last_hit_time; //  Missiontime of last hit on friendly.  Used to decay friendly damage.
+    fix last_warning_message_time; //  Time at which last message to player was sent regarding friendly damage.
 
     int control_mode; // Used to determine what mode player control is in.  For worm holes mainly.
     int saved_viewer_mode; // used to save viewer mode when warping out
 
     int check_warn_timestamp; // Timestamp used to determine when to check for possible warning,
-    //	done so we don't check each frame
+    //   done so we don't check each frame
 
     int distance_warning_count; // Number of distance warings
 
@@ -240,7 +240,7 @@ typedef struct player
 
     int insignia_texture; // player's insignia bitmap (or -1 if none). should correspond to squad filename
     // NOTE : this bitmap is in TEXTURE format. do not try to use this bitmap to
-    //			 render in screen format
+    //          render in screen format
     int tips; // show tips or not
 
     int shield_penalty_stamp; // timestamp for when we can next apply a shield balance penalty

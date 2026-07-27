@@ -213,11 +213,11 @@ fvi_segment_sphere(vector *intp, vector *p0, vector *p1, vector *sphere_pos,
 
         vm_vec_scale_add(intp, p0, &dn, int_dist); //calc intersection point
 
-        //		{
-        //			fix dd = vm_vec_dist(intp,sphere_pos);
-        //			Assert(dd == sphere_rad);
-        //			mprintf(0,"dd=%x, rad=%x, delta=%x\n",dd,sphere_rad,dd-sphere_rad);
-        //		}
+        //     {
+        //        fix dd = vm_vec_dist(intp,sphere_pos);
+        //        Assert(dd == sphere_rad);
+        //        mprintf(0,"dd=%x, rad=%x, delta=%x\n",dd,sphere_rad,dd-sphere_rad);
+        //     }
 
         return 1;
     }
@@ -260,8 +260,8 @@ fvi_ray_sphere(vector *intp, vector *p0, vector *p1, vector *sphere_pos,
     if (w_dist < -sphere_rad) //moving away from object
         return 0;
 
-    //	if (w_dist > mag_d+sphere_rad)
-    //		return 0;		//cannot hit
+    //   if (w_dist > mag_d+sphere_rad)
+    //      return 0;      //cannot hit
 
     vm_vec_scale_add(&closest_point, p0, &dn, w_dist);
 
@@ -277,7 +277,7 @@ fvi_ray_sphere(vector *intp, vector *p0, vector *p1, vector *sphere_pos,
 
         int_dist = w_dist - shorten;
 
-        //		if (int_dist > mag_d || int_dist < 0.0f) {
+        //     if (int_dist > mag_d || int_dist < 0.0f) {
         if (int_dist < 0.0f) {
             //past one or the begining of vector, which means we're inside
 
@@ -287,11 +287,11 @@ fvi_ray_sphere(vector *intp, vector *p0, vector *p1, vector *sphere_pos,
 
         vm_vec_scale_add(intp, p0, &dn, int_dist); //calc intersection point
 
-        //		{
-        //			fix dd = vm_vec_dist(intp,sphere_pos);
-        //			Assert(dd == sphere_rad);
-        //			mprintf(0,"dd=%x, rad=%x, delta=%x\n",dd,sphere_rad,dd-sphere_rad);
-        //		}
+        //     {
+        //        fix dd = vm_vec_dist(intp,sphere_pos);
+        //        Assert(dd == sphere_rad);
+        //        mprintf(0,"dd=%x, rad=%x, delta=%x\n",dd,sphere_rad,dd-sphere_rad);
+        //     }
 
         return 1;
     }
@@ -475,22 +475,22 @@ fvi_point_face(vector *checkp, int nv, vector **verts, vector *norm1,
         }
 
         /*
-		// This is test code that I used to detect failures.  See the
-		// comments above this function for details.
-		double betad;
-		float alphad;
-		int interd=0;
+      // This is test code that I used to detect failures.  See the
+      // comments above this function for details.
+      double betad;
+      float alphad;
+      int interd=0;
 
-		betad = (v0*u1 - u0*v1) / (v2*u1 - u2*v1);
-		if ((betad >=0.0f) && (betad<=1.0f))	{
-			alphad = (u0 - betad*u2)/u1;
-			interd = ((alphad>=0.0f)&&(alphad+betad<=1.0f));
-		}
+      betad = (v0*u1 - u0*v1) / (v2*u1 - u2*v1);
+      if ((betad >=0.0f) && (betad<=1.0f))   {
+         alphad = (u0 - betad*u2)/u1;
+         interd = ((alphad>=0.0f)&&(alphad+betad<=1.0f));
+      }
 
-		if ( interd != inter )	{
-			mprintf(( "u0=%.4f, u1=%.16f, u2=%.4f\n", u0, u1, u2 ));
-			mprintf(( "v0=%.4f, v1=%.16f, v2=%.4f\n", v0, v1, v2 ));
-		}
+      if ( interd != inter )  {
+         mprintf(( "u0=%.4f, u1=%.16f, u2=%.4f\n", u0, u1, u2 ));
+         mprintf(( "v0=%.4f, v1=%.16f, v2=%.4f\n", v0, v1, v2 ));
+      }
 */
 
     } while ((!inter) && (++i < nv));
@@ -520,16 +520,16 @@ int check_sphere_point(vector *point, vector *sphere_start, vector *sphere_vel,
 // if two collisions occur, returns earliest legal time
 // returns the intersection point on the plane
 //
-//		inputs:	intersect_point		=>		position on plane where sphere makes first contact [if hit_time in range 0-1]
-//					sphere_center_start	=>		initial sphere center
-//					sphere_velocity		=>		initial sphere velocity
-//					sphere_radius			=>		radius of sphere
-//					plane_normal			=>		normal to the colliding plane
-//					plane_point				=>		point in the colliding plane
-//					hit_time					=>		time surface of sphere first hits plane
-//					delta_t					=>		time for sphere to cross plane (first to last contact)
+//    inputs:  intersect_point      =>    position on plane where sphere makes first contact [if hit_time in range 0-1]
+//             sphere_center_start  =>    initial sphere center
+//             sphere_velocity      =>    initial sphere velocity
+//             sphere_radius        =>    radius of sphere
+//             plane_normal         =>    normal to the colliding plane
+//             plane_point          =>    point in the colliding plane
+//             hit_time             =>    time surface of sphere first hits plane
+//             delta_t              =>    time for sphere to cross plane (first to last contact)
 //
-//		return:	1 if sphere may be in contact with plane in time range [0-1], 0 otherwise
+//    return:  1 if sphere may be in contact with plane in time range [0-1], 0 otherwise
 //
 
 int
@@ -580,18 +580,18 @@ fvi_sphere_plane(vector *intersect_point, vector *sphere_center_start,
 
 // ----------------------------------------------------------------------------
 // fvi_sphere_perp_edge()
-//	returns whether a sphere hits and edge for the case the edge is perpendicular to sphere_velocity
+// returns whether a sphere hits and edge for the case the edge is perpendicular to sphere_velocity
 // if two collisions occur, returns the earliest legal time
 // returns the intersection point on the edge
 //
-//		inputs:	intersect_point		=>		position on plane where sphere makes first contact [RESULT]
-//					sphere_center_start	=>		initial sphere center
-//					sphere_velocity		=>		initial sphere velocity
-//					sphere_radius			=>		radius of sphere
-//					edge_point1				=>		first edge point
-//					edge_point2				=>		second edge point
-//					max_time					=>		maximum legal time at which collision can occur
-//					collide_time			=>		actual time of the collision
+//    inputs:  intersect_point      =>    position on plane where sphere makes first contact [RESULT]
+//             sphere_center_start  =>    initial sphere center
+//             sphere_velocity      =>    initial sphere velocity
+//             sphere_radius        =>    radius of sphere
+//             edge_point1          =>    first edge point
+//             edge_point2          =>    second edge point
+//             max_time             =>    maximum legal time at which collision can occur
+//             collide_time         =>    actual time of the collision
 //
 int
 fvi_sphere_perp_edge(vector *intersect_point, vector *sphere_center_start,
@@ -663,11 +663,11 @@ fvi_sphere_perp_edge(vector *intersect_point, vector *sphere_center_start,
 // check_sphere_point()
 // determines whether and where a moving sphere hits a point
 //
-//			inputs:		point				=>		point sphere collides with
-//							sphere_start	=>		initial sphere center
-//							sphere_vel		=>		velocity of sphere
-//							radius			=>		radius of sphere
-//							collide_time	=>		time of first collision with t >= 0
+//       inputs:     point          =>    point sphere collides with
+//                   sphere_start   =>    initial sphere center
+//                   sphere_vel     =>    velocity of sphere
+//                   radius         =>    radius of sphere
+//                   collide_time   =>    time of first collision with t >= 0
 //
 int
 check_sphere_point(vector *point, vector *sphere_start, vector *sphere_vel,
@@ -681,9 +681,9 @@ check_sphere_point(vector *point, vector *sphere_start, vector *sphere_vel,
     vs_sqr = vm_vec_mag_squared(sphere_vel);
     delta_x_dot_vs = vm_vec_dotprod(&delta_x, sphere_vel);
 
-    //	a = vs_sqr;
-    //	b = 2.0f*delta_x_dot_vs;
-    //	c = delta_x_sqr - radius*radius;
+    //   a = vs_sqr;
+    //   b = 2.0f*delta_x_dot_vs;
+    //   c = delta_x_sqr - radius*radius;
 
     float discriminant = delta_x_dot_vs * delta_x_dot_vs -
                          vs_sqr * (delta_x_sqr - radius * radius);
@@ -721,237 +721,237 @@ check_sphere_point(vector *point, vector *sphere_start, vector *sphere_vel,
 //
 // Given a polygon vertex list and a moving sphere, find the first contact the sphere makes with the edge, if any
 //
-//		Inputs:	hit_point		=>		point on edge
-//					xs0				=>		starting point for sphere
-//					vs					=>		sphere velocity
-//					Rs					=>		sphere radius
-//					nv					=>		number of vertices
-//					verts				=>		vertices making up polygon edges
-//					hit_time			=>		time the sphere hits an edge
+//    Inputs:  hit_point      =>    point on edge
+//             xs0            =>    starting point for sphere
+//             vs             =>    sphere velocity
+//             Rs             =>    sphere radius
+//             nv             =>    number of vertices
+//             verts          =>    vertices making up polygon edges
+//             hit_time       =>    time the sphere hits an edge
 //
-//		Return:	1 if sphere hits polyedge, 0 if sphere misses
+//    Return:  1 if sphere hits polyedge, 0 if sphere misses
 /*
 #define TOL 1E-3
 
 int fvi_polyedge_sphereline(vector *hit_point, vector *xs0, vector *vs, float Rs, int nv, vector **verts, float *hit_time)
 {
-	int i;
-	vector v0, v1;
-	vector ve;						// edge velocity
-	float best_sphere_time;		// earliest time sphere hits edge
-	vector delta_x;
-	float	delta_x_dot_ve, delta_x_dot_vs, ve_dot_vs, ve_sqr, vs_sqr;
-	float denominator;
-	float time_el, time_sl;		// times for edge_line and sphere_line at closest approach
-	vector temp_edge_hit, temp_sphere_hit;
-	vector best_edge_hit;		// edge position for earliest edge hit
+   int i;
+   vector v0, v1;
+   vector ve;                 // edge velocity
+   float best_sphere_time;    // earliest time sphere hits edge
+   vector delta_x;
+   float delta_x_dot_ve, delta_x_dot_vs, ve_dot_vs, ve_sqr, vs_sqr;
+   float denominator;
+   float time_el, time_sl;    // times for edge_line and sphere_line at closest approach
+   vector temp_edge_hit, temp_sphere_hit;
+   vector best_edge_hit;      // edge position for earliest edge hit
 
-	best_sphere_time = FLT_MAX;
+   best_sphere_time = FLT_MAX;
 
-	for (i=0; i<nv; i++) {
-		// Get vertices of edge to check
-		v0 = *verts[i];
-		if (i+1 != nv) {
-			v1 = *verts[i+1];
-		} else {
-			v1 = *verts[0];
-		}
+   for (i=0; i<nv; i++) {
+      // Get vertices of edge to check
+      v0 = *verts[i];
+      if (i+1 != nv) {
+         v1 = *verts[i+1];
+      } else {
+         v1 = *verts[0];
+      }
 
-		// Calculate edge velocity. 
-		// Position along the edge is given by: P_edge = v0 + ve*t, where t is in the range [0,1]
-		vm_vec_sub(&ve, &v1, &v0);
+      // Calculate edge velocity. 
+      // Position along the edge is given by: P_edge = v0 + ve*t, where t is in the range [0,1]
+      vm_vec_sub(&ve, &v1, &v0);
 
-		// First find the closest intersection between the edge_line and the sphere_line.
-		vm_vec_sub(&delta_x, &v0, xs0);
-		delta_x_dot_ve = vm_vec_dotprod(&delta_x, &ve);
-
-
-		delta_x_dot_vs = vm_vec_dotprod(&delta_x, vs);
-		ve_dot_vs = vm_vec_dotprod(&ve, vs);
-		ve_sqr = vm_vec_mag_squared(&ve);
-		vs_sqr = vm_vec_mag_squared(vs);
+      // First find the closest intersection between the edge_line and the sphere_line.
+      vm_vec_sub(&delta_x, &v0, xs0);
+      delta_x_dot_ve = vm_vec_dotprod(&delta_x, &ve);
 
 
-		denominator = ve_dot_vs*ve_dot_vs - ve_sqr*vs_sqr;
-		if (fl_abs(denominator) < SMALL_NUM) {		// check for parallel linesg
-			continue;										// would have to hit at vertex 
-		}														// and another edge will not be so parallel
+      delta_x_dot_vs = vm_vec_dotprod(&delta_x, vs);
+      ve_dot_vs = vm_vec_dotprod(&ve, vs);
+      ve_sqr = vm_vec_mag_squared(&ve);
+      vs_sqr = vm_vec_mag_squared(vs);
 
-		// Compute time (and position) along the edge_line and sphere_line at closest approach.
-		time_el = (delta_x_dot_ve*vs_sqr - ve_dot_vs*delta_x_dot_vs) / denominator;
-		time_sl = (delta_x_dot_vs + ve_dot_vs*time_el) / vs_sqr;
 
-		// DA: 12/5/97  I checked above procedure for calculating line intersection against fvi_closest_line_line()
-		// fvi_closest_line_line appears to have much lower accuracy as many edges collisions were missed
+      denominator = ve_dot_vs*ve_dot_vs - ve_sqr*vs_sqr;
+      if (fl_abs(denominator) < SMALL_NUM) {    // check for parallel linesg
+         continue;                              // would have to hit at vertex 
+      }                                         // and another edge will not be so parallel
 
-		vm_vec_scale_add(&temp_edge_hit, &v0, &ve, time_el);
-		vm_vec_scale_add(&temp_sphere_hit, xs0, vs, time_sl);
+      // Compute time (and position) along the edge_line and sphere_line at closest approach.
+      time_el = (delta_x_dot_ve*vs_sqr - ve_dot_vs*delta_x_dot_vs) / denominator;
+      time_sl = (delta_x_dot_vs + ve_dot_vs*time_el) / vs_sqr;
 
-		// Compute distance squared at closest approach.
-		vector diff;
-		float  d0_sqr;
-		vm_vec_sub(&diff, &temp_sphere_hit, &temp_edge_hit);
-		d0_sqr = vm_vec_mag_squared(&diff);
+      // DA: 12/5/97  I checked above procedure for calculating line intersection against fvi_closest_line_line()
+      // fvi_closest_line_line appears to have much lower accuracy as many edges collisions were missed
 
-		if (d0_sqr > Rs*Rs) {
-			continue;
-		} 
+      vm_vec_scale_add(&temp_edge_hit, &v0, &ve, time_el);
+      vm_vec_scale_add(&temp_sphere_hit, xs0, vs, time_sl);
 
-		// Starting from the positions of closest approach, back up the sphere until it is just touching the edge_line.
-		// Check this edge_line point against the range of the edge.  If not in range, check if the sphere hits the 
-		// extreme of the edge.
+      // Compute distance squared at closest approach.
+      vector diff;
+      float  d0_sqr;
+      vm_vec_sub(&diff, &temp_sphere_hit, &temp_edge_hit);
+      d0_sqr = vm_vec_mag_squared(&diff);
 
-		//	time_e1 - the edge_line position of closest approach
-		//	time_e  - the edge position where sphere makes first contact
-		float dist_e_sqr, dist_s_sqr, delta_te, delta_ts, cos_sqr;
-		float time_s;
-		float time_em, time_ep, time_sm, time_sp;
-		float te_per_ts;
-		cos_sqr = (ve_dot_vs*ve_dot_vs) / (ve_sqr*vs_sqr);
-		dist_s_sqr = (Rs*Rs - d0_sqr) / (1.0f - cos_sqr);
-		delta_ts = fl_sqrt(dist_s_sqr / vs_sqr);
-		time_sm = time_sl - delta_ts;
-		time_sp = time_sl + delta_ts;
+      if (d0_sqr > Rs*Rs) {
+         continue;
+      } 
 
-		if (time_sm > 1 || time_sp < 0) {
-			continue;
-		}
+      // Starting from the positions of closest approach, back up the sphere until it is just touching the edge_line.
+      // Check this edge_line point against the range of the edge.  If not in range, check if the sphere hits the 
+      // extreme of the edge.
 
-		dist_e_sqr = (Rs*Rs - d0_sqr) * cos_sqr / (1.0f - cos_sqr);
-		delta_te = fl_sqrt(dist_e_sqr / ve_sqr);
-		time_em = time_el - delta_te;
-		time_ep = time_el + delta_te;
+      // time_e1 - the edge_line position of closest approach
+      // time_e  - the edge position where sphere makes first contact
+      float dist_e_sqr, dist_s_sqr, delta_te, delta_ts, cos_sqr;
+      float time_s;
+      float time_em, time_ep, time_sm, time_sp;
+      float te_per_ts;
+      cos_sqr = (ve_dot_vs*ve_dot_vs) / (ve_sqr*vs_sqr);
+      dist_s_sqr = (Rs*Rs - d0_sqr) / (1.0f - cos_sqr);
+      delta_ts = fl_sqrt(dist_s_sqr / vs_sqr);
+      time_sm = time_sl - delta_ts;
+      time_sp = time_sl + delta_ts;
 
-		if (cos_sqr > 0.5f) {
-			if (time_em > 1 || time_ep < 0) {
-				continue;
-			}
-		} else {
-			delta_te = fl_sqrt( (Rs*Rs - d0_sqr) / ve_sqr );
-			if ((time_el - delta_te) > 1 || (time_el + delta_te) <  0) {
-				continue;
-			}
-		}
+      if (time_sm > 1 || time_sp < 0) {
+         continue;
+      }
 
-		// Check if we already have a hit
-		// Move sphere back to time_sm.  If ve_dot_vs > 0 edge to time_em, < 0 time_ep.
+      dist_e_sqr = (Rs*Rs - d0_sqr) * cos_sqr / (1.0f - cos_sqr);
+      delta_te = fl_sqrt(dist_e_sqr / ve_sqr);
+      time_em = time_el - delta_te;
+      time_ep = time_el + delta_te;
 
-		if (time_sm >= 0 && time_sm <= 1) {
-			if (ve_dot_vs > 0) {
-				if (time_em >= 0 && time_em <= 1) {
-					vm_vec_scale_add( &temp_edge_hit, &v0, &ve, time_em );
-					time_s = time_sm;
-					goto Hit;
-				}
-			} else {
-				if (time_ep >= 0 && time_ep <= 1) {
-					vm_vec_scale_add( &temp_edge_hit, &v0, &ve, time_ep );
-					time_s = time_sm;
-					goto Hit;
-				}
-			}
-		}
+      if (cos_sqr > 0.5f) {
+         if (time_em > 1 || time_ep < 0) {
+            continue;
+         }
+      } else {
+         delta_te = fl_sqrt( (Rs*Rs - d0_sqr) / ve_sqr );
+         if ((time_el - delta_te) > 1 || (time_el + delta_te) <  0) {
+            continue;
+         }
+      }
 
-		// Find the ratio of times between sphere_line and edge_line.
-		te_per_ts = fl_sqrt( vs_sqr / ve_sqr );
+      // Check if we already have a hit
+      // Move sphere back to time_sm.  If ve_dot_vs > 0 edge to time_em, < 0 time_ep.
 
-		// Check the location of the closest point on the edge line corresponding to the first valid point on sphere_line.
-		// First valid sphere_line point is the greater of (1) t = 0 or (2) t = time_sm.
-		// If the corresponding edge interval is left, we check against the rightmost edgepoint.
-		// If the corresponding edge interval is right, we check against the leftmost edgepoint.
-		// If the corresponding edge interval contains this point, then we are already penetrating.
-		float first_valid_sphere_time;
-		float closest_edge_time;
+      if (time_sm >= 0 && time_sm <= 1) {
+         if (ve_dot_vs > 0) {
+            if (time_em >= 0 && time_em <= 1) {
+               vm_vec_scale_add( &temp_edge_hit, &v0, &ve, time_em );
+               time_s = time_sm;
+               goto Hit;
+            }
+         } else {
+            if (time_ep >= 0 && time_ep <= 1) {
+               vm_vec_scale_add( &temp_edge_hit, &v0, &ve, time_ep );
+               time_s = time_sm;
+               goto Hit;
+            }
+         }
+      }
 
-		// Find first valid sphere time
-		if (time_sm < 0) {
-			first_valid_sphere_time = 0.0f;
-		} else {
-			first_valid_sphere_time = time_sm;
-			Assert( time_sm <= 1.0f );
-		}
+      // Find the ratio of times between sphere_line and edge_line.
+      te_per_ts = fl_sqrt( vs_sqr / ve_sqr );
 
-		if (ve_dot_vs > 0) {
+      // Check the location of the closest point on the edge line corresponding to the first valid point on sphere_line.
+      // First valid sphere_line point is the greater of (1) t = 0 or (2) t = time_sm.
+      // If the corresponding edge interval is left, we check against the rightmost edgepoint.
+      // If the corresponding edge interval is right, we check against the leftmost edgepoint.
+      // If the corresponding edge interval contains this point, then we are already penetrating.
+      float first_valid_sphere_time;
+      float closest_edge_time;
 
-			// Find corresponding edge time
-			closest_edge_time = time_el - te_per_ts * (time_sl - first_valid_sphere_time) * fl_sqrt(cos_sqr);
-			if (time_em < 0) {
-				time_em = 0.0f;
-			}
-			if (time_ep > 1) {
-				time_ep = 1.0f;
-			}
+      // Find first valid sphere time
+      if (time_sm < 0) {
+         first_valid_sphere_time = 0.0f;
+      } else {
+         first_valid_sphere_time = time_sm;
+         Assert( time_sm <= 1.0f );
+      }
 
-			if (time_em > closest_edge_time - SMALL_NUM) {
-				// edge interval is right so test against left edge
-				vm_vec_scale_add( &temp_edge_hit, &v0, &ve, time_em );
-				if ( !check_sphere_point( &temp_edge_hit, xs0, vs, Rs, &time_s ) ) {
-					continue;
-				}
+      if (ve_dot_vs > 0) {
 
-			} else if (time_ep < closest_edge_time + SMALL_NUM) {
-				// edge interval is left so test against right edge
-				vm_vec_scale_add( &temp_edge_hit, &v0, &ve, time_ep );
-				if ( !check_sphere_point( &temp_edge_hit, xs0, vs, Rs, &time_s ) ) {
-					continue;
-				}
+         // Find corresponding edge time
+         closest_edge_time = time_el - te_per_ts * (time_sl - first_valid_sphere_time) * fl_sqrt(cos_sqr);
+         if (time_em < 0) {
+            time_em = 0.0f;
+         }
+         if (time_ep > 1) {
+            time_ep = 1.0f;
+         }
 
-			} else {
-				// edge interval contains point, so already penetrating
-				continue;
-			}
-		} else {
-			// Sphere and edge have opposite velocities
+         if (time_em > closest_edge_time - SMALL_NUM) {
+            // edge interval is right so test against left edge
+            vm_vec_scale_add( &temp_edge_hit, &v0, &ve, time_em );
+            if ( !check_sphere_point( &temp_edge_hit, xs0, vs, Rs, &time_s ) ) {
+               continue;
+            }
 
-			// Find corresponding edge time
-			closest_edge_time = time_el + te_per_ts * (time_sl - first_valid_sphere_time) * fl_sqrt(cos_sqr);
-			if (time_em < 0) {
-				time_em = 0.0f;
-			}
-			if (time_ep > 1) {
-				time_ep = 1.0f;
-			}
+         } else if (time_ep < closest_edge_time + SMALL_NUM) {
+            // edge interval is left so test against right edge
+            vm_vec_scale_add( &temp_edge_hit, &v0, &ve, time_ep );
+            if ( !check_sphere_point( &temp_edge_hit, xs0, vs, Rs, &time_s ) ) {
+               continue;
+            }
 
-			if (closest_edge_time > time_ep - SMALL_NUM) {
-				// edge interval is right so test against left edge
-				vm_vec_scale_add( &temp_edge_hit, &v0, &ve, time_ep );
-				if ( !check_sphere_point( &temp_edge_hit, xs0, vs, Rs, &time_s ) ) {
-					continue;
-				}
+         } else {
+            // edge interval contains point, so already penetrating
+            continue;
+         }
+      } else {
+         // Sphere and edge have opposite velocities
 
-			} else if (closest_edge_time < time_em + SMALL_NUM) {
-				// edge interval is left so test against right edge
-				vm_vec_scale_add( &temp_edge_hit, &v0, &ve, time_em );
-				if ( !check_sphere_point( &temp_edge_hit, xs0, vs, Rs, &time_s ) ) {
-					continue;
-				}
+         // Find corresponding edge time
+         closest_edge_time = time_el + te_per_ts * (time_sl - first_valid_sphere_time) * fl_sqrt(cos_sqr);
+         if (time_em < 0) {
+            time_em = 0.0f;
+         }
+         if (time_ep > 1) {
+            time_ep = 1.0f;
+         }
 
-			} else {
-				// edge interval contains point, so already penetrating
-				continue;
-			}
-		}
+         if (closest_edge_time > time_ep - SMALL_NUM) {
+            // edge interval is right so test against left edge
+            vm_vec_scale_add( &temp_edge_hit, &v0, &ve, time_ep );
+            if ( !check_sphere_point( &temp_edge_hit, xs0, vs, Rs, &time_s ) ) {
+               continue;
+            }
+
+         } else if (closest_edge_time < time_em + SMALL_NUM) {
+            // edge interval is left so test against right edge
+            vm_vec_scale_add( &temp_edge_hit, &v0, &ve, time_em );
+            if ( !check_sphere_point( &temp_edge_hit, xs0, vs, Rs, &time_s ) ) {
+               continue;
+            }
+
+         } else {
+            // edge interval contains point, so already penetrating
+            continue;
+         }
+      }
 
 Hit:
-//		vector temp;
-//		vm_vec_scale_add( &temp, xs0, vs, time_s);
-//		float q = vm_vec_dist( &temp, &temp_edge_hit );
-//		if (q > Rs + .003 || q < Rs - .003) {
-//			Int3();
-//		}
-		if (time_s < best_sphere_time) {
-			best_sphere_time = time_s;
-			best_edge_hit = temp_edge_hit;
-		}
-	}	// end edge loop
+//    vector temp;
+//    vm_vec_scale_add( &temp, xs0, vs, time_s);
+//    float q = vm_vec_dist( &temp, &temp_edge_hit );
+//    if (q > Rs + .003 || q < Rs - .003) {
+//       Int3();
+//    }
+      if (time_s < best_sphere_time) {
+         best_sphere_time = time_s;
+         best_edge_hit = temp_edge_hit;
+      }
+   }  // end edge loop
 
-	if (best_sphere_time <= 1.0f) {
-		*hit_time = best_sphere_time;
-		*hit_point = best_edge_hit;
-		return 1;
-	} else {
-		return 0;
-	}
+   if (best_sphere_time <= 1.0f) {
+      *hit_time = best_sphere_time;
+      *hit_point = best_edge_hit;
+      return 1;
+   } else {
+      return 0;
+   }
 }
 */
 // ----------------------------------------------------------------------------
@@ -960,15 +960,15 @@ Hit:
 //
 // Given a polygon vertex list and a moving sphere, find the first contact the sphere makes with the edge, if any
 //
-//		Inputs:	hit_point		=>		point on edge
-//					xs0				=>		starting point for sphere
-//					vs					=>		sphere velocity
-//					Rs					=>		sphere radius
-//					nv					=>		number of vertices
-//					verts				=>		vertices making up polygon edges
-//					hit_time			=>		time the sphere hits an edge
+//    Inputs:  hit_point      =>    point on edge
+//             xs0            =>    starting point for sphere
+//             vs             =>    sphere velocity
+//             Rs             =>    sphere radius
+//             nv             =>    number of vertices
+//             verts          =>    vertices making up polygon edges
+//             hit_time       =>    time the sphere hits an edge
 //
-//		Return:	1 if sphere hits polyedge, 0 if sphere misses
+//    Return:  1 if sphere hits polyedge, 0 if sphere misses
 
 #define WARN_DIST 1.0
 
@@ -1136,9 +1136,9 @@ fvi_polyedge_sphereline(vector *hit_point, vector *xs0, vector *vs, float Rs,
                 v0_hit = 1;
                 sphere_v0 = root1;
                 vm_vec_scale_add(&temp_sphere_hit, xs0, vs, root1);
-                //	q = vm_vec_dist_squared( &v0, &temp_sphere_hit );	// debug
-                //	if ( fl_abs(q - Rs*Rs) > 2*WARN_DIST*Rs )
-                //		mprintf(("Estimated radius error: Estimate %f, actual %f  Get Dave A.\n", fl_sqrt(q), Rs));
+                //   q = vm_vec_dist_squared( &v0, &temp_sphere_hit );  // debug
+                //   if ( fl_abs(q - Rs*Rs) > 2*WARN_DIST*Rs )
+                //      mprintf(("Estimated radius error: Estimate %f, actual %f  Get Dave A.\n", fl_sqrt(q), Rs));
             }
         }
 
@@ -1169,9 +1169,9 @@ fvi_polyedge_sphereline(vector *hit_point, vector *xs0, vector *vs, float Rs,
                 v1_hit = 1;
                 sphere_v1 = root1;
                 vm_vec_scale_add(&temp_sphere_hit, xs0, vs, root1);
-                //	q = vm_vec_dist_squared( &v1, &temp_sphere_hit );
-                //	if ( fl_abs(q - Rs*Rs) > 2*WARN_DIST*Rs )
-                //		mprintf(("Estimated radius error: Estimate %f, actual %f  Get Dave A.\n", fl_sqrt(q), Rs));
+                //   q = vm_vec_dist_squared( &v1, &temp_sphere_hit );
+                //   if ( fl_abs(q - Rs*Rs) > 2*WARN_DIST*Rs )
+                //      mprintf(("Estimated radius error: Estimate %f, actual %f  Get Dave A.\n", fl_sqrt(q), Rs));
             }
         }
 
@@ -1201,16 +1201,16 @@ fvi_polyedge_sphereline(vector *hit_point, vector *xs0, vector *vs, float Rs,
         vm_vec_scale_add(&temp_sphere_hit, xs0, vs, t_sphere_hit);
         q = vm_vec_dist_squared(&temp_edge_hit, &temp_sphere_hit);
         // if ( fl_abs(q - Rs*Rs) > 2*WARN_DIST*Rs ) {
-        //	mprintf(("Estimated radius error: Estimate %f, actual %f  Get Dave A.\n", fl_sqrt(q), Rs));
+        //  mprintf(("Estimated radius error: Estimate %f, actual %f  Get Dave A.\n", fl_sqrt(q), Rs));
         // }
 
     Hit:
-        //		vector temp;
-        //		vm_vec_scale_add( &temp, xs0, vs, time_s);
-        //		float q = vm_vec_dist( &temp, &temp_edge_hit );
-        //		if (q > Rs + .003 || q < Rs - .003) {
-        //			Int3();
-        //		}
+        //     vector temp;
+        //     vm_vec_scale_add( &temp, xs0, vs, time_s);
+        //     float q = vm_vec_dist( &temp, &temp_edge_hit );
+        //     if (q > Rs + .003 || q < Rs - .003) {
+        //        Int3();
+        //     }
         if (t_sphere_hit < best_sphere_time) {
             best_sphere_time = t_sphere_hit;
             *hit_point = temp_edge_hit;
@@ -1228,14 +1228,14 @@ fvi_polyedge_sphereline(vector *hit_point, vector *xs0, vector *vs, float Rs,
 
 // ----------------------------------------------------------------------------
 //
-//	fvi_closest_point_on_line_segment()
+// fvi_closest_point_on_line_segment()
 //
 // Finds the closest point on a line to a given fixed point
 //
-//		Inputs:	closest_point	=>		the closest point on the line
-//					fixed_point		=>		the fixed point
-//					line_point1		=>		first point on the line
-//					line_point2		=>		second point on the line
+//    Inputs:  closest_point  =>    the closest point on the line
+//             fixed_point    =>    the fixed point
+//             line_point1    =>    first point on the line
+//             line_point2    =>    second point on the line
 //
 void
 fvi_closest_point_on_line_segment(vector *closest_point, vector *fixed_point,
@@ -1262,19 +1262,19 @@ fvi_closest_point_on_line_segment(vector *closest_point, vector *fixed_point,
 
 // ----------------------------------------------------------------------------
 //
-//	fvi_check_sphere_sphere()
+// fvi_check_sphere_sphere()
 //
-//	checks whether two spheres hit given initial and starting positions and radii
+// checks whether two spheres hit given initial and starting positions and radii
 // does not check whether sphere are already touching.
 //
-//		Inputs	x_p0			=>		polymodel sphere, start point
-//					x_p1			=>		polymodel sphere, end point
-//					x_s0			=>		other sphere, start point
-//					x_s1			=>		other sphere, end point
-//					radius_p		=>		radius of polymodel sphere
-//					radius_s		=>		radius of other sphere
+//    Inputs   x_p0        =>    polymodel sphere, start point
+//             x_p1        =>    polymodel sphere, end point
+//             x_s0        =>    other sphere, start point
+//             x_s1        =>    other sphere, end point
+//             radius_p    =>    radius of polymodel sphere
+//             radius_s    =>    radius of other sphere
 //
-//		returns 1 if spheres overlap, 0 otherwise
+//    returns 1 if spheres overlap, 0 otherwise
 //
 int
 fvi_check_sphere_sphere(vector *x_p0, vector *x_p1, vector *x_s0, vector *x_s1,
@@ -1343,20 +1343,20 @@ fvi_check_sphere_sphere(vector *x_p0, vector *x_p1, vector *x_s0, vector *x_s1,
 
 // ----------------------------------------------------------------------------
 //
-//	fvi_cull_polyface_sphere()
+// fvi_cull_polyface_sphere()
 //
 // Culls polyfaces which moving sphere can not intersect
 //
-//		Inputs:		poly_center		=>		center of polygon face to test
-//						poly_r			=>		radius of polygon face in question
-//						sphere_start	=>		start point of moving sphere
-//						sphere_end		=>		end point of moving sphere
-//						sphere_r			=>		radius of moving sphere
+//    Inputs:     poly_center    =>    center of polygon face to test
+//                poly_r         =>    radius of polygon face in question
+//                sphere_start   =>    start point of moving sphere
+//                sphere_end     =>    end point of moving sphere
+//                sphere_r       =>    radius of moving sphere
 //
-//		Output:		returns 0 if no collision is possible, 1 if collision may be possible
+//    Output:     returns 0 if no collision is possible, 1 if collision may be possible
 //
-//		Polygon face is characterized by a center and a radius.  This routine checks whether it is
-//		*impossible* for a moving sphere to intersect a fixed polygon face.
+//    Polygon face is characterized by a center and a radius.  This routine checks whether it is
+//    *impossible* for a moving sphere to intersect a fixed polygon face.
 int
 fvi_cull_polyface_sphere(vector *poly_center, float poly_r, vector *sphere_start,
                          vector *sphere_end, float sphere_r)
@@ -1400,10 +1400,10 @@ fvi_closest_line_line(vector *x0, vector *vx, vector *y0, vector *vy,
     *x_time = vm_vec_dotprod(&delta_l_cross_vy, &vx_cross_vy) / denominator;
     *y_time = vm_vec_dotprod(&delta_l_cross_vx, &vx_cross_vy) / denominator;
 
-    //	vector x_result, y_result;
-    //	vm_vec_scale_add(&x_result, x0, vx, *x_time);
-    //	vm_vec_scale_add(&y_result, y0, vy, *y_time);
-    //	*dist_sqr = vm_vec_dist_squared(&x_result, &y_result);
+    //   vector x_result, y_result;
+    //   vm_vec_scale_add(&x_result, x0, vx, *x_time);
+    //   vm_vec_scale_add(&y_result, y0, vy, *y_time);
+    //   *dist_sqr = vm_vec_dist_squared(&x_result, &y_result);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

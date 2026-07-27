@@ -52,7 +52,7 @@ int Num_recent_missions;
 // -----------------------------------------------------
 // ml_update_recent_missions()
 //
-//	Update the Recent_missions[][] array
+// Update the Recent_missions[][] array
 //
 void
 ml_update_recent_missions(char *filename)

@@ -391,12 +391,12 @@ grx_flip()
 
     gr_reset_clip();
 
-    //	if (0) {
-    //		int i;
-    //		for (i=0; i<gr_screen.max_h; i++ )	{
-    //			memset( gr_screen.row_data[i], i & 255, abs(gr_screen.rowsize) );
-    //		}
-    //	}
+    //   if (0) {
+    //      int i;
+    //      for (i=0; i<gr_screen.max_h; i++ )  {
+    //         memset( gr_screen.row_data[i], i & 255, abs(gr_screen.rowsize) );
+    //      }
+    //   }
 
     int mx, my;
 
@@ -823,7 +823,7 @@ gr8_set_gamma(float gamma)
 void
 gr_soft_init()
 {
-    //	int i;
+    //   int i;
     // retail gated software to 640x480 here (hi-res was hardware-only);
     // the rasterizer is resolution-parametric — FRED ran it at window
     // size — so both retail resolutions are allowed through

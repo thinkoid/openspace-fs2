@@ -42,22 +42,22 @@ struct player;
 #define MAX_FREESPACE2_RANK RANK_ADMIRAL
 
 /*
-	The ins and outs of when/where stats are stored and retreived - BE SURE TO FOLLOW THESE GUIDELINES
+   The ins and outs of when/where stats are stored and retreived - BE SURE TO FOLLOW THESE GUIDELINES
 
    SINGLE PLAYER :
-		scoring_level_init() is called from game_level_init(). This zeroes out mission specific stats
-		scoring_level_close() is called from the debriefing screen when the player hits accept. This saves the mission
-			stats to alltime stats, and updates any campaign stats
-		NOTE : in single player mode, if the player is going back to replay an old mission, the stats shouldn't be 
-			stored again
+      scoring_level_init() is called from game_level_init(). This zeroes out mission specific stats
+      scoring_level_close() is called from the debriefing screen when the player hits accept. This saves the mission
+         stats to alltime stats, and updates any campaign stats
+      NOTE : in single player mode, if the player is going back to replay an old mission, the stats shouldn't be 
+         stored again
 
    MULTI PLAYER :
-		scoring_level_init() is called in game_level_init() again.
-		init_multiplayer_stats() is called on all computers in the game when moving _into_ the MISSION_SYNC state
+      scoring_level_init() is called in game_level_init() again.
+      init_multiplayer_stats() is called on all computers in the game when moving _into_ the MISSION_SYNC state
 
-		scoring_level_close() is called on all machines when the host selects accept. If the host is not on the standalone
-			he sends a packet to all players indicating that they should save their data. If he _is_ on the standalone, he should 
-			send only to the standalone, and then it rebroadcasts the packet ot everyone else.		
+      scoring_level_close() is called on all machines when the host selects accept. If the host is not on the standalone
+         he sends a packet to all players indicating that they should save their data. If he _is_ on the standalone, he should 
+         send only to the standalone, and then it rebroadcasts the packet ot everyone else.     
 */
 
 typedef struct rank_stuff

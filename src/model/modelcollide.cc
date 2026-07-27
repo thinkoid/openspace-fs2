@@ -150,7 +150,7 @@ mc_check_face(int nv, vector **verts, vector *plane_pnt, float face_rad,
             Mc->f_poly = poly;
         }
 
-        //		mprintf(( "Bing!\n" ));
+        //     mprintf(( "Bing!\n" ));
 
         Mc->num_hits++;
     }
@@ -159,11 +159,11 @@ mc_check_face(int nv, vector **verts, vector *plane_pnt, float face_rad,
 // ----------------------------------------------------------------------------------------------------------
 // check face with spheres
 //
-//	inputs:	nv				=>		number of vertices
-//				verts			=>		array of vertices
-//				plane_pnt	=>		center point in plane (about which radius is measured)
-//				face_rad		=>		radius of face
-//				plane_norm	=>		normal of face
+// inputs:  nv          =>    number of vertices
+//          verts       =>    array of vertices
+//          plane_pnt   =>    center point in plane (about which radius is measured)
+//          face_rad    =>    radius of face
+//          plane_norm  =>    normal of face
 static void
 mc_check_sphereline_face(int nv, vector **verts, vector *plane_pnt,
                          float face_rad, vector *plane_norm, uv_pair *uvl_list,
@@ -283,7 +283,7 @@ mc_check_sphereline_face(int nv, vector **verts, vector *plane_pnt,
                     temp_dist, Mc->radius));
             }
             vm_vec_sub(&temp_dir, &hit_point, &temp_sphere);
-            //			Assert( vm_vec_dotprod( &temp_dir, &Mc_direction ) > 0 );
+            //       Assert( vm_vec_dotprod( &temp_dir, &Mc_direction ) > 0 );
 
             if ((Mc->num_hits == 0) || (sphere_time < Mc->hit_dist)) {
                 // This is closer than best so far
@@ -304,9 +304,9 @@ mc_check_sphereline_face(int nv, vector **verts, vector *plane_pnt,
 
                 Mc->num_hits++;
 
-                //	nprintf(("Physics", "edge sphere time: %f, normal: (%f, %f, %f) hit_point: (%f, %f, %f)\n", sphere_time,
-                //		Mc->hit_normal.x, Mc->hit_normal.y, Mc->hit_normal.z,
-                //		hit_point.x, hit_point.y, hit_point.z));
+                //   nprintf(("Physics", "edge sphere time: %f, normal: (%f, %f, %f) hit_point: (%f, %f, %f)\n", sphere_time,
+                //      Mc->hit_normal.x, Mc->hit_normal.y, Mc->hit_normal.z,
+                //      hit_point.x, hit_point.y, hit_point.z));
             }
             else { // Not best so far
                 Assert(Mc->num_hits > 0);
@@ -484,7 +484,7 @@ model_collide_sub(void *model_ptr)
     chunk_size = w(p + 4);
 
     while (chunk_type != OP_EOF) {
-        //		mprintf(( "Processing chunk type %d, len=%d\n", chunk_type, chunk_size ));
+        //     mprintf(( "Processing chunk type %d, len=%d\n", chunk_type, chunk_size ));
 
         switch (chunk_type) {
         case OP_EOF:
@@ -645,14 +645,14 @@ mc_check_subobj(int mn)
 
         // Check shield if we're supposed to
         if ((Mc->flags & MC_CHECK_SHIELD) && (Mc_pm->shield.ntris > 0)) {
-            //	Mc->flags &= ~MC_CHECK_SPHERELINE;
-            //	mc_check_shield();
-            //	int ray_num_hits = Mc->num_hits;
-            //	Mc->num_hits = 0;
-            //	Mc->flags |= MC_CHECK_SPHERELINE;
+            // Mc->flags &= ~MC_CHECK_SPHERELINE;
+            // mc_check_shield();
+            // int ray_num_hits = Mc->num_hits;
+            // Mc->num_hits = 0;
+            // Mc->flags |= MC_CHECK_SPHERELINE;
             mc_check_shield();
-            //	if ( (ray_num_hits > 0)  && (Mc->num_hits == 0))
-            //		Int3();
+            // if ( (ray_num_hits > 0)  && (Mc->num_hits == 0))
+            //    Int3();
             return;
         }
     }
@@ -761,9 +761,9 @@ model_collide(mc_info *mc_info)
 
     // DA 11/19/98 - disable this check for rotating submodels
     // Don't do check if for very small movement
-    //	if (Mc_mag < 0.01f) {
-    //		return 0;
-    //	}
+    //   if (Mc_mag < 0.01f) {
+    //      return 0;
+    //   }
 
     float model_radius; // How big is the model we're checking against
     int first_submodel; // Which submodel gets returned as hit if MC_ONLY_SPHERE specified

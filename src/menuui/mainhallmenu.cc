@@ -92,7 +92,7 @@ typedef struct main_hall_defines
     // Time until we will next play a given misc animation, min delay, and max delay
     int misc_anim_delay[MAX_MISC_ANIMATIONS][3];
 
-    //	coords of where to play the misc anim
+    //   coords of where to play the misc anim
     int misc_anim_coords[MAX_MISC_ANIMATIONS][2];
 
     // misc anim play modes (see MISC_ANIM_MODE_* above)
@@ -531,14 +531,14 @@ main_hall_init(int main_hall_num)
     }
 
     /*
-	if(Player_select_very_first_pilot) {				
-		Main_hall_help_stamp = timestamp(MAIN_HALL_HELP_TIME);
-		
-		// don't display the "press f1" message more than once
-		Player_select_very_first_pilot = 0;
-	} else {
-		Main_hall_help_stamp = -1;
-	}
+   if(Player_select_very_first_pilot) {            
+      Main_hall_help_stamp = timestamp(MAIN_HALL_HELP_TIME);
+      
+      // don't display the "press f1" message more than once
+      Player_select_very_first_pilot = 0;
+   } else {
+      Main_hall_help_stamp = -1;
+   }
 */
     Main_hall_region_linger_stamp = -1;
 

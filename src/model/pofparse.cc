@@ -351,7 +351,7 @@ model_calc_bound_box(vector *box, vector *big_mn, vector *big_mx)
     box[7].z = big_mx->z;
 }
 
-//	Debug thing so we don't repeatedly show warning messages.
+// Debug thing so we don't repeatedly show warning messages.
 #ifndef NDEBUG
 int Bogus_warning_flag_1903 = 0;
 #endif
@@ -380,19 +380,19 @@ read_model_file(polymodel *pm, char *filename, int n_subsystems,
     // is read.  This info is essentially debug stuff that is used to help get models
     // into the game quicker
 #if 0
-	{
-		char bname[_MAX_FNAME];
+   {
+      char bname[_MAX_FNAME];
 
-		_splitpath(filename, NULL, NULL, bname, NULL);
-		sprintf(debug_name, "%s.subsystems", bname);
-		ss_fp = cfopen(debug_name, "wb", CFILE_NORMAL, CF_TYPE_TABLES );
-		if ( !ss_fp )	{
-			mprintf(( "Can't open debug file for writing subsystems for %s\n", filename));
-		} else {
-			strcpy(model_filename, filename);
-			ss_warning_shown = 0;
-		}
-	}
+      _splitpath(filename, NULL, NULL, bname, NULL);
+      sprintf(debug_name, "%s.subsystems", bname);
+      ss_fp = cfopen(debug_name, "wb", CFILE_NORMAL, CF_TYPE_TABLES );
+      if ( !ss_fp )  {
+         mprintf(( "Can't open debug file for writing subsystems for %s\n", filename));
+      } else {
+         strcpy(model_filename, filename);
+         ss_warning_shown = 0;
+      }
+   }
 #endif
 
     id = cfread_int(fp);
@@ -428,8 +428,8 @@ read_model_file(polymodel *pm, char *filename, int n_subsystems,
     next_chunk = cftell(fp) + len;
 
     while (!cfeof(fp)) {
-        //		mprintf(("Processing chunk <%c%c%c%c>, len = %d\n",id,id>>8,id>>16,id>>24,len));
-        //		key_getch();
+        //     mprintf(("Processing chunk <%c%c%c%c>, len = %d\n",id,id>>8,id>>16,id>>24,len));
+        //     key_getch();
 
         switch (id) {
         case ID_OHDR: { //Object header
@@ -439,14 +439,14 @@ read_model_file(polymodel *pm, char *filename, int n_subsystems,
 
 #if defined(FREESPACE1_FORMAT)
             pm->n_models = cfread_int(fp);
-            //				mprintf(( "Num models = %d\n", pm->n_models ));
+            //          mprintf(( "Num models = %d\n", pm->n_models ));
             pm->rad = cfread_float(fp);
             pm->flags = cfread_int(fp); // 1=Allow tiling
 #elif defined(FREESPACE2_FORMAT)
             pm->rad = cfread_float(fp);
             pm->flags = cfread_int(fp); // 1=Allow tiling
             pm->n_models = cfread_int(fp);
-//				mprintf(( "Num models = %d\n", pm->n_models ));
+//          mprintf(( "Num models = %d\n", pm->n_models ));
 #endif
 
             pm->submodel = (bsp_info *)malloc(sizeof(bsp_info) * pm->n_models);
@@ -460,11 +460,11 @@ read_model_file(polymodel *pm, char *filename, int n_subsystems,
             model_calc_bound_box(pm->bounding_box, &pm->mins, &pm->maxs);
 
             pm->n_detail_levels = cfread_int(fp);
-            //	mprintf(( "There are %d detail levels\n", pm->n_detail_levels ));
+            // mprintf(( "There are %d detail levels\n", pm->n_detail_levels ));
             for (i = 0; i < pm->n_detail_levels; i++) {
                 pm->detail[i] = cfread_int(fp);
                 pm->detail_depth[i] = 0.0f;
-                ///		mprintf(( "Detail level %d is model %d.\n", i, pm->detail[i] ));
+                ///     mprintf(( "Detail level %d is model %d.\n", i, pm->detail[i] ));
             }
 
             pm->num_debris_objects = cfread_int(fp);
@@ -487,7 +487,7 @@ read_model_file(polymodel *pm, char *filename, int n_subsystems,
                     // old code where mass wasn't based on area, so do the calculation manually
 
                     float vol_mass = cfread_float(fp);
-                    //	Attn: John Slagel:  The following is better done in bspgen.
+                    //  Attn: John Slagel:  The following is better done in bspgen.
                     // Convert volume (cubic) to surface area (quadratic) and scale so 100 -> 100
                     float area_mass = (float)pow(vol_mass, 0.6667f) * 4.65f;
 
@@ -565,7 +565,7 @@ read_model_file(polymodel *pm, char *filename, int n_subsystems,
         case ID_SOBJ: { //Subobject header
             int n;
             char *p, props[MAX_PROP_LEN];
-            //				float d;
+            //          float d;
 
             //mprintf(0,"Got chunk SOBJ, len=%d\n",len);
 
@@ -579,19 +579,19 @@ read_model_file(polymodel *pm, char *filename, int n_subsystems,
 
             pm->submodel[n].parent = cfread_int(fp);
 
-            //				cfread_vector(&pm->submodel[n].norm,fp);
-            //				d = cfread_float(fp);
-            //				cfread_vector(&pm->submodel[n].pnt,fp);
+            //          cfread_vector(&pm->submodel[n].norm,fp);
+            //          d = cfread_float(fp);
+            //          cfread_vector(&pm->submodel[n].pnt,fp);
             cfread_vector(&pm->submodel[n].offset, fp);
 
-            //			mprintf(( "Subobj %d, offs = %.1f, %.1f, %.1f\n", n, pm->submodel[n].offset.x, pm->submodel[n].offset.y, pm->submodel[n].offset.z ));
+            //       mprintf(( "Subobj %d, offs = %.1f, %.1f, %.1f\n", n, pm->submodel[n].offset.x, pm->submodel[n].offset.y, pm->submodel[n].offset.z ));
 
 #if defined(FREESPACE1_FORMAT)
             pm->submodel[n].rad = cfread_float(fp); //radius
 #endif
 
-            //				pm->submodel[n].tree_offset = cfread_int(fp);	//offset
-            //				pm->submodel[n].data_offset = cfread_int(fp);	//offset
+            //          pm->submodel[n].tree_offset = cfread_int(fp);   //offset
+            //          pm->submodel[n].data_offset = cfread_int(fp);   //offset
 
             cfread_vector(&pm->submodel[n].geometric_center, fp);
 
@@ -728,13 +728,13 @@ read_model_file(polymodel *pm, char *filename, int n_subsystems,
                         fp); // read in the indices into the shield_vertex list
                     /*
 #ifndef NDEBUG
-							if (pm->shield.tris[i].verts[j] >= nverts)
-								if (!warning_displayed) {
-									warning_displayed = 1;
-									Warning(LOCATION, "Ship %s has a bogus shield mesh.\nOnly %i vertices, index %i found.\n", filename, nverts, pm->shield.tris[i].verts[j]);
-								}
+                     if (pm->shield.tris[i].verts[j] >= nverts)
+                        if (!warning_displayed) {
+                           warning_displayed = 1;
+                           Warning(LOCATION, "Ship %s has a bogus shield mesh.\nOnly %i vertices, index %i found.\n", filename, nverts, pm->shield.tris[i].verts[j]);
+                        }
 #endif
-								*/
+                        */
                 }
                 for (j = 0; j < 3; j++)
                     pm->shield.tris[i].neighbors[j] = cfread_int(
@@ -1022,7 +1022,7 @@ read_model_file(polymodel *pm, char *filename, int n_subsystems,
 
         case ID_TXTR: { //Texture filename list
             int i, n;
-            //				char name_buf[128];
+            //          char name_buf[128];
 
             //mprintf(0,"Got chunk TXTR, len=%d\n",len);
 
@@ -1046,16 +1046,16 @@ read_model_file(polymodel *pm, char *filename, int n_subsystems,
             break;
         }
 
-            /*			case ID_IDTA:		//Interpreter data
-				//mprintf(0,"Got chunk IDTA, len=%d\n",len);
+            /*       case ID_IDTA:     //Interpreter data
+            //mprintf(0,"Got chunk IDTA, len=%d\n",len);
 
-				pm->model_data = (ubyte *)malloc(len);
-				pm->model_data_size = len;
-				Assert(pm->model_data != NULL );
-			
-				cfread(pm->model_data,1,len,fp);
-			
-				break;
+            pm->model_data = (ubyte *)malloc(len);
+            pm->model_data_size = len;
+            Assert(pm->model_data != NULL );
+         
+            cfread(pm->model_data,1,len,fp);
+         
+            break;
 */
 
         case ID_INFO: // don't need to do anything with info stuff

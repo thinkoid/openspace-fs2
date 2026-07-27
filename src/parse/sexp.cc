@@ -7,10 +7,10 @@
  *
 */
 
-//	Parse a symbolic expression.
-//	These are identical to Lisp functions.
-//	It uses a very baggy format, allocating 16 characters per token, regardless
-//	of how many are used.
+// Parse a symbolic expression.
+// These are identical to Lisp functions.
+// It uses a very baggy format, allocating 16 characters per token, regardless
+// of how many are used.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2169,7 +2169,7 @@ check_sexp_syntax(int index, int return_type, int recursive, int *bad_index,
 
             if (*CTEXT(index) != '#') { // not a manual source?
                 //if ( !stricmp(CTEXT(index), "<any allied>") )
-                //	return SEXP_CHECK_INVALID_MSG_SOURCE;
+                //   return SEXP_CHECK_INVALID_MSG_SOURCE;
 
                 if (stricmp(CTEXT(index),
                             "<any wingman>")) // not a special token?
@@ -2303,8 +2303,8 @@ check_sexp_syntax(int index, int return_type, int recursive, int *bad_index,
     return 0;
 }
 
-//	Stuff a string (" chars ") in *str, return length.
-//	Updates Mp.
+// Stuff a string (" chars ") in *str, return length.
+// Updates Mp.
 int
 get_string(char *str)
 {
@@ -2737,11 +2737,11 @@ rand_sexp(int n, int multiple = 0)
         }
         else {
             // get low
-            //			if (Sexp_nodes[n].first != -1) {
-            //				low = eval_sexp(Sexp_nodes[n].first);
-            //			} else {
-            //				low = atoi(CTEXT(n));
-            //			}
+            //       if (Sexp_nodes[n].first != -1) {
+            //          low = eval_sexp(Sexp_nodes[n].first);
+            //       } else {
+            //          low = atoi(CTEXT(n));
+            //       }
             low = num_eval(n);
 
             // get high
@@ -2785,7 +2785,7 @@ sexp_or(int n)
 
         // don't return on true value -- keep evaluating for mission log purposes
         //if ( result )
-        //	return result;
+        //  return result;
 
         while (Sexp_nodes[n].rest != -1) {
             result |= eval_sexp(Sexp_nodes[n].rest);
@@ -2797,7 +2797,7 @@ sexp_or(int n)
             n = Sexp_nodes[n].rest;
             // don't return on true value -- keep evaluating for mission log purposes
             //if ( result )
-            //	return result;
+            // return result;
         }
     }
 
@@ -2831,7 +2831,7 @@ sexp_and(int n)
 
         // don't short circuit -- evaluate everything for purposes of marking mission log
         //if ( !result )
-        //	return result;
+        //  return result;
 
         while (Sexp_nodes[n].rest != -1) {
             int new_result;
@@ -3007,7 +3007,7 @@ sexp_equal(int n)
 }
 
 // Evaluate if given ship is destroyed.
-//	Return true if the ship in the expression has been destroyed.
+// Return true if the ship in the expression has been destroyed.
 int
 sexp_is_destroyed(int n, fix *latest_time)
 {
@@ -5017,7 +5017,7 @@ sexp_send_one_message(char *name, char *who_from, char *priority, int group,
         return;
     }
     else if (!stricmp(who_from, "<any allied>")) {
-        //Int3();			// no longer supported
+        //Int3();       // no longer supported
         return;
     }
     else if ((num = wing_name_lookup(who_from)) != -1) {
@@ -6754,8 +6754,8 @@ sexp_send_training_message(int node)
         message_training_que(CTEXT(CDR(node)), timestamp(delay), t);
     }
 
-    //	if (Training_msg_method)
-    //		gameseq_post_event(GS_EVENT_TRAINING_PAUSE);
+    //   if (Training_msg_method)
+    //      gameseq_post_event(GS_EVENT_TRAINING_PAUSE);
 }
 
 int
@@ -7609,7 +7609,7 @@ sexp_is_primary_selected(int node)
 #define LEFT_QUAD 3
 #define REAR_QUAD 2
 
-//	Return SEXP_TRUE if quadrant quadnum is near max.
+// Return SEXP_TRUE if quadrant quadnum is near max.
 int
 shield_quad_near_max(int quadnum)
 {
@@ -7632,13 +7632,13 @@ shield_quad_near_max(int quadnum)
     }
 }
 
-//	Return truth value for special SEXP.
-//	Used in training#5, perhaps in other missions.
+// Return truth value for special SEXP.
+// Used in training#5, perhaps in other missions.
 int
 process_special_sexps(int index)
 {
     switch (index) {
-    case 0: //	Ship "Freighter 1" is aspect locked by player.
+    case 0: // Ship "Freighter 1" is aspect locked by player.
         if (Player_ai->target_objnum != -1) {
             if (!(stricmp(
                     Ships[Objects[Player_ai->target_objnum].instance].ship_name,
@@ -7649,7 +7649,7 @@ process_special_sexps(int index)
         }
         return SEXP_FALSE;
         break;
-    case 1: //	Fired Interceptors
+    case 1: // Fired Interceptors
         object *objp;
         for (objp = GET_FIRST(&obj_used_list);
              objp != END_OF_LIST(&obj_used_list); objp = GET_NEXT(objp)) {
@@ -7670,7 +7670,7 @@ process_special_sexps(int index)
             }
         }
         return SEXP_FALSE;
-    case 2: //	Ship "Freighter 1", subsystem "Weapons" is aspect locked by player.
+    case 2: // Ship "Freighter 1", subsystem "Weapons" is aspect locked by player.
         if (Player_ai->target_objnum != -1) {
             if (!(stricmp(
                     Ships[Objects[Player_ai->target_objnum].instance].ship_name,
@@ -7685,12 +7685,12 @@ process_special_sexps(int index)
         }
         return SEXP_FALSE;
         break;
-    case 3: //	Player ship suffering shield damage on front.
+    case 3: // Player ship suffering shield damage on front.
         apply_damage_to_shield(Player_obj, FRONT_QUAD, 10.0f);
         hud_shield_quadrant_hit(Player_obj, FRONT_QUAD);
         return SEXP_TRUE;
         break;
-    case 4: //	Player ship suffering much damage.
+    case 4: // Player ship suffering much damage.
         nprintf(("AI", "Frame %i\n", Framecount));
         apply_damage_to_shield(Player_obj, FRONT_QUAD, 10.0f);
         hud_shield_quadrant_hit(Player_obj, FRONT_QUAD);
@@ -7699,7 +7699,7 @@ process_special_sexps(int index)
         else
             return SEXP_FALSE;
         break;
-    case 5: //	Player's shield is quick repaired
+    case 5: // Player's shield is quick repaired
         nprintf(("AI", "Frame %i, recharged to %7.3f\n", Framecount,
                  Player_obj->shields[FRONT_QUAD]));
 
@@ -7717,35 +7717,35 @@ process_special_sexps(int index)
         else
             return SEXP_FALSE;
         break;
-    case 6: //	3 of player's shield quadrants are reduced to 0.
+    case 6: // 3 of player's shield quadrants are reduced to 0.
         Player_obj->shields[1] = 1.0f;
         Player_obj->shields[2] = 1.0f;
         Player_obj->shields[3] = 1.0f;
         //apply_damage_to_shield(Player_obj, FRONT_QUAD, 1.0f);
         hud_shield_quadrant_hit(Player_obj, FRONT_QUAD);
         return SEXP_TRUE;
-    case 7: //	Make sure front quadrant has been maximized, or close to it.
+    case 7: // Make sure front quadrant has been maximized, or close to it.
         if (shield_quad_near_max(FRONT_QUAD))
             return SEXP_TRUE;
         else
             return SEXP_FALSE;
         break;
 
-    case 8: //	Make sure rear quadrant has been maximized, or close to it.
+    case 8: // Make sure rear quadrant has been maximized, or close to it.
         if (shield_quad_near_max(REAR_QUAD))
             return SEXP_TRUE;
         else
             return SEXP_FALSE;
         break;
 
-    case 9: //	Zero left and right quadrants in preparation for maximizing rear quadrant.
+    case 9: // Zero left and right quadrants in preparation for maximizing rear quadrant.
         Player_obj->shields[LEFT_QUAD] = 0.0f;
         Player_obj->shields[RIGHT_QUAD] = 0.0f;
         hud_shield_quadrant_hit(Player_obj, LEFT_QUAD);
         return SEXP_TRUE;
         break;
 
-    case 10: //	Return true if player is low on Interceptors.
+    case 10: //   Return true if player is low on Interceptors.
         if (Player_ship->weapons.secondary_bank_ammo[0] +
                 Player_ship->weapons.secondary_bank_ammo[1] <
             8)
@@ -7754,7 +7754,7 @@ process_special_sexps(int index)
             return SEXP_FALSE;
         break;
 
-    case 11: //	Return true if player has plenty of Interceptors.
+    case 11: //   Return true if player has plenty of Interceptors.
         if (Player_ship->weapons.secondary_bank_ammo[0] +
                 Player_ship->weapons.secondary_bank_ammo[1] >=
             8)
@@ -7763,7 +7763,7 @@ process_special_sexps(int index)
             return SEXP_FALSE;
         break;
 
-    case 12: //	Return true if player is low on Interceptors.
+    case 12: //   Return true if player is low on Interceptors.
         if (Player_ship->weapons.secondary_bank_ammo[0] +
                 Player_ship->weapons.secondary_bank_ammo[1] <
             4)
@@ -7778,14 +7778,14 @@ process_special_sexps(int index)
         return SEXP_TRUE;
         break;
 
-    case 100: //	Return true if player is out of countermeasures.
+    case 100: //  Return true if player is out of countermeasures.
         if (Player_ship->cmeasure_count <= 0)
             return SEXP_TRUE;
         else
             return SEXP_FALSE;
 
     default:
-        Int3(); //	Unsupported node type.
+        Int3(); //   Unsupported node type.
     }
 
     return SEXP_FALSE;
@@ -10079,7 +10079,7 @@ CTEXT(int n)
             Assert(sexp_variable_index != -1);
         }
         else {
-            //			sexp_variable_index = extract_sexp_variable_index(n);
+            //       sexp_variable_index = extract_sexp_variable_index(n);
             sexp_variable_index = atoi(Sexp_nodes[n].text);
         }
         // Reference a Sexp_variable
@@ -10101,8 +10101,8 @@ void
 init_sexp_vars()
 {
     for (int i = 0; i < MAX_SEXP_VARIABLES; i++) {
-        //		if ( !(Sexp_nodes[i].type & SEXP_FLAG_PERSISTENT) )
-        //			Sexp_nodes[i].type = SEXP_NOT_USED;
+        //     if ( !(Sexp_nodes[i].type & SEXP_FLAG_PERSISTENT) )
+        //        Sexp_nodes[i].type = SEXP_NOT_USED;
         Sexp_variables[i].type = SEXP_VARIABLE_NOT_USED;
     }
 }
@@ -10152,7 +10152,7 @@ sexp_modify_variable(int n)
 {
     int sexp_variable_index;
     int new_number;
-    //	char *new_char_var;
+    //   char *new_char_var;
     char number_as_str[TOKEN_LENGTH];
 
     if (n != -1) {

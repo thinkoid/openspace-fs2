@@ -51,12 +51,12 @@ obj_in_view_cone(object *objp)
     // if ( objp == Player_obj ) return 0;
 
     // OLD INCORRECT CODE!!!
-    //	g3_rotate_vector(&tmp,&objp->pos);
-    //	codes=g3_code_vector_radius(&tmp, objp->radius);
-    //	if ( !codes )	{
-    //		return 1;		// center is in, so return 1
-    //	}
-    //	return 0;
+    //   g3_rotate_vector(&tmp,&objp->pos);
+    //   codes=g3_code_vector_radius(&tmp, objp->radius);
+    //   if ( !codes )  {
+    //      return 1;      // center is in, so return 1
+    //   }
+    //   return 0;
 
     // This I commented out because it will quickly out for
     // objects in the center, but cause one more rotation
@@ -64,12 +64,12 @@ obj_in_view_cone(object *objp)
     // would be best to slow down objects inside by a bit
     // and not penalize the offscreen ones, which require
     // 8 rotatations to throw out.
-    //	g3_rotate_vector(&tmp,&objp->pos);
-    //	codes=g3_code_vector(&tmp);
-    //	if ( !codes )	{
-    //		//mprintf(( "Center is in, so render it\n" ));
-    //		return 1;		// center is in, so return 1
-    //	}
+    //   g3_rotate_vector(&tmp,&objp->pos);
+    //   codes=g3_code_vector(&tmp);
+    //   if ( !codes )  {
+    //      //mprintf(( "Center is in, so render it\n" ));
+    //      return 1;      // center is in, so return 1
+    //   }
 
     // Center isn't in... are other points?
 
@@ -120,12 +120,12 @@ obj_render_all(void (*render_function)(object *objp))
                 vm_vec_sub(&to_obj, &objp->pos, &Eye_position);
                 osp->z = vm_vec_dot(&Eye_matrix.fvec, &to_obj);
                 /*
-				if ( objp->type == OBJ_SHOCKWAVE )
-					osp->z -= 2*objp->radius;
+            if ( objp->type == OBJ_SHOCKWAVE )
+               osp->z -= 2*objp->radius;
 */
                 // Make warp in effect draw after any ship in it
                 if (objp->type == OBJ_FIREBALL) {
-                    //if ( fireball_is_warp(objp) )	{
+                    //if ( fireball_is_warp(objp) )   {
                     osp->z -= 2 * objp->radius;
                     //}
                 }
@@ -199,10 +199,10 @@ obj_render_all(void (*render_function)(object *objp))
         gr_fog_set(GR_FOGMODE_NONE, 0, 0, 0);
     }
 
-    /*	Show spheres where wingmen should be flying
-	{
-		extern void render_wing_phantoms_all();
-		render_wing_phantoms_all();
-	}
-	*/
+    /*   Show spheres where wingmen should be flying
+   {
+      extern void render_wing_phantoms_all();
+      render_wing_phantoms_all();
+   }
+   */
 }

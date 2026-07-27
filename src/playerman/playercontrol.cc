@@ -59,29 +59,29 @@ DCF_BOOL(show_killer_weapon, Show_killer_weapon);
 void playercontrol_read_stick(int *axis, float frame_time);
 void player_set_padlock_state();
 
-//	Slew angles chase towards zero like they're on a spring.
-//	When furthest away, move fastest.
-//	Minimum speed set so that doesn't take too long.
-//	When gets close, clamps to zero.
+// Slew angles chase towards zero like they're on a spring.
+// When furthest away, move fastest.
+// Minimum speed set so that doesn't take too long.
+// When gets close, clamps to zero.
 void
 chase_angles_to_zero(angles *ap)
 {
     float k1, k2;
     float sk;
 
-    //	Make sure we actually need to do all this math.
+    //   Make sure we actually need to do all this math.
     if ((ap->p == 0.0f) && (ap->h == 0.0f))
         return;
 
-    //	This is what we'll scale each value by.
+    //   This is what we'll scale each value by.
     sk = 1.0f - 2 * flFrametime;
 
-    //	These are the amounts that will be subtracted from pitch and heading.
-    //	They are only needed to make sure we aren't moving too slowly.
+    //   These are the amounts that will be subtracted from pitch and heading.
+    //   They are only needed to make sure we aren't moving too slowly.
     k1 = fl_abs(ap->p * (1.0f - sk));
     k2 = fl_abs(ap->h * (1.0f - sk));
 
-    //	See if the larger dimension of movement is too small.
+    //   See if the larger dimension of movement is too small.
     // If so, boost amount of movement in both dimensions.
     if (k1 >= k2) {
         if (k1 < flFrametime)
@@ -92,20 +92,20 @@ chase_angles_to_zero(angles *ap)
             sk = 1.0f - (1.0f - sk) * flFrametime / k2;
     }
 
-    //	It's possible we made the scale factor negative above.
+    //   It's possible we made the scale factor negative above.
     if (sk < 0.0f)
         sk = 0.0f;
 
     ap->p *= sk;
     ap->h *= sk;
 
-    //	If we're very close, put ourselves at goal.
+    //   If we're very close, put ourselves at goal.
     if ((fl_abs(ap->p) < 0.005f) && (fl_abs(ap->h) < 0.005f)) {
         ap->p = 0.0f;
         ap->h = 0.0f;
     }
 
-    //	Update Viewer_mode based on whether we're looking dead ahead.
+    //   Update Viewer_mode based on whether we're looking dead ahead.
     if ((ap->p == 0.0f) && (ap->b == 0.0f) && (ap->h == 0.0f))
         Viewer_mode &= ~VM_SLEWED;
     else
@@ -189,7 +189,7 @@ view_modify(angles *ma, angles *da, float minv, float maxv, int slew,
         ma->h = minv;
 }
 
-//	When PAD0 is pressed, keypad controls viewer direction slewing.
+// When PAD0 is pressed, keypad controls viewer direction slewing.
 void
 do_view_slew(float frame_time)
 {
@@ -208,7 +208,7 @@ do_view_chase(float frame_time)
 {
     float t;
 
-    //	Process centering key.
+    //   Process centering key.
     if (check_control_timef(VIEW_CENTER)) {
         Viewer_chase_info.distance = 0.0f;
     }
@@ -236,7 +236,7 @@ do_view_external(float frame_time)
     view_modify(&Viewer_external_info.angles, &Viewer_external_angles_delta,
                 -2 * PI, 2 * PI, 0, frame_time);
 
-    //	Process centering key.
+    //   Process centering key.
     if (check_control_timef(VIEW_CENTER)) {
         Viewer_external_info.angles.p = 0.0f;
         Viewer_external_info.angles.h = 0.0f;
@@ -250,7 +250,7 @@ do_view_external(float frame_time)
         Viewer_external_info.distance = 0.0f;
     }
 
-    //	Do over-the-top correction.
+    //   Do over-the-top correction.
 
     if (Viewer_external_info.angles.p > PI)
         Viewer_external_info.angles.p = -2 * PI + Viewer_external_info.angles.p;
@@ -328,8 +328,8 @@ playercontrol_read_stick(int *axis, float frame_time)
         int dx, dy, dz;
         float factor;
 
-        //		factor = (float) Mouse_sensitivity + 2.5f;
-        //		factor = factor * factor / frame_time / 1.2f;
+        //     factor = (float) Mouse_sensitivity + 2.5f;
+        //     factor = factor * factor / frame_time / 1.2f;
         factor = (float)Mouse_sensitivity + 1.77f;
         factor = factor * factor / frame_time / 0.6f;
 
@@ -478,10 +478,10 @@ read_keyboard_controls(control_info *ci, float frame_time, physics_info *pi)
             override_analog_throttle = 1;
         }
 
-        //		if ( button_info_query(&Player->bi, PLUS_5_PERCENT_THROTTLE) ) {
-        //			control_used(PLUS_5_PERCENT_THROTTLE);
-        //			Player->ci.forward_cruise_percent += (100.0f/Player_ship->current_max_speed);
-        //		}
+        //     if ( button_info_query(&Player->bi, PLUS_5_PERCENT_THROTTLE) ) {
+        //        control_used(PLUS_5_PERCENT_THROTTLE);
+        //        Player->ci.forward_cruise_percent += (100.0f/Player_ship->current_max_speed);
+        //     }
 
         if (button_info_query(&Player->bi, PLUS_5_PERCENT_THROTTLE)) {
             control_used(PLUS_5_PERCENT_THROTTLE);
@@ -490,10 +490,10 @@ read_keyboard_controls(control_info *ci, float frame_time, physics_info *pi)
                 Player->ci.forward_cruise_percent = 100.0f;
         }
 
-        //		if ( button_info_query(&Player->bi, MINUS_5_PERCENT_THROTTLE) ) {
-        //			control_used(MINUS_5_PERCENT_THROTTLE);
-        //			Player->ci.forward_cruise_percent -= (100.0f/Player_ship->current_max_speed);
-        //		}
+        //     if ( button_info_query(&Player->bi, MINUS_5_PERCENT_THROTTLE) ) {
+        //        control_used(MINUS_5_PERCENT_THROTTLE);
+        //        Player->ci.forward_cruise_percent -= (100.0f/Player_ship->current_max_speed);
+        //     }
 
         if (button_info_query(&Player->bi, MINUS_5_PERCENT_THROTTLE)) {
             control_used(MINUS_5_PERCENT_THROTTLE);
@@ -553,7 +553,7 @@ read_keyboard_controls(control_info *ci, float frame_time, physics_info *pi)
                     }
                 }
 
-                //	Note, if closer than 100 units, scale down speed a bit.  Prevents repeated collisions. -- MK, 12/17/97
+                //   Note, if closer than 100 units, scale down speed a bit.  Prevents repeated collisions. -- MK, 12/17/97
                 float dist = vm_vec_dist(&Player_obj->pos,
                                          &Objects[Player_ai->target_objnum].pos);
 
@@ -565,15 +565,15 @@ read_keyboard_controls(control_info *ci, float frame_time, physics_info *pi)
                 pmax_speed = Ships[Player_obj->instance].current_max_speed;
                 ci->forward_cruise_percent = (tspeed / pmax_speed) * 100.0f;
                 override_analog_throttle = 1;
-                //			if ( ci->forward_cruise_percent > 100.0f )
-                //				HUD_printf ("Cannot travel that fast.  Setting throttle to full.");
+                //         if ( ci->forward_cruise_percent > 100.0f )
+                //            HUD_printf ("Cannot travel that fast.  Setting throttle to full.");
                 // mprintf(("forward -- %7.3f\n", ci->forward_cruise_percent));
             }
             else
                 Player->flags &= ~PLAYER_FLAGS_MATCH_TARGET;
         }
 
-        //			player_read_joystick();
+        //        player_read_joystick();
         // code to read joystick axis for pitch/heading.  Code to read joystick buttons
         // fo1r bank.
         if (!(Game_mode & GM_DEAD)) {
@@ -613,7 +613,7 @@ read_keyboard_controls(control_info *ci, float frame_time, physics_info *pi)
                      0.1f; // convert to -0.1 - 1.1 range
             oldspeed = ci->forward_cruise_percent;
 
-            //			scaled = (scaled + 1.0f) / 1.85f;
+            //       scaled = (scaled + 1.0f) / 1.85f;
             newspeed = (1.0f - scaled) * 100.0f;
 
             delta = analog_throttle_last - newspeed;
@@ -622,20 +622,20 @@ read_keyboard_controls(control_info *ci, float frame_time, physics_info *pi)
                 analog_throttle_last = newspeed;
                 override_analog_throttle = 0;
                 /*
-				// AL 1-5-98: don't play throttle sounds when using analog control
+            // AL 1-5-98: don't play throttle sounds when using analog control
 
-				if ( (oldspeed < 1.0f) && (newspeed >= 1.0f) )
-					snd_play( &Snds[SND_THROTTLE_UP], 0.0f );
-				else if ( (oldspeed < 66.6f) && (newspeed >= 66.6f) )
-					snd_play( &Snds[SND_THROTTLE_UP], 0.0f );
-				else if ( (oldspeed < 33.3f) && (newspeed >= 33.3f) )
-					snd_play( &Snds[SND_THROTTLE_UP], 0.0f );
-				else if ( (oldspeed > 99.0f) && (newspeed <= 99.0f) )
-					snd_play( &Snds[SND_THROTTLE_DOWN], 0.0f );
-				else if ( (oldspeed > 33.3f) && (newspeed <= 33.3f) )
-					snd_play( &Snds[SND_THROTTLE_DOWN], 0.0f );
-				else if ( (oldspeed > 66.6f) && (newspeed <= 66.6f) )
-					snd_play( &Snds[SND_THROTTLE_DOWN], 0.0f );
+            if ( (oldspeed < 1.0f) && (newspeed >= 1.0f) )
+               snd_play( &Snds[SND_THROTTLE_UP], 0.0f );
+            else if ( (oldspeed < 66.6f) && (newspeed >= 66.6f) )
+               snd_play( &Snds[SND_THROTTLE_UP], 0.0f );
+            else if ( (oldspeed < 33.3f) && (newspeed >= 33.3f) )
+               snd_play( &Snds[SND_THROTTLE_UP], 0.0f );
+            else if ( (oldspeed > 99.0f) && (newspeed <= 99.0f) )
+               snd_play( &Snds[SND_THROTTLE_DOWN], 0.0f );
+            else if ( (oldspeed > 33.3f) && (newspeed <= 33.3f) )
+               snd_play( &Snds[SND_THROTTLE_DOWN], 0.0f );
+            else if ( (oldspeed > 66.6f) && (newspeed <= 66.6f) )
+               snd_play( &Snds[SND_THROTTLE_DOWN], 0.0f );
 */
             }
         }
@@ -658,7 +658,7 @@ read_keyboard_controls(control_info *ci, float frame_time, physics_info *pi)
         }
 
         // mouse: fire the current primary weapon
-        //		ci->fire_primary_count += mouse_down(1);
+        //     ci->fire_primary_count += mouse_down(1);
 
         // for debugging, check to see if the debug key is down -- if so, make fire the debug laser instead
 #ifndef NDEBUG
@@ -715,8 +715,8 @@ read_keyboard_controls(control_info *ci, float frame_time, physics_info *pi)
 void
 read_player_controls(object *objp, float frametime)
 {
-    //	if (Game_mode & GM_DEAD)
-    //		return;
+    //   if (Game_mode & GM_DEAD)
+    //      return;
 
     {
         switch (Player->control_mode) {
@@ -885,9 +885,9 @@ player_clear_speed_matching()
 
 // function which computes the forward_thrust_time needed for the player ship to match
 // velocities with the currently selected target
-// input:	no_target_text	=> default parm (NULL), used to override HUD output when no target exists
-//				match_off_text	=>	default parm (NULL), used to overide HUD output when matching toggled off
-//				match_on_text	=>	default parm (NULL), used to overide HUD output when matching toggled on
+// input:   no_target_text => default parm (NULL), used to override HUD output when no target exists
+//          match_off_text => default parm (NULL), used to overide HUD output when matching toggled off
+//          match_on_text  => default parm (NULL), used to overide HUD output when matching toggled on
 void
 player_match_target_speed(char *no_target_text, char *match_off_text,
                           char *match_on_text)
@@ -903,7 +903,7 @@ player_match_target_speed(char *no_target_text, char *match_off_text,
             }
         }
         else {
-            //			HUD_sourced_printf(HUD_SOURCE_HIDDEN, XSTR("No currently selected target.",-1) );
+            //       HUD_sourced_printf(HUD_SOURCE_HIDDEN, XSTR("No currently selected target.",-1) );
         }
         return;
     }
@@ -916,7 +916,7 @@ player_match_target_speed(char *no_target_text, char *match_off_text,
             }
         }
         else {
-            //			HUD_sourced_printf(HUD_SOURCE_HIDDEN, XSTR("No longer matching speed with current target.",-1) );
+            //       HUD_sourced_printf(HUD_SOURCE_HIDDEN, XSTR("No longer matching speed with current target.",-1) );
         }
     }
     else {
@@ -948,7 +948,7 @@ player_match_target_speed(char *no_target_text, char *match_off_text,
                 }
             }
             else {
-                //				HUD_sourced_printf(HUD_SOURCE_HIDDEN, XSTR("Matching speed with current target.",-1) );
+                //            HUD_sourced_printf(HUD_SOURCE_HIDDEN, XSTR("Matching speed with current target.",-1) );
             }
         }
     }
@@ -979,7 +979,7 @@ toggle_player_object()
                        use_descent ? NOX("DESCENT") : NOX("FreeSpace"));
 }
 
-//#endif		// ifndef NDEBUG
+//#endif    // ifndef NDEBUG
 
 // Init the data required for determining whether 'all alone' message should play
 void
@@ -1052,7 +1052,7 @@ player_save_target_and_weapon_link_prefs()
 void
 player_restore_target_and_weapon_link_prefs()
 {
-    //	Don't restores the save flags in training, as we must ensure certain things are off, such as speed matching.
+    //   Don't restores the save flags in training, as we must ensure certain things are off, such as speed matching.
     if (!(The_mission.game_type & MISSION_TYPE_TRAINING)) {
         Player->flags |= Player->save_flags;
     }
@@ -1091,7 +1091,7 @@ player_level_init()
     Player_ship = NULL;
     Player_ai = NULL;
 
-    //	Init variables for friendly fire monitoring.
+    //   Init variables for friendly fire monitoring.
     Player->friendly_last_hit_time = 0;
     Player->friendly_hits = 0;
     Player->friendly_damage = 0.0f;
@@ -1232,8 +1232,8 @@ player_stop_cargo_scan_sound()
 // See if there is a praise message to deliver to the player.  We want to delay the praise messages
 // a bit, to make them more realistic
 //
-// exit:	1	=>	a praise message was delivered to the player, or a praise is pending
-//			0	=> no praise is pending
+// exit: 1  => a praise message was delivered to the player, or a praise is pending
+//       0  => no praise is pending
 
 #define PLAYER_ALLOW_PRAISE_INTERVAL 60000 // minimum time between praises
 
@@ -1274,11 +1274,11 @@ player_process_pending_praise()
 
 int player_inspect_cap_subsys_cargo(float frametime, char *outstr);
 // See if the player should be inspecting cargo, and update progress.
-// input:	frametime	=>		time since last frame in seconds
-// input:	outstr		=>		(output parm) holds string that HUD should display
+// input:   frametime   =>    time since last frame in seconds
+// input:   outstr      =>    (output parm) holds string that HUD should display
 //
-//	exit:		1				=>		player should display outstr on HUD
-//				0				=>		don't display cargo on HUD
+// exit:    1           =>    player should display outstr on HUD
+//          0           =>    don't display cargo on HUD
 int
 player_inspect_cargo(float frametime, char *outstr)
 {
@@ -1380,8 +1380,8 @@ player_inspect_cargo(float frametime, char *outstr)
     return 1;
 }
 
-//	exit:		1				=>		player should display outstr on HUD
-//				0				=>		don't display cargo on HUD
+// exit:    1           =>    player should display outstr on HUD
+//          0           =>    don't display cargo on HUD
 int
 player_inspect_cap_subsys_cargo(float frametime, char *outstr)
 {
@@ -1495,9 +1495,9 @@ player_farthest_weapon_range()
 }
 
 // Determine text name for the weapon that killed the player.
-// input:	weapon_info_index	=>		weapon type that killed the player (can be -1 if no weapon involved)
-//				killer_species		=>		species of ship that fired weapon
-//				weapon_name			=>		output parameter... stores weapon name generated in this function
+// input:   weapon_info_index =>    weapon type that killed the player (can be -1 if no weapon involved)
+//          killer_species    =>    species of ship that fired weapon
+//          weapon_name       =>    output parameter... stores weapon name generated in this function
 void
 player_generate_killer_weapon_name(int weapon_info_index, int killer_species,
                                    char *weapon_name)
@@ -1541,7 +1541,7 @@ player_generate_death_text(player *player_p, char *death_text)
     switch (player_p->killer_objtype) {
     case OBJ_SHOCKWAVE:
         if (weapon_name[0]) {
-            //			sprintf(death_text, XSTR("%s was killed by a shockwave from a %s, fired by %s",-1), player_p->callsign, weapon_name, player_p->killer_parent_name);
+            //       sprintf(death_text, XSTR("%s was killed by a shockwave from a %s, fired by %s",-1), player_p->callsign, weapon_name, player_p->killer_parent_name);
             sprintf(death_text, XSTR("%s was killed by a missile shockwave", 92),
                     player_p->callsign);
         }
@@ -1903,7 +1903,7 @@ player_get_eye(vector *eye_pos, matrix *eye_orient)
             int view_from_player = 1;
 
             if (Viewer_mode & VM_OTHER_SHIP) {
-                //	View from target.
+                //   View from target.
                 viewer_obj = &Objects[Player_ai->target_objnum];
                 if (viewer_obj->type == OBJ_SHIP) {
                     ship_get_eye(eye_pos, eye_orient, viewer_obj);
@@ -1912,7 +1912,7 @@ player_get_eye(vector *eye_pos, matrix *eye_orient)
             }
 
             if (view_from_player) {
-                //	View target from player ship.
+                //   View target from player ship.
                 viewer_obj = NULL;
                 *eye_pos = Player_obj->pos;
                 vm_vec_normalized_dir(
@@ -1939,7 +1939,7 @@ player_get_eye(vector *eye_pos, matrix *eye_orient)
                 view_pos = Objects[Player_ai->target_objnum].pos;
             }
             else {
-                //	Make camera follow explosion, but gradually slow down.
+                //   Make camera follow explosion, but gradually slow down.
                 vm_vec_scale_add2(&Player_obj->pos, &Dead_player_last_vel,
                                   flFrametime);
                 view_pos = Player_obj->pos;
@@ -1954,7 +1954,7 @@ player_get_eye(vector *eye_pos, matrix *eye_orient)
         }
     }
 
-    //	If already blown up, these other modes can override.
+    //   If already blown up, these other modes can override.
     if (!(Game_mode & (GM_DEAD | GM_DEAD_BLEW_UP))) {
         viewer_obj = Player_obj;
 
@@ -1980,7 +1980,7 @@ player_get_eye(vector *eye_pos, matrix *eye_orient)
                                NULL);
             viewer_obj = NULL;
 
-            //	Modify the orientation based on head orientation.
+            // Modify the orientation based on head orientation.
             compute_slew_matrix(eye_orient, &Viewer_slew_angles);
         }
         else if (Viewer_mode & VM_CHASE) {
@@ -2014,7 +2014,7 @@ player_get_eye(vector *eye_pos, matrix *eye_orient)
             vm_vector_2_matrix(eye_orient, &eye_dir, &tmp_up, NULL);
             viewer_obj = NULL;
 
-            //	Modify the orientation based on head orientation.
+            // Modify the orientation based on head orientation.
             compute_slew_matrix(eye_orient, &Viewer_slew_angles);
         }
         else if (Viewer_mode & VM_WARP_CHASE) {
