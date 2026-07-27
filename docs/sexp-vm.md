@@ -1,6 +1,6 @@
 # The SEXP VM — anatomy and carve plan
 
-A deep dive on `code/parse/sexp.cpp`, the embedded mission-scripting virtual
+A deep dive on `src/parse/sexp.cc`, the embedded mission-scripting virtual
 machine that is the engine's crown jewel. This document delineates the VM into
 its three parts — **reader**, **evaluator**, **vocabulary** — and ends with a
 concrete plan for separating the reader (parser) into a standalone unit.
@@ -339,7 +339,7 @@ is the price of leaving `sexp.cpp` untouched; stage 2 de-duplicates it).
 
 ### 6.6 Result of the physical split (stage 2)
 
-The reader was carved out of `sexp.cpp` into **`code/parse/sexp_reader.cpp`**, a
+The reader was carved out of `sexp.cpp` into **`src/parse/sexp_reader.cc`**, a
 pure verbatim relocation: `init_sexp`, `alloc_sexp`, `find_free_sexp`,
 `get_sexp`, `get_sexp_main`, plus the `Sexp_nodes[]` pool and the two locked
 booleans. The bodies are byte-identical; the calls the reader already made
@@ -362,5 +362,5 @@ to keep one source of truth; the living oracle is now `sexp_dump --trees`.
 
 ---
 *Status: reader **carved and separated** (stages 0–3 complete). The reader lives
-in `code/parse/sexp_reader.cpp`, consumed by the game; verified node-for-node
+in `src/parse/sexp_reader.cc`, consumed by the game; verified node-for-node
 identical over the full retail VP corpus via `tests/sexp_dump --trees`.*

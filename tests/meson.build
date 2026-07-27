@@ -2,6 +2,11 @@
 # game globals the foundation references but whose owning subsystems are not
 # ported yet; entries get deleted as the real code comes in.
 
+# The game binary (../bin) links the same two stub files -- it is built against
+# unported gameplay too. Exported so bin/meson.build doesn't reach across the
+# tree for them; see the wart note there.
+game_stubs = files('stubs.cc', 'gamestubs_gen.cc')
+
 # sexp.cpp's evaluator half references gameplay code that is not ported yet;
 # gamestubs_gen.cpp fills those symbols with traps (see its header comment).
 sexp_dump = executable('sexp_dump',
