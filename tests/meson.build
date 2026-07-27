@@ -5,19 +5,19 @@
 # sexp.cpp's evaluator half references gameplay code that is not ported yet;
 # gamestubs_gen.cpp fills those symbols with traps (see its header comment).
 sexp_dump = executable('sexp_dump',
-    ['sexp_dump.cpp', 'stubs.cpp', 'gamestubs_gen.cpp', 'freespacestubs_gen.cpp'],
+    ['sexp_dump.cc', 'stubs.cc', 'gamestubs_gen.cc', 'freespacestubs_gen.cc'],
     include_directories: inc,
     link_with: foundation,
     dependencies: [sdl2_dep, openal_dep, gl_dep])
 
 vp_ls = executable('vp_ls',
-    ['vp_ls.cpp', 'stubs.cpp', 'gamestubs_gen.cpp', 'freespacestubs_gen.cpp'],
+    ['vp_ls.cc', 'stubs.cc', 'gamestubs_gen.cc', 'freespacestubs_gen.cc'],
     include_directories: inc,
     link_with: foundation,
     dependencies: [sdl2_dep, openal_dep, gl_dep])
 
 pof_dump = executable('pof_dump',
-    ['pof_dump.cpp', 'stubs.cpp', 'gamestubs_gen.cpp', 'freespacestubs_gen.cpp'],
+    ['pof_dump.cc', 'stubs.cc', 'gamestubs_gen.cc', 'freespacestubs_gen.cc'],
     include_directories: inc,
     link_with: foundation,
     dependencies: [sdl2_dep, openal_dep, gl_dep])
@@ -35,13 +35,13 @@ test('pof-oracle', find_program('pof_oracle.sh'),
     timeout: 300)
 
 math_test = executable('math_test',
-    ['math_test.cpp', 'stubs.cpp', 'gamestubs_gen.cpp', 'freespacestubs_gen.cpp'],
+    ['math_test.cc', 'stubs.cc', 'gamestubs_gen.cc', 'freespacestubs_gen.cc'],
     include_directories: inc,
     link_with: foundation,
     dependencies: [sdl2_dep, openal_dep, gl_dep])
 
 first_pixels = executable('first_pixels',
-    ['first_pixels.cpp', 'stubs.cpp', 'gamestubs_gen.cpp', 'freespacestubs_gen.cpp'],
+    ['first_pixels.cc', 'stubs.cc', 'gamestubs_gen.cc', 'freespacestubs_gen.cc'],
     include_directories: inc,
     link_with: foundation,
     dependencies: [sdl2_dep, openal_dep, gl_dep])
@@ -49,7 +49,7 @@ first_pixels = executable('first_pixels',
 test('math', math_test)
 
 tmap_test = executable('tmap_test',
-    ['tmap_test.cpp', 'stubs.cpp', 'gamestubs_gen.cpp', 'freespacestubs_gen.cpp'],
+    ['tmap_test.cc', 'stubs.cc', 'gamestubs_gen.cc', 'freespacestubs_gen.cc'],
     include_directories: inc,
     link_with: foundation,
     dependencies: [sdl2_dep, openal_dep, gl_dep])
