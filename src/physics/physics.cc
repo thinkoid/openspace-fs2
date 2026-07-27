@@ -90,7 +90,6 @@ physics_init(physics_info *pi)
     vm_vec_make(&pi->I_body_inv.fvec, 0.0f, 0.0f, 1e-5f);
 }
 
-//==========================================================================
 // apply_physics - This does correct physics independent of frame rate.
 //
 // Given:

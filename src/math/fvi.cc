@@ -299,7 +299,6 @@ fvi_ray_sphere(vector *intp, vector *p0, vector *p1, vector *sphere_pos,
         return 0;
 }
 
-//==============================================================
 // Finds intersection of a ray and an axis-aligned bounding box
 // Given a ray with origin at p0, and direction pdir, this function
 // returns non-zero if that ray intersects an axis-aligned bounding box

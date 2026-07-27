@@ -132,7 +132,6 @@ mission_load()
     return 0;
 }
 
-//====================================
 // Mission Load Menu stuff
 #define MLM_MAX_MISSIONS 256
 int mlm_active = 0;

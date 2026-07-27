@@ -886,7 +886,6 @@ int model_which_octant(vector *pnt, int model_num, matrix *model_orient,
 void model_set_thrust(int model_num, float length, int bitmapnum,
                       int glow_bitmapnum = -1, float glow_noise = 1.0f);
 
-//=========================================================
 // model caching
 
 // Call once to init the model caching stuff
@@ -898,7 +897,6 @@ void model_cache_reset();
 // If TRUE, then model caching is enabled
 extern int Model_caching;
 
-//=======================================================================================
 // Finds the closest point on a model to a point in space.  Actually only finds a point
 // on the bounding box of the model.
 // Given:

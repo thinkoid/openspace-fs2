@@ -5772,7 +5772,6 @@ get_subsystem_pos(vector *pos, object *objp, ship_subsys *subsysp)
     return 1;
 }
 
-//=================================================
 // Takes all the angle info from the ship structure and stuffs it
 // into the model data so that the model code has all the correct
 // angles and stuff that it needs.    This is a poorly designed
@@ -5835,7 +5834,6 @@ ship_model_start(object *objp)
     }
 }
 
-//==========================================================
 // Clears all the instance specific stuff out of the model info
 void
 ship_model_stop(object *objp)
@@ -5848,7 +5846,6 @@ ship_model_stop(object *objp)
     model_clear_instance(shipp->modelnum);
 }
 
-//==========================================================
 // Finds the number of crew points in a ship
 int
 ship_find_num_crewpoints(object *objp)
@@ -5885,7 +5882,6 @@ ship_find_num_crewpoints(object *objp)
     return n;
 }
 
-//==========================================================
 // Finds the number of turrets in a ship
 int
 ship_find_num_turrets(object *objp)
@@ -6257,7 +6253,6 @@ ship_set_subsystem_strength(ship *shipp, int type, float strength)
 #define HULL_REPAIR_RATE 0.15f //   Percent of hull repaired per second.
 #define SUBSYS_REPAIR_RATE 0.10f // Percent of subsystems repaired per second.
 
-// ==================================================================================
 // ship_do_rearm_frame()
 //
 // function to rearm a ship.  This function gets called from the ai code ai_do_rearm_frame (or

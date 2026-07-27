@@ -515,7 +515,6 @@ cfopen(char *file_path, char *mode, int type, int dir_type, bool localize)
    }
 #endif
 
-    //================================================
     // Check that all the parameters make sense
     Assert(file_path && strlen(file_path));
     Assert(mode != NULL);
@@ -526,7 +525,6 @@ cfopen(char *file_path, char *mode, int type, int dir_type, bool localize)
         return NULL;
     }
 
-    //===========================================================
     // If in write mode, just try to open the file straight off
     // the harddisk.  No fancy packfile stuff here!
 
@@ -556,7 +554,6 @@ cfopen(char *file_path, char *mode, int type, int dir_type, bool localize)
         return NULL;
     }
 
-    //================================================
     // Search for file on disk, on cdrom, or in a packfile
 
     int offset, size;

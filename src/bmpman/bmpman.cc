@@ -148,7 +148,6 @@ int Bm_pixel_format = BM_PIXEL_FORMAT_ARGB;
         BM_SET_A_ARGB(((char *)p), a);                                           \
     }
 
-// ===========================================
 // Mode: 0 = High memory
 //       1 = Low memory ( every other frame of ani's)
 //       2 = Debug low memory ( only use first frame of each ani )

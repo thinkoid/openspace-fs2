@@ -112,12 +112,10 @@ extern float Noise[NOISE_NUM_FRAMES];
 // game skill levels
 #define NUM_SKILL_LEVELS 5
 
-//====================================================================================
 // DETAIL LEVEL STUFF
 // If you change any of this, be sure to increment the player file version
 // in Freespace\ManagePilot.cpp and change Detail_defaults in SystemVars.cpp
 // or bad things will happen, I promise.
-//====================================================================================
 
 #define MAX_DETAIL_LEVEL                                                         \
     4 // The highest valid value for the "analog" detail level settings

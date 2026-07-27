@@ -288,7 +288,6 @@ cf_build_root_list(char *cdrom_dir)
 
     cf_root *root;
 
-    //======================================================
     // First, check the current directory.
     // strcpy( root->path, "d:\\projects\\freespace\\" );
 
@@ -305,18 +304,15 @@ cf_build_root_list(char *cdrom_dir)
     }
     root->roottype = CF_ROOTTYPE_PATH;
 
-    //======================================================
     // Next, check any VP files under the current directory.
     cf_build_pack_list(root);
 
-    //======================================================
     // Check the real CD if one...
     if (cdrom_dir && strlen(cdrom_dir)) {
         root = cf_create_root();
         strcpy(root->path, cdrom_dir);
         root->roottype = CF_ROOTTYPE_PATH;
 
-        //======================================================
         // Next, check any VP files in the CD-ROM directory.
         cf_build_pack_list(root);
     }

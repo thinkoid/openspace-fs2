@@ -12,7 +12,6 @@
 
 #include <globalincs/pstypes.hh>
 
-//==========================================================================
 // This installs the timer services and interrupts at the rate specified by
 // count_val.  If 'function' isn't 0, the function pointed to by function will
 // be called 'freq' times per second.  Should be > 19 and anything around
@@ -27,7 +26,6 @@ extern void timer_close();
 extern void timer_set_rate(int count_val);
 extern void timer_set_function(void *function);
 
-//==========================================================================
 // These functions return the time since the timer was initialized in
 // some various units. The total length of reading time varies for each
 // one.  They will roll around after they read 2^32.
@@ -42,15 +40,10 @@ timer_get_approx_seconds(); // Returns time since program started... accurate to
 extern int timer_get_milliseconds(); //
 extern int timer_get_microseconds();
 
-//==========================================================================
 // Use to access the BIOS ticker... ie...   i = TICKER
 void timer_delay(fix seconds);
 
-//=================================================================
-//=================================================================
 //               T I M E S T A M P   F U N C T I O N S
-//=================================================================
-//=================================================================
 
 // NEVER USE THIS DIRECTLY!!! IF YOU REALLY NEED IT, THEN:
 // call timestamp(0) and use TIMESTAMP_FREQUENCY to scale it.

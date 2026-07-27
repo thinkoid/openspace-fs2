@@ -386,9 +386,7 @@ shipfx_blow_up_model(object *obj, int model, int submodel, int ndebris,
     }
 }
 
-// =================================================
 //          SHIP WARP IN EFFECT CODE
-// =================================================
 
 // Given an ship, find the radius of it as viewed from the front.
 static float
@@ -1040,7 +1038,6 @@ shipfx_warpout_frame(object *objp, float frametime)
     }
 }
 
-//==================================================
 // Stuff for keeping track of which ships are in
 // whose shadows.
 
@@ -1233,9 +1230,7 @@ shipfx_eye_in_shadow(vector *eye_pos, object *src_obj, int sun_n)
     return 0;
 }
 
-//=====================================================================================
 // STUFF FOR DOING SHIP GUN FLASHES
-//=====================================================================================
 
 #define MAX_FLASHES 128 // How many flashes total
 #define FLASH_LIFE_PRIMARY 0.25f // How long flash lives
@@ -1626,9 +1621,7 @@ shipfx_emit_spark(int n, int sn)
     shipp->next_hit_spark = timestamp_rand(50, 100);
 }
 
-//=====================================================================================
 // STUFF FOR DOING LARGE SHIP EXPLOSIONS
-//=====================================================================================
 
 int Bs_exp_fire_low = 1;
 float Bs_exp_fire_time_mult = 1.0f;

@@ -32,9 +32,7 @@ extern void shipfx_blow_up_model(object *obj, int model, int submodel,
 // put here for multiplayer purposes
 void shipfx_blow_up_hull(object *obj, int model, vector *exp_center);
 
-// =================================================
 //          SHIP WARP IN EFFECT STUFF
-// =================================================
 
 // When a ship warps in, this gets called to start the effect
 extern void shipfx_warpin_start(object *objp);
@@ -48,9 +46,7 @@ extern void shipfx_warpout_start(object *objp);
 // During a ship warp out, this gets called each frame to move the ship
 extern void shipfx_warpout_frame(object *objp, float frametime);
 
-// =================================================
 //          SHIP SHADOW EFFECT STUFF
-// =================================================
 
 // Given point p0, in object's frame of reference, find if
 // it can see the sun.
@@ -63,9 +59,7 @@ int shipfx_in_shadow(object *src_obj);
 // Given world point see if it is in a shadow.
 int shipfx_eye_in_shadow(vector *eye_pos, object *src_obj, int sun_n);
 
-// =================================================
 //          SHIP GUN FLASH EFFECT STUFF
-// =================================================
 
 // Resets the ship flash stuff. Call before
 // each level.
@@ -87,9 +81,7 @@ void shipfx_flash_light_model(object *objp, ship *shipp);
 // Does whatever processing needs to be done each frame.
 void shipfx_flash_do_frame(float frametime);
 
-// =================================================
 //          LARGE SHIP EXPLOSION EFFECT STUFF
-// =================================================
 
 // Call between levels
 void shipfx_large_blowup_level_init();
@@ -108,14 +100,10 @@ void do_sub_expl_sound(float radius, vector *sound_pos, int *sound_handle);
 // do all shockwaves for a ship blowing up
 void shipfx_do_shockwave_stuff(ship *shipp, shockwave_create_info *sci);
 
-// =================================================
 //          ELECTRICAL SPARKS ON DAMAGED SHIPS EFFECT STUFF
-// =================================================
 void shipfx_do_damaged_arcs_frame(ship *shipp);
 
-// =================================================
 //          NEBULA LIGHTNING.
-// =================================================
 void shipfx_do_lightning_frame(ship *shipp);
 
 // engine wash level init

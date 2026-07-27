@@ -36,11 +36,9 @@ typedef struct collision_info_struct
     int submodel_rot_hit; // if collision is against rotating submodel
 } collision_info_struct;
 
-//===============================================================================
 // GENERAL COLLISION DETECTION HELPER FUNCTIONS
 // These are in CollideGeneral.cpp and are used by one or more of the collision-
 // type specific collision modules.
-//===============================================================================
 
 // Keeps track of pairs of objects for collision detection
 typedef struct obj_pair
@@ -83,9 +81,7 @@ int weapon_will_never_hit(object *weapon, object *other, obj_pair *current_pair)
 int collide_subdivide(vector *p0, vector *p1, float prad, vector *q0, vector *q1,
                       float qrad);
 
-//===============================================================================
 // SPECIFIC COLLISION DETECTION FUNCTIONS
-//===============================================================================
 
 // Checks weapon-weapon collisions.  pair->a and pair->b are weapons.
 // Returns 1 if all future collisions between these can be ignored

@@ -345,7 +345,6 @@ model_load(char *filename, int n_subsystems, model_subsystem *subsystems)
     //mprintf(( "Loading model '%s'\n", filename ));
     //key_getch();
 
-    //=============================
     // Find the destroyed replacement models
 
     // Set up the default values
@@ -392,7 +391,6 @@ model_load(char *filename, int n_subsystems, model_subsystem *subsystems)
     create_family_tree(pm);
     //   dump_object_tree(pm);
 
-    //==============================
     // Find all the lower detail versions of the hires model
     for (i = 0; i < pm->n_models; i++) {
         int j, l1;
@@ -1121,7 +1119,6 @@ submodel_rotate(model_subsystem *psub, submodel_instance_info *sii)
     }
 }
 
-//=========================================================================
 // Make a turret's correct orientation matrix.   This should be done when
 // the model is read, but I wasn't sure at what point all the data that I
 // needed was read, so I just check a flag and call this routine when
@@ -1202,7 +1199,6 @@ model_rotate_gun(int model_num, model_subsystem *turret, matrix *orient,
 // Assert( sm->movement_axis == MOVEMENT_AXIS_X );          // Gun must be able to change pitch
 // Assert( sm_parent->movement_axis == MOVEMENT_AXIS_Z );   // Parent must be able to change heading
 
-//======================================================
 // DEBUG code to draw the normal out of this gun and a circle
 // at the gun point.
 #if 0

@@ -275,7 +275,6 @@ tmapscan_flat8()
 
 void tmapscan_pln8_zbuffered();
 
-// =====================================================================
 // C conversions of the retail MSVC inline-asm scanline mappers.  The
 // register roles survive as variable names:
 //
@@ -1241,7 +1240,6 @@ tmapscan_lnaa8()
     Int3();
 }
 
-// =====================================================================
 // Generic tiled perspective mapper -- the C conversion of the asm that
 // lived in the five tmapscantiled{16x16..256x256}.cpp files, which
 // differed only in their shift/mask constants (and in whether they

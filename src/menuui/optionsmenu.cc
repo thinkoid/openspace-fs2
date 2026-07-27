@@ -1413,7 +1413,6 @@ options_menu_do_frame(float frametime)
             y, Skill_level_names(Game_skill_level));
     }
 
-    //==============================================================================
     // Draw the gamma adjustment grid.
     if (Tab == OPTIONS_TAB) {
         draw_gamma_box();
@@ -1429,7 +1428,6 @@ options_menu_do_frame(float frametime)
         gr_printf(x, y, NOX("%.2f"), Freespace_gamma);
         //gr_printf(GAMMA_TEXT_X, GAMMA_TEXT_Y, "Squint and try to make the above\nbar appear to be one solid color.\nThere are more 'ranges' to see\nif you set this in Glide mode.");
     }
-    //==============================================================================
 
     /*  Debug code: Graphs the joystick range scaling
 {

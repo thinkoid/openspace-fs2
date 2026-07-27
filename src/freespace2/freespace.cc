@@ -1984,9 +1984,7 @@ game_show_time_left()
     gr_printf(5, 40, XSTR("Mission time remaining: %d seconds", 179), diff);
 }
 
-//========================================================================================
 //=================== NEW DEBUG CONSOLE COMMANDS TO REPLACE OLD DEBUG PAUSE MENU =========
-//========================================================================================
 
 #ifndef NDEBUG
 
@@ -2044,8 +2042,6 @@ debug_command dc_f("f", "shortcut for ai_firing", dcf_ai_firing);
 debug_command dc_a("a", "shortcut for ai_pause", dcf_ai_pause);
 #endif
 
-//========================================================================================
-//========================================================================================
 
 void
 game_training_pause_do()
@@ -5379,7 +5375,6 @@ main(int argc, char *argv[])
 
     // (a long-dead, commented-out DirectX-version registry check lived here)
 
-    //=====================================================
     // Make sure we're running in the right directory.
     char exe_dir[1024];
 

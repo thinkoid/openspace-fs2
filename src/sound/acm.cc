@@ -375,7 +375,6 @@ adpcm_parse_header(WAVEFORMATEX *pwfxSrc, adpcm_fmt_t *fmt)
     return 1;
 }
 
-// =============================================================================
 // ACM_convert_ADPCM_to_PCM()
 //
 // Convert an ADPCM wave file to a PCM wave file

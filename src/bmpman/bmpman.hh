@@ -148,9 +148,7 @@ void bm_get_frame_usage(int *ntotal, int *nnew);
    }
 */
 
-//============================================================================
 // Paging stuff
-//============================================================================
 
 void bm_page_in_start();
 void bm_page_in_stop();
@@ -198,9 +196,7 @@ void bm_set_components_argb(ubyte *pixel, ubyte *r, ubyte *g, ubyte *b, ubyte *a
 // get the rgba components of a pixel, any of the parameters can be NULL
 void bm_get_components(ubyte *pixel, ubyte *r, ubyte *g, ubyte *b, ubyte *a);
 
-//============================================================================
 // section info stuff
-//============================================================================
 
 // given a bitmap and a section, return the size (w, h)
 void bm_get_section_size(int bitmapnum, int sx, int sy, int *w, int *h);

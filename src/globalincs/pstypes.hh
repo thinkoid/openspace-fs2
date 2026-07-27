@@ -302,9 +302,7 @@ extern int Fred_running; // Is Fred running, or FreeSpace?
 extern int Pofview_running;
 extern int Nebedit_running;
 
-//======================================================================================
 //======          D E B U G    C O N S O L E   S T U F F        ========================
-//======================================================================================
 
 // Here is a a sample command to toggle something that would
 // be called by doing "toggle it" from the debug console command window/
@@ -428,9 +426,6 @@ void dc_printf(const char *format, ...);
                       (bool_variable ? "TRUE" : "FALSE"));                                            \
     }
 
-//======================================================================================
-//======================================================================================
-//======================================================================================
 
 #include <math/fix.hh>
 #include <math/floating.hh>
@@ -480,7 +475,6 @@ extern int game_busy_callback(void (*callback)(int count), int delta_step = -1);
 // Call whenever loading to display cursor
 extern void game_busy();
 
-//=========================================================
 // Functions to monitor performance
 #ifndef NDEBUG
 
@@ -538,9 +532,7 @@ CAP(T &v, T mn, T mx)
     }
 }
 
-// ========================================================
 // stamp checksum stuff
-// ========================================================
 
 // here is the define for the stamp for this set of code
 #define STAMP_STRING                                                             \
@@ -568,9 +560,7 @@ CAP(T &v, T mn, T mx)
         checksum |= 0x80000000;                                                  \
     } while (0);
 
-//=========================================================
 // Memory management functions
-//=========================================================
 
 // Thin wrappers over the C heap; the Win32 tracking heap and the
 // malloc/free/strdup macro redefinitions are gone.

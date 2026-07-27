@@ -308,7 +308,6 @@ void player_display_packlock_view();
 // get the player's eye position and orient
 void player_get_eye(vector *eye_pos, matrix *eye_orient);
 
-//=============================================================
 //===================== PLAYER WARPOUT STUFF ==================
 #define TARGET_WARPOUT_SPEED 40.0f // speed you need to be going to warpout
 #define TARGET_WARPOUT_MATCH_PERCENT                                             \
@@ -319,6 +318,5 @@ void player_get_eye(vector *eye_pos, matrix *eye_orient);
 extern float Warpout_time; // Declared in Freespace.cpp
 extern int
     Warpout_forced; // If non-zero, bash the player to speed and go through effect
-//=============================================================
 
 #endif

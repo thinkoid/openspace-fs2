@@ -1959,7 +1959,6 @@ model_try_cache_render(int model_num, matrix *orient, vector *pos, uint flags,
       return;
    }
 
-   //================================================================
    // A bunch of checks to see if we need to redraw the model or not
 
    
@@ -2132,7 +2131,6 @@ model_try_cache_render(int model_num, matrix *orient, vector *pos, uint flags,
    return;
 
 
-   //==========================================================
    // Cache is bad for model, so draw it and save it
 RedrawIt:
 
