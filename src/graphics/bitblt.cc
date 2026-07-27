@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #include <osapi/osapi.hh>
 #include <graphics/2d.hh>
@@ -19,451 +19,524 @@
 // Headers for 2d functions
 #include <graphics/bitblt.hh>
 
-MONITOR( Num2dBitmaps );	
+MONITOR(Num2dBitmaps);
 
-void gr8_aabitmap_ex(int x,int y,int w,int h,int sx,int sy)
+void
+gr8_aabitmap_ex(int x, int y, int w, int h, int sx, int sy)
 {
-// #if 0 (re-enabled: software blitter was compiled out in the hardware-only era)
-	int hi;
-	bitmap * bmp;
+    // #if 0 (re-enabled: software blitter was compiled out in the hardware-only era)
+    int hi;
+    bitmap *bmp;
 
-	if ( w < 1 ) return;
-	if ( h < 1 ) return;
+    if (w < 1)
+        return;
+    if (h < 1)
+        return;
 
-	MONITOR_INC( Num2dBitmaps, 1 );	
+    MONITOR_INC(Num2dBitmaps, 1);
 
-	if ( !Current_alphacolor )	return;
+    if (!Current_alphacolor)
+        return;
 
-	//	mprintf(( "x=%d, y=%d, w=%d, h=%d\n", x, y, w, h ));
-	//	mprintf(( "sx=%d, sy=%d, bw=%d, bh=%d\n", sx, sy, bmp->w, bmp->h ));
+    //	mprintf(( "x=%d, y=%d, w=%d, h=%d\n", x, y, w, h ));
+    //	mprintf(( "sx=%d, sy=%d, bw=%d, bh=%d\n", sx, sy, bmp->w, bmp->h ));
 
-	bmp = bm_lock( gr_screen.current_bitmap, 8, BMP_AABITMAP );	// FS1 locked RLE|NO_PALETTE_MAP; FS2 bmpman knows neither
+    bmp = bm_lock(
+        gr_screen.current_bitmap, 8,
+        BMP_AABITMAP); // FS1 locked RLE|NO_PALETTE_MAP; FS2 bmpman knows neither
 
-	gr_lock();
+    gr_lock();
 
-	if (0)	{	// FS2 bmpman never returns RLE data
-		int * offsets = (int *)(bmp->data);
-		ubyte *lookup = &Current_alphacolor->table.lookup[0][0];
-			
-		for (hi=0; hi < h; hi++ )    {
-			ubyte * dp = GR_SCREEN_PTR(ubyte,x,y+hi);
-			ubyte * sp = (ubyte *)bmp->data + offsets[sy+hi];
+    if (0) { // FS2 bmpman never returns RLE data
+        int *offsets = (int *)(bmp->data);
+        ubyte *lookup = &Current_alphacolor->table.lookup[0][0];
 
-			int x1 = sx;
-			int x2 = sx+w;
-			int i = 0;			
+        for (hi = 0; hi < h; hi++) {
+            ubyte *dp = GR_SCREEN_PTR(ubyte, x, y + hi);
+            ubyte *sp = (ubyte *)bmp->data + offsets[sy + hi];
 
-			while(i<x1)	{ 			
-				int count;
+            int x1 = sx;
+            int x2 = sx + w;
+            int i = 0;
 
-				count = int(*sp++);
-				int run_span = count & 0x80;
+            while (i < x1) {
+                int count;
 
-				count = (count & (~0x80))+1;		
-				if ( i+count > x1 ) {
-					// This span crosses X1.. so skip some and draw some
-					if ( i+count >= x2 ) {
-						count = x2 - i;
-					}
+                count = int(*sp++);
+                int run_span = count & 0x80;
 
-					if ( run_span )	{
-						// RLE'd data
-						ubyte c = *sp++;
+                count = (count & (~0x80)) + 1;
+                if (i + count > x1) {
+                    // This span crosses X1.. so skip some and draw some
+                    if (i + count >= x2) {
+                        count = x2 - i;
+                    }
 
-						if ( c > 0 )	{					
-							// We have 'count' pixels of c
-							ubyte *tmp_lookup = &lookup[c<<8];
-							while( count-- ) {
-								if ( i >= x1 )	{
-									*dp = tmp_lookup[*dp];
-									dp++;
-								}
-								i++;
-							}	
-						} else {
-							while( count-- ) {
-								if ( i >= x1 )	{
-									dp++;
-								}
-								i++;
-							}	
-						}
-					} else {
-						// non RLE'd data
+                    if (run_span) {
+                        // RLE'd data
+                        ubyte c = *sp++;
 
-						// We have 'count' un-rle'd pixels
-						while( count-- ) {
-							if ( i >= x1 )	{
-								ubyte c = *sp;
-								*dp = lookup[(c<<8) | *dp];
-								dp++;
-							}
-							sp++;
-							i++;
-						} 	
-					}
+                        if (c > 0) {
+                            // We have 'count' pixels of c
+                            ubyte *tmp_lookup = &lookup[c << 8];
+                            while (count--) {
+                                if (i >= x1) {
+                                    *dp = tmp_lookup[*dp];
+                                    dp++;
+                                }
+                                i++;
+                            }
+                        }
+                        else {
+                            while (count--) {
+                                if (i >= x1) {
+                                    dp++;
+                                }
+                                i++;
+                            }
+                        }
+                    }
+                    else {
+                        // non RLE'd data
 
-				} else {
-					i += count;
-					if ( run_span )	{
-						// RLE'd data
-						sp++; 
-					} else {
-						sp += count;
-					}
-				}
-			}
+                        // We have 'count' un-rle'd pixels
+                        while (count--) {
+                            if (i >= x1) {
+                                ubyte c = *sp;
+                                *dp = lookup[(c << 8) | *dp];
+                                dp++;
+                            }
+                            sp++;
+                            i++;
+                        }
+                    }
+                }
+                else {
+                    i += count;
+                    if (run_span) {
+                        // RLE'd data
+                        sp++;
+                    }
+                    else {
+                        sp += count;
+                    }
+                }
+            }
 
-			while(i<x2)	{ 			
-				int count;
+            while (i < x2) {
+                int count;
 
-				count = int(*sp++);
-				int run_span = count & 0x80;
+                count = int(*sp++);
+                int run_span = count & 0x80;
 
-				count = (count & (~0x80))+1;		
-				if ( i+count >= x2 ) {
-					count = x2 - i;
-				}
-				i += count;
+                count = (count & (~0x80)) + 1;
+                if (i + count >= x2) {
+                    count = x2 - i;
+                }
+                i += count;
 
-				ubyte *end_ptr = dp + count;
-				
-				if ( count > 0 )	{
-					if ( run_span )	{
-						// RLE'd data
-						ubyte c = *sp++;
+                ubyte *end_ptr = dp + count;
 
-						if ( c > 0 )	{					
-							// We have 'count' pixels of c
-							ubyte *tmp_lookup = &lookup[c<<8];
+                if (count > 0) {
+                    if (run_span) {
+                        // RLE'd data
+                        ubyte c = *sp++;
 
-							while( count >= 4 )	{
-								// We have to plot at least 4 pixels of constant color starting at 'dp'
-								dp[0] = tmp_lookup[dp[0]];
-								dp[1] = tmp_lookup[dp[1]];
-								dp[2] = tmp_lookup[dp[2]];
-								dp[3] = tmp_lookup[dp[3]];
+                        if (c > 0) {
+                            // We have 'count' pixels of c
+                            ubyte *tmp_lookup = &lookup[c << 8];
 
-								count -= 4;
-								dp += 4;
-							} 
+                            while (count >= 4) {
+                                // We have to plot at least 4 pixels of constant color starting at 'dp'
+                                dp[0] = tmp_lookup[dp[0]];
+                                dp[1] = tmp_lookup[dp[1]];
+                                dp[2] = tmp_lookup[dp[2]];
+                                dp[3] = tmp_lookup[dp[3]];
 
-							while ( count > 0 )	{
-								*dp = tmp_lookup[*dp];
-								dp++;
-								count--;
-							}
-						} 
-					} else {
-						// non RLE'd data
+                                count -= 4;
+                                dp += 4;
+                            }
 
-						// We have 'count' un-rle'd pixels
-						do {
-							ubyte c = *sp++;
-							*dp = lookup[(c<<8) | *dp];
-							dp++;
-						} while ( dp < end_ptr );
-					}
-				}
+                            while (count > 0) {
+                                *dp = tmp_lookup[*dp];
+                                dp++;
+                                count--;
+                            }
+                        }
+                    }
+                    else {
+                        // non RLE'd data
 
-				dp = end_ptr;
-			}
+                        // We have 'count' un-rle'd pixels
+                        do {
+                            ubyte c = *sp++;
+                            *dp = lookup[(c << 8) | *dp];
+                            dp++;
+                        } while (dp < end_ptr);
+                    }
+                }
 
-		}
-	} else {
-		ubyte * sptr = (ubyte *)( bmp->data + (sy*bmp->w+sx) );
-		ubyte *lookup = (ubyte *)&Current_alphacolor->table.lookup[0][0];
+                dp = end_ptr;
+            }
+        }
+    }
+    else {
+        ubyte *sptr = (ubyte *)(bmp->data + (sy * bmp->w + sx));
+        ubyte *lookup = (ubyte *)&Current_alphacolor->table.lookup[0][0];
 
-		for (hi=0; hi<h; hi++ )	{
-			int j;
-			ubyte c, * sp = sptr;	
-			ubyte * dp = GR_SCREEN_PTR(ubyte,x,hi+y);
-			for (j=0; j<w; j++ )	{
-				c = *sp++;
-				if ( c > 0 ) {
-					*dp = lookup[(c<<8) | *dp];
-				}
-				dp++;
-			}
-			sptr += bmp->w;
-		}
-	}
+        for (hi = 0; hi < h; hi++) {
+            int j;
+            ubyte c, *sp = sptr;
+            ubyte *dp = GR_SCREEN_PTR(ubyte, x, hi + y);
+            for (j = 0; j < w; j++) {
+                c = *sp++;
+                if (c > 0) {
+                    *dp = lookup[(c << 8) | *dp];
+                }
+                dp++;
+            }
+            sptr += bmp->w;
+        }
+    }
 
-	gr_unlock();
-	bm_unlock(gr_screen.current_bitmap);
-// #endif (re-enabled: software blitter was compiled out in the hardware-only era)
+    gr_unlock();
+    bm_unlock(gr_screen.current_bitmap);
+    // #endif (re-enabled: software blitter was compiled out in the hardware-only era)
 }
 
-void grx_aabitmap_ex(int x,int y,int w,int h,int sx,int sy)
+void
+grx_aabitmap_ex(int x, int y, int w, int h, int sx, int sy)
 {
-	int reclip;
-	#ifndef NDEBUG
-	int count = 0;
-	#endif
+    int reclip;
+#ifndef NDEBUG
+    int count = 0;
+#endif
 
-	int dx1=x, dx2=x+w-1;
-	int dy1=y, dy2=y+h-1;
+    int dx1 = x, dx2 = x + w - 1;
+    int dy1 = y, dy2 = y + h - 1;
 
-	int bw, bh;
-	bm_get_info( gr_screen.current_bitmap, &bw, &bh, NULL );
+    int bw, bh;
+    bm_get_info(gr_screen.current_bitmap, &bw, &bh, NULL);
 
-	do {
-		reclip = 0;
-		#ifndef NDEBUG
-			if ( count > 1 ) Int3();
-			count++;
-		#endif
-	
-		if ((dx1 > gr_screen.clip_right ) || (dx2 < gr_screen.clip_left)) return;
-		if ((dy1 > gr_screen.clip_bottom ) || (dy2 < gr_screen.clip_top)) return;
-		if ( dx1 < gr_screen.clip_left ) { sx += gr_screen.clip_left-dx1; dx1 = gr_screen.clip_left; }
-		if ( dy1 < gr_screen.clip_top ) { sy += gr_screen.clip_top-dy1; dy1 = gr_screen.clip_top; }
-		if ( dx2 > gr_screen.clip_right )	{ dx2 = gr_screen.clip_right; }
-		if ( dy2 > gr_screen.clip_bottom )	{ dy2 = gr_screen.clip_bottom; }
+    do {
+        reclip = 0;
+#ifndef NDEBUG
+        if (count > 1)
+            Int3();
+        count++;
+#endif
 
-		if ( sx < 0 ) {
-			dx1 -= sx;
-			sx = 0;
-			reclip = 1;
-		}
+        if ((dx1 > gr_screen.clip_right) || (dx2 < gr_screen.clip_left))
+            return;
+        if ((dy1 > gr_screen.clip_bottom) || (dy2 < gr_screen.clip_top))
+            return;
+        if (dx1 < gr_screen.clip_left) {
+            sx += gr_screen.clip_left - dx1;
+            dx1 = gr_screen.clip_left;
+        }
+        if (dy1 < gr_screen.clip_top) {
+            sy += gr_screen.clip_top - dy1;
+            dy1 = gr_screen.clip_top;
+        }
+        if (dx2 > gr_screen.clip_right) {
+            dx2 = gr_screen.clip_right;
+        }
+        if (dy2 > gr_screen.clip_bottom) {
+            dy2 = gr_screen.clip_bottom;
+        }
 
-		if ( sy < 0 ) {
-			dy1 -= sy;
-			sy = 0;
-			reclip = 1;
-		}
+        if (sx < 0) {
+            dx1 -= sx;
+            sx = 0;
+            reclip = 1;
+        }
 
-		w = dx2-dx1+1;
-		h = dy2-dy1+1;
+        if (sy < 0) {
+            dy1 -= sy;
+            sy = 0;
+            reclip = 1;
+        }
 
-		if ( sx + w > bw ) {
-			w = bw - sx;
-			dx2 = dx1 + w - 1;
-		}
+        w = dx2 - dx1 + 1;
+        h = dy2 - dy1 + 1;
 
-		if ( sy + h > bh ) {
-			h = bh - sy;
-			dy2 = dy1 + h - 1;
-		}
+        if (sx + w > bw) {
+            w = bw - sx;
+            dx2 = dx1 + w - 1;
+        }
 
-		if ( w < 1 ) return;		// clipped away!
-		if ( h < 1 ) return;		// clipped away!
+        if (sy + h > bh) {
+            h = bh - sy;
+            dy2 = dy1 + h - 1;
+        }
 
-	} while (reclip);
+        if (w < 1)
+            return; // clipped away!
+        if (h < 1)
+            return; // clipped away!
 
-	// Make sure clipping algorithm works
-	#ifndef NDEBUG
-		Assert( w > 0 );
-		Assert( h > 0 );
-		Assert( w == (dx2-dx1+1) );
-		Assert( h == (dy2-dy1+1) );
-		Assert( sx >= 0 );
-		Assert( sy >= 0 );
-		Assert( sx+w <= bw );
-		Assert( sy+h <= bh );
-		Assert( dx2 >= dx1 );
-		Assert( dy2 >= dy1 );
-		Assert( (dx1 >= gr_screen.clip_left ) && (dx1 <= gr_screen.clip_right) );
-		Assert( (dx2 >= gr_screen.clip_left ) && (dx2 <= gr_screen.clip_right) );
-		Assert( (dy1 >= gr_screen.clip_top ) && (dy1 <= gr_screen.clip_bottom) );
-		Assert( (dy2 >= gr_screen.clip_top ) && (dy2 <= gr_screen.clip_bottom) );
-	#endif
+    } while (reclip);
 
-	// We now have dx1,dy1 and dx2,dy2 and sx, sy all set validly within clip regions.
+// Make sure clipping algorithm works
+#ifndef NDEBUG
+    Assert(w > 0);
+    Assert(h > 0);
+    Assert(w == (dx2 - dx1 + 1));
+    Assert(h == (dy2 - dy1 + 1));
+    Assert(sx >= 0);
+    Assert(sy >= 0);
+    Assert(sx + w <= bw);
+    Assert(sy + h <= bh);
+    Assert(dx2 >= dx1);
+    Assert(dy2 >= dy1);
+    Assert((dx1 >= gr_screen.clip_left) && (dx1 <= gr_screen.clip_right));
+    Assert((dx2 >= gr_screen.clip_left) && (dx2 <= gr_screen.clip_right));
+    Assert((dy1 >= gr_screen.clip_top) && (dy1 <= gr_screen.clip_bottom));
+    Assert((dy2 >= gr_screen.clip_top) && (dy2 <= gr_screen.clip_bottom));
+#endif
 
-	// Draw bitmap bm[sx,sy] into (dx1,dy1)-(dx2,dy2)
+    // We now have dx1,dy1 and dx2,dy2 and sx, sy all set validly within clip regions.
 
-	switch( gr_screen.bits_per_pixel )	{
-	case 8:	
-		gr8_aabitmap_ex(dx1,dy1,dx2-dx1+1,dy2-dy1+1,sx,sy);
-		break;
+    // Draw bitmap bm[sx,sy] into (dx1,dy1)-(dx2,dy2)
 
-	default:
-		Error( LOCATION, "Unsupported BPP=%d in grx_aabitmap_ex!\n", gr_screen.bytes_per_pixel );
-	}
+    switch (gr_screen.bits_per_pixel) {
+    case 8:
+        gr8_aabitmap_ex(dx1, dy1, dx2 - dx1 + 1, dy2 - dy1 + 1, sx, sy);
+        break;
 
-
+    default:
+        Error(LOCATION, "Unsupported BPP=%d in grx_aabitmap_ex!\n",
+              gr_screen.bytes_per_pixel);
+    }
 }
 
-
-void gr8_bitmap_ex(int x,int y,int w,int h,int sx,int sy)
+void
+gr8_bitmap_ex(int x, int y, int w, int h, int sx, int sy)
 {
-// #if 0 (re-enabled: software blitter was compiled out in the hardware-only era)
-	MONITOR_INC( Num2dBitmaps, 1 );	
+    // #if 0 (re-enabled: software blitter was compiled out in the hardware-only era)
+    MONITOR_INC(Num2dBitmaps, 1);
 
-	gr_lock();
+    gr_lock();
 
-	// Normal bitblt
-	int i;
-	bitmap * bmp;
-	ubyte * sptr;
+    // Normal bitblt
+    int i;
+    bitmap *bmp;
+    ubyte *sptr;
 
-	bmp = bm_lock( gr_screen.current_bitmap, 8, 0 );
-	sptr = (ubyte *)( bmp->data + (sy*bmp->w+sx) );
+    bmp = bm_lock(gr_screen.current_bitmap, 8, 0);
+    sptr = (ubyte *)(bmp->data + (sy * bmp->w + sx));
 
-	//mprintf(( "x=%d, y=%d, w=%d, h=%d\n", x, y, w, h ));
-	//mprintf(( "sx=%d, sy=%d, bw=%d, bh=%d\n", sx, sy, bmp->w, bmp->h ));
+    //mprintf(( "x=%d, y=%d, w=%d, h=%d\n", x, y, w, h ));
+    //mprintf(( "sx=%d, sy=%d, bw=%d, bh=%d\n", sx, sy, bmp->w, bmp->h ));
 
-	if ( bmp->flags & BMP_TEX_XPARENT )	{	// was BMP_XPARENT (FS1); flag unset today -> opaque memcpy path
-		for (i=0; i<h; i++ )	{
-			int j;
-			ubyte c, * sp = sptr;	
-			ubyte * dp = GR_SCREEN_PTR(ubyte,x,i+y);
-			for (j=0; j<w; j++ )	{
-				c = *sp++;
-				if (c != 255) *dp = c;
-				dp++;
-			}
-			sptr += bmp->w;
-		}
-	} else {
-		for (i=0; i<h; i++ )	{
-			ubyte *dptr = GR_SCREEN_PTR(ubyte,x,i+y);
-			memcpy( dptr, sptr, w );
-			sptr += bmp->w;
-		}
-	}
-	bm_unlock(gr_screen.current_bitmap);
+    if (bmp->flags &
+        BMP_TEX_XPARENT) { // was BMP_XPARENT (FS1); flag unset today -> opaque memcpy path
+        for (i = 0; i < h; i++) {
+            int j;
+            ubyte c, *sp = sptr;
+            ubyte *dp = GR_SCREEN_PTR(ubyte, x, i + y);
+            for (j = 0; j < w; j++) {
+                c = *sp++;
+                if (c != 255)
+                    *dp = c;
+                dp++;
+            }
+            sptr += bmp->w;
+        }
+    }
+    else {
+        for (i = 0; i < h; i++) {
+            ubyte *dptr = GR_SCREEN_PTR(ubyte, x, i + y);
+            memcpy(dptr, sptr, w);
+            sptr += bmp->w;
+        }
+    }
+    bm_unlock(gr_screen.current_bitmap);
 
-	gr_unlock();
-// #endif (re-enabled: software blitter was compiled out in the hardware-only era)
+    gr_unlock();
+    // #endif (re-enabled: software blitter was compiled out in the hardware-only era)
 }
 
-
-
-void grx_bitmap_ex(int x,int y,int w,int h,int sx,int sy)
+void
+grx_bitmap_ex(int x, int y, int w, int h, int sx, int sy)
 {
-	int reclip;
-	#ifndef NDEBUG
-	int count = 0;
-	#endif
+    int reclip;
+#ifndef NDEBUG
+    int count = 0;
+#endif
 
-	int dx1=x, dx2=x+w-1;
-	int dy1=y, dy2=y+h-1;
+    int dx1 = x, dx2 = x + w - 1;
+    int dy1 = y, dy2 = y + h - 1;
 
-	int bw, bh;
-	bm_get_info( gr_screen.current_bitmap, &bw, &bh, NULL );
+    int bw, bh;
+    bm_get_info(gr_screen.current_bitmap, &bw, &bh, NULL);
 
-	do {
-		reclip = 0;
-		#ifndef NDEBUG
-			if ( count > 1 ) Int3();
-			count++;
-		#endif
-	
-		if ((dx1 > gr_screen.clip_right ) || (dx2 < gr_screen.clip_left)) return;
-		if ((dy1 > gr_screen.clip_bottom ) || (dy2 < gr_screen.clip_top)) return;
-		if ( dx1 < gr_screen.clip_left ) { sx += gr_screen.clip_left-dx1; dx1 = gr_screen.clip_left; }
-		if ( dy1 < gr_screen.clip_top ) { sy += gr_screen.clip_top-dy1; dy1 = gr_screen.clip_top; }
-		if ( dx2 > gr_screen.clip_right )	{ dx2 = gr_screen.clip_right; }
-		if ( dy2 > gr_screen.clip_bottom )	{ dy2 = gr_screen.clip_bottom; }
+    do {
+        reclip = 0;
+#ifndef NDEBUG
+        if (count > 1)
+            Int3();
+        count++;
+#endif
 
-		if ( sx < 0 ) {
-			dx1 -= sx;
-			sx = 0;
-			reclip = 1;
-		}
+        if ((dx1 > gr_screen.clip_right) || (dx2 < gr_screen.clip_left))
+            return;
+        if ((dy1 > gr_screen.clip_bottom) || (dy2 < gr_screen.clip_top))
+            return;
+        if (dx1 < gr_screen.clip_left) {
+            sx += gr_screen.clip_left - dx1;
+            dx1 = gr_screen.clip_left;
+        }
+        if (dy1 < gr_screen.clip_top) {
+            sy += gr_screen.clip_top - dy1;
+            dy1 = gr_screen.clip_top;
+        }
+        if (dx2 > gr_screen.clip_right) {
+            dx2 = gr_screen.clip_right;
+        }
+        if (dy2 > gr_screen.clip_bottom) {
+            dy2 = gr_screen.clip_bottom;
+        }
 
-		if ( sy < 0 ) {
-			dy1 -= sy;
-			sy = 0;
-			reclip = 1;
-		}
+        if (sx < 0) {
+            dx1 -= sx;
+            sx = 0;
+            reclip = 1;
+        }
 
-		w = dx2-dx1+1;
-		h = dy2-dy1+1;
+        if (sy < 0) {
+            dy1 -= sy;
+            sy = 0;
+            reclip = 1;
+        }
 
-		if ( sx + w > bw ) {
-			w = bw - sx;
-			dx2 = dx1 + w - 1;
-		}
+        w = dx2 - dx1 + 1;
+        h = dy2 - dy1 + 1;
 
-		if ( sy + h > bh ) {
-			h = bh - sy;
-			dy2 = dy1 + h - 1;
-		}
+        if (sx + w > bw) {
+            w = bw - sx;
+            dx2 = dx1 + w - 1;
+        }
 
-		if ( w < 1 ) return;		// clipped away!
-		if ( h < 1 ) return;		// clipped away!
+        if (sy + h > bh) {
+            h = bh - sy;
+            dy2 = dy1 + h - 1;
+        }
 
-	} while (reclip);
+        if (w < 1)
+            return; // clipped away!
+        if (h < 1)
+            return; // clipped away!
 
-	// Make sure clipping algorithm works
-	#ifndef NDEBUG
-		Assert( w > 0 );
-		Assert( h > 0 );
-		Assert( w == (dx2-dx1+1) );
-		Assert( h == (dy2-dy1+1) );
-		Assert( sx >= 0 );
-		Assert( sy >= 0 );
-		Assert( sx+w <= bw );
-		Assert( sy+h <= bh );
-		Assert( dx2 >= dx1 );
-		Assert( dy2 >= dy1 );
-		Assert( (dx1 >= gr_screen.clip_left ) && (dx1 <= gr_screen.clip_right) );
-		Assert( (dx2 >= gr_screen.clip_left ) && (dx2 <= gr_screen.clip_right) );
-		Assert( (dy1 >= gr_screen.clip_top ) && (dy1 <= gr_screen.clip_bottom) );
-		Assert( (dy2 >= gr_screen.clip_top ) && (dy2 <= gr_screen.clip_bottom) );
-	#endif
+    } while (reclip);
 
-	// We now have dx1,dy1 and dx2,dy2 and sx, sy all set validly within clip regions.
+// Make sure clipping algorithm works
+#ifndef NDEBUG
+    Assert(w > 0);
+    Assert(h > 0);
+    Assert(w == (dx2 - dx1 + 1));
+    Assert(h == (dy2 - dy1 + 1));
+    Assert(sx >= 0);
+    Assert(sy >= 0);
+    Assert(sx + w <= bw);
+    Assert(sy + h <= bh);
+    Assert(dx2 >= dx1);
+    Assert(dy2 >= dy1);
+    Assert((dx1 >= gr_screen.clip_left) && (dx1 <= gr_screen.clip_right));
+    Assert((dx2 >= gr_screen.clip_left) && (dx2 <= gr_screen.clip_right));
+    Assert((dy1 >= gr_screen.clip_top) && (dy1 <= gr_screen.clip_bottom));
+    Assert((dy2 >= gr_screen.clip_top) && (dy2 <= gr_screen.clip_bottom));
+#endif
 
-	// Draw bitmap bm[sx,sy] into (dx1,dy1)-(dx2,dy2)
+    // We now have dx1,dy1 and dx2,dy2 and sx, sy all set validly within clip regions.
 
-	gr8_bitmap_ex(dx1,dy1,dx2-dx1+1,dy2-dy1+1,sx,sy);
+    // Draw bitmap bm[sx,sy] into (dx1,dy1)-(dx2,dy2)
+
+    gr8_bitmap_ex(dx1, dy1, dx2 - dx1 + 1, dy2 - dy1 + 1, sx, sy);
 }
 
-
-
-void grx_bitmap(int x,int y)
+void
+grx_bitmap(int x, int y)
 {
-	int w, h;
+    int w, h;
 
-	bm_get_info( gr_screen.current_bitmap, &w, &h, NULL );
-	int dx1=x, dx2=x+w-1;
-	int dy1=y, dy2=y+h-1;
-	int sx=0, sy=0;
+    bm_get_info(gr_screen.current_bitmap, &w, &h, NULL);
+    int dx1 = x, dx2 = x + w - 1;
+    int dy1 = y, dy2 = y + h - 1;
+    int sx = 0, sy = 0;
 
-	if ((dx1 > gr_screen.clip_right ) || (dx2 < gr_screen.clip_left)) return;
-	if ((dy1 > gr_screen.clip_bottom ) || (dy2 < gr_screen.clip_top)) return;
-	if ( dx1 < gr_screen.clip_left ) { sx = gr_screen.clip_left-dx1; dx1 = gr_screen.clip_left; }
-	if ( dy1 < gr_screen.clip_top ) { sy = gr_screen.clip_top-dy1; dy1 = gr_screen.clip_top; }
-	if ( dx2 > gr_screen.clip_right )	{ dx2 = gr_screen.clip_right; }
-	if ( dy2 > gr_screen.clip_bottom )	{ dy2 = gr_screen.clip_bottom; }
+    if ((dx1 > gr_screen.clip_right) || (dx2 < gr_screen.clip_left))
+        return;
+    if ((dy1 > gr_screen.clip_bottom) || (dy2 < gr_screen.clip_top))
+        return;
+    if (dx1 < gr_screen.clip_left) {
+        sx = gr_screen.clip_left - dx1;
+        dx1 = gr_screen.clip_left;
+    }
+    if (dy1 < gr_screen.clip_top) {
+        sy = gr_screen.clip_top - dy1;
+        dy1 = gr_screen.clip_top;
+    }
+    if (dx2 > gr_screen.clip_right) {
+        dx2 = gr_screen.clip_right;
+    }
+    if (dy2 > gr_screen.clip_bottom) {
+        dy2 = gr_screen.clip_bottom;
+    }
 
-	if ( sx < 0 ) return;
-	if ( sy < 0 ) return;
-	if ( sx >= w ) return;
-	if ( sy >= h ) return;
+    if (sx < 0)
+        return;
+    if (sy < 0)
+        return;
+    if (sx >= w)
+        return;
+    if (sy >= h)
+        return;
 
-	// Draw bitmap bm[sx,sy] into (dx1,dy1)-(dx2,dy2)
+    // Draw bitmap bm[sx,sy] into (dx1,dy1)-(dx2,dy2)
 
-	gr8_bitmap_ex(dx1,dy1,dx2-dx1+1,dy2-dy1+1,sx,sy);
+    gr8_bitmap_ex(dx1, dy1, dx2 - dx1 + 1, dy2 - dy1 + 1, sx, sy);
 }
 
-void grx_aabitmap(int x,int y)
+void
+grx_aabitmap(int x, int y)
 {
-	int w, h;
+    int w, h;
 
-	bm_get_info( gr_screen.current_bitmap, &w, &h, NULL );
-	int dx1=x, dx2=x+w-1;
-	int dy1=y, dy2=y+h-1;
-	int sx=0, sy=0;
+    bm_get_info(gr_screen.current_bitmap, &w, &h, NULL);
+    int dx1 = x, dx2 = x + w - 1;
+    int dy1 = y, dy2 = y + h - 1;
+    int sx = 0, sy = 0;
 
-	if ((dx1 > gr_screen.clip_right ) || (dx2 < gr_screen.clip_left)) return;
-	if ((dy1 > gr_screen.clip_bottom ) || (dy2 < gr_screen.clip_top)) return;
-	if ( dx1 < gr_screen.clip_left ) { sx = gr_screen.clip_left-dx1; dx1 = gr_screen.clip_left; }
-	if ( dy1 < gr_screen.clip_top ) { sy = gr_screen.clip_top-dy1; dy1 = gr_screen.clip_top; }
-	if ( dx2 > gr_screen.clip_right )	{ dx2 = gr_screen.clip_right; }
-	if ( dy2 > gr_screen.clip_bottom )	{ dy2 = gr_screen.clip_bottom; }
+    if ((dx1 > gr_screen.clip_right) || (dx2 < gr_screen.clip_left))
+        return;
+    if ((dy1 > gr_screen.clip_bottom) || (dy2 < gr_screen.clip_top))
+        return;
+    if (dx1 < gr_screen.clip_left) {
+        sx = gr_screen.clip_left - dx1;
+        dx1 = gr_screen.clip_left;
+    }
+    if (dy1 < gr_screen.clip_top) {
+        sy = gr_screen.clip_top - dy1;
+        dy1 = gr_screen.clip_top;
+    }
+    if (dx2 > gr_screen.clip_right) {
+        dx2 = gr_screen.clip_right;
+    }
+    if (dy2 > gr_screen.clip_bottom) {
+        dy2 = gr_screen.clip_bottom;
+    }
 
-	if ( sx < 0 ) return;
-	if ( sy < 0 ) return;
-	if ( sx >= w ) return;
-	if ( sy >= h ) return;
+    if (sx < 0)
+        return;
+    if (sy < 0)
+        return;
+    if (sx >= w)
+        return;
+    if (sy >= h)
+        return;
 
-	// Draw bitmap bm[sx,sy] into (dx1,dy1)-(dx2,dy2)
+    // Draw bitmap bm[sx,sy] into (dx1,dy1)-(dx2,dy2)
 
-	gr8_aabitmap_ex(dx1,dy1,dx2-dx1+1,dy2-dy1+1,sx,sy);
+    gr8_aabitmap_ex(dx1, dy1, dx2 - dx1 + 1, dy2 - dy1 + 1, sx, sy);
 }
-

@@ -12,18 +12,18 @@
 
 // ---------------------------------------------------------------------------------------------------------------------
 // MUZZLE FLASH DEFINES/VARS
-// 
+//
 
 // prototypes
 struct object;
 
 // muzzle flash types
-#define MAX_MUZZLE_FLASH_TYPES				10
+#define MAX_MUZZLE_FLASH_TYPES 10
 extern int Num_mflash_types;
 
 // ---------------------------------------------------------------------------------------------------------------------
 // MUZZLE FLASH FUNCTIONS
-// 
+//
 
 // initialize muzzle flash stuff for the whole game
 void mflash_game_init();

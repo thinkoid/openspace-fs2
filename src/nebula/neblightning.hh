@@ -15,22 +15,23 @@
 //
 
 // lightning bolt types
-#define MAX_BOLT_TYPES					10
-#define DEBUG_BOLT						MAX_BOLT_TYPES
+#define MAX_BOLT_TYPES 10
+#define DEBUG_BOLT MAX_BOLT_TYPES
 
 // storm types - needs to be here for Fred. blech
-#define MAX_STORM_TYPES							10
-typedef struct storm_type {
-	char		name[NAME_LENGTH];
+#define MAX_STORM_TYPES 10
+typedef struct storm_type
+{
+    char name[NAME_LENGTH];
 
-	ubyte		num_bolt_types;					// how many different bolt types you'll see in the nebula
+    ubyte num_bolt_types; // how many different bolt types you'll see in the nebula
 
-	char		bolt_types[MAX_BOLT_TYPES];	// indices into the lightning types	
+    char bolt_types[MAX_BOLT_TYPES]; // indices into the lightning types
 
-	vector	flavor;								// flavor of the storm
+    vector flavor; // flavor of the storm
 
-	int		min, max;							// min and max delay between bolt firing.	
-	int		min_count, max_count;			// # of bolts spewed
+    int min, max; // min and max delay between bolt firing.
+    int min_count, max_count; // # of bolts spewed
 } storm_type;
 
 extern int Num_storm_types;
@@ -40,22 +41,22 @@ extern storm_type Storm_types[MAX_STORM_TYPES];
 extern float Nebl_intensity;
 
 // min and max times for random lightning
-extern int Nebl_random_min;			// min random time
-extern int Nebl_random_max;			// max random time
+extern int Nebl_random_min; // min random time
+extern int Nebl_random_max; // max random time
 
 // min and max times for cruiser lightning
-extern int Nebl_cruiser_min;			// min cruiser time
-extern int Nebl_cruiser_max;			// max cruiser time
+extern int Nebl_cruiser_min; // min cruiser time
+extern int Nebl_cruiser_max; // max cruiser time
 
 // min and max times for cap ships
-extern int Nebl_cap_min;				// min cap time
-extern int Nebl_cap_max;				// max cap time
+extern int Nebl_cap_min; // min cap time
+extern int Nebl_cap_max; // max cap time
 
 // min and max time for super caps
-extern int Nebl_supercap_min;			// min supercap time
-extern int Nebl_supercap_max;			// max supercap time
+extern int Nebl_supercap_min; // min supercap time
+extern int Nebl_supercap_max; // max supercap time
 
-#define BOLT_TYPE_ANY					-2
+#define BOLT_TYPE_ANY -2
 
 // ------------------------------------------------------------------------------------------------------
 // NEBULA LIGHTNING FUNCTIONS

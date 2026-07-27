@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #include <stdlib.h>
 #include <math.h>
@@ -14,29 +14,30 @@
 #include <math/floating.hh>
 #include <io/timer.hh>
 
-#define LOOKUP_BITS	6
-#define EXP_POS		23
-#define EXP_BIAS		127
+#define LOOKUP_BITS 6
+#define EXP_POS 23
+#define EXP_BIAS 127
 typedef float FLOAT;
 
-#define LOOKUP_POS	(EXP_POS-LOOKUP_BITS)
-#define SEED_POS		(EXP_POS-8)
-#define TABLE_SIZE	(2<<LOOKUP_BITS)
-#define LOOKUP_MASK	(TABLE_SIZE-1)
-#define GET_EXP(a)	(((a) >> EXP_POS) & 0xFF )
-#define SET_EXP(a)	((a) << EXP_POS )
-#define GET_EMANT(a)	(((a) >> LOOKUP_POS) & LOOKUP_MASK )
-#define SET_MANTSEED(a)	(((unsigned long)(a)) << SEED_POS )
+#define LOOKUP_POS (EXP_POS - LOOKUP_BITS)
+#define SEED_POS (EXP_POS - 8)
+#define TABLE_SIZE (2 << LOOKUP_BITS)
+#define LOOKUP_MASK (TABLE_SIZE - 1)
+#define GET_EXP(a) (((a) >> EXP_POS) & 0xFF)
+#define SET_EXP(a) ((a) << EXP_POS)
+#define GET_EMANT(a) (((a) >> LOOKUP_POS) & LOOKUP_MASK)
+#define SET_MANTSEED(a) (((unsigned long)(a)) << SEED_POS)
 
 static unsigned char iSqrt[TABLE_SIZE];
 static int iSqrt_inited = 0;
 
-int fl_magic = 0x59C00000;		//representation of 2^51 + 2^52
+int fl_magic = 0x59C00000; //representation of 2^51 + 2^52
 const float *p_fl_magic = (const float *)&fl_magic;
 
-union _flint {
-	unsigned long	i;
-	float				f;
+union _flint
+{
+    unsigned long i;
+    float f;
 } fi, fo;
 
 /*
@@ -57,24 +58,24 @@ static void MakeInverseSqrtLookupTable()
 */
 
 // HACK!
-float fl_isqrt_c( float x )
+float
+fl_isqrt_c(float x)
 {
-//	unsigned long a = ((union _flint *)(&x))->i;
-//	float arg = x;
-//	union _flint seed;
-//	FLOAT r;
+    //	unsigned long a = ((union _flint *)(&x))->i;
+    //	float arg = x;
+    //	union _flint seed;
+    //	FLOAT r;
 
-	int t1, t2, t3;
-	t1 = timer_get_microseconds();
-	float r1 =  1.0f / (float)sqrt((double)x);
-	t2 = timer_get_microseconds();
-//	float r2 = fl_isqrt_asm(x);
-	t3 = timer_get_microseconds();	
+    int t1, t2, t3;
+    t1 = timer_get_microseconds();
+    float r1 = 1.0f / (float)sqrt((double)x);
+    t2 = timer_get_microseconds();
+    //	float r2 = fl_isqrt_asm(x);
+    t3 = timer_get_microseconds();
 
-	return r1;
+    return r1;
 
-
-/*	if ( !iSqrt_inited )
+    /*	if ( !iSqrt_inited )
 		MakeInverseSqrtLookupTable();
 
 	seed.i = SET_EXP(((3*EXP_BIAS-1) - GET_EXP(a)) >> 1 ) | SET_MANTSEED(iSqrt[GET_EMANT(a)]);
@@ -86,50 +87,53 @@ float fl_isqrt_c( float x )
 }
 
 // rounds off a floating point number to a multiple of some number
-float fl_roundoff(float x, int multiple)
+float
+fl_roundoff(float x, int multiple)
 {
-	float half = (float) multiple / 2.0f;
+    float half = (float)multiple / 2.0f;
 
-	if (x < 0)
-		half = -half;
+    if (x < 0)
+        half = -half;
 
-	x += half;
-	return (float) (((int) x / multiple) * multiple);
+    x += half;
+    return (float)(((int)x / multiple) * multiple);
 }
 
-
 //	Return random value in range 0.0..1.0- (1.0- means the closest number less than 1.0)
-float frand()
+float
+frand()
 {
-	// retail divided by (RAND_MAX + 1) with MSVC's RAND_MAX of 0x7fff; glibc's
-	// RAND_MAX is INT_MAX, so that sum overflows to INT_MIN and every frand()
-	// came out negative.  Mask to the 15 bits retail was tuned against.
-	float rval;
-	rval = ((float) (myrand() & 0x7fff)) / (0x7fff + 1);
-	return rval;
+    // retail divided by (RAND_MAX + 1) with MSVC's RAND_MAX of 0x7fff; glibc's
+    // RAND_MAX is INT_MAX, so that sum overflows to INT_MIN and every frand()
+    // came out negative.  Mask to the 15 bits retail was tuned against.
+    float rval;
+    rval = ((float)(myrand() & 0x7fff)) / (0x7fff + 1);
+    return rval;
 }
 
 //	Return a floating point number in the range min..max.
-float frand_range(float min, float max)
+float
+frand_range(float min, float max)
 {
-	float	rval;
-	
-	rval = frand();
-	rval = rval * (max - min) + min;
+    float rval;
 
-	return rval;
+    rval = frand();
+    rval = rval * (max - min) + min;
+
+    return rval;
 }
 
 //	Call this in the frame interval to get TRUE chance times per second.
 //	If you want it to return TRUE 3 times per second, call it in the frame interval like so:
 //		rand_chance(flFrametime, 3.0f);
-int rand_chance(float frametime, float chance)	//	default value for chance = 1.0f.
+int
+rand_chance(float frametime, float chance) //	default value for chance = 1.0f.
 {
-	while (--chance > 0.0f)
-		if (frand() < frametime)
-			return 1;
+    while (--chance > 0.0f)
+        if (frand() < frametime)
+            return 1;
 
-	return frand() < (frametime * (chance + 1.0f));
+    return frand() < (frametime * (chance + 1.0f));
 }
 
 /*fix fl2f( float x )
@@ -139,7 +143,6 @@ int rand_chance(float frametime, float chance)	//	default value for chance = 1.0
 	return ((*((int *)&nf)) & 0x7FFFFF)-2048;
 }
 */
-
 
 /*
 >#define  S  65536.0

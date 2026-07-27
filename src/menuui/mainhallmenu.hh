@@ -5,15 +5,15 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #ifndef _MAIN_HALL_MENU_HEADER_FILE
 #define _MAIN_HALL_MENU_HEADER_FILE
 
 // the # of main halls we're supporting
-#define NUM_MAIN_HALLS			2
+#define NUM_MAIN_HALLS 2
 
-// initialize the main hall proper 
+// initialize the main hall proper
 void main_hall_init(int main_hall_num);
 
 // do a frame for the main hall

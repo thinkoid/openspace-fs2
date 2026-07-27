@@ -17,10 +17,11 @@ void encrypt_init();
 int is_encrpyted(char *scrambled_text);
 
 // Encrpyt text data
-void encrypt(char *text, int text_len, char *scrambled_text, int *scrambled_len, int use_8bit);
+void encrypt(char *text, int text_len, char *scrambled_text, int *scrambled_len,
+             int use_8bit);
 
 // Decrypt scrambled_text
-void unencrypt(char *scrambled_text, int scrambled_len, char *text, int *text_len);
+void unencrypt(char *scrambled_text, int scrambled_len, char *text,
+               int *text_len);
 
 #endif
-

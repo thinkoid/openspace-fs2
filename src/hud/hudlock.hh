@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #ifndef _HUDLOCK_H
 #define _HUDLOCK_H
@@ -17,6 +17,6 @@ void hud_calculate_lock_start_pos();
 void hud_show_lock_indicator(float frametime);
 void hud_update_lock_indicator(float frametime);
 void hud_stop_looped_locking_sounds();
-void hud_lock_reset(float lock_time_scale=1.0f);
+void hud_lock_reset(float lock_time_scale = 1.0f);
 
 #endif

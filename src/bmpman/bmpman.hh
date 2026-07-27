@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #ifndef _BMPMAN_H
 #define _BMPMAN_H
@@ -13,18 +13,18 @@
 #include <globalincs/pstypes.hh>
 
 #ifdef FS2_DEMO
-	#define MAX_BITMAPS 3500
+#define MAX_BITMAPS 3500
 #else
-	#define MAX_BITMAPS 3500			// How many bitmaps the game can handle
+#define MAX_BITMAPS 3500 // How many bitmaps the game can handle
 #endif
 
 // 16 bit pixel formats
-#define BM_PIXEL_FORMAT_ARGB				0						// 1555 LFB writes
+#define BM_PIXEL_FORMAT_ARGB 0 // 1555 LFB writes
 
 // 16 bit pixel formats
 extern int Bm_pixel_format;
 
-#define BYTES_PER_PIXEL(x)	((x+7)/8)
+#define BYTES_PER_PIXEL(x) ((x + 7) / 8)
 
 // how many bytes of textures are used.
 extern int bm_texture_ram;
@@ -33,9 +33,9 @@ extern int bm_texture_ram;
 // It returns a negative number if it couldn't load
 // the bitmap.   On success, it returns the bitmap
 // number.
-int bm_load(char * filename);
+int bm_load(char *filename);
 
-// special load function. basically allows you to load a bitmap which already exists (by filename). 
+// special load function. basically allows you to load a bitmap which already exists (by filename).
 // this is useful because in some cases we need to have a bitmap which is locked in screen format
 // _and_ texture format, such as pilot pics and squad logos
 int bm_load_duplicate(char *filename);
@@ -45,17 +45,17 @@ int bm_load_duplicate(char *filename);
 // block of data.  The data can be in the following formats:
 // 8 bpp (mapped into game palette)
 // 32 bpp
-// On success, it returns the bitmap number.  You cannot 
-// free that RAM until bm_release is called on that bitmap.  
+// On success, it returns the bitmap number.  You cannot
+// free that RAM until bm_release is called on that bitmap.
 // See example at bottom of this file
-int bm_create( int bpp, int w, int h, void * data, int flags = 0);
+int bm_create(int bpp, int w, int h, void *data, int flags = 0);
 
 // Frees up a bitmap's data, but bitmap number 'n' can
 // still be used, it will just have to be paged in next
 // time it is locked.
-int bm_unload( int n );
+int bm_unload(int n);
 
-// Frees up a bitmap's data, and it's slot, so bitmap 
+// Frees up a bitmap's data, and it's slot, so bitmap
 // number 'n' cannot be used anymore, and bm_load or
 // bm_create might reuse the slot.
 void bm_release(int n);
@@ -64,24 +64,27 @@ void bm_release(int n);
 // It returns a negative number if it couldn't load
 // the bitmap.   On success, it returns the bitmap
 // number of the first frame and nframes is set.
-extern int bm_load_animation( char * filename, int * nframes, int *fps = NULL, int can_drop_frames = 0 );
+extern int bm_load_animation(char *filename, int *nframes, int *fps = NULL,
+                             int can_drop_frames = 0);
 
 // This locks down a bitmap and returns a pointer to a bitmap
 // that can be accessed until you call bm_unlock.   Only lock
-// a bitmap when you need it!  This will convert it into the 
+// a bitmap when you need it!  This will convert it into the
 // appropriate format also.
-extern bitmap * bm_lock( int bitmapnum, ubyte bpp, ubyte flags );
+extern bitmap *bm_lock(int bitmapnum, ubyte bpp, ubyte flags);
 
-// The signature is a field that gets filled in with 
+// The signature is a field that gets filled in with
 // a unique signature for each bitmap.  The signature for each bitmap
 // will also change when the bitmap's data changes.
-extern uint bm_get_signature( int bitmapnum);
+extern uint bm_get_signature(int bitmapnum);
 
 // Unlocks a bitmap
-extern void bm_unlock( int bitmapnum );
+extern void bm_unlock(int bitmapnum);
 
 // Gets info.   w,h,or flags,nframes or fps can be NULL if you don't care.
-extern void bm_get_info( int bitmapnum, int *w=NULL, int * h=NULL, ubyte * flags=NULL, int *nframes=NULL, int *fps=NULL, bitmap_section_info **sections = NULL );
+extern void bm_get_info(int bitmapnum, int *w = NULL, int *h = NULL,
+                        ubyte *flags = NULL, int *nframes = NULL, int *fps = NULL,
+                        bitmap_section_info **sections = NULL);
 
 // get filename
 extern void bm_get_filename(int bitmapnum, char *filename);
@@ -98,7 +101,7 @@ extern void bm_get_palette(int n, ubyte *pal, char *name);
 
 // Hacked function to get a pixel from a bitmap.
 // Only works good in 8bpp mode.
-void bm_get_pixel( int bitmap, float u, float v, ubyte *r, ubyte *g, ubyte *b );
+void bm_get_pixel(int bitmap, float u, float v, ubyte *r, ubyte *g, ubyte *b);
 
 // Returns number of bytes of bitmaps locked this frame
 // ntotal = number of bytes of bitmaps locked this frame
@@ -145,7 +148,6 @@ void bm_get_frame_usage(int *ntotal, int *nnew);
 	}
 */
 
-
 //============================================================================
 // Paging stuff
 //============================================================================
@@ -158,26 +160,26 @@ void bm_page_in_stop();
 
 // Marks a texture as being used for this level
 // If num_frames is passed, assume this is an animation
-void bm_page_in_texture( int bitmapnum, int num_frames=1 );
+void bm_page_in_texture(int bitmapnum, int num_frames = 1);
 
 // Marks a texture as being used for this level
 // If num_frames is passed, assume this is an animation
-void bm_page_in_nondarkening_texture( int bitmap, int num_frames=1 );
+void bm_page_in_nondarkening_texture(int bitmap, int num_frames = 1);
 
 // marks a texture as being a transparent textyre used for this level
 // Marks a texture as being used for this level
 // If num_frames is passed, assume this is an animation
-void bm_page_in_xparent_texture( int bitmapnum, int num_frames=1 );
+void bm_page_in_xparent_texture(int bitmapnum, int num_frames = 1);
 
 // Marks an aabitmap as being used for this level
 // If num_frames is passed, assume this is an animation
-void bm_page_in_aabitmap( int bitmapnum, int num_frames=1 );
+void bm_page_in_aabitmap(int bitmapnum, int num_frames = 1);
 
-// 
+//
 // Mode: 0 = High memory
 //       1 = Low memory ( every other frame of ani's)
 //       2 = Debug low memory ( only use first frame of each ani )
-void bm_set_low_mem( int mode );
+void bm_set_low_mem(int mode);
 
 char *bm_get_filename(int handle);
 
@@ -189,7 +191,8 @@ void BM_SELECT_ALPHA_TEX_FORMAT();
 void bm_24_to_16(int bit_24, ushort *bit_16);
 
 // set the rgba components of a pixel, any of the parameters can be NULL
-extern void (*bm_set_components)(ubyte *pixel, ubyte *r, ubyte *g, ubyte *b, ubyte *a);
+extern void (*bm_set_components)(ubyte *pixel, ubyte *r, ubyte *g, ubyte *b,
+                                 ubyte *a);
 void bm_set_components_argb(ubyte *pixel, ubyte *r, ubyte *g, ubyte *b, ubyte *a);
 
 // get the rgba components of a pixel, any of the parameters can be NULL

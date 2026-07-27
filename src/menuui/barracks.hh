@@ -5,12 +5,12 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #ifndef _BARRACKS_H
 #define _BARRACKS_H
 
-// initialize the barracks 
+// initialize the barracks
 void barracks_init();
 
 // do a frame for the barrracks

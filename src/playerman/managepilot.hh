@@ -11,10 +11,10 @@
 #include <controlconfig/controlsconfig.hh>
 #include <playerman/player.hh>
 
-#define VALID_PILOT_CHARS	" _-"
+#define VALID_PILOT_CHARS " _-"
 
-#define MAX_PILOTS			20
-#define MAX_PILOT_IMAGES	64
+#define MAX_PILOTS 20
+#define MAX_PILOT_IMAGES 64
 
 // pilot pic image list stuff ( call pilot_load_pic_list() to make these valid )
 extern char Pilot_images_arr[MAX_PILOT_IMAGES][MAX_FILENAME_LEN];
@@ -39,11 +39,13 @@ void write_string(char *s, CFILE *f);
 
 // two ways of determining if a given pilot is multiplayer
 // note, that the first version of this function can possibly return -1 if the file is invalid, etc.
-int is_pilot_multi(CFILE *fp);	// pass a newly opened (at the beginning) file pointer to the pilot file itself
-int is_pilot_multi(player *p);	// pass a pointer to a player struct
+int is_pilot_multi(
+    CFILE *
+        fp); // pass a newly opened (at the beginning) file pointer to the pilot file itself
+int is_pilot_multi(player *p); // pass a pointer to a player struct
 
 int verify_pilot_file(char *filename, int single = 1, int *rank = NULL);
-int read_pilot_file(char* callsign, int single = 1, player *p = NULL);
+int read_pilot_file(char *callsign, int single = 1, player *p = NULL);
 int write_pilot_file(player *p = NULL);
 
 // function to get default pilot callsign for game
@@ -67,7 +69,7 @@ void pilot_set_random_pic(player *p);
 void pilot_set_random_squad_pic(player *p);
 
 // format a pilot's callsign into a "personal" form - ie, adding a 's or just an ' as appropriate
-void pilot_format_callsign_personal(char *in_callsign,char *out_callsign);
+void pilot_format_callsign_personal(char *in_callsign, char *out_callsign);
 
 // throw up a popup asking the user to verify the overwrite of an existing pilot name
 // 1 == ok to overwrite, 0 == not ok

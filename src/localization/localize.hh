@@ -7,7 +7,6 @@
  *
 */
 
-
 #ifndef __FREESPACE2_LOCALIZATION_UTILITIES_HEADER_FILE
 #define __FREESPACE2_LOCALIZATION_UTILITIES_HEADER_FILE
 
@@ -16,25 +15,24 @@
 //
 
 // language defines
-#define LCL_NUM_LANGUAGES				3							// keep this up to date
-#define LCL_ENGLISH						0
-#define LCL_GERMAN						1
-#define LCL_FRENCH						2
+#define LCL_NUM_LANGUAGES 3 // keep this up to date
+#define LCL_ENGLISH 0
+#define LCL_GERMAN 1
+#define LCL_FRENCH 2
 
-#define LCL_DEFAULT_LANGUAGE			LCL_ENGLISH
+#define LCL_DEFAULT_LANGUAGE LCL_ENGLISH
 
 // following is the offset where special characters start in our font
 extern int Lcl_special_chars;
 
 // for language name strings
-#define LCL_LANG_NAME_LEN				32
+#define LCL_LANG_NAME_LEN 32
 
 // use these to replace *_BUILD values
 // only 1 will be active at a time
 extern int Lcl_fr;
 extern int Lcl_gr;
 extern int Lcl_english;
-
 
 // ------------------------------------------------------------------------------------------------------------
 // LOCALIZE FUNCTIONS
@@ -61,11 +59,10 @@ void lcl_get_language_name(char *lang_name);
 // set our current language
 void lcl_set_language(int lang);
 
-
 // NOTE : generally you should only care about the above functions. Below are very low level functions
 //        which should already be well entrenched in Freespace. If you think you need to use one of the below
 //        functions - ask first :)
-// externalization of table/mission files (only parse routines ever need to deal with these functions) ----------------------- 
+// externalization of table/mission files (only parse routines ever need to deal with these functions) -----------------------
 
 // maybe add on an appropriate subdirectory when opening a localized file
 void lcl_add_dir(char *current_path);
@@ -94,20 +91,20 @@ int lcl_get_xstr_offset(int index, int res);
 
 // translate umlauted chars from ascii to ansi codes
 // used in launcher
-#define LCL_TO_ANSI	0
-#define LCL_TO_ASCII	1
-char* lcl_fix_umlauts(char *str, int which_way);
+#define LCL_TO_ANSI 0
+#define LCL_TO_ASCII 1
+char *lcl_fix_umlauts(char *str, int which_way);
 
 // macro for launcher xstrs
 #if defined(GERMAN_BUILD)
-#define LXSTR(str, i)		(lcl_fix_umlauts(XSTR(str, i), LCL_TO_ANSI))
+#define LXSTR(str, i) (lcl_fix_umlauts(XSTR(str, i), LCL_TO_ANSI))
 #else
-#define LXSTR(str, i)		(XSTR(str, i))
-#endif	// defined(GERMAN_BUILD)
+#define LXSTR(str, i) (XSTR(str, i))
+#endif // defined(GERMAN_BUILD)
 
 void lcl_translate_wep_name(char *name);
 void lcl_translate_ship_name(char *name);
 void lcl_translate_brief_icon_name(char *name);
 void lcl_translate_targetbox_name(char *name);
 
-#endif	// defined __FREESPACE2_LOCALIZATION_UTILITIES_HEADER_FILE
+#endif // defined __FREESPACE2_LOCALIZATION_UTILITIES_HEADER_FILE

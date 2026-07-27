@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #ifndef __MISSIONDEBRIEF_H__
 #define __MISSIONDEBRIEF_H__
@@ -15,6 +15,7 @@ void debrief_do_frame(float frametime);
 void debrief_close();
 
 void debrief_disable_accept();
-void debrief_assemble_optional_mission_popup_text(char *buffer, char *mission_loop_desc);
+void debrief_assemble_optional_mission_popup_text(char *buffer,
+                                                  char *mission_loop_desc);
 
 #endif /* __MISSIONDEBRIEF_H__ */

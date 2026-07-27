@@ -5,8 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
-
+*/
 
 #ifndef _FVI_H
 #define _FVI_H
@@ -21,12 +20,12 @@
 // sphere, point, face
 
 //--------------------------------------------------------------------
-// fvi_ray_plane - Finds the point on the specified plane where the 
+// fvi_ray_plane - Finds the point on the specified plane where the
 // infinite ray intersects.
 //
 // Returns scaled-distance plane is from the ray_origin (t), so
 // P = O + t*D, where P is the point of intersection, O is the ray origin,
-// and D is the ray's direction.  So 0.0 would mean the intersection is 
+// and D is the ray's direction.  So 0.0 would mean the intersection is
 // exactly on the ray origin, 1.0 would be on the ray origin plus the ray
 // direction vector, anything negative would be behind the ray's origin.
 // If you pass a pointer to the new_pnt, this routine will perform the P=
@@ -42,26 +41,27 @@
 // Also note that new_pnt will always be filled in to some valid value,
 // even if it is a point at infinity.
 //
-// If the plane and line are parallel, this will return the largest 
+// If the plane and line are parallel, this will return the largest
 // negative float number possible.
 //
 // So if you want to check a line segment from p0 to p1, you would pass
 // p0 as ray_origin, p1-p0 as the ray_direction, and there would be an
 // intersection if the return value is between 0 and 1.
 
-float fvi_ray_plane(vector *new_pnt,
-                    vector *plane_pnt,vector *plane_norm,		// Plane description, a point and a normal
-                    vector *ray_origin,vector *ray_direction,	// Ray description, a point and a direction
-						  float rad);
-
+float
+fvi_ray_plane(vector *new_pnt, vector *plane_pnt,
+              vector *plane_norm, // Plane description, a point and a normal
+              vector *ray_origin,
+              vector *ray_direction, // Ray description, a point and a direction
+              float rad);
 
 //find the point on the specified plane where the line segment intersects
 //returns true if point found, false if line parallel to plane
 //new_pnt is the found point on the plane
 //plane_pnt & plane_norm describe the plane
 //p0 & p1 are the ends of the line
-int fvi_segment_plane(vector *new_pnt, vector *plane_pnt, vector *plane_norm, vector *p0, vector *p1, float rad);
-
+int fvi_segment_plane(vector *new_pnt, vector *plane_pnt, vector *plane_norm,
+                      vector *p0, vector *p1, float rad);
 
 // fvi_point_face
 // see if a point in inside a face by projecting into 2d. Also
@@ -70,28 +70,29 @@ int fvi_segment_plane(vector *new_pnt, vector *plane_pnt, vector *plane_norm, ve
 // From Graphics Gems I, "An efficient Ray-Polygon intersection", p390
 // checkp - The point to check
 // nv - how many verts in the poly
-// verts - the vertives for the polygon 
+// verts - the vertives for the polygon
 // norm1 - the polygon's normal
 // u_out,vout - if not null and v_out not null and uvls not_null and point is on face, the uv's of where it hit
 // uvls - a list of uv pairs for each vertex
 // This replaces the old check_point_to_face & find_hitpoint_uv
-int fvi_point_face(vector *checkp, int nv, vector **verts, vector * norm1, float *u_out, float *v_out, uv_pair * uvls );
-
+int fvi_point_face(vector *checkp, int nv, vector **verts, vector *norm1,
+                   float *u_out, float *v_out, uv_pair *uvls);
 
 //maybe this routine should just return the distance and let the caller
 //decide it it's close enough to hit
 //determine if and where a vector intersects with a sphere
-//vector defined by p0,p1 
+//vector defined by p0,p1
 //returns 1 if intersects, and fills in intp
 //else returns 0
-int fvi_segment_sphere(vector *intp, vector *p0, vector *p1, vector *sphere_pos, float sphere_rad);
+int fvi_segment_sphere(vector *intp, vector *p0, vector *p1, vector *sphere_pos,
+                       float sphere_rad);
 
 //determine if and where a ray intersects with a sphere
-//vector defined by p0,p1 
+//vector defined by p0,p1
 //returns 1 if intersects, and fills in intp
 //else returns 0
-int fvi_ray_sphere(vector *intp, vector *p0, vector *p1, vector *sphere_pos, float sphere_rad);
-
+int fvi_ray_sphere(vector *intp, vector *p0, vector *p1, vector *sphere_pos,
+                   float sphere_rad);
 
 //==============================================================
 // Finds intersection of a ray and an axis-aligned bounding box
@@ -100,15 +101,19 @@ int fvi_ray_sphere(vector *intp, vector *p0, vector *p1, vector *sphere_pos, flo
 // from min to max.   If there was an intersection, then hitpt will contain
 // the point where the ray begins inside the box.
 // Fast ray-box intersection taken from Graphics Gems I, pages 395,736.
-int fvi_ray_boundingbox( vector *min, vector *max, vector * p0, vector *pdir, vector *hitpt );
+int fvi_ray_boundingbox(vector *min, vector *max, vector *p0, vector *pdir,
+                        vector *hitpt);
 
 // sphere polygon collision prototypes
 
 // Given a polygon vertex list and a moving sphere, find the first contact the sphere makes with the edge, if any
-int fvi_polyedge_sphereline(vector *hit_point, vector *xs0, vector *vs, float Rs, int nv, vector **verts, float *hit_time);
+int fvi_polyedge_sphereline(vector *hit_point, vector *xs0, vector *vs, float Rs,
+                            int nv, vector **verts, float *hit_time);
 
-int fvi_sphere_plane(vector *intersect_point, vector *sphere_center_start, vector *sphere_velocity, float sphere_radius, 
-							vector *plane_normal, vector *plane_point, float *hit_time, float *delta_time);
+int fvi_sphere_plane(vector *intersect_point, vector *sphere_center_start,
+                     vector *sphere_velocity, float sphere_radius,
+                     vector *plane_normal, vector *plane_point, float *hit_time,
+                     float *delta_time);
 
 // finds the point of intersection between two lines or the closest points if lines do not intersect
 // closest points - line 1:  p1 + v1 * s,  line 2:  p2 + v2 * t
@@ -118,7 +123,8 @@ int fvi_sphere_plane(vector *intersect_point, vector *sphere_center_start, vecto
 // v2 - vector direction of line 2
 // s - parameter of intersection of line 1
 // t - parameter of intersection of line 2
-void fvi_two_lines_in_3space(vector *p1, vector *v1, vector *p2, vector *v2, float *s, float *t);
+void fvi_two_lines_in_3space(vector *p1, vector *v1, vector *p2, vector *v2,
+                             float *s, float *t);
 
 // vector mins - minimum extents of bbox
 // vector maxs - maximum extents of bbox
@@ -126,6 +132,7 @@ void fvi_two_lines_in_3space(vector *p1, vector *v1, vector *p2, vector *v2, flo
 // vector box_pt - point in bbox reference frame.
 // NOTE: if a coordinate of start is *inside* the bbox, it is *not* moved to surface of bbox
 // return: 1 if inside, 0 otherwise.
-int project_point_onto_bbox(vector *mins, vector *maxs, vector *start, vector *box_pt);
+int project_point_onto_bbox(vector *mins, vector *maxs, vector *start,
+                            vector *box_pt);
 
 #endif

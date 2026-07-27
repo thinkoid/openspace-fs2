@@ -7,7 +7,6 @@
  *
 */
 
-
 #include <render/3d.hh>
 #include <graphics/2d.hh>
 #include <graphics/grinternal.hh>
@@ -18,9 +17,9 @@
 #include <math/fix.hh>
 
 // Needed to keep warning 4725 to stay away.  See PsTypes.h for details why.
-void disable_warning_4725_stub_tst64()
-{
-}
+void
+disable_warning_4725_stub_tst64()
+{ }
 
 // 64x64 tiles: 6 integer bits per coordinate.  The asm that lived here
 // was the tile-size specialization of the generic C mapper in
@@ -29,12 +28,14 @@ void disable_warning_4725_stub_tst64()
 // of U:V, transposing the tile for those pixels; the generic mapper
 // uses the consistent packing.)
 
-void tmapscan_pln8_zbuffered_tiled_64x64()
+void
+tmapscan_pln8_zbuffered_tiled_64x64()
 {
-	tmapscan_pln8_zbuffered_tiled_g( 6, 1 );
+    tmapscan_pln8_zbuffered_tiled_g(6, 1);
 }
 
-void tmapscan_pln8_tiled_64x64()
+void
+tmapscan_pln8_tiled_64x64()
 {
-	tmapscan_pln8_tiled_g( 6, 1 );
+    tmapscan_pln8_tiled_g(6, 1);
 }

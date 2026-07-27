@@ -7,7 +7,6 @@
  *
 */
 
-
 // (windows.h removed)
 // (vdsound.h removed)
 
@@ -20,19 +19,18 @@
 
 typedef struct channel
 {
-	int		sig;			// uniquely identifies the sound playing on the channel
-	int		snd_id;		// identifies which kind of sound is playing
-	ALuint	source_id;	// OpenAL source the sound plays through
-	int		buf_id;		// index into sound_buffers[] currently bound, or -1
-	int		looping;		// flag to indicate that the sound is looping
-	int		vol;			// in DirectSound units
-	int		priority;	// implementation dependant priority
-	bool		is_voice_msg;
-	DWORD	last_position;
+    int sig; // uniquely identifies the sound playing on the channel
+    int snd_id; // identifies which kind of sound is playing
+    ALuint source_id; // OpenAL source the sound plays through
+    int buf_id; // index into sound_buffers[] currently bound, or -1
+    int looping; // flag to indicate that the sound is looping
+    int vol; // in DirectSound units
+    int priority; // implementation dependant priority
+    bool is_voice_msg;
+    DWORD last_position;
 } channel;
 
-
 // #define	MAX_CHANNELS  16
-extern	channel* Channels;    //[MAX_CHANNELS];
+extern channel *Channels; //[MAX_CHANNELS];
 
 #endif /* __CHANNEL_H__ */

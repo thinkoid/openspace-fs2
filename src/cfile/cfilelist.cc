@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #include <stdlib.h>
 #include <string.h>
@@ -25,72 +25,73 @@
 //   info = extra info for each file.  Only required if sorting by time, however if you
 //          have extra file info, you should pass it as well to get it sorted too (so an
 //          index into list is the same index for info for that file
-void cf_sort_filenames( int n, char **list, int sort, file_list_info *info )
+void
+cf_sort_filenames(int n, char **list, int sort, file_list_info *info)
 {
-	int i, j, incr;
-	char *t;
-	file_list_info tt;
+    int i, j, incr;
+    char *t;
+    file_list_info tt;
 
-	if (sort == CF_SORT_NAME) {
-		incr = n / 2;
-		while (incr > 0) {
-			for (i=incr; i<n; i++) {
-				j = i - incr;
-				while (j >= 0) {
-					if (stricmp(list[j], list[j + incr]) > 0) {
-						t = list[j];
-						list[j] = list[j + incr];
-						list[j + incr] = t;
+    if (sort == CF_SORT_NAME) {
+        incr = n / 2;
+        while (incr > 0) {
+            for (i = incr; i < n; i++) {
+                j = i - incr;
+                while (j >= 0) {
+                    if (stricmp(list[j], list[j + incr]) > 0) {
+                        t = list[j];
+                        list[j] = list[j + incr];
+                        list[j + incr] = t;
 
-						if (info) {
-							tt = info[j];
-							info[j] = info[j + incr];
-							info[j + incr] = tt;
-						}
+                        if (info) {
+                            tt = info[j];
+                            info[j] = info[j + incr];
+                            info[j + incr] = tt;
+                        }
 
-						j -= incr;
+                        j -= incr;
+                    }
+                    else
+                        break;
+                }
+            }
 
-					} else
-						break;
-				}
-			}
+            incr /= 2;
+        }
 
-			incr /= 2;
-		}
+        return;
+    }
+    else if (sort == CF_SORT_TIME) {
+        Assert(info);
+        incr = n / 2;
+        while (incr > 0) {
+            for (i = incr; i < n; i++) {
+                j = i - incr;
+                while (j >= 0) {
+                    if (info[j].write_time < info[j + incr].write_time) {
+                        t = list[j];
+                        list[j] = list[j + incr];
+                        list[j + incr] = t;
 
-		return;
+                        tt = info[j];
+                        info[j] = info[j + incr];
+                        info[j + incr] = tt;
+                        j -= incr;
+                    }
+                    else
+                        break;
+                }
+            }
 
-	} else if (sort == CF_SORT_TIME) {
-		Assert(info);
-		incr = n / 2;
-		while (incr > 0) {
-			for (i=incr; i<n; i++) {
-				j = i - incr;
-				while (j >= 0) {
-					if (info[j].write_time < info[j + incr].write_time) {
-						t = list[j];
-						list[j] = list[j + incr];
-						list[j + incr] = t;
+            incr /= 2;
+        }
 
-						tt = info[j];
-						info[j] = info[j + incr];
-						info[j + incr] = tt;
-						j -= incr;
+        return;
+    }
 
-					} else
-						break;
-				}
-			}
-
-			incr /= 2;
-		}
-
-		return;
-	}
-
-	nprintf(("Error", "Unknown sorting method %d passed to cf_sort_filenames()\n", sort));
+    nprintf(("Error", "Unknown sorting method %d passed to cf_sort_filenames()\n",
+             sort));
 }
-
 
 //	cf_compress - Do Run Length Compression on a block of data. Targa format.
 //
@@ -98,130 +99,126 @@ void cf_sort_filenames( int n, char **list, int sort, file_list_info *info )
 //				out			Buffer to write it out to
 //				in				Buffer to compress
 //				bytecount	Number of bytes input
-int cf_compress(char *out, char *in, int bytecount )
+int
+cf_compress(char *out, char *in, int bytecount)
 {
-	int pixcount;		// number of pixels in the current packet
-	char *inputpixel=NULL;	// current input pixel position
-	char *matchpixel=NULL;	// pixel value to match for a run
-	char *flagbyte=NULL;		// location of last flag byte to set
-	int rlcount;		// current count in r.l. string 
-	int rlthresh;		// minimum valid run length
-	char *copyloc;		// location to begin copying at
+    int pixcount; // number of pixels in the current packet
+    char *inputpixel = NULL; // current input pixel position
+    char *matchpixel = NULL; // pixel value to match for a run
+    char *flagbyte = NULL; // location of last flag byte to set
+    int rlcount; // current count in r.l. string
+    int rlthresh; // minimum valid run length
+    char *copyloc; // location to begin copying at
 
-	// set the threshold -- the minimum valid run length
-	rlthresh = 2;					// Require a 2 pixel span before rle'ing
-	
-	// set the first pixel up
+    // set the threshold -- the minimum valid run length
+    rlthresh = 2; // Require a 2 pixel span before rle'ing
 
-	flagbyte = out;	// place to put next flag if run
-	inputpixel = in;
-	pixcount = 1;
-	rlcount = 0;
-	copyloc = (char *)0;
+    // set the first pixel up
 
-	// loop till data processing complete
-	do	{
+    flagbyte = out; // place to put next flag if run
+    inputpixel = in;
+    pixcount = 1;
+    rlcount = 0;
+    copyloc = (char *)0;
 
-		// if we have accumulated a 128-byte packet, process it
-		if ( pixcount == 129 )	{
-			*flagbyte = 127;
+    // loop till data processing complete
+    do {
+        // if we have accumulated a 128-byte packet, process it
+        if (pixcount == 129) {
+            *flagbyte = 127;
 
-			// set the run flag if this is a run
+            // set the run flag if this is a run
 
-			if ( rlcount >= rlthresh )	{
-					*flagbyte |= 0x80;
-					pixcount = 2;
-			}
+            if (rlcount >= rlthresh) {
+                *flagbyte |= 0x80;
+                pixcount = 2;
+            }
 
-			// copy the data into place
-			++flagbyte;
-			memmove( flagbyte, copyloc, pixcount-1 );
-			flagbyte += pixcount-1;
-			pixcount = 1;
+            // copy the data into place
+            ++flagbyte;
+            memmove(flagbyte, copyloc, pixcount - 1);
+            flagbyte += pixcount - 1;
+            pixcount = 1;
 
-			// set up for next packet
-			continue;
-		}
+            // set up for next packet
+            continue;
+        }
 
-		// if zeroth byte, handle as special case
-		if ( pixcount == 1 )	{
-			rlcount = 0;
-			copyloc = inputpixel;		/* point to 1st guy in packet */
-			matchpixel = inputpixel;	/* set pointer to pix to match */
-			pixcount = 2;
-			inputpixel += 1;
-			continue;
-		}
+        // if zeroth byte, handle as special case
+        if (pixcount == 1) {
+            rlcount = 0;
+            copyloc = inputpixel; /* point to 1st guy in packet */
+            matchpixel = inputpixel; /* set pointer to pix to match */
+            pixcount = 2;
+            inputpixel += 1;
+            continue;
+        }
 
-		// assembling a packet -- look at next pixel
+        // assembling a packet -- look at next pixel
 
-		// current pixel == match pixel?
-		if ( *inputpixel == *matchpixel )	{
+        // current pixel == match pixel?
+        if (*inputpixel == *matchpixel) {
+            //	establishing a run of enough length to
+            //	save space by doing it
+            //		-- write the non-run length packet
+            //		-- start run-length packet
 
-			//	establishing a run of enough length to
-			//	save space by doing it
-			//		-- write the non-run length packet
-			//		-- start run-length packet
+            if (++rlcount == rlthresh) {
+                //	close a non-run packet
 
-			if ( ++rlcount == rlthresh )	{
-				
-				//	close a non-run packet
-				
-				if ( pixcount > (rlcount+1) )	{
-					// write out length and do not set run flag
+                if (pixcount > (rlcount + 1)) {
+                    // write out length and do not set run flag
 
-					*flagbyte++ = (char)(pixcount - 2 - rlthresh);
+                    *flagbyte++ = (char)(pixcount - 2 - rlthresh);
 
-					memmove(flagbyte, copyloc, (pixcount-1-rlcount) );
-					flagbyte += (pixcount-1-rlcount);
+                    memmove(flagbyte, copyloc, (pixcount - 1 - rlcount));
+                    flagbyte += (pixcount - 1 - rlcount);
 
-					copyloc = inputpixel;
-					pixcount = rlcount + 1;
-				}
-			}
-		} else {
+                    copyloc = inputpixel;
+                    pixcount = rlcount + 1;
+                }
+            }
+        }
+        else {
+            // no match -- either break a run or continue without one
+            //	if a run exists break it:
+            //		write the bytes in the string (1+1)
+            //		start the next string
 
-			// no match -- either break a run or continue without one
-			//	if a run exists break it:
-			//		write the bytes in the string (1+1)
-			//		start the next string
+            if (rlcount >= rlthresh) {
+                *flagbyte++ = (char)(0x80 | rlcount);
+                memmove(flagbyte, copyloc, 1);
+                flagbyte += 1;
+                pixcount = 1;
+                continue;
+            }
+            else {
+                //	not a match and currently not a run
+                //		- save the current pixel
+                //		- reset the run-length flag
+                rlcount = 0;
+                matchpixel = inputpixel;
+            }
+        }
+        pixcount++;
+        inputpixel += 1;
+    } while (inputpixel < (in + bytecount));
 
-			if ( rlcount >= rlthresh )	{
+    // quit this buffer without loosing any data
+    if (--pixcount >= 1) {
+        *flagbyte = (char)(pixcount - 1);
+        if (rlcount >= rlthresh) {
+            *flagbyte |= 0x80;
+            pixcount = 1;
+        }
 
-				*flagbyte++ = (char)(0x80 | rlcount);
-				memmove(flagbyte, copyloc, 1 );
-				flagbyte += 1;
-				pixcount = 1;
-				continue;
-			} else {
-
-				//	not a match and currently not a run
-				//		- save the current pixel
-				//		- reset the run-length flag
-				rlcount = 0;
-				matchpixel = inputpixel;
-			}
-		}
-		pixcount++;
-		inputpixel += 1;
-	} while ( inputpixel < (in + bytecount));
-
-	// quit this buffer without loosing any data
-	if ( --pixcount >= 1 )	{
-		*flagbyte = (char)(pixcount - 1);
-		if ( rlcount >= rlthresh )	{
-			*flagbyte |= 0x80;
-			pixcount = 1;
-		}
-
-		// copy the data into place
-		++flagbyte;
-		memmove(flagbyte, copyloc, pixcount );
-		flagbyte += pixcount;
-	}
-	return(flagbyte-out);
+        // copy the data into place
+        ++flagbyte;
+        memmove(flagbyte, copyloc, pixcount);
+        flagbyte += pixcount;
+    }
+    return (flagbyte - out);
 }
-
 
 //	cf_decompress - Do Decompression on a run-length encoded block of data. Targa format.
 //
@@ -229,209 +226,208 @@ int cf_compress(char *out, char *in, int bytecount )
 //				out			Buffer to write it out to
 //				in				Buffer to compress
 //				bytecount	Number of bytes input
-int cf_decompress(char *out, char *in )
+int
+cf_decompress(char *out, char *in)
 {
-	int count;
+    int count;
 
-	char *param_out = out;
+    char *param_out = out;
 
-	while(1)	{
-	
-		count = int(*in++);
-		int run_span = count & 0x80;
+    while (1) {
+        count = int(*in++);
+        int run_span = count & 0x80;
 
-		count &= (~0x80);
+        count &= (~0x80);
 
-		if ( count > 0 )	{
-			if ( run_span )	{
-				// RLE'd data
-				ubyte c = *in++;
+        if (count > 0) {
+            if (run_span) {
+                // RLE'd data
+                ubyte c = *in++;
 
-				memset( out, c, count );
-				out += count;
-			} else {
-				memmove( out, in, count );
-				in += count;
-				out += count;
-			}
-		}
-	}
+                memset(out, c, count);
+                out += count;
+            }
+            else {
+                memmove(out, in, count);
+                in += count;
+                out += count;
+            }
+        }
+    }
 
-	return out - param_out;
-			
+    return out - param_out;
 }
-
 
 // cfread() reads from a file and decompresses it
 //
 // returns:   returns the number of full elements read
-//            
 //
-int cfread_compressed(void *buf, int elsize, int nelem, CFILE *cfile)
+//
+int
+cfread_compressed(void *buf, int elsize, int nelem, CFILE *cfile)
 {
-	char *out = (char *)buf;
-	
-	while(1)	{
+    char *out = (char *)buf;
 
-		ubyte count;
+    while (1) {
+        ubyte count;
 
-		if ( cfread( &count, 1, 1, cfile ) != 1 )	{
-			break;
-		}
+        if (cfread(&count, 1, 1, cfile) != 1) {
+            break;
+        }
 
-		int run_span = count & 0x80;
-		count &= (~0x80);
-		count++;
+        int run_span = count & 0x80;
+        count &= (~0x80);
+        count++;
 
-		if ( count > 0 )	{
-			if ( run_span )	{
-				// RLE'd data
-				ubyte c;
-				if ( cfread( &c, 1, 1, cfile ) != 1 )	{
-					break;
-				}
-				memset( out, c, count );
-			} else {
-				if ( cfread( out, 1, count, cfile ) != count )	{
-					break;
-				}
-			}
-			out += count;
-			if ( out >= (char *)buf + (elsize*nelem))	{
-				break;
-			}
-		} else {
-			break;
-		}
-	}
+        if (count > 0) {
+            if (run_span) {
+                // RLE'd data
+                ubyte c;
+                if (cfread(&c, 1, 1, cfile) != 1) {
+                    break;
+                }
+                memset(out, c, count);
+            }
+            else {
+                if (cfread(out, 1, count, cfile) != count) {
+                    break;
+                }
+            }
+            out += count;
+            if (out >= (char *)buf + (elsize * nelem)) {
+                break;
+            }
+        }
+        else {
+            break;
+        }
+    }
 
-	return (out - (char *)buf)/elsize;
+    return (out - (char *)buf) / elsize;
 }
 
-int cfwrite_compressed(void *param_buf, int param_elsize, int param_nelem, CFILE *cfile)
+int
+cfwrite_compressed(void *param_buf, int param_elsize, int param_nelem,
+                   CFILE *cfile)
 {
-	char *in = (char *)param_buf;
-	int bytecount = (param_elsize * param_nelem );
+    char *in = (char *)param_buf;
+    int bytecount = (param_elsize * param_nelem);
 
-	int pixcount;		// number of pixels in the current packet
-	char *inputpixel=NULL;	// current input pixel position
-	char *matchpixel=NULL;	// pixel value to match for a run
-	int rlcount;		// current count in r.l. string 
-	int rlthresh;		// minimum valid run length
-	char *copyloc;		// location to begin copying at
+    int pixcount; // number of pixels in the current packet
+    char *inputpixel = NULL; // current input pixel position
+    char *matchpixel = NULL; // pixel value to match for a run
+    int rlcount; // current count in r.l. string
+    int rlthresh; // minimum valid run length
+    char *copyloc; // location to begin copying at
 
-	// set the threshold -- the minimum valid run length
-	rlthresh = 2;					// Require a 2 pixel span before rle'ing
-	
-	// set the first pixel up
+    // set the threshold -- the minimum valid run length
+    rlthresh = 2; // Require a 2 pixel span before rle'ing
 
-	inputpixel = in;
-	pixcount = 1;
-	rlcount = 0;
-	copyloc = (char *)0;
+    // set the first pixel up
 
-	// loop till data processing complete
-	do	{
+    inputpixel = in;
+    pixcount = 1;
+    rlcount = 0;
+    copyloc = (char *)0;
 
-		// if we have accumulated a 128-byte packet, process it
-		if ( pixcount == 129 )	{
-			ubyte code = 127;
+    // loop till data processing complete
+    do {
+        // if we have accumulated a 128-byte packet, process it
+        if (pixcount == 129) {
+            ubyte code = 127;
 
-			// set the run flag if this is a run
+            // set the run flag if this is a run
 
-			if ( rlcount >= rlthresh )	{
-					code |= 0x80;
-					pixcount = 2;
-			}
+            if (rlcount >= rlthresh) {
+                code |= 0x80;
+                pixcount = 2;
+            }
 
-			cfwrite( &code, 1, 1, cfile );
+            cfwrite(&code, 1, 1, cfile);
 
-			// copy the data into place
-			cfwrite( copyloc, 1, pixcount-1, cfile );
-			pixcount = 1;
+            // copy the data into place
+            cfwrite(copyloc, 1, pixcount - 1, cfile);
+            pixcount = 1;
 
-			// set up for next packet
-			continue;
-		}
+            // set up for next packet
+            continue;
+        }
 
-		// if zeroth byte, handle as special case
-		if ( pixcount == 1 )	{
-			rlcount = 0;
-			copyloc = inputpixel;		/* point to 1st guy in packet */
-			matchpixel = inputpixel;	/* set pointer to pix to match */
-			pixcount = 2;
-			inputpixel += 1;
-			continue;
-		}
+        // if zeroth byte, handle as special case
+        if (pixcount == 1) {
+            rlcount = 0;
+            copyloc = inputpixel; /* point to 1st guy in packet */
+            matchpixel = inputpixel; /* set pointer to pix to match */
+            pixcount = 2;
+            inputpixel += 1;
+            continue;
+        }
 
-		// assembling a packet -- look at next pixel
+        // assembling a packet -- look at next pixel
 
-		// current pixel == match pixel?
-		if ( *inputpixel == *matchpixel )	{
+        // current pixel == match pixel?
+        if (*inputpixel == *matchpixel) {
+            //	establishing a run of enough length to
+            //	save space by doing it
+            //		-- write the non-run length packet
+            //		-- start run-length packet
 
-			//	establishing a run of enough length to
-			//	save space by doing it
-			//		-- write the non-run length packet
-			//		-- start run-length packet
+            if (++rlcount == rlthresh) {
+                //	close a non-run packet
 
-			if ( ++rlcount == rlthresh )	{
-				
-				//	close a non-run packet
-				
-				if ( pixcount > (rlcount+1) )	{
-					// write out length and do not set run flag
+                if (pixcount > (rlcount + 1)) {
+                    // write out length and do not set run flag
 
-					ubyte code = (ubyte)(pixcount - 2 - rlthresh);
-					cfwrite( &code, 1, 1, cfile );
+                    ubyte code = (ubyte)(pixcount - 2 - rlthresh);
+                    cfwrite(&code, 1, 1, cfile);
 
-					cfwrite( copyloc, 1, (pixcount-1-rlcount), cfile );
-					copyloc = inputpixel;
-					pixcount = rlcount + 1;
-				}
-			}
-		} else {
+                    cfwrite(copyloc, 1, (pixcount - 1 - rlcount), cfile);
+                    copyloc = inputpixel;
+                    pixcount = rlcount + 1;
+                }
+            }
+        }
+        else {
+            // no match -- either break a run or continue without one
+            //	if a run exists break it:
+            //		write the bytes in the string (1+1)
+            //		start the next string
 
-			// no match -- either break a run or continue without one
-			//	if a run exists break it:
-			//		write the bytes in the string (1+1)
-			//		start the next string
+            if (rlcount >= rlthresh) {
+                ubyte code = (ubyte)(0x80 | rlcount);
+                cfwrite(&code, 1, 1, cfile);
+                cfwrite(copyloc, 1, 1, cfile);
+                pixcount = 1;
+                continue;
+            }
+            else {
+                //	not a match and currently not a run
+                //		- save the current pixel
+                //		- reset the run-length flag
+                rlcount = 0;
+                matchpixel = inputpixel;
+            }
+        }
+        pixcount++;
+        inputpixel += 1;
+    } while (inputpixel < (in + bytecount));
 
-			if ( rlcount >= rlthresh )	{
+    // quit this buffer without loosing any data
+    if (--pixcount >= 1) {
+        ubyte code = ubyte(pixcount - 1);
 
-				ubyte code = (ubyte)(0x80 | rlcount);
-				cfwrite( &code, 1, 1, cfile );
-				cfwrite( copyloc, 1, 1, cfile );
-				pixcount = 1;
-				continue;
-			} else {
+        // set the run flag if this is a run
 
-				//	not a match and currently not a run
-				//		- save the current pixel
-				//		- reset the run-length flag
-				rlcount = 0;
-				matchpixel = inputpixel;
-			}
-		}
-		pixcount++;
-		inputpixel += 1;
-	} while ( inputpixel < (in + bytecount));
+        if (rlcount >= rlthresh) {
+            code |= 0x80;
+            pixcount = 1;
+        }
 
-	// quit this buffer without loosing any data
-	if ( --pixcount >= 1 )	{
-		ubyte code = ubyte(pixcount - 1);
+        cfwrite(&code, 1, 1, cfile);
 
-		// set the run flag if this is a run
+        // copy the data into place
+        cfwrite(copyloc, 1, pixcount, cfile);
+    }
 
-		if ( rlcount >= rlthresh )	{
-				code |= 0x80;
-				pixcount = 1;
-		}
-
-		cfwrite( &code, 1, 1, cfile );
-
-		// copy the data into place
-		cfwrite( copyloc, 1, pixcount, cfile );
-	}
-
-	return param_nelem;
+    return param_nelem;
 }

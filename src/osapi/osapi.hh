@@ -23,11 +23,21 @@ extern int Os_debugger_running;
 // #define THREADED
 
 #ifdef THREADED
-	#define ENTER_CRITICAL_SECTION(csc)		do { EnterCriticalSection(csc); } while(0);
-	#define LEAVE_CRITICAL_SECTION(csc)		do { LeaveCriticalSection(csc); } while(0);
+#define ENTER_CRITICAL_SECTION(csc)                                              \
+    do {                                                                         \
+        EnterCriticalSection(csc);                                               \
+    } while (0);
+#define LEAVE_CRITICAL_SECTION(csc)                                              \
+    do {                                                                         \
+        LeaveCriticalSection(csc);                                               \
+    } while (0);
 #else
-	#define ENTER_CRITICAL_SECTION(csc)		do { } while(0);
-	#define LEAVE_CRITICAL_SECTION(csc)		do { } while(0);
+#define ENTER_CRITICAL_SECTION(csc)                                              \
+    do {                                                                         \
+    } while (0);
+#define LEAVE_CRITICAL_SECTION(csc)                                              \
+    do {                                                                         \
+    } while (0);
 #endif
 
 // --------------------------------------------------------------------------------------------------
@@ -38,14 +48,14 @@ extern int Os_debugger_running;
 
 // If app_name is NULL or ommited, then TITLE is used
 // for the app name, which is where registry keys are stored.
-void os_init(char * wclass, char * title, char *app_name=NULL, char *version_string=NULL );
+void os_init(char *wclass, char *title, char *app_name = NULL,
+             char *version_string = NULL);
 
 // set the main window title
-void os_set_title( char * title );
+void os_set_title(char *title);
 
 // call at program end
 void os_cleanup();
-
 
 // window management ---------------------------------------------------------------
 
@@ -69,7 +79,6 @@ SDL_Window *os_get_sdl_window();
 // use_opengl asks for a GL-capable window (the GL backend creates its
 // context on it); the software renderer blits via the window surface.
 int os_create_window(int w, int h, int use_opengl = 0);
-
 
 // process management --------------------------------------------------------------
 

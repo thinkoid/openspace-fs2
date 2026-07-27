@@ -5,30 +5,31 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #include <string.h>
 #include <globalincs/crypt.hh>
 
-char *jcrypt (char *plainstring)
+char *
+jcrypt(char *plainstring)
 {
-	int i,t,len;
-	static char cryptstring[CRYPT_STRING_LENGTH + 1];
+    int i, t, len;
+    static char cryptstring[CRYPT_STRING_LENGTH + 1];
 
-	len=strlen (plainstring);
-	if (len > CRYPT_STRING_LENGTH)
-		len = CRYPT_STRING_LENGTH;
-   
-	for (i = 0;i < len; i++) {
-		cryptstring[i]=0; 
+    len = strlen(plainstring);
+    if (len > CRYPT_STRING_LENGTH)
+        len = CRYPT_STRING_LENGTH;
 
-		for (t = 0; t < len; t++) {
-			cryptstring[i]^=(plainstring[t] ^ plainstring[i%(t+1)]);
-			cryptstring[i]%=90;
-			cryptstring[i]+=33;
-		}
-	}
+    for (i = 0; i < len; i++) {
+        cryptstring[i] = 0;
 
-	cryptstring[i]=0;
-	return ((char *)cryptstring);
+        for (t = 0; t < len; t++) {
+            cryptstring[i] ^= (plainstring[t] ^ plainstring[i % (t + 1)]);
+            cryptstring[i] %= 90;
+            cryptstring[i] += 33;
+        }
+    }
+
+    cryptstring[i] = 0;
+    return ((char *)cryptstring);
 }

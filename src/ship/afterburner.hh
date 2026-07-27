@@ -10,8 +10,8 @@
 #ifndef __AFTERBURNER_H__
 #define __AFTERBURNER_H__
 
-#define	AFTERBURNER_MIN_DELAY	1000
-#define	ABURN_DECAY_TIME			1500		// time in ms ship shakes after afterburner pressed
+#define AFTERBURNER_MIN_DELAY 1000
+#define ABURN_DECAY_TIME 1500 // time in ms ship shakes after afterburner pressed
 
 #include <cfile/cfile.hh>
 #include <object/object.hh>
@@ -23,4 +23,3 @@ void afterburners_update(object *objp, float fl_frametime);
 void afterburner_level_init();
 
 #endif /* __AFTERBURNER_H__ */
-

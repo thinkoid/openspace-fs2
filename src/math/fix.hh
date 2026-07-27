@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #ifndef _FIX_H
 #define _FIX_H
@@ -19,7 +19,7 @@ fix fixmul(fix a, fix b);
 fix fixdiv(fix a, fix b);
 fix fixmuldiv(fix a, fix b, fix c);
 
-#define f2i(a) ((int)((a)>>16))
-#define i2f(a) ((fix)((a)<<16))
+#define f2i(a) ((int)((a) >> 16))
+#define i2f(a) ((fix)((a) << 16))
 
 #endif

@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #ifndef __TEMP_MAIN_HALL_MENU_HEADER_FILE
 #define __TEMP_MAIN_HALL_MENU_HEADER_FILE
@@ -13,7 +13,6 @@
 // ------------------------------------------------------------------------------------------------------------------------
 // TEMP MAIN HALL DEFINES/VARS
 //
-
 
 // ------------------------------------------------------------------------------------------------------------------------
 // TEMP MAIN HALL FUNCTIONS

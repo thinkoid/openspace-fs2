@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #ifndef _MISSION_CAMPAIGN_H
 #define _MISSION_CAMPAIGN_H
@@ -18,103 +18,111 @@
 
 // name of the builtin campaign.
 #if defined(FS2_DEMO)
-	#define BUILTIN_CAMPAIGN		"demo"
-	#define BUILTIN_CAMPAIGN_NAME	"DEMO Campaign"
+#define BUILTIN_CAMPAIGN "demo"
+#define BUILTIN_CAMPAIGN_NAME "DEMO Campaign"
 #elif defined(OEM_BUILD)
-	#define BUILTIN_CAMPAIGN		"FreeSpace2OEM"
-	#define BUILTIN_CAMPAIGN_NAME	"OEM Campaign"
+#define BUILTIN_CAMPAIGN "FreeSpace2OEM"
+#define BUILTIN_CAMPAIGN_NAME "OEM Campaign"
 #elif defined(E3_BUILD)
-	#define BUILTIN_CAMPAIGN		"E3"
-	#define BUILTIN_CAMPAIGN_NAME	"E3 Campaign"
+#define BUILTIN_CAMPAIGN "E3"
+#define BUILTIN_CAMPAIGN_NAME "E3 Campaign"
 #else
-	#define BUILTIN_CAMPAIGN		"FreeSpace2"
-	#define BUILTIN_CAMPAIGN_NAME	"The Main Freespace2 Campaign"
+#define BUILTIN_CAMPAIGN "FreeSpace2"
+#define BUILTIN_CAMPAIGN_NAME "The Main Freespace2 Campaign"
 #endif
 
-#define MAX_CAMPAIGN_MISSIONS	100			// maximum number of missions in a campaign
+#define MAX_CAMPAIGN_MISSIONS 100 // maximum number of missions in a campaign
 
-#define CAMPAIGN_ERROR_CORRUPT			-1
-#define CAMPAIGN_ERROR_SEXP_EXHAUSTED	-2
+#define CAMPAIGN_ERROR_CORRUPT -1
+#define CAMPAIGN_ERROR_SEXP_EXHAUSTED -2
 
 // types of campaigns -- these defines match the string literals listed below which
 // are found in the campaign files.  I don't think that we need campaigns for furball
 // missions.
-#define CAMPAIGN_TYPE_SINGLE			0
-#define CAMPAIGN_TYPE_MULTI_COOP		1
-#define CAMPAIGN_TYPE_MULTI_TEAMS	2
+#define CAMPAIGN_TYPE_SINGLE 0
+#define CAMPAIGN_TYPE_MULTI_COOP 1
+#define CAMPAIGN_TYPE_MULTI_TEAMS 2
 
-#define MAX_CAMPAIGN_TYPES				3
+#define MAX_CAMPAIGN_TYPES 3
 
 // type of movies we may be able to play
-#define CAMPAIGN_MOVIE_PRE_MISSION		1
-#define CMAPAIGN_MOVIE_POST_MISSION		2
+#define CAMPAIGN_MOVIE_PRE_MISSION 1
+#define CMAPAIGN_MOVIE_POST_MISSION 2
 
-#define CAMPAIGN_SINGLE_PLAYER_SIG     0xddddeeee
-#define CAMPAIGN_MULTI_PLAYER_SIG      0xeeeeffff
+#define CAMPAIGN_SINGLE_PLAYER_SIG 0xddddeeee
+#define CAMPAIGN_MULTI_PLAYER_SIG 0xeeeeffff
 
 // defines for possibly persistent information
-#define CAMPAIGN_PERSISTENT_SHIP			1
-#define CAMPAIGN_PERSISTENT_WEAPON		2
+#define CAMPAIGN_PERSISTENT_SHIP 1
+#define CAMPAIGN_PERSISTENT_WEAPON 2
 
-#define CMISSION_FLAG_BASTION	(1<<0)	// set if stationed on Bastion, else Galatea
-#define CMISSION_FLAG_SKIPPED	(1<<1)	// set if skipped, else not
+#define CMISSION_FLAG_BASTION                                                    \
+    (1 << 0) // set if stationed on Bastion, else Galatea
+#define CMISSION_FLAG_SKIPPED (1 << 1) // set if skipped, else not
 
-#define CAMPAIGN_LOOP_MISSION_UNINITIALIZED	-2
+#define CAMPAIGN_LOOP_MISSION_UNINITIALIZED -2
 
 extern char *campaign_types[MAX_CAMPAIGN_TYPES];
 
 // structure for a campaign definition.  It contains the mission names and other interesting
 // information about a campaign and the mission strucuture within.
 
-typedef struct mgoal {
-	char	name[NAME_LENGTH];		// name of the goal (same as name in the mission_goal structure
-	char	status;						// failed, satisfied, or incomplete (same as goal completion);
+typedef struct mgoal
+{
+    char name[NAME_LENGTH]; // name of the goal (same as name in the mission_goal structure
+    char status; // failed, satisfied, or incomplete (same as goal completion);
 } mgoal;
 
-typedef struct mevent {
-	char	name[NAME_LENGTH];
-	char	status;
+typedef struct mevent
+{
+    char name[NAME_LENGTH];
+    char status;
 } mevent;
 
-typedef struct cmission {
-	char				*name;					// name of the mission
-	char				*notes;					// mission notes for mission (used by Fred)
-	char				briefing_cutscene[NAME_LENGTH];	// name of the cutscene to be played before this mission
-	int				formula;					// sexpression used to determine mission branching.
-	int				completed;				// has the player completed this mission
-	int				num_goals;				// number of goals this mission had
-	mgoal				*goals;					// malloced array of mgoals (of num_goals size) which has the goal completion status
-	int				num_events;				// number of events this mission had
-	mevent			*events;					// malloced array of mevents (of num_events) size) which has event completion status
-	int				has_mission_loop;		// whether current mission has side loop
-	int				mission_loop_formula;// formula to determine whether to allow a side loop
-	char				*mission_loop_desc;	// message in popup
-	char				*mission_loop_brief_anim;
-	char				*mission_loop_brief_sound;
-	int				level;					// what level of the tree it's on (Fred)
-	int				pos;						// what x position on level it's on (Fred)
-	int				flags;
-	scoring_struct	stats;
+typedef struct cmission
+{
+    char *name; // name of the mission
+    char *notes; // mission notes for mission (used by Fred)
+    char briefing_cutscene
+        [NAME_LENGTH]; // name of the cutscene to be played before this mission
+    int formula; // sexpression used to determine mission branching.
+    int completed; // has the player completed this mission
+    int num_goals; // number of goals this mission had
+    mgoal *
+        goals; // malloced array of mgoals (of num_goals size) which has the goal completion status
+    int num_events; // number of events this mission had
+    mevent *
+        events; // malloced array of mevents (of num_events) size) which has event completion status
+    int has_mission_loop; // whether current mission has side loop
+    int mission_loop_formula; // formula to determine whether to allow a side loop
+    char *mission_loop_desc; // message in popup
+    char *mission_loop_brief_anim;
+    char *mission_loop_brief_sound;
+    int level; // what level of the tree it's on (Fred)
+    int pos; // what x position on level it's on (Fred)
+    int flags;
+    scoring_struct stats;
 } cmission;
 
-typedef struct campaign {
-	char		name[NAME_LENGTH];						// name of the campaign
-	char		filename[MAX_FILENAME_LEN];			// filename the campaign info is in
-	char		*desc;										// description of campaign
-	int		type;											// type of campaign
-	int		num_missions;								// number of missions in the campaign
-	int		num_missions_completed;					// number of missions in the campaign that have been flown
-	int		current_mission;							// the current mission that the player is playing.  Only valid during the mission
-	int		next_mission;								// number of the next mission to fly when comtinuing the campaign.  Always valid
-	int		prev_mission;								// mission that we just came from.  Always valid
-	int		loop_enabled;								// whether mission loop is chosen - true during a loop, false otherwise
-	int		loop_mission;								// mission number of misssion loop (if any)
-	int		loop_reentry;								// mission number to return to after loop is finished
-	int		realign_required;							// are any missions missing alignment info? (Fred)
-	int		num_players;								// valid in multiplayer campaigns -- number of players campaign supports.
-	ubyte		ships_allowed[MAX_SHIP_TYPES];		// which ships the player can use
-	ubyte		weapons_allowed[MAX_WEAPON_TYPES];	// which weapons the player can use
-	cmission	missions[MAX_CAMPAIGN_MISSIONS];		// decription of the missions
+typedef struct campaign
+{
+    char name[NAME_LENGTH]; // name of the campaign
+    char filename[MAX_FILENAME_LEN]; // filename the campaign info is in
+    char *desc; // description of campaign
+    int type; // type of campaign
+    int num_missions; // number of missions in the campaign
+    int num_missions_completed; // number of missions in the campaign that have been flown
+    int current_mission; // the current mission that the player is playing.  Only valid during the mission
+    int next_mission; // number of the next mission to fly when comtinuing the campaign.  Always valid
+    int prev_mission; // mission that we just came from.  Always valid
+    int loop_enabled; // whether mission loop is chosen - true during a loop, false otherwise
+    int loop_mission; // mission number of misssion loop (if any)
+    int loop_reentry; // mission number to return to after loop is finished
+    int realign_required; // are any missions missing alignment info? (Fred)
+    int num_players; // valid in multiplayer campaigns -- number of players campaign supports.
+    ubyte ships_allowed[MAX_SHIP_TYPES]; // which ships the player can use
+    ubyte weapons_allowed[MAX_WEAPON_TYPES]; // which weapons the player can use
+    cmission missions[MAX_CAMPAIGN_MISSIONS]; // decription of the missions
 } campaign;
 
 extern campaign Campaign;
@@ -127,45 +135,44 @@ extern int Campaign_ended_in_mission;
 // games
 typedef struct campaign_info
 {
-	char		filename[NAME_LENGTH];
-	int		num_missions_completed;
-	ubyte		missions_completed[MAX_CAMPAIGN_MISSIONS];
+    char filename[NAME_LENGTH];
+    int num_missions_completed;
+    ubyte missions_completed[MAX_CAMPAIGN_MISSIONS];
 } campaign_info;
 
 // extern'ed so the mission loading can get a list of campains.  Only use this
 // data after mission_campaign_build_list() is called
-#define MAX_CAMPAIGNS	128
+#define MAX_CAMPAIGNS 128
 extern char *Campaign_names[MAX_CAMPAIGNS];
 extern char *Campaign_file_names[MAX_CAMPAIGNS];
-extern int	Num_campaigns;
+extern int Num_campaigns;
 
 // called at game startup time to load the default single player campaign
-void mission_campaign_init( void );
+void mission_campaign_init(void);
 
 // called to reload the default campaign
-int mission_campaign_load_by_name( char *filename );
-int mission_campaign_load_by_name_csfe( char *filename, char *callsign );
-
+int mission_campaign_load_by_name(char *filename);
+int mission_campaign_load_by_name_csfe(char *filename, char *callsign);
 
 // load up and initialize a new campaign
-int mission_campaign_load( char *filename, int load_savefile = 1 );
+int mission_campaign_load(char *filename, int load_savefile = 1);
 
 // function to save the state of the campaign between missions or to load a campaign save file
-extern int mission_campaign_save( void );
+extern int mission_campaign_save(void);
 
 // declaration for local campaign save game load function
-extern void mission_campaign_savefile_load( char *cfilename );
-extern void mission_campaign_savefile_delete( char *cfilename, int is_multi = -1 );
-extern void mission_campaign_delete_all_savefiles( char *pilot_name, int is_multi );
+extern void mission_campaign_savefile_load(char *cfilename);
+extern void mission_campaign_savefile_delete(char *cfilename, int is_multi = -1);
+extern void mission_campaign_delete_all_savefiles(char *pilot_name, int is_multi);
 
 // function which sets up internal variable for player to play next mission in the campaign
-extern int mission_campaign_next_mission( void );
+extern int mission_campaign_next_mission(void);
 
 // function which is called with the current mission in this campaign is over
-extern void mission_campaign_mission_over( void );
+extern void mission_campaign_mission_over(void);
 
 // frees all memory at game close time
-extern void mission_campaign_close( void );
+extern void mission_campaign_close(void);
 
 // read in a campaign file.  Used by Fred.
 int mission_campaign_load_fred(char *filename, char *name_verify = NULL);
@@ -173,16 +180,16 @@ int mission_campaign_load_fred(char *filename, char *name_verify = NULL);
 // used by Fred to get a mission's list of goals.
 void read_mission_goal_list(int num);
 
-void mission_campaign_build_list( int multiplayer );
+void mission_campaign_build_list(int multiplayer);
 
 // returns index of mission with passed name
-extern int mission_campaign_find_mission( char *name );
+extern int mission_campaign_find_mission(char *name);
 
 // maybe play a movie.  type indicates before or after mission
 extern void mission_campaign_maybe_play_movie(int type);
 
 // save persistent information
-extern void mission_campaign_save_persistent( int type, int index );
+extern void mission_campaign_save_persistent(int type, int index);
 
 void mission_campaign_savefile_generate_root(char *filename);
 
@@ -192,12 +199,13 @@ void mission_campaign_savefile_generate_root(char *filename);
 // Saves the campaign camp under the player name pname
 int campaign_savefile_save(char *pname);
 // Deletes the campaign save camp under the player name pname
-void campaign_delete_save( char *cfn, char *pname);
+void campaign_delete_save(char *cfn, char *pname);
 // Loads campaign camp from fname under player name pname
 void campaign_savefile_load(char *fname, char *pname);
 
 // get name and type of specified campaign file
-int mission_campaign_get_info(char *filename, char *name, int *type, int *max_players, char **desc = NULL);
+int mission_campaign_get_info(char *filename, char *name, int *type,
+                              int *max_players, char **desc = NULL);
 
 // get a listing of missions in a campaign
 int mission_campaign_get_mission_list(char *filename, char **list, int max);

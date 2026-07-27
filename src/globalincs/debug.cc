@@ -12,38 +12,43 @@
 
 #include <globalincs/pstypes.hh>
 
-void WinAssert(const char *text, const char *filename, int line)
+void
+WinAssert(const char *text, const char *filename, int line)
 {
-	fprintf(stderr, "Assertion failed: %s, file %s, line %d\n", text, filename, line);
-	abort();
+    fprintf(stderr, "Assertion failed: %s, file %s, line %d\n", text, filename,
+            line);
+    abort();
 }
 
-void Error(const char *filename, int line, const char *format, ...)
+void
+Error(const char *filename, int line, const char *format, ...)
 {
-	va_list args;
+    va_list args;
 
-	fprintf(stderr, "Error: %s, line %d: ", filename, line);
-	va_start(args, format);
-	vfprintf(stderr, format, args);
-	va_end(args);
-	fprintf(stderr, "\n");
-	abort();
+    fprintf(stderr, "Error: %s, line %d: ", filename, line);
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+    fprintf(stderr, "\n");
+    abort();
 }
 
-void Warning(const char *filename, int line, const char *format, ...)
+void
+Warning(const char *filename, int line, const char *format, ...)
 {
-	va_list args;
+    va_list args;
 
-	fprintf(stderr, "Warning: %s, line %d: ", filename, line);
-	va_start(args, format);
-	vfprintf(stderr, format, args);
-	va_end(args);
-	fprintf(stderr, "\n");
+    fprintf(stderr, "Warning: %s, line %d: ", filename, line);
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+    fprintf(stderr, "\n");
 }
 
-void debug_int3()
+void
+debug_int3()
 {
-	abort();
+    abort();
 }
 
 // ----------------------------------------------------------------------
@@ -54,94 +59,101 @@ void debug_int3()
 int Log_debug_output_to_file = 0;
 #endif
 
-void load_filter_info(void)
+void
+load_filter_info(void)
+{ }
+
+void
+outwnd_init(int /*display_under_freespace_window*/)
+{ }
+
+void
+outwnd_close()
+{ }
+
+void
+outwnd_printf(const char * /*id*/, const char *format, ...)
 {
+    va_list args;
+
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
 }
 
-void outwnd_init(int /*display_under_freespace_window*/)
+void
+outwnd_printf2(const char *format, ...)
 {
-}
+    va_list args;
 
-void outwnd_close()
-{
-}
-
-void outwnd_printf(const char * /*id*/, const char *format, ...)
-{
-	va_list args;
-
-	va_start(args, format);
-	vfprintf(stderr, format, args);
-	va_end(args);
-}
-
-void outwnd_printf2(const char *format, ...)
-{
-	va_list args;
-
-	va_start(args, format);
-	vfprintf(stderr, format, args);
-	va_end(args);
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
 }
 
 // ----------------------------------------------------------------------
 // heap wrappers (the tracking heap is gone)
 // ----------------------------------------------------------------------
 
-int vm_init(int /*min_heap_size*/)
+int
+vm_init(int /*min_heap_size*/)
 {
-	return 1;
+    return 1;
 }
 
-long filelength(int fd)
+long
+filelength(int fd)
 {
-	struct stat st;
-	if (fstat(fd, &st) != 0)
-		return -1;
-	return (long)st.st_size;
+    struct stat st;
+    if (fstat(fd, &st) != 0)
+        return -1;
+    return (long)st.st_size;
 }
 
-void _splitpath(const char *path, char *drive, char *dir, char *fname, char *ext)
+void
+_splitpath(const char *path, char *drive, char *dir, char *fname, char *ext)
 {
-	if (drive)
-		drive[0] = 0;	// no drives here
+    if (drive)
+        drive[0] = 0; // no drives here
 
-	const char *base = strrchr(path, '/');
-	base = base ? base + 1 : path;
+    const char *base = strrchr(path, '/');
+    base = base ? base + 1 : path;
 
-	if (dir) {
-		strncpy(dir, path, base - path);
-		dir[base - path] = 0;
-	}
+    if (dir) {
+        strncpy(dir, path, base - path);
+        dir[base - path] = 0;
+    }
 
-	const char *dot = strrchr(base, '.');
-	if (!dot)
-		dot = base + strlen(base);
+    const char *dot = strrchr(base, '.');
+    if (!dot)
+        dot = base + strlen(base);
 
-	if (fname) {
-		strncpy(fname, base, dot - base);
-		fname[dot - base] = 0;
-	}
-	if (ext)
-		strcpy(ext, dot);
+    if (fname) {
+        strncpy(fname, base, dot - base);
+        fname[dot - base] = 0;
+    }
+    if (ext)
+        strcpy(ext, dot);
 }
 
-void *vm_malloc(int size)
+void *
+vm_malloc(int size)
 {
-	return malloc(size);
+    return malloc(size);
 }
 
-char *vm_strdup(const char *ptr)
+char *
+vm_strdup(const char *ptr)
 {
-	return strdup(ptr);
+    return strdup(ptr);
 }
 
-void vm_free(void *ptr)
+void
+vm_free(void *ptr)
 {
-	free(ptr);
+    free(ptr);
 }
 
-void vm_free_all()
-{
-}
-
+void
+vm_free_all()
+{ }

@@ -5,11 +5,11 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #ifndef _CIRCLE_H
 #define _CIRCLE_H
 
-extern void gr8_circle( int xc, int yc, int d );
+extern void gr8_circle(int xc, int yc, int d);
 
 #endif

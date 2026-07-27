@@ -27,42 +27,51 @@ struct vector;
 // REMINDER : if you change the behavior of any of these beam types, make sure to update their "cones" of possible
 // movement inside of the function beam_get_cone_dot(...) in beam.cpp  Otherwise it could cause collisions to not
 // function properly!!!!!!
-#define BEAM_TYPE_A					0				// unidirectional beam
-#define BEAM_TYPE_B					1				// "slash" in one direction
-#define BEAM_TYPE_C					2				// targeting lasers (only lasts one frame)
-#define BEAM_TYPE_D					3				// similar to the type A beams, but takes multiple shots and "chases" fighters around
-#define BEAM_TYPE_E					4				// stupid beam. like type A, only it doesn't aim. it just shoots directly out of the turret
+#define BEAM_TYPE_A 0 // unidirectional beam
+#define BEAM_TYPE_B 1 // "slash" in one direction
+#define BEAM_TYPE_C 2 // targeting lasers (only lasts one frame)
+#define BEAM_TYPE_D                                                              \
+    3 // similar to the type A beams, but takes multiple shots and "chases" fighters around
+#define BEAM_TYPE_E                                                              \
+    4 // stupid beam. like type A, only it doesn't aim. it just shoots directly out of the turret
 
 // max # of "shots" an individual beam will take
-#define MAX_BEAM_SHOTS				5
+#define MAX_BEAM_SHOTS 5
 
 // uses to define beam behavior ahead of time - needed for multiplayer
-typedef struct beam_info {
-	vector			dir_a, dir_b;						// direction vectors for beams	
-	float				delta_ang;							// angle between dir_a and dir_b
-	ubyte				shot_count;							// # of shots	
-	float				shot_aim[MAX_BEAM_SHOTS];		// accuracy. this is a constant multiple of radius. anything < 1.0 will guarantee a hit	
+typedef struct beam_info
+{
+    vector dir_a, dir_b; // direction vectors for beams
+    float delta_ang; // angle between dir_a and dir_b
+    ubyte shot_count; // # of shots
+    float shot_aim
+        [MAX_BEAM_SHOTS]; // accuracy. this is a constant multiple of radius. anything < 1.0 will guarantee a hit
 } beam_info;
 
-// pass to beam fire 
-typedef struct beam_fire_info {
-	int				beam_info_index;				// weapon info index 
-	object			*shooter;						// whos shooting
-	vector			targeting_laser_offset;		// offset from the center of the object (for targeting lasers only)
-	ship_subsys		*turret;							// where he's shooting from
-	float				accuracy;						// 0.0 to 1.0 (only really effects targeting on small ships)
-	object			*target;							// whos getting shot
-	ship_subsys		*target_subsys;				// (optional), specific subsystem to be targeted on the target 
-	beam_info		*beam_info_override;			// (optional), pass this in to override all beam movement info (for multiplayer)
-	int				num_shots;						// (optional), only used for type D weapons
+// pass to beam fire
+typedef struct beam_fire_info
+{
+    int beam_info_index; // weapon info index
+    object *shooter; // whos shooting
+    vector
+        targeting_laser_offset; // offset from the center of the object (for targeting lasers only)
+    ship_subsys *turret; // where he's shooting from
+    float accuracy; // 0.0 to 1.0 (only really effects targeting on small ships)
+    object *target; // whos getting shot
+    ship_subsys *
+        target_subsys; // (optional), specific subsystem to be targeted on the target
+    beam_info *
+        beam_info_override; // (optional), pass this in to override all beam movement info (for multiplayer)
+    int num_shots; // (optional), only used for type D weapons
 } beam_fire_info;
 
 // collision info
-typedef struct beam_collision {
-	mc_info			cinfo;							// collision info
-	int				c_objnum;						// objnum of the guy we recently collided with
-	int				c_sig;							// object sig
-	int				c_stamp;							// when we should next apply damage	
+typedef struct beam_collision
+{
+    mc_info cinfo; // collision info
+    int c_objnum; // objnum of the guy we recently collided with
+    int c_sig; // object sig
+    int c_stamp; // when we should next apply damage
 } beam_collision;
 
 // beam lighting effects
@@ -92,13 +101,15 @@ int beam_get_parent(object *bm);
 int beam_get_weapon_info_index(object *bm);
 
 // render the beam itself
-void beam_render(beam_weapon_info *bwi, vector *start, vector *shot, float shrink = 1.0f);
+void beam_render(beam_weapon_info *bwi, vector *start, vector *shot,
+                 float shrink = 1.0f);
 
 // given a beam object, get the # of collisions which happened during the last collision check (typically, last frame)
 int beam_get_num_collisions(int objnum);
 
 // stuff collision info, returns 1 on success
-int beam_get_collision(int objnum, int num, int *collision_objnum, mc_info **cinfo);
+int beam_get_collision(int objnum, int num, int *collision_objnum,
+                       mc_info **cinfo);
 // ---------------
 
 // init at game startup

@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #ifndef _MISSION_PAUSE_HEADER_FILE
 #define _MISSION_PAUSE_HEADER_FILE
@@ -18,7 +18,6 @@
 
 // pause bitmap display stuff
 extern int Please_wait_coords[GR_NUM_RESOLUTIONS][4];
-
 
 // ----------------------------------------------------------------------------------------------------------------
 // PAUSE FUNCTIONS

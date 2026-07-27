@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #ifndef __GAMEPLAY_HELP_H__
 #define __GAMEPLAY_HELP_H__

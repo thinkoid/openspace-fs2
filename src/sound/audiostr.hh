@@ -11,11 +11,10 @@
 #define _AUDIOSTR_H
 
 // type of audio stream
-#define ASF_SOUNDFX			0
-#define ASF_EVENTMUSIC		1
-#define ASF_VOICE				2
-#define ASF_NONE				3		// used to catch errors
-
+#define ASF_SOUNDFX 0
+#define ASF_EVENTMUSIC 1
+#define ASF_VOICE 2
+#define ASF_NONE 3 // used to catch errors
 
 // Initializes the audio streaming library.  Called
 // automatically when the sound stuff is inited.
@@ -25,7 +24,7 @@ void audiostream_init();
 void audiostream_close();
 
 // Opens a wave file but doesn't play it.
-int audiostream_open( char * filename, int type );
+int audiostream_open(char *filename, int type);
 
 // Closes the opened wave file.  This doesn't have to be
 // called between songs, because when you open the next
@@ -64,10 +63,10 @@ int audiostream_done_reading(int i);
 // return if audiostream has initialized ok
 int audiostream_is_inited();
 
-void audiostream_pause(int i);	// pause a particular stream
-void audiostream_pause_all();	// pause all audio streams											
+void audiostream_pause(int i); // pause a particular stream
+void audiostream_pause_all(); // pause all audio streams
 
-void audiostream_unpause(int i);	// unpause a particular stream
-void audiostream_unpause_all();	// unpause all audio streams
+void audiostream_unpause(int i); // unpause a particular stream
+void audiostream_unpause_all(); // unpause all audio streams
 
 #endif // _AUDIOSTR_H

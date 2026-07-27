@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #include <ctype.h>
 
@@ -47,139 +47,143 @@ static char *Demo_title_bitmap_filename = NOX("DemoTitle1");
 //
 
 //#define MAX_PLAYER_SELECT_LINES		8							// max # of pilots displayed at once
-int Player_select_max_lines[GR_NUM_RESOLUTIONS] = {			// max # of pilots displayed at once
-	8,			// GR_640
-	15			// GR_1024
+int Player_select_max_lines[GR_NUM_RESOLUTIONS] = {
+    // max # of pilots displayed at once
+    8, // GR_640
+    15 // GR_1024
 };
 
 // button control defines
-#define NUM_PLAYER_SELECT_BUTTONS	8							// button control defines
+#define NUM_PLAYER_SELECT_BUTTONS 8 // button control defines
 
-#define CREATE_PILOT_BUTTON			0							//	
-#define CLONE_BUTTON						1							//
-#define DELETE_BUTTON					2							//
-#define SCROLL_LIST_UP_BUTTON			3							//
-#define SCROLL_LIST_DOWN_BUTTON		4							//
-#define ACCEPT_BUTTON					5							//
-#define SINGLE_BUTTON					6							//
-#define MULTI_BUTTON						7							//
+#define CREATE_PILOT_BUTTON 0 //
+#define CLONE_BUTTON 1 //
+#define DELETE_BUTTON 2 //
+#define SCROLL_LIST_UP_BUTTON 3 //
+#define SCROLL_LIST_DOWN_BUTTON 4 //
+#define ACCEPT_BUTTON 5 //
+#define SINGLE_BUTTON 6 //
+#define MULTI_BUTTON 7 //
 
 // list text display area
-int Choose_list_coords[GR_NUM_RESOLUTIONS][4] = {
-	{ // GR_640
-		114, 117, 400, 87
-	},
-	{ // GR_1024
-		183, 186, 640, 139
-	}
-};
+int Choose_list_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
+                                                    114, 117, 400, 87 },
+                                                  { // GR_1024
+                                                    183, 186, 640, 139 } };
 
 char *Player_select_background_bitmap_name[GR_NUM_RESOLUTIONS] = {
-	"ChoosePilot",
-	"2_ChoosePilot"
+    "ChoosePilot", "2_ChoosePilot"
 };
 char *Player_select_background_mask_bitmap[GR_NUM_RESOLUTIONS] = {
-	"ChoosePilot-m",
-	"2_ChoosePilot-m"
+    "ChoosePilot-m", "2_ChoosePilot-m"
 };
-#define PLAYER_SELECT_PALETTE							NOX("ChoosePilotPalette")	// palette for the screen	
+#define PLAYER_SELECT_PALETTE NOX("ChoosePilotPalette") // palette for the screen
 
-#define PLAYER_SELECT_MAIN_HALL_OVERLAY         NOX("MainHall1")				// main hall help overlay
+#define PLAYER_SELECT_MAIN_HALL_OVERLAY NOX("MainHall1") // main hall help overlay
 
 // convenient struct for handling all button controls
-struct barracks_buttons {
-	char *filename;
-	int x, y, xt, yt;
-	int hotspot;
-	UI_BUTTON button;  // because we have a class inside this struct, we need the constructor below..
+struct barracks_buttons
+{
+    char *filename;
+    int x, y, xt, yt;
+    int hotspot;
+    UI_BUTTON
+        button; // because we have a class inside this struct, we need the constructor below..
 
-	barracks_buttons(char *name, int x1, int y1, int xt1, int yt1, int h) : filename(name), x(x1), y(y1), xt(xt1), yt(yt1), hotspot(h) {}
+    barracks_buttons(char *name, int x1, int y1, int xt1, int yt1, int h)
+        : filename(name)
+        , x(x1)
+        , y(y1)
+        , xt(xt1)
+        , yt(yt1)
+        , hotspot(h)
+    { }
 };
 
-static barracks_buttons Player_select_buttons[GR_NUM_RESOLUTIONS][NUM_PLAYER_SELECT_BUTTONS] = {	
-	{ // GR_640
-		// create, clone and delete (respectively)
-		barracks_buttons("CPB_00",		114,	205,	117,	240,	0),
-		barracks_buttons("CPB_01",		172,	205,	175,	240,	1),
-		barracks_buttons("CPB_02",		226,	205,	229,	240,	2),
+static barracks_buttons
+    Player_select_buttons[GR_NUM_RESOLUTIONS][NUM_PLAYER_SELECT_BUTTONS] = {
+        { // GR_640
+          // create, clone and delete (respectively)
+          barracks_buttons("CPB_00", 114, 205, 117, 240, 0),
+          barracks_buttons("CPB_01", 172, 205, 175, 240, 1),
+          barracks_buttons("CPB_02", 226, 205, 229, 240, 2),
 
-		// scroll up, scroll down,	and accept (respectively)
-		barracks_buttons("CPB_03",		429,	213,	-1,	-1,	3),
-		barracks_buttons("CPB_04",		456,	213,	-1,	-1,	4),
-		barracks_buttons("CPB_05",		481,  207,	484,	246,	5),	
-		
-		// single player select and multiplayer select, respectively
-		barracks_buttons("CPB_06",		428,	82,	430,	108,	6),
-		barracks_buttons("CPB_07",		477,	82,	481,	108,	7)
-	}, 
-	{ // GR_1024
-		// create, clone and delete (respectively)
-		barracks_buttons("2_CPB_00",	182,  328,	199,	384,	0),
-		barracks_buttons("2_CPB_01",	275,	328,	292,	384,	1),
-		barracks_buttons("2_CPB_02",	361,	328,	379,	384,	2),
+          // scroll up, scroll down,	and accept (respectively)
+          barracks_buttons("CPB_03", 429, 213, -1, -1, 3),
+          barracks_buttons("CPB_04", 456, 213, -1, -1, 4),
+          barracks_buttons("CPB_05", 481, 207, 484, 246, 5),
 
-		// scroll up, scroll down, and accept (respectively)
-		barracks_buttons("2_CPB_03",	686,	341,	-1,	-1,	3),
-		barracks_buttons("2_CPB_04",	729,	341,	-1,	-1,	4),
-		barracks_buttons("2_CPB_05",	770,  332,	787,	394,	5),	
-		
-		// single player select and multiplayer select, respectively
-		barracks_buttons("2_CPB_06",	685,	132,	700,	173,	6),
-		barracks_buttons("2_CPB_07",	764,	132,	782,	173,	7)
-	}
-};
+          // single player select and multiplayer select, respectively
+          barracks_buttons("CPB_06", 428, 82, 430, 108, 6),
+          barracks_buttons("CPB_07", 477, 82, 481, 108, 7) },
+        { // GR_1024
+          // create, clone and delete (respectively)
+          barracks_buttons("2_CPB_00", 182, 328, 199, 384, 0),
+          barracks_buttons("2_CPB_01", 275, 328, 292, 384, 1),
+          barracks_buttons("2_CPB_02", 361, 328, 379, 384, 2),
+
+          // scroll up, scroll down, and accept (respectively)
+          barracks_buttons("2_CPB_03", 686, 341, -1, -1, 3),
+          barracks_buttons("2_CPB_04", 729, 341, -1, -1, 4),
+          barracks_buttons("2_CPB_05", 770, 332, 787, 394, 5),
+
+          // single player select and multiplayer select, respectively
+          barracks_buttons("2_CPB_06", 685, 132, 700, 173, 6),
+          barracks_buttons("2_CPB_07", 764, 132, 782, 173, 7) }
+    };
 
 // FIXME add to strings.tbl
-#define PLAYER_SELECT_NUM_TEXT			1
+#define PLAYER_SELECT_NUM_TEXT 1
 UI_XSTR Player_select_text[GR_NUM_RESOLUTIONS][PLAYER_SELECT_NUM_TEXT] = {
-	{ // GR_640
-		{ "Choose Pilot",		1436,		122,	90,	UI_XSTR_COLOR_GREEN, -1, NULL }
-	}, 
-	{ // GR_1024
-		{ "Choose Pilot",		1436,		195,	143,	UI_XSTR_COLOR_GREEN, -1, NULL }
-	}
+    { // GR_640
+      { "Choose Pilot", 1436, 122, 90, UI_XSTR_COLOR_GREEN, -1, NULL } },
+    { // GR_1024
+      { "Choose Pilot", 1436, 195, 143, UI_XSTR_COLOR_GREEN, -1, NULL } }
 };
 
-UI_WINDOW Player_select_window;								// ui window for this screen
-UI_BUTTON Player_select_list_region;						// button for detecting mouse clicks on this screen
-UI_INPUTBOX Player_select_input_box;						// input box for adding new pilot names				
+UI_WINDOW Player_select_window; // ui window for this screen
+UI_BUTTON
+    Player_select_list_region; // button for detecting mouse clicks on this screen
+UI_INPUTBOX Player_select_input_box; // input box for adding new pilot names
 
 // #define PLAYER_SELECT_PALETTE_FNAME					NOX("InterfacePalette")
-int Player_select_background_bitmap;						// bitmap for this screen
-int Player_select_palette;										// palette bitmap for this screen (software mode needs it)
+int Player_select_background_bitmap; // bitmap for this screen
+int Player_select_palette; // palette bitmap for this screen (software mode needs it)
 int Player_select_autoaccept = 0;
 int Player_select_palette_set = 0;
 
 // flag indicating if this is the absolute first pilot created and selected. Used to determine
 // if the main hall should display the help overlay screen
-int Player_select_very_first_pilot = 0;			
+int Player_select_very_first_pilot = 0;
 int Player_select_initial_count = 0;
 char Player_select_very_first_pilot_callsign[CALLSIGN_LEN + 2];
 
-extern int Main_hall_bitmap;									// bitmap handle to the main hall bitmap
+extern int Main_hall_bitmap; // bitmap handle to the main hall bitmap
 
-int Player_select_mode;											// always PLAYER_SELECT_MODE_SINGLE - never set directly. use player_select_init_player_stuff()
-int Player_select_num_pilots;									// # of pilots on the list
-int Player_select_list_start;									// index of first list item to start displaying in the box
-int Player_select_pilot;									    // index into the Pilot array of which is selected as the active pilot
-int Player_select_input_mode;						   			// 0 if the player _isn't_ typing a callsign, 1 if he is
-char Pilots_arr[MAX_PILOTS][MAX_FILENAME_LEN];		
+int Player_select_mode; // always PLAYER_SELECT_MODE_SINGLE - never set directly. use player_select_init_player_stuff()
+int Player_select_num_pilots; // # of pilots on the list
+int Player_select_list_start; // index of first list item to start displaying in the box
+int Player_select_pilot; // index into the Pilot array of which is selected as the active pilot
+int Player_select_input_mode; // 0 if the player _isn't_ typing a callsign, 1 if he is
+char Pilots_arr[MAX_PILOTS][MAX_FILENAME_LEN];
 char *Pilots[MAX_PILOTS];
-int Player_select_clone_flag;									// clone the currently selected pilot
-char Player_select_last_pilot[CALLSIGN_LEN + 10];		// callsign of the last used pilot, or none if there wasn't one
+int Player_select_clone_flag; // clone the currently selected pilot
+char Player_select_last_pilot
+    [CALLSIGN_LEN +
+     10]; // callsign of the last used pilot, or none if there wasn't one
 
 int Player_select_force_bastion = 0;
 
 // notification text areas
 
 static int Player_select_bottom_text_y[GR_NUM_RESOLUTIONS] = {
-	314,	// GR_640
-	502	// GR_1024
+    314, // GR_640
+    502 // GR_1024
 };
 
 static int Player_select_middle_text_y[GR_NUM_RESOLUTIONS] = {
-	253,	// GR_640
-	404	// GR_1024
+    253, // GR_640
+    404 // GR_1024
 };
 
 char Player_select_bottom_text[150] = "";
@@ -187,10 +191,9 @@ char Player_select_middle_text[150] = "";
 void player_select_set_bottom_text(char *txt);
 void player_select_set_middle_text(char *txt);
 
-
 // FORWARD DECLARATIONS
-void player_select_init_player_stuff(int mode);			// initialize the pilot list
-void player_select_set_input_mode(int n);					
+void player_select_init_player_stuff(int mode); // initialize the pilot list
+void player_select_set_input_mode(int n);
 void player_select_button_pressed(int n);
 void player_select_scroll_list_up();
 void player_select_scroll_list_down();
@@ -209,35 +212,37 @@ void player_select_eval_very_first_pilot();
 void player_select_commit();
 void player_select_cancel_create();
 
-
-// basically, gray out all controls (gray == 1), or ungray the controls (gray == 0) 
-void player_select_set_controls(int gray)
+// basically, gray out all controls (gray == 1), or ungray the controls (gray == 0)
+void
+player_select_set_controls(int gray)
 {
-	int idx;
-	
-	for(idx=0;idx<NUM_PLAYER_SELECT_BUTTONS;idx++){
-		if(gray){
-			Player_select_buttons[gr_screen.res][idx].button.disable();
-		} else {
-			Player_select_buttons[gr_screen.res][idx].button.enable();
-		}
-	}
+    int idx;
+
+    for (idx = 0; idx < NUM_PLAYER_SELECT_BUTTONS; idx++) {
+        if (gray) {
+            Player_select_buttons[gr_screen.res][idx].button.disable();
+        }
+        else {
+            Player_select_buttons[gr_screen.res][idx].button.enable();
+        }
+    }
 }
 
 // functions for selecting pilots at the very beginning of Freespace
-void player_select_init()
-{			
-	int i;
-	barracks_buttons *b;   
-	UI_WINDOW *w;
+void
+player_select_init()
+{
+    int i;
+    barracks_buttons *b;
+    UI_WINDOW *w;
 
-	// start a looping ambient sound
-	main_hall_start_ambient();
+    // start a looping ambient sound
+    main_hall_start_ambient();
 
-	Player_select_force_bastion = 0;
+    Player_select_force_bastion = 0;
 
 #ifdef FS2_DEMO
-	/*
+    /*
 	Demo_title_bitmap = bm_load(Demo_title_bitmap_filename);
 	if ( Demo_title_bitmap >= 0 ) {
 #ifndef HARDWARE_ONLY
@@ -249,204 +254,246 @@ void player_select_init()
 		Demo_title_active = 0;
 	}
 	*/
-	Demo_title_active = 0;
+    Demo_title_active = 0;
 #endif
 
-	// create the UI window
-	Player_select_window.create(0, 0, gr_screen.max_w, gr_screen.max_h, 0);
-	Player_select_window.set_mask_bmap(Player_select_background_mask_bitmap[gr_screen.res]);
-	
-	// initialize the control buttons
-	for (i=0; i<NUM_PLAYER_SELECT_BUTTONS; i++) {
-		b = &Player_select_buttons[gr_screen.res][i];
+    // create the UI window
+    Player_select_window.create(0, 0, gr_screen.max_w, gr_screen.max_h, 0);
+    Player_select_window.set_mask_bmap(
+        Player_select_background_mask_bitmap[gr_screen.res]);
 
-		// create the button
-		if ( (i == SCROLL_LIST_UP_BUTTON) || (i == SCROLL_LIST_DOWN_BUTTON) )
-			b->button.create(&Player_select_window, NULL, b->x, b->y, 60, 30, 1, 1);
-		else
-			b->button.create(&Player_select_window, NULL, b->x, b->y, 60, 30, 1, 1);
+    // initialize the control buttons
+    for (i = 0; i < NUM_PLAYER_SELECT_BUTTONS; i++) {
+        b = &Player_select_buttons[gr_screen.res][i];
 
-		// set its highlight action
-		b->button.set_highlight_action(common_play_highlight_sound);
+        // create the button
+        if ((i == SCROLL_LIST_UP_BUTTON) || (i == SCROLL_LIST_DOWN_BUTTON))
+            b->button.create(&Player_select_window, NULL, b->x, b->y, 60, 30, 1,
+                             1);
+        else
+            b->button.create(&Player_select_window, NULL, b->x, b->y, 60, 30, 1,
+                             1);
 
-		// set its animation bitmaps
-		b->button.set_bmaps(b->filename);
+        // set its highlight action
+        b->button.set_highlight_action(common_play_highlight_sound);
 
-		// link the mask hotspot
-		b->button.link_hotspot(b->hotspot);
-	}		
+        // set its animation bitmaps
+        b->button.set_bmaps(b->filename);
 
-	// add some text
-	w = &Player_select_window;	
-	w->add_XSTR("Create", 1034, Player_select_buttons[gr_screen.res][CREATE_PILOT_BUTTON].xt, Player_select_buttons[gr_screen.res][CREATE_PILOT_BUTTON].yt, &Player_select_buttons[gr_screen.res][CREATE_PILOT_BUTTON].button, UI_XSTR_COLOR_GREEN);	
-	w->add_XSTR("Clone", 1040, Player_select_buttons[gr_screen.res][CLONE_BUTTON].xt, Player_select_buttons[gr_screen.res][CLONE_BUTTON].yt, &Player_select_buttons[gr_screen.res][CLONE_BUTTON].button, UI_XSTR_COLOR_GREEN);	
-	w->add_XSTR("Remove", 1038, Player_select_buttons[gr_screen.res][DELETE_BUTTON].xt, Player_select_buttons[gr_screen.res][DELETE_BUTTON].yt, &Player_select_buttons[gr_screen.res][DELETE_BUTTON].button, UI_XSTR_COLOR_GREEN);	
-	
-	w->add_XSTR("Select", 1039, Player_select_buttons[gr_screen.res][ACCEPT_BUTTON].xt, Player_select_buttons[gr_screen.res][ACCEPT_BUTTON].yt, &Player_select_buttons[gr_screen.res][ACCEPT_BUTTON].button, UI_XSTR_COLOR_PINK);	
-	w->add_XSTR("Single", 1041, Player_select_buttons[gr_screen.res][SINGLE_BUTTON].xt, Player_select_buttons[gr_screen.res][SINGLE_BUTTON].yt, &Player_select_buttons[gr_screen.res][SINGLE_BUTTON].button, UI_XSTR_COLOR_GREEN);	
-	w->add_XSTR("Multi", 1042, Player_select_buttons[gr_screen.res][MULTI_BUTTON].xt, Player_select_buttons[gr_screen.res][MULTI_BUTTON].yt, &Player_select_buttons[gr_screen.res][MULTI_BUTTON].button, UI_XSTR_COLOR_GREEN);	
-	for(i=0; i<PLAYER_SELECT_NUM_TEXT; i++) {
-		w->add_XSTR(&Player_select_text[gr_screen.res][i]);
-	}
+        // link the mask hotspot
+        b->button.link_hotspot(b->hotspot);
+    }
 
+    // add some text
+    w = &Player_select_window;
+    w->add_XSTR("Create", 1034,
+                Player_select_buttons[gr_screen.res][CREATE_PILOT_BUTTON].xt,
+                Player_select_buttons[gr_screen.res][CREATE_PILOT_BUTTON].yt,
+                &Player_select_buttons[gr_screen.res][CREATE_PILOT_BUTTON].button,
+                UI_XSTR_COLOR_GREEN);
+    w->add_XSTR("Clone", 1040,
+                Player_select_buttons[gr_screen.res][CLONE_BUTTON].xt,
+                Player_select_buttons[gr_screen.res][CLONE_BUTTON].yt,
+                &Player_select_buttons[gr_screen.res][CLONE_BUTTON].button,
+                UI_XSTR_COLOR_GREEN);
+    w->add_XSTR("Remove", 1038,
+                Player_select_buttons[gr_screen.res][DELETE_BUTTON].xt,
+                Player_select_buttons[gr_screen.res][DELETE_BUTTON].yt,
+                &Player_select_buttons[gr_screen.res][DELETE_BUTTON].button,
+                UI_XSTR_COLOR_GREEN);
 
-	// create the list button text select region
-	Player_select_list_region.create(&Player_select_window, "", Choose_list_coords[gr_screen.res][0], Choose_list_coords[gr_screen.res][1], Choose_list_coords[gr_screen.res][2], Choose_list_coords[gr_screen.res][3], 0, 1);
-	Player_select_list_region.hide();
+    w->add_XSTR("Select", 1039,
+                Player_select_buttons[gr_screen.res][ACCEPT_BUTTON].xt,
+                Player_select_buttons[gr_screen.res][ACCEPT_BUTTON].yt,
+                &Player_select_buttons[gr_screen.res][ACCEPT_BUTTON].button,
+                UI_XSTR_COLOR_PINK);
+    w->add_XSTR("Single", 1041,
+                Player_select_buttons[gr_screen.res][SINGLE_BUTTON].xt,
+                Player_select_buttons[gr_screen.res][SINGLE_BUTTON].yt,
+                &Player_select_buttons[gr_screen.res][SINGLE_BUTTON].button,
+                UI_XSTR_COLOR_GREEN);
+    w->add_XSTR("Multi", 1042,
+                Player_select_buttons[gr_screen.res][MULTI_BUTTON].xt,
+                Player_select_buttons[gr_screen.res][MULTI_BUTTON].yt,
+                &Player_select_buttons[gr_screen.res][MULTI_BUTTON].button,
+                UI_XSTR_COLOR_GREEN);
+    for (i = 0; i < PLAYER_SELECT_NUM_TEXT; i++) {
+        w->add_XSTR(&Player_select_text[gr_screen.res][i]);
+    }
 
-	// create the pilot callsign input box
-	Player_select_input_box.create(&Player_select_window, Choose_list_coords[gr_screen.res][0], Choose_list_coords[gr_screen.res][1], Choose_list_coords[gr_screen.res][2] , CALLSIGN_LEN - 1, "", UI_INPUTBOX_FLAG_INVIS | UI_INPUTBOX_FLAG_KEYTHRU | UI_INPUTBOX_FLAG_LETTER_FIRST);
-	Player_select_input_box.set_valid_chars(VALID_PILOT_CHARS);
-	Player_select_input_box.hide();
-	Player_select_input_box.disable();
-	
-	// not currently entering any text
-	Player_select_input_mode = 0;	
+    // create the list button text select region
+    Player_select_list_region.create(&Player_select_window, "",
+                                     Choose_list_coords[gr_screen.res][0],
+                                     Choose_list_coords[gr_screen.res][1],
+                                     Choose_list_coords[gr_screen.res][2],
+                                     Choose_list_coords[gr_screen.res][3], 0, 1);
+    Player_select_list_region.hide();
 
-	// set up hotkeys for buttons so we draw the correct animation frame when a key is pressed
-	Player_select_buttons[gr_screen.res][SCROLL_LIST_UP_BUTTON].button.set_hotkey(KEY_UP);
-	Player_select_buttons[gr_screen.res][SCROLL_LIST_DOWN_BUTTON].button.set_hotkey(KEY_DOWN);
-	Player_select_buttons[gr_screen.res][ACCEPT_BUTTON].button.set_hotkey(KEY_ENTER);
-	Player_select_buttons[gr_screen.res][CREATE_PILOT_BUTTON].button.set_hotkey(KEY_C);
+    // create the pilot callsign input box
+    Player_select_input_box.create(
+        &Player_select_window, Choose_list_coords[gr_screen.res][0],
+        Choose_list_coords[gr_screen.res][1],
+        Choose_list_coords[gr_screen.res][2], CALLSIGN_LEN - 1, "",
+        UI_INPUTBOX_FLAG_INVIS | UI_INPUTBOX_FLAG_KEYTHRU |
+            UI_INPUTBOX_FLAG_LETTER_FIRST);
+    Player_select_input_box.set_valid_chars(VALID_PILOT_CHARS);
+    Player_select_input_box.hide();
+    Player_select_input_box.disable();
 
-	// disable the multi player button in the E3 and press tour builds
+    // not currently entering any text
+    Player_select_input_mode = 0;
+
+    // set up hotkeys for buttons so we draw the correct animation frame when a key is pressed
+    Player_select_buttons[gr_screen.res][SCROLL_LIST_UP_BUTTON].button.set_hotkey(
+        KEY_UP);
+    Player_select_buttons[gr_screen.res][SCROLL_LIST_DOWN_BUTTON]
+        .button.set_hotkey(KEY_DOWN);
+    Player_select_buttons[gr_screen.res][ACCEPT_BUTTON].button.set_hotkey(
+        KEY_ENTER);
+    Player_select_buttons[gr_screen.res][CREATE_PILOT_BUTTON].button.set_hotkey(
+        KEY_C);
+
+    // disable the multi player button in the E3 and press tour builds
 #if defined(E3_BUILD) || defined(PRESS_TOUR_BUILD)
-	Player_select_buttons[gr_screen.res][MULTI_BUTTON].button.hide();
-	Player_select_buttons[gr_screen.res][MULTI_BUTTON].button.disable();
+    Player_select_buttons[gr_screen.res][MULTI_BUTTON].button.hide();
+    Player_select_buttons[gr_screen.res][MULTI_BUTTON].button.disable();
 #endif
 
+    // attempt to load in the background bitmap
+    Player_select_background_bitmap = bm_load(
+        Player_select_background_bitmap_name[gr_screen.res]);
+    Assert(Player_select_background_bitmap >= 0);
 
-	// attempt to load in the background bitmap
-	Player_select_background_bitmap = bm_load(Player_select_background_bitmap_name[gr_screen.res]);				
-	Assert(Player_select_background_bitmap >= 0);	
+    // load in the palette for the screen
+    // ChoosePilotPalette isn't in the retail VPs; the background PCX
+    // carries the palette this screen needs
+    Player_select_palette = Player_select_background_bitmap;
+    Player_select_palette_set = 0;
 
-	// load in the palette for the screen
-	// ChoosePilotPalette isn't in the retail VPs; the background PCX
-	// carries the palette this screen needs
-	Player_select_palette = Player_select_background_bitmap;
-	Player_select_palette_set = 0;
+    // unset the very first pilot data
+    Player_select_very_first_pilot = 0;
+    Player_select_initial_count = -1;
+    memset(Player_select_very_first_pilot_callsign, 0, CALLSIGN_LEN + 2);
 
-	// unset the very first pilot data
-	Player_select_very_first_pilot = 0;
-	Player_select_initial_count = -1;
-	memset(Player_select_very_first_pilot_callsign, 0, CALLSIGN_LEN + 2);	
+    //	if(Player_select_num_pilots == 0){
+    //		Player_select_autoaccept = 1;
+    //	}
 
-//	if(Player_select_num_pilots == 0){
-//		Player_select_autoaccept = 1;
-//	}
-		
-	player_select_init_player_stuff(PLAYER_SELECT_MODE_SINGLE);
+    player_select_init_player_stuff(PLAYER_SELECT_MODE_SINGLE);
 
-	if((Player_select_num_pilots == 1) && Player_select_input_mode){
-		Player_select_autoaccept = 1;
-	}	
+    if ((Player_select_num_pilots == 1) && Player_select_input_mode) {
+        Player_select_autoaccept = 1;
+    }
 }
 
 #ifdef FS2_DEMO
 // Display the demo title screen
-void demo_title_blit()
+void
+demo_title_blit()
 {
-	int k;
+    int k;
 
-	Mouse_hidden = 1;
+    Mouse_hidden = 1;
 
-	if ( timestamp_elapsed(Demo_title_expire_timestamp) ) {
-		Demo_title_active = 0;
-	}
+    if (timestamp_elapsed(Demo_title_expire_timestamp)) {
+        Demo_title_active = 0;
+    }
 
-	k = game_poll();
-	if ( k > 0 ) {
-		Demo_title_active = 0;
-	}
+    k = game_poll();
+    if (k > 0) {
+        Demo_title_active = 0;
+    }
 
-	if ( Demo_title_need_fade_in ) {
-		gr_fade_out(0);
-	}
-	
-	gr_set_bitmap(Demo_title_bitmap);
-	gr_bitmap(0,0);
+    if (Demo_title_need_fade_in) {
+        gr_fade_out(0);
+    }
 
-	gr_flip();
+    gr_set_bitmap(Demo_title_bitmap);
+    gr_bitmap(0, 0);
 
-	if ( Demo_title_need_fade_in ) {
-		gr_fade_in(0);
-		Demo_title_need_fade_in = 0;
-	}
+    gr_flip();
 
-	if ( !Demo_title_active ) {
-		gr_fade_out(0);
-		Mouse_hidden = 0;
-	}
+    if (Demo_title_need_fade_in) {
+        gr_fade_in(0);
+        Demo_title_need_fade_in = 0;
+    }
+
+    if (!Demo_title_active) {
+        gr_fade_out(0);
+        Mouse_hidden = 0;
+    }
 }
 
 #endif
 
-void player_select_do()
+void
+player_select_do()
 {
-	int k;
+    int k;
 
 #ifdef FS2_DEMO
-	if ( Demo_title_active ) {
-		// demo_title_blit();
-		return;
-	}
+    if (Demo_title_active) {
+        // demo_title_blit();
+        return;
+    }
 #endif
 
-	// re-enabled for the software renderer: retail commented this out when
-	// the shipped builds went hardware-only, leaving the 8bpp path black
-	if ( !Player_select_palette_set ) {
-		Assert(Player_select_palette >= 0);
-		palette_use_bm_palette(Player_select_palette);
-		Player_select_palette_set = 1;
-	}
-		
-	// set the input box at the "virtual" line 0 to be active so the player can enter a callsign
-	if (Player_select_input_mode){
-		Player_select_input_box.set_focus();
-	}
+    // re-enabled for the software renderer: retail commented this out when
+    // the shipped builds went hardware-only, leaving the 8bpp path black
+    if (!Player_select_palette_set) {
+        Assert(Player_select_palette >= 0);
+        palette_use_bm_palette(Player_select_palette);
+        Player_select_palette_set = 1;
+    }
 
-	// process any ui window stuff
-	k = Player_select_window.process();
-	if(k){
-		extern void game_process_cheats(int k);
-		game_process_cheats(k);
-	}
-	// draw the player select pseudo-dialog over it
-	gr_set_bitmap(Player_select_background_bitmap);
-	gr_bitmap(0,0);
+    // set the input box at the "virtual" line 0 to be active so the player can enter a callsign
+    if (Player_select_input_mode) {
+        Player_select_input_box.set_focus();
+    }
 
-	// press the accept button
-	if (Player_select_autoaccept) {
-		Player_select_buttons[gr_screen.res][ACCEPT_BUTTON].button.press_button();
-	}
-	
-	// draw any ui window stuf
-	Player_select_window.draw();
+    // process any ui window stuff
+    k = Player_select_window.process();
+    if (k) {
+        extern void game_process_cheats(int k);
+        game_process_cheats(k);
+    }
+    // draw the player select pseudo-dialog over it
+    gr_set_bitmap(Player_select_background_bitmap);
+    gr_bitmap(0, 0);
 
-	// light up the single player mode button
-	Player_select_buttons[gr_screen.res][SINGLE_BUTTON].button.draw_forced(2);
+    // press the accept button
+    if (Player_select_autoaccept) {
+        Player_select_buttons[gr_screen.res][ACCEPT_BUTTON].button.press_button();
+    }
 
-	// draw the pilot list text
-	player_select_draw_list();	
+    // draw any ui window stuf
+    Player_select_window.draw();
 
-	// draw copyright message on the bottom on the screen
-	player_select_display_copyright();
+    // light up the single player mode button
+    Player_select_buttons[gr_screen.res][SINGLE_BUTTON].button.draw_forced(2);
 
-	if (!Player_select_input_mode) {
-		player_select_process_noninput(k);
-	} else {
-		player_select_process_input(k);
-	}
-	
-	// draw any pending messages on the bottom or middle of the screen
-	player_select_display_all_text();	
+    // draw the pilot list text
+    player_select_draw_list();
+
+    // draw copyright message on the bottom on the screen
+    player_select_display_copyright();
+
+    if (!Player_select_input_mode) {
+        player_select_process_noninput(k);
+    }
+    else {
+        player_select_process_input(k);
+    }
+
+    // draw any pending messages on the bottom or middle of the screen
+    player_select_display_all_text();
 
 #ifndef RELEASE_REAL
-	// gr_set_color_fast(&Color_bright_green);
-	// gr_string(0x8000, 10, "Development version - DO NOT RELEASE");
+    // gr_set_color_fast(&Color_bright_green);
+    // gr_string(0x8000, 10, "Development version - DO NOT RELEASE");
 #endif
-	
-	/*
+
+    /*
 	gr_set_color(255, 0, 0);
 	vector whee[5];
 	vector *arr[5] = {&whee[0], &whee[1], &whee[2], &whee[3], &whee[4]};
@@ -457,811 +504,883 @@ void player_select_do()
 	whee[4].x = 180; whee[4].y = 130; whee[4].z = 0.0f;
 	gr_pline_special(arr, 5, 2);
 	*/
-	
 
-	gr_flip();
+    gr_flip();
 }
 
-void player_select_close()
+void
+player_select_close()
 {
-	// destroy the player select window
-	Player_select_window.destroy();
+    // destroy the player select window
+    Player_select_window.destroy();
 
-	// if we're in input mode - we should undo the pilot create reqeust
-	if(Player_select_input_mode){
-		player_select_cancel_create();
-	}
-	
-	// actually set up the Player struct here	
-	if((Player_select_pilot == -1) || (Player_select_num_pilots == 0)){
-		nprintf(("General","WARNING! No pilot selected! We should be exiting the game now!\n"));
-		return;
-	}
+    // if we're in input mode - we should undo the pilot create reqeust
+    if (Player_select_input_mode) {
+        player_select_cancel_create();
+    }
 
-	// unload all bitmaps
-	if(Player_select_background_bitmap >= 0){
-		bm_release(Player_select_background_bitmap);
-		Player_select_background_bitmap = -1;
-	} 
-	// if(Player_select_palette >= 0){
-	// 	bm_release(Player_select_palette);
-		//Player_select_palette = -1;
-	// }
-			
-	// setup the player  struct
-	Player_num = 0;
-	Player = &Players[0];
-	Player->flags |= PLAYER_FLAGS_STRUCTURE_IN_USE;
-		
-	// now read in a the pilot data
-	if (read_pilot_file(Pilots[Player_select_pilot], !Player_select_mode, Player) != 0) {
-		Error(LOCATION,"Couldn't load pilot file, bailing");
-		Player = NULL;
-	} 		
+    // actually set up the Player struct here
+    if ((Player_select_pilot == -1) || (Player_select_num_pilots == 0)) {
+        nprintf(
+            ("General",
+             "WARNING! No pilot selected! We should be exiting the game now!\n"));
+        return;
+    }
 
-	if (Player_select_force_bastion) {
-		Player->on_bastion = 1;
-	}
+    // unload all bitmaps
+    if (Player_select_background_bitmap >= 0) {
+        bm_release(Player_select_background_bitmap);
+        Player_select_background_bitmap = -1;
+    }
+    // if(Player_select_palette >= 0){
+    // 	bm_release(Player_select_palette);
+    //Player_select_palette = -1;
+    // }
+
+    // setup the player  struct
+    Player_num = 0;
+    Player = &Players[0];
+    Player->flags |= PLAYER_FLAGS_STRUCTURE_IN_USE;
+
+    // now read in a the pilot data
+    if (read_pilot_file(Pilots[Player_select_pilot], !Player_select_mode,
+                        Player) != 0) {
+        Error(LOCATION, "Couldn't load pilot file, bailing");
+        Player = NULL;
+    }
+
+    if (Player_select_force_bastion) {
+        Player->on_bastion = 1;
+    }
 }
 
-void player_select_set_input_mode(int n)
+void
+player_select_set_input_mode(int n)
 {
-	int i;
+    int i;
 
-	// set the input mode
-	Player_select_input_mode = n;	
-	
-	// enable all the player select buttons
-	for (i=0; i<NUM_PLAYER_SELECT_BUTTONS; i++){
-		Player_select_buttons[gr_screen.res][i].button.enable(!n);
-	}
+    // set the input mode
+    Player_select_input_mode = n;
 
-	Player_select_buttons[gr_screen.res][ACCEPT_BUTTON].button.set_hotkey(n ? -1 : KEY_ENTER);
-	Player_select_buttons[gr_screen.res][CREATE_PILOT_BUTTON].button.set_hotkey(n ? -1 : KEY_C);
+    // enable all the player select buttons
+    for (i = 0; i < NUM_PLAYER_SELECT_BUTTONS; i++) {
+        Player_select_buttons[gr_screen.res][i].button.enable(!n);
+    }
 
-	// enable the player select input box
-	if(Player_select_input_mode){
-		Player_select_input_box.enable();
-		Player_select_input_box.unhide();
-	} else {
-		Player_select_input_box.hide();
-		Player_select_input_box.disable();
-	}
+    Player_select_buttons[gr_screen.res][ACCEPT_BUTTON].button.set_hotkey(
+        n ? -1 : KEY_ENTER);
+    Player_select_buttons[gr_screen.res][CREATE_PILOT_BUTTON].button.set_hotkey(
+        n ? -1 : KEY_C);
+
+    // enable the player select input box
+    if (Player_select_input_mode) {
+        Player_select_input_box.enable();
+        Player_select_input_box.unhide();
+    }
+    else {
+        Player_select_input_box.hide();
+        Player_select_input_box.disable();
+    }
 }
 
-void player_select_button_pressed(int n)
+void
+player_select_button_pressed(int n)
 {
-	int ret;
+    int ret;
 
-	switch (n) {
-	case SCROLL_LIST_UP_BUTTON:
-		player_select_set_bottom_text("");
+    switch (n) {
+    case SCROLL_LIST_UP_BUTTON:
+        player_select_set_bottom_text("");
 
-		player_select_scroll_list_up();
-		break;
+        player_select_scroll_list_up();
+        break;
 
-	case SCROLL_LIST_DOWN_BUTTON:
-		player_select_set_bottom_text("");
+    case SCROLL_LIST_DOWN_BUTTON:
+        player_select_set_bottom_text("");
 
-		player_select_scroll_list_down();
-		break;
+        player_select_scroll_list_down();
+        break;
 
-	case ACCEPT_BUTTON:
-		// make sure he has a valid pilot selected
-		if (Player_select_pilot < 0) {								
-			popup(PF_USE_AFFIRMATIVE_ICON,1,POPUP_OK,XSTR( "You must select a valid pilot first", 378));
-		} else {
-			player_select_commit();				
-		}
-		break;
+    case ACCEPT_BUTTON:
+        // make sure he has a valid pilot selected
+        if (Player_select_pilot < 0) {
+            popup(PF_USE_AFFIRMATIVE_ICON, 1, POPUP_OK,
+                  XSTR("You must select a valid pilot first", 378));
+        }
+        else {
+            player_select_commit();
+        }
+        break;
 
-	case CLONE_BUTTON:
-		// if we're at max-pilots, don't allow another to be added
-		if (Player_select_num_pilots >= MAX_PILOTS) {
-			player_select_set_bottom_text(XSTR( "You already have the maximum # of pilots!", 379));
-			
-			gamesnd_play_iface(SND_GENERAL_FAIL);
-			break;
-		}
+    case CLONE_BUTTON:
+        // if we're at max-pilots, don't allow another to be added
+        if (Player_select_num_pilots >= MAX_PILOTS) {
+            player_select_set_bottom_text(
+                XSTR("You already have the maximum # of pilots!", 379));
 
-		if (Player_select_pilot >= 0) {						
-			// first we have to make sure this guy is actually loaded for when we create the clone
-			if (Player == NULL) {
-				Player = &Players[0];
-				Player->flags |= PLAYER_FLAGS_STRUCTURE_IN_USE;
-			}				
+            gamesnd_play_iface(SND_GENERAL_FAIL);
+            break;
+        }
 
-			// attempt to read in the pilot file of the guy to be cloned
-			if (read_pilot_file(Pilots[Player_select_pilot], !Player_select_mode, Player) != 0) {
-				Error(LOCATION,"Couldn't load pilot file, bailing");
-				Player = NULL;
-				Int3();
-			}				
+        if (Player_select_pilot >= 0) {
+            // first we have to make sure this guy is actually loaded for when we create the clone
+            if (Player == NULL) {
+                Player = &Players[0];
+                Player->flags |= PLAYER_FLAGS_STRUCTURE_IN_USE;
+            }
 
-			// set the clone flag
-			Player_select_clone_flag = 1;
+            // attempt to read in the pilot file of the guy to be cloned
+            if (read_pilot_file(Pilots[Player_select_pilot], !Player_select_mode,
+                                Player) != 0) {
+                Error(LOCATION, "Couldn't load pilot file, bailing");
+                Player = NULL;
+                Int3();
+            }
 
-			// create the new pilot (will be cloned with Player_select_clone_flag_set)
-			if (!player_select_create_new_pilot()) {					
-				player_select_set_bottom_text(XSTR( "Error creating new pilot file!", 380));
-				Player_select_clone_flag = 0;
-				memset(Player,0,sizeof(player));
-				Player = NULL;
-				break;
-			}				
+            // set the clone flag
+            Player_select_clone_flag = 1;
 
-			// clear the player out
-			// JH: What the hell?  How do you clone a pilot if you clear out the source you are copying
-			// from?  These next 2 lines are pure stupidity, so I commented them out!
-//			memset(Player,0,sizeof(player));
-//			Player = NULL;
-				
-			// display some text on the bottom of the dialog
-			player_select_set_bottom_text(XSTR( "Type Callsign and Press Enter", 381));				
-			
-			// gray out all controls in the dialog
-			player_select_set_controls(1);					
-		}
-		break;
+            // create the new pilot (will be cloned with Player_select_clone_flag_set)
+            if (!player_select_create_new_pilot()) {
+                player_select_set_bottom_text(
+                    XSTR("Error creating new pilot file!", 380));
+                Player_select_clone_flag = 0;
+                memset(Player, 0, sizeof(player));
+                Player = NULL;
+                break;
+            }
 
-	case CREATE_PILOT_BUTTON:
-		// if we're at max-pilots, don't allow another to be added
-		if(Player_select_num_pilots >= MAX_PILOTS){
-			player_select_set_bottom_text(XSTR( "You already have the maximum # of pilots!", 379));
+            // clear the player out
+            // JH: What the hell?  How do you clone a pilot if you clear out the source you are copying
+            // from?  These next 2 lines are pure stupidity, so I commented them out!
+            //			memset(Player,0,sizeof(player));
+            //			Player = NULL;
 
-			gamesnd_play_iface(SND_GENERAL_FAIL);
-			break;
-		}
+            // display some text on the bottom of the dialog
+            player_select_set_bottom_text(
+                XSTR("Type Callsign and Press Enter", 381));
 
-		// create a new pilot
-		if (!player_select_create_new_pilot()) {
-			player_select_set_bottom_text(XSTR( "Type Callsign and Press Enter", 381));
-		}
+            // gray out all controls in the dialog
+            player_select_set_controls(1);
+        }
+        break;
 
-		// don't clone anyone
-		Player_select_clone_flag = 0;
-			
-		// display some text on the bottom of the dialog			
-		player_select_set_bottom_text(XSTR( "Type Callsign and Press Enter", 381));
-			
-		// gray out all controls
-		player_select_set_controls(1);						
-		break;
+    case CREATE_PILOT_BUTTON:
+        // if we're at max-pilots, don't allow another to be added
+        if (Player_select_num_pilots >= MAX_PILOTS) {
+            player_select_set_bottom_text(
+                XSTR("You already have the maximum # of pilots!", 379));
 
-	case DELETE_BUTTON:
-		player_select_set_bottom_text("");
+            gamesnd_play_iface(SND_GENERAL_FAIL);
+            break;
+        }
 
-		if (Player_select_pilot >= 0) {
-			// display a popup requesting confirmation
-			ret = popup(PF_TITLE_BIG | PF_TITLE_RED, 2, POPUP_NO, POPUP_YES, XSTR( "Warning!\n\nAre you sure you wish to delete this pilot?", 382));
+        // create a new pilot
+        if (!player_select_create_new_pilot()) {
+            player_select_set_bottom_text(
+                XSTR("Type Callsign and Press Enter", 381));
+        }
 
-			// delete the pilot
-			if(ret == 1){
-				player_select_delete_pilot();
-			} 
-		}
-		break;
+        // don't clone anyone
+        Player_select_clone_flag = 0;
 
-	case SINGLE_BUTTON:
-		player_select_set_bottom_text("");
+        // display some text on the bottom of the dialog
+        player_select_set_bottom_text(XSTR("Type Callsign and Press Enter", 381));
 
-		Player_select_autoaccept = 0;
-		// already in single player mode
-		gamesnd_play_iface(SND_GENERAL_FAIL);
-		break;
+        // gray out all controls
+        player_select_set_controls(1);
+        break;
 
-	case MULTI_BUTTON:
-		player_select_set_bottom_text("");
+    case DELETE_BUTTON:
+        player_select_set_bottom_text("");
 
-		Player_select_autoaccept = 0;
-		// multiplayer is gone from this build
-		gamesnd_play_iface(SND_GENERAL_FAIL);
-		break;
-	}
+        if (Player_select_pilot >= 0) {
+            // display a popup requesting confirmation
+            ret = popup(
+                PF_TITLE_BIG | PF_TITLE_RED, 2, POPUP_NO, POPUP_YES,
+                XSTR("Warning!\n\nAre you sure you wish to delete this pilot?",
+                     382));
+
+            // delete the pilot
+            if (ret == 1) {
+                player_select_delete_pilot();
+            }
+        }
+        break;
+
+    case SINGLE_BUTTON:
+        player_select_set_bottom_text("");
+
+        Player_select_autoaccept = 0;
+        // already in single player mode
+        gamesnd_play_iface(SND_GENERAL_FAIL);
+        break;
+
+    case MULTI_BUTTON:
+        player_select_set_bottom_text("");
+
+        Player_select_autoaccept = 0;
+        // multiplayer is gone from this build
+        gamesnd_play_iface(SND_GENERAL_FAIL);
+        break;
+    }
 }
 
-int player_select_create_new_pilot()
+int
+player_select_create_new_pilot()
 {
-	int idx;
+    int idx;
 
-	// make sure we haven't reached the max
-	if (Player_select_num_pilots >= MAX_PILOTS) {
-		gamesnd_play_iface(SND_GENERAL_FAIL);
-		return 0;
-	}
+    // make sure we haven't reached the max
+    if (Player_select_num_pilots >= MAX_PILOTS) {
+        gamesnd_play_iface(SND_GENERAL_FAIL);
+        return 0;
+    }
 
-	int play_scroll_sound = 1;
+    int play_scroll_sound = 1;
 
 #ifdef FS2_DEMO
-	if ( Demo_title_active ) {
-		play_scroll_sound = 0;
-	}
+    if (Demo_title_active) {
+        play_scroll_sound = 0;
+    }
 #endif
 
-	if ( play_scroll_sound ) {
-		gamesnd_play_iface(SND_SCROLL);
-	}
+    if (play_scroll_sound) {
+        gamesnd_play_iface(SND_SCROLL);
+    }
 
-	idx = Player_select_num_pilots;	
-	
-	// move all the pilots in the list up
-	while (idx--) {
-		strcpy(Pilots[idx + 1], Pilots[idx]);		
-	}	
+    idx = Player_select_num_pilots;
 
-	// select the beginning of the list
-	Player_select_pilot = 0;
-	Player_select_num_pilots++;
-	Pilots[Player_select_pilot][0] = 0;
-	Player_select_list_start= 0;
+    // move all the pilots in the list up
+    while (idx--) {
+        strcpy(Pilots[idx + 1], Pilots[idx]);
+    }
 
-	// set us to be in input mode
-	player_select_set_input_mode(1);
-	
-	// set the input box to have focus
-	Player_select_input_box.set_focus();
-	Player_select_input_box.set_text("");
-	Player_select_input_box.update_dimensions(Choose_list_coords[gr_screen.res][0], Choose_list_coords[gr_screen.res][1], Choose_list_coords[gr_screen.res][2], gr_get_font_height());	
+    // select the beginning of the list
+    Player_select_pilot = 0;
+    Player_select_num_pilots++;
+    Pilots[Player_select_pilot][0] = 0;
+    Player_select_list_start = 0;
 
-	return 1;
+    // set us to be in input mode
+    player_select_set_input_mode(1);
+
+    // set the input box to have focus
+    Player_select_input_box.set_focus();
+    Player_select_input_box.set_text("");
+    Player_select_input_box.update_dimensions(
+        Choose_list_coords[gr_screen.res][0],
+        Choose_list_coords[gr_screen.res][1],
+        Choose_list_coords[gr_screen.res][2], gr_get_font_height());
+
+    return 1;
 }
 
-void player_select_delete_pilot()
+void
+player_select_delete_pilot()
 {
-	char filename[MAX_PATH_LEN + 1];
-	int i, deleted_cur_pilot;
+    char filename[MAX_PATH_LEN + 1];
+    int i, deleted_cur_pilot;
 
-	deleted_cur_pilot = 0;
+    deleted_cur_pilot = 0;
 
-	// tack on the full path and the pilot file extension
-	// build up the path name length
-	strcpy( filename, Pilots[Player_select_pilot] );
-	strcat( filename, NOX(".plr") );
+    // tack on the full path and the pilot file extension
+    // build up the path name length
+    strcpy(filename, Pilots[Player_select_pilot]);
+    strcat(filename, NOX(".plr"));
 
-	// attempt to delete the pilot
-	cf_delete( filename, CF_TYPE_SINGLE_PLAYERS );
+    // attempt to delete the pilot
+    cf_delete(filename, CF_TYPE_SINGLE_PLAYERS);
 
-	// delete all the campaign save files for this pilot.
-	mission_campaign_delete_all_savefiles( Pilots[Player_select_pilot], 0 );
+    // delete all the campaign save files for this pilot.
+    mission_campaign_delete_all_savefiles(Pilots[Player_select_pilot], 0);
 
-	// move all the players down
-	for (i=Player_select_pilot; i<Player_select_num_pilots-1; i++){
-		strcpy(Pilots[i], Pilots[i + 1]);		
-	}		
+    // move all the players down
+    for (i = Player_select_pilot; i < Player_select_num_pilots - 1; i++) {
+        strcpy(Pilots[i], Pilots[i + 1]);
+    }
 
-	// correcly set the # of pilots and the currently selected pilot
-	Player_select_num_pilots--;
-	if (Player_select_pilot >= Player_select_num_pilots) {
-		Player_select_pilot = Player_select_num_pilots - 1;		
-	}		
-
+    // correcly set the # of pilots and the currently selected pilot
+    Player_select_num_pilots--;
+    if (Player_select_pilot >= Player_select_num_pilots) {
+        Player_select_pilot = Player_select_num_pilots - 1;
+    }
 }
 
 // scroll the list of players up
-void player_select_scroll_list_up()
+void
+player_select_scroll_list_up()
 {
-	if (Player_select_pilot == -1)
-		return;
+    if (Player_select_pilot == -1)
+        return;
 
-	// change the pilot selected index and play the appropriate sound
-	if (Player_select_pilot) {
-		Player_select_pilot--;
-		gamesnd_play_iface(SND_SCROLL);
-	} else {
-		gamesnd_play_iface(SND_GENERAL_FAIL);
-	}
-		
-	if (Player_select_pilot < Player_select_list_start){
-		Player_select_list_start = Player_select_pilot;
-	}
+    // change the pilot selected index and play the appropriate sound
+    if (Player_select_pilot) {
+        Player_select_pilot--;
+        gamesnd_play_iface(SND_SCROLL);
+    }
+    else {
+        gamesnd_play_iface(SND_GENERAL_FAIL);
+    }
+
+    if (Player_select_pilot < Player_select_list_start) {
+        Player_select_list_start = Player_select_pilot;
+    }
 }
 
 // scroll the list of players down
-void player_select_scroll_list_down()
-{	
-	// change the pilot selected index and play the appropriate sound
-	if (Player_select_pilot < Player_select_num_pilots - 1) {
-		Player_select_pilot++;
-		gamesnd_play_iface(SND_SCROLL);
-	} else {
-		gamesnd_play_iface(SND_GENERAL_FAIL);
-	}
-		
-	if (Player_select_pilot >= (Player_select_list_start + Player_select_max_lines[gr_screen.res])){
-		Player_select_list_start++;
-	}
+void
+player_select_scroll_list_down()
+{
+    // change the pilot selected index and play the appropriate sound
+    if (Player_select_pilot < Player_select_num_pilots - 1) {
+        Player_select_pilot++;
+        gamesnd_play_iface(SND_SCROLL);
+    }
+    else {
+        gamesnd_play_iface(SND_GENERAL_FAIL);
+    }
+
+    if (Player_select_pilot >=
+        (Player_select_list_start + Player_select_max_lines[gr_screen.res])) {
+        Player_select_list_start++;
+    }
 }
 
 // fill in the data on the last played pilot
-int player_select_get_last_pilot_info()
+int
+player_select_get_last_pilot_info()
 {
-	char *last_player;
+    char *last_player;
 
-	last_player = os_config_read_string( NULL, "LastPlayer", NULL);
-	
-	if(last_player == NULL){
-		return 0;		
-	} else {
-		strcpy(Player_select_last_pilot,last_player);
-	}
+    last_player = os_config_read_string(NULL, "LastPlayer", NULL);
 
-	// strip the single/multiplayer marker off the end of his callsign
-	Player_select_last_pilot[strlen(Player_select_last_pilot)-1]='\0';
+    if (last_player == NULL) {
+        return 0;
+    }
+    else {
+        strcpy(Player_select_last_pilot, last_player);
+    }
 
-	return 1;	
+    // strip the single/multiplayer marker off the end of his callsign
+    Player_select_last_pilot[strlen(Player_select_last_pilot) - 1] = '\0';
+
+    return 1;
 }
 
-int player_select_get_last_pilot()
+int
+player_select_get_last_pilot()
 {
-	// if the player has the Cmdline_use_last_pilot command line option set, try and drop out quickly
-	if(Cmdline_use_last_pilot){			
-		int idx;				
+    // if the player has the Cmdline_use_last_pilot command line option set, try and drop out quickly
+    if (Cmdline_use_last_pilot) {
+        int idx;
 
-		if(!player_select_get_last_pilot_info()){
-			return 0;
-		}
+        if (!player_select_get_last_pilot_info()) {
+            return 0;
+        }
 
-		Player_select_num_pilots = cf_get_file_list_preallocated(MAX_PILOTS, Pilots_arr, Pilots, CF_TYPE_SINGLE_PLAYERS, NOX("*.plr"), CF_SORT_TIME);
+        Player_select_num_pilots = cf_get_file_list_preallocated(
+            MAX_PILOTS, Pilots_arr, Pilots, CF_TYPE_SINGLE_PLAYERS, NOX("*.plr"),
+            CF_SORT_TIME);
 
-		Player_select_pilot = -1;
-		idx = 0;
-		// pick the last player		
-		for(idx=0;idx<Player_select_num_pilots;idx++){
-			if(strcmp(Player_select_last_pilot,Pilots_arr[idx])==0){
-				Player_select_pilot = idx;
-				break;
-			}
-		}		
+        Player_select_pilot = -1;
+        idx = 0;
+        // pick the last player
+        for (idx = 0; idx < Player_select_num_pilots; idx++) {
+            if (strcmp(Player_select_last_pilot, Pilots_arr[idx]) == 0) {
+                Player_select_pilot = idx;
+                break;
+            }
+        }
 
-		// set this so that we don't incorrectly create a "blank" pilot - .plr
-		// in the player_select_close() function
-		Player_select_num_pilots = 0;
+        // set this so that we don't incorrectly create a "blank" pilot - .plr
+        // in the player_select_close() function
+        Player_select_num_pilots = 0;
 
-		// if we've actually found a valid pilot, load him up		
-		if(Player_select_pilot != -1){
-			Player = &Players[0];			
-			read_pilot_file(Pilots_arr[idx],1,Player);
-			Player->flags |= PLAYER_FLAGS_STRUCTURE_IN_USE;
-			return 1;		
-		}			
-	} 
+        // if we've actually found a valid pilot, load him up
+        if (Player_select_pilot != -1) {
+            Player = &Players[0];
+            read_pilot_file(Pilots_arr[idx], 1, Player);
+            Player->flags |= PLAYER_FLAGS_STRUCTURE_IN_USE;
+            return 1;
+        }
+    }
 
-	return 0;
+    return 0;
 }
 
-void player_select_init_player_stuff(int mode)
-{			
-	Player_select_list_start = 0;	
-
-	// set the select mode to single player for default
-	Player_select_mode = mode;
-
-	// load up the list of players
-	Get_file_list_filter = player_select_pilot_file_filter;
-	Player_select_num_pilots = cf_get_file_list_preallocated(MAX_PILOTS, Pilots_arr, Pilots, CF_TYPE_SINGLE_PLAYERS, NOX("*.plr"), CF_SORT_TIME);
-
-	Player = NULL;	
-
-	// if this value is -1, it means we should set it to the num pilots count
-	if(Player_select_initial_count == -1){
-		Player_select_initial_count = Player_select_num_pilots;
-	}
-		
-	// select the first pilot if any exist, otherwise set to -1
-	if (Player_select_num_pilots == 0) {		
-		Player_select_pilot = -1;		
-		player_select_set_middle_text(XSTR( "Type Callsign and Press Enter", 381));
-		player_select_set_controls(1);		// gray out the controls
-		player_select_create_new_pilot();
-	} else {
-		Player_select_pilot = 0;	
-	}
-}
-
-void player_select_draw_list()
+void
+player_select_init_player_stuff(int mode)
 {
-	int idx;
+    Player_select_list_start = 0;
 
-	for (idx=0; idx<Player_select_max_lines[gr_screen.res]; idx++) {
-		// only draw as many pilots as we have
-		if ((idx + Player_select_list_start) == Player_select_num_pilots)
-			break;
+    // set the select mode to single player for default
+    Player_select_mode = mode;
 
-		// if the currently selected pilot is this line, draw it highlighted
-		if ( (idx + Player_select_list_start) == Player_select_pilot) {
-			// if he's the active pilot and is also the current selection, super-highlight him									
-			gr_set_color_fast(&Color_text_active);
-		}
-		// otherwise draw him normally
-		else {
-			gr_set_color_fast(&Color_text_normal);
-		}
-		
-		// draw the actual callsign
-		gr_printf(Choose_list_coords[gr_screen.res][0], Choose_list_coords[gr_screen.res][1] + (idx * gr_get_font_height()), Pilots[idx + Player_select_list_start]);
-	}
+    // load up the list of players
+    Get_file_list_filter = player_select_pilot_file_filter;
+    Player_select_num_pilots = cf_get_file_list_preallocated(
+        MAX_PILOTS, Pilots_arr, Pilots, CF_TYPE_SINGLE_PLAYERS, NOX("*.plr"),
+        CF_SORT_TIME);
+
+    Player = NULL;
+
+    // if this value is -1, it means we should set it to the num pilots count
+    if (Player_select_initial_count == -1) {
+        Player_select_initial_count = Player_select_num_pilots;
+    }
+
+    // select the first pilot if any exist, otherwise set to -1
+    if (Player_select_num_pilots == 0) {
+        Player_select_pilot = -1;
+        player_select_set_middle_text(XSTR("Type Callsign and Press Enter", 381));
+        player_select_set_controls(1); // gray out the controls
+        player_select_create_new_pilot();
+    }
+    else {
+        Player_select_pilot = 0;
+    }
 }
 
-void player_select_process_noninput(int k)
+void
+player_select_draw_list()
 {
-	int idx;
-	
-	// check for pressed buttons
-	for (idx=0; idx<NUM_PLAYER_SELECT_BUTTONS; idx++) {
-		if (Player_select_buttons[gr_screen.res][idx].button.pressed()) {
-			player_select_button_pressed(idx);
-		}
-	}	
+    int idx;
 
-	// check for keypresses
-	switch (k) {			
-	// quit the game entirely
-	case KEY_ESC:
-		gameseq_post_event(GS_EVENT_QUIT_GAME);
-		break;
+    for (idx = 0; idx < Player_select_max_lines[gr_screen.res]; idx++) {
+        // only draw as many pilots as we have
+        if ((idx + Player_select_list_start) == Player_select_num_pilots)
+            break;
 
-	case KEY_ENTER | KEY_CTRLED:
-		player_select_button_pressed(ACCEPT_BUTTON);
-		break;
+        // if the currently selected pilot is this line, draw it highlighted
+        if ((idx + Player_select_list_start) == Player_select_pilot) {
+            // if he's the active pilot and is also the current selection, super-highlight him
+            gr_set_color_fast(&Color_text_active);
+        }
+        // otherwise draw him normally
+        else {
+            gr_set_color_fast(&Color_text_normal);
+        }
 
-	// delete the currently highlighted pilot
-	case KEY_DELETE:
-		if (Player_select_pilot >= 0) {
-			int ret;
-
-			// display a popup requesting confirmation
-			ret = popup(PF_USE_AFFIRMATIVE_ICON | PF_USE_NEGATIVE_ICON,2,POPUP_NO,POPUP_YES,XSTR( "Are you sure you want to delete this pilot?", 383));										
-
-			// delete the pilot
-			if(ret == 1){
-				player_select_delete_pilot();
-			} 
-		}
-		break;	
-	}
-
-	// check to see if the user has clicked on the "list region" button
-	// and change the selected pilot appropriately
-	if (Player_select_list_region.pressed()) {
-		int click_y;
-		// get the mouse position
-		Player_select_list_region.get_mouse_pos(NULL, &click_y);
-		
-		// determine what index to select
-		//idx = (click_y+5) / 10;
-		idx = click_y / gr_get_font_height();
-
-
-		// if he selected a valid item
-		if(((idx + Player_select_list_start) < Player_select_num_pilots) && (idx >= 0)){
-			Player_select_pilot = idx + Player_select_list_start;			
-		}
-	}
-
-	// if the player has double clicked on a valid pilot, choose it and hit the accept button
-	if (Player_select_list_region.double_clicked()) {
-		if ((Player_select_pilot >= 0) && (Player_select_pilot < Player_select_num_pilots)) {
-			player_select_button_pressed(ACCEPT_BUTTON);
-		}
-	}
+        // draw the actual callsign
+        gr_printf(Choose_list_coords[gr_screen.res][0],
+                  Choose_list_coords[gr_screen.res][1] +
+                      (idx * gr_get_font_height()),
+                  Pilots[idx + Player_select_list_start]);
+    }
 }
 
-void player_select_process_input(int k)
+void
+player_select_process_noninput(int k)
 {
-	char buf[CALLSIGN_LEN + 1];
-	int idx,z;
-	
-	// if the player is in the process of typing in a new pilot name...
-	switch (k) {
-	// cancel create pilot
-	case KEY_ESC:
-		player_select_cancel_create();		
-		break;
+    int idx;
 
-	// accept a new pilot name
-	case KEY_ENTER:
-		Player_select_input_box.get_text(buf);
-		drop_white_space(buf);
-		z = 0;
-		if (!isalpha(*buf)) {
-			z = 1;
-		} else {
-			for (idx=1; buf[idx]; idx++) {
-				if (!isalpha(buf[idx]) && !isdigit(buf[idx]) && !strchr(VALID_PILOT_CHARS, buf[idx])) {
-					z = 1;
-					break;
-				}
-			}
-		}
+    // check for pressed buttons
+    for (idx = 0; idx < NUM_PLAYER_SELECT_BUTTONS; idx++) {
+        if (Player_select_buttons[gr_screen.res][idx].button.pressed()) {
+            player_select_button_pressed(idx);
+        }
+    }
 
-		for (idx=1; idx<Player_select_num_pilots; idx++) {
-			if (!stricmp(buf, Pilots[idx])) {
-				// verify if it is ok to overwrite the file
-				if (pilot_verify_overwrite() == 1) {
-					// delete the pilot and select the beginning of the list
-					Player_select_pilot = idx;
-					player_select_delete_pilot();
-					Player_select_pilot = 0;
-					idx = Player_select_num_pilots;
-					z = 0;
+    // check for keypresses
+    switch (k) {
+    // quit the game entirely
+    case KEY_ESC:
+        gameseq_post_event(GS_EVENT_QUIT_GAME);
+        break;
 
-				} else
-					z = 1;
+    case KEY_ENTER | KEY_CTRLED:
+        player_select_button_pressed(ACCEPT_BUTTON);
+        break;
 
-				break;
-			}
-		}
+    // delete the currently highlighted pilot
+    case KEY_DELETE:
+        if (Player_select_pilot >= 0) {
+            int ret;
 
-		if (!*buf || (idx < Player_select_num_pilots)) {
-			z = 1;
-		}
+            // display a popup requesting confirmation
+            ret = popup(PF_USE_AFFIRMATIVE_ICON | PF_USE_NEGATIVE_ICON, 2,
+                        POPUP_NO, POPUP_YES,
+                        XSTR("Are you sure you want to delete this pilot?", 383));
 
-		if (z) {
-			gamesnd_play_iface(SND_GENERAL_FAIL);
-			break;
-		}		
+            // delete the pilot
+            if (ret == 1) {
+                player_select_delete_pilot();
+            }
+        }
+        break;
+    }
 
-		// Create the new pilot, and write out his file
-		strcpy(Pilots[0], buf);
+    // check to see if the user has clicked on the "list region" button
+    // and change the selected pilot appropriately
+    if (Player_select_list_region.pressed()) {
+        int click_y;
+        // get the mouse position
+        Player_select_list_region.get_mouse_pos(NULL, &click_y);
 
-		// if this is the first guy, we should set the Player struct
-		if (Player == NULL) {
-			Player = &Players[0];
-			memset(Player, 0, sizeof(player));
-			Player->flags |= PLAYER_FLAGS_STRUCTURE_IN_USE;
-		}
+        // determine what index to select
+        //idx = (click_y+5) / 10;
+        idx = click_y / gr_get_font_height();
 
-		strcpy(Player->callsign, buf);
-		init_new_pilot(Player, !Player_select_clone_flag);
+        // if he selected a valid item
+        if (((idx + Player_select_list_start) < Player_select_num_pilots) &&
+            (idx >= 0)) {
+            Player_select_pilot = idx + Player_select_list_start;
+        }
+    }
 
-		// create his pilot file
-		write_pilot_file(Player);
-
-		// unset the player
-		memset(Player, 0, sizeof(player));
-		Player = NULL;
-
-		// make this guy the selected pilot and put him first on the list
-		Player_select_pilot = 0;
-				
-		// unset the input mode
-		player_select_set_input_mode(0);
-
-		// clear any pending bottom text
-		player_select_set_bottom_text("");		
-
-		// clear any pending middle text
-		player_select_set_middle_text("");
-				
-		// ungray all the controls
-		player_select_set_controls(0);
-
-		// evaluate whether or not this is the very first pilot
-		player_select_eval_very_first_pilot();
-		break;
-
-	case 0:
-		break;
-
-	// always kill middle text when a char is pressed in input mode
-	default:
-		player_select_set_middle_text("");
-		break;
-	}
+    // if the player has double clicked on a valid pilot, choose it and hit the accept button
+    if (Player_select_list_region.double_clicked()) {
+        if ((Player_select_pilot >= 0) &&
+            (Player_select_pilot < Player_select_num_pilots)) {
+            player_select_button_pressed(ACCEPT_BUTTON);
+        }
+    }
 }
-    
+
+void
+player_select_process_input(int k)
+{
+    char buf[CALLSIGN_LEN + 1];
+    int idx, z;
+
+    // if the player is in the process of typing in a new pilot name...
+    switch (k) {
+    // cancel create pilot
+    case KEY_ESC:
+        player_select_cancel_create();
+        break;
+
+    // accept a new pilot name
+    case KEY_ENTER:
+        Player_select_input_box.get_text(buf);
+        drop_white_space(buf);
+        z = 0;
+        if (!isalpha(*buf)) {
+            z = 1;
+        }
+        else {
+            for (idx = 1; buf[idx]; idx++) {
+                if (!isalpha(buf[idx]) && !isdigit(buf[idx]) &&
+                    !strchr(VALID_PILOT_CHARS, buf[idx])) {
+                    z = 1;
+                    break;
+                }
+            }
+        }
+
+        for (idx = 1; idx < Player_select_num_pilots; idx++) {
+            if (!stricmp(buf, Pilots[idx])) {
+                // verify if it is ok to overwrite the file
+                if (pilot_verify_overwrite() == 1) {
+                    // delete the pilot and select the beginning of the list
+                    Player_select_pilot = idx;
+                    player_select_delete_pilot();
+                    Player_select_pilot = 0;
+                    idx = Player_select_num_pilots;
+                    z = 0;
+                }
+                else
+                    z = 1;
+
+                break;
+            }
+        }
+
+        if (!*buf || (idx < Player_select_num_pilots)) {
+            z = 1;
+        }
+
+        if (z) {
+            gamesnd_play_iface(SND_GENERAL_FAIL);
+            break;
+        }
+
+        // Create the new pilot, and write out his file
+        strcpy(Pilots[0], buf);
+
+        // if this is the first guy, we should set the Player struct
+        if (Player == NULL) {
+            Player = &Players[0];
+            memset(Player, 0, sizeof(player));
+            Player->flags |= PLAYER_FLAGS_STRUCTURE_IN_USE;
+        }
+
+        strcpy(Player->callsign, buf);
+        init_new_pilot(Player, !Player_select_clone_flag);
+
+        // create his pilot file
+        write_pilot_file(Player);
+
+        // unset the player
+        memset(Player, 0, sizeof(player));
+        Player = NULL;
+
+        // make this guy the selected pilot and put him first on the list
+        Player_select_pilot = 0;
+
+        // unset the input mode
+        player_select_set_input_mode(0);
+
+        // clear any pending bottom text
+        player_select_set_bottom_text("");
+
+        // clear any pending middle text
+        player_select_set_middle_text("");
+
+        // ungray all the controls
+        player_select_set_controls(0);
+
+        // evaluate whether or not this is the very first pilot
+        player_select_eval_very_first_pilot();
+        break;
+
+    case 0:
+        break;
+
+    // always kill middle text when a char is pressed in input mode
+    default:
+        player_select_set_middle_text("");
+        break;
+    }
+}
+
 // draw copyright message on the bottom on the screen
-void player_select_display_copyright()
+void
+player_select_display_copyright()
 {
-	int	sx, sy, w;
-	char	Copyright_msg1[256], Copyright_msg2[256];
-	
-//	strcpy(Copyright_msg1, XSTR("Descent: FreeSpace - The Great War, Copyright c 1998, Volition, Inc.", -1));
-	gr_set_color_fast(&Color_white);
+    int sx, sy, w;
+    char Copyright_msg1[256], Copyright_msg2[256];
 
-	sprintf(Copyright_msg1, NOX("FreeSpace 2"));
+    //	strcpy(Copyright_msg1, XSTR("Descent: FreeSpace - The Great War, Copyright c 1998, Volition, Inc.", -1));
+    gr_set_color_fast(&Color_white);
+
+    sprintf(Copyright_msg1, NOX("FreeSpace 2"));
 #if defined(GERMAN_BUILD)
-	sprintf(Copyright_msg2, XSTR("Copyright %c 1999, Volition, Inc.  All rights reserved.", 385), '\xA8');
+    sprintf(Copyright_msg2,
+            XSTR("Copyright %c 1999, Volition, Inc.  All rights reserved.", 385),
+            '\xA8');
 #else
-	sprintf(Copyright_msg2, XSTR("Copyright %c 1999, Volition, Inc.  All rights reserved.", 385), '\x83');
+    sprintf(Copyright_msg2,
+            XSTR("Copyright %c 1999, Volition, Inc.  All rights reserved.", 385),
+            '\x83');
 #endif
 
-	gr_get_string_size(&w, NULL, Copyright_msg1);
-	sx = fl2i((gr_screen.max_w / 2) - w/2.0f + 0.5f);
-	sy = (gr_screen.max_h - 2) - 2*gr_get_font_height();
-	gr_string(sx, sy, Copyright_msg1);
+    gr_get_string_size(&w, NULL, Copyright_msg1);
+    sx = fl2i((gr_screen.max_w / 2) - w / 2.0f + 0.5f);
+    sy = (gr_screen.max_h - 2) - 2 * gr_get_font_height();
+    gr_string(sx, sy, Copyright_msg1);
 
-	gr_get_string_size(&w, NULL, Copyright_msg2);
-	sx = fl2i((gr_screen.max_w / 2) - w/2.0f + 0.5f);
-	sy = (gr_screen.max_h - 2) - gr_get_font_height();
-	gr_string(sx, sy, Copyright_msg2);
+    gr_get_string_size(&w, NULL, Copyright_msg2);
+    sx = fl2i((gr_screen.max_w / 2) - w / 2.0f + 0.5f);
+    sy = (gr_screen.max_h - 2) - gr_get_font_height();
+    gr_string(sx, sy, Copyright_msg2);
 }
 
-void player_select_display_all_text()
+void
+player_select_display_all_text()
 {
-	int w, h;
+    int w, h;
 
-	// only draw if we actually have a valid string
-	if (strlen(Player_select_bottom_text)) {
-		gr_get_string_size(&w, &h, Player_select_bottom_text);
-	
-		w = (gr_screen.max_w - w) / 2;
-		gr_set_color_fast(&Color_bright_white);
-		gr_printf(w, Player_select_bottom_text_y[gr_screen.res], Player_select_bottom_text);
-	}
+    // only draw if we actually have a valid string
+    if (strlen(Player_select_bottom_text)) {
+        gr_get_string_size(&w, &h, Player_select_bottom_text);
 
-	// only draw if we actually have a valid string
-	if (strlen(Player_select_middle_text)) {
-		gr_get_string_size(&w, &h, Player_select_middle_text);
-	
-		w = (gr_screen.max_w - w) / 2;
-		gr_set_color_fast(&Color_bright_white);
-		gr_printf(w, Player_select_middle_text_y[gr_screen.res], Player_select_middle_text);
-	}
+        w = (gr_screen.max_w - w) / 2;
+        gr_set_color_fast(&Color_bright_white);
+        gr_printf(w, Player_select_bottom_text_y[gr_screen.res],
+                  Player_select_bottom_text);
+    }
+
+    // only draw if we actually have a valid string
+    if (strlen(Player_select_middle_text)) {
+        gr_get_string_size(&w, &h, Player_select_middle_text);
+
+        w = (gr_screen.max_w - w) / 2;
+        gr_set_color_fast(&Color_bright_white);
+        gr_printf(w, Player_select_middle_text_y[gr_screen.res],
+                  Player_select_middle_text);
+    }
 }
 
-int player_select_pilot_file_filter(char *filename)
+int
+player_select_pilot_file_filter(char *filename)
 {
-	return !verify_pilot_file(filename, Player_select_mode == PLAYER_SELECT_MODE_SINGLE);
+    return !verify_pilot_file(filename,
+                              Player_select_mode == PLAYER_SELECT_MODE_SINGLE);
 }
 
-void player_select_set_bottom_text(char *txt)
+void
+player_select_set_bottom_text(char *txt)
 {
-	if (txt) {
-		strncpy(Player_select_bottom_text, txt, 149);
-	}
+    if (txt) {
+        strncpy(Player_select_bottom_text, txt, 149);
+    }
 }
 
-void player_select_set_middle_text(char *txt)
+void
+player_select_set_middle_text(char *txt)
 {
-	if (txt) {
-		strncpy(Player_select_middle_text, txt, 149);
-	}
+    if (txt) {
+        strncpy(Player_select_middle_text, txt, 149);
+    }
 }
 
-void player_select_eval_very_first_pilot()
-{	
-	// never bring up the initial main hall help overlay
-	// Player_select_very_first_pilot = 0;
-
-	// if we already have this flag set, check to see if our callsigns match
-	if(Player_select_very_first_pilot){
-		// if the callsign has changed, unset the flag
-		if(strcmp(Player_select_very_first_pilot_callsign,Pilots[Player_select_pilot])){
-			Player_select_very_first_pilot = 0;
-		}
-	}
-	// otherwise check to see if there is only 1 pilot
-	else {
-		if((Player_select_num_pilots == 1) && (Player_select_initial_count == 0)){
-			// set up the data
-			Player_select_very_first_pilot = 1;
-			strcpy(Player_select_very_first_pilot_callsign,Pilots[Player_select_pilot]);
-		}
-	}
-}
-
-void player_select_commit()
+void
+player_select_eval_very_first_pilot()
 {
-	// if we've gotten to this point, we should have ensured this was the case
-	Assert(Player_select_num_pilots > 0);
-	
-	gameseq_post_event(GS_EVENT_MAIN_MENU);
-	gamesnd_play_iface(SND_COMMIT_PRESSED);
+    // never bring up the initial main hall help overlay
+    // Player_select_very_first_pilot = 0;
 
-	// evaluate if this is the _very_ first pilot
-	player_select_eval_very_first_pilot();
-} 
-
-void player_select_cancel_create()
-{
-	int idx;
-
-	Player_select_num_pilots--;
-
-	// make sure we correct the Selected_pilot index to account for the cancelled action
-	if (Player_select_num_pilots == 0) {
-		Player_select_pilot = -1;
-	}
-
-	// move all pilots down
-	for (idx=0; idx<Player_select_num_pilots; idx++) {
-		strcpy(Pilots[idx], Pilots[idx + 1]);
-	}
-
-	// unset the input mode
-	player_select_set_input_mode(0);
-
-	// clear any bottom text
-	player_select_set_bottom_text("");
-
-	// clear any middle text
-	player_select_set_middle_text("");
-
-	// ungray all controls
-	player_select_set_controls(0);
-
-	// disable the autoaccept
-	Player_select_autoaccept = 0;
+    // if we already have this flag set, check to see if our callsigns match
+    if (Player_select_very_first_pilot) {
+        // if the callsign has changed, unset the flag
+        if (strcmp(Player_select_very_first_pilot_callsign,
+                   Pilots[Player_select_pilot])) {
+            Player_select_very_first_pilot = 0;
+        }
+    }
+    // otherwise check to see if there is only 1 pilot
+    else {
+        if ((Player_select_num_pilots == 1) &&
+            (Player_select_initial_count == 0)) {
+            // set up the data
+            Player_select_very_first_pilot = 1;
+            strcpy(Player_select_very_first_pilot_callsign,
+                   Pilots[Player_select_pilot]);
+        }
+    }
 }
 
-DCF(bastion,"Sets the player to be on the bastion")
+void
+player_select_commit()
 {
-	if(gameseq_get_state() == GS_STATE_INITIAL_PLAYER_SELECT){
-		Player_select_force_bastion = 1;
-		dc_printf("Player is now in the Bastion\n");
-	}
+    // if we've gotten to this point, we should have ensured this was the case
+    Assert(Player_select_num_pilots > 0);
+
+    gameseq_post_event(GS_EVENT_MAIN_MENU);
+    gamesnd_play_iface(SND_COMMIT_PRESSED);
+
+    // evaluate if this is the _very_ first pilot
+    player_select_eval_very_first_pilot();
 }
 
-#define MAX_PLAYER_TIPS			40
+void
+player_select_cancel_create()
+{
+    int idx;
+
+    Player_select_num_pilots--;
+
+    // make sure we correct the Selected_pilot index to account for the cancelled action
+    if (Player_select_num_pilots == 0) {
+        Player_select_pilot = -1;
+    }
+
+    // move all pilots down
+    for (idx = 0; idx < Player_select_num_pilots; idx++) {
+        strcpy(Pilots[idx], Pilots[idx + 1]);
+    }
+
+    // unset the input mode
+    player_select_set_input_mode(0);
+
+    // clear any bottom text
+    player_select_set_bottom_text("");
+
+    // clear any middle text
+    player_select_set_middle_text("");
+
+    // ungray all controls
+    player_select_set_controls(0);
+
+    // disable the autoaccept
+    Player_select_autoaccept = 0;
+}
+
+DCF(bastion, "Sets the player to be on the bastion")
+{
+    if (gameseq_get_state() == GS_STATE_INITIAL_PLAYER_SELECT) {
+        Player_select_force_bastion = 1;
+        dc_printf("Player is now in the Bastion\n");
+    }
+}
+
+#define MAX_PLAYER_TIPS 40
 
 char *Player_tips[MAX_PLAYER_TIPS];
 int Num_player_tips;
 int Player_tips_shown = 0;
 
 // tooltips
-void player_tips_init()
+void
+player_tips_init()
 {
-	Num_player_tips = 0;
+    Num_player_tips = 0;
 
-	// begin external localization stuff
-	lcl_ext_open();
+    // begin external localization stuff
+    lcl_ext_open();
 
-	read_file_text("tips.tbl");
-	reset_parse();
+    read_file_text("tips.tbl");
+    reset_parse();
 
-	while(!optional_string("#end")){
-		required_string("+Tip:");
+    while (!optional_string("#end")) {
+        required_string("+Tip:");
 
-		if(Num_player_tips >= MAX_PLAYER_TIPS){
-			break;
-		}
-		Player_tips[Num_player_tips++] = stuff_and_malloc_string(F_NAME, NULL, 1024);				
-	}
+        if (Num_player_tips >= MAX_PLAYER_TIPS) {
+            break;
+        }
+        Player_tips[Num_player_tips++] = stuff_and_malloc_string(F_NAME, NULL,
+                                                                 1024);
+    }
 
-	// stop externalizing, homey
-	lcl_ext_close();
+    // stop externalizing, homey
+    lcl_ext_close();
 }
-void player_tips_popup()
+void
+player_tips_popup()
 {
-	int tip, ret;	
-	
-	// player has disabled tips
-	if((Player != NULL) && !Player->tips){
-		return;
-	}
-	// only show tips once per instance of Freespace
-	if(Player_tips_shown == 1){
-		return;
-	}
-	Player_tips_shown = 1;
+    int tip, ret;
 
-	// randomly pick one
-	tip = (int)frand_range(0.0f, (float)Num_player_tips - 1.0f);
+    // player has disabled tips
+    if ((Player != NULL) && !Player->tips) {
+        return;
+    }
+    // only show tips once per instance of Freespace
+    if (Player_tips_shown == 1) {
+        return;
+    }
+    Player_tips_shown = 1;
 
-	char all_txt[2048];	
+    // randomly pick one
+    tip = (int)frand_range(0.0f, (float)Num_player_tips - 1.0f);
 
-	do {
-		sprintf(all_txt, XSTR("NEW USER TIP\n\n%s", 1565), Player_tips[tip]);
-		ret = popup(PF_NO_SPECIAL_BUTTONS | PF_TITLE | PF_TITLE_WHITE, 3, XSTR("&Ok", 669), XSTR("&Next", 1444), XSTR("Don't show me this again", 1443), all_txt);
-		
-		// now what?
-		switch(ret){
-		// next
-		case 1:
-			if(tip >= Num_player_tips - 1){
-				tip = 0;
-			} else {
-				tip++;
-			}
-			break;
+    char all_txt[2048];
 
-		// don't show me this again
-		case 2:
-			ret = 0;
-			Player->tips = 0;
-			write_pilot_file(Player);
-			break;
-		}
-	} while(ret > 0);
+    do {
+        sprintf(all_txt, XSTR("NEW USER TIP\n\n%s", 1565), Player_tips[tip]);
+        ret = popup(PF_NO_SPECIAL_BUTTONS | PF_TITLE | PF_TITLE_WHITE, 3,
+                    XSTR("&Ok", 669), XSTR("&Next", 1444),
+                    XSTR("Don't show me this again", 1443), all_txt);
+
+        // now what?
+        switch (ret) {
+        // next
+        case 1:
+            if (tip >= Num_player_tips - 1) {
+                tip = 0;
+            }
+            else {
+                tip++;
+            }
+            break;
+
+        // don't show me this again
+        case 2:
+            ret = 0;
+            Player->tips = 0;
+            write_pilot_file(Player);
+            break;
+        }
+    } while (ret > 0);
 }

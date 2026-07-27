@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #ifndef __FREESPACE_MISSIONSTATS_H__
 #define __FREESPACE_MISSIONSTATS_H__

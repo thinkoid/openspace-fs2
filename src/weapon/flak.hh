@@ -19,7 +19,6 @@
 struct weapon;
 struct object;
 
-
 // --------------------------------------------------------------------------------------------------------------------------------------
 // FLAK FUNCTIONS
 //
@@ -37,11 +36,13 @@ void flak_create(weapon *wp);
 void flak_delete(int flak_index);
 
 // given a just fired flak shell, pick a detonating distance for it
-void flak_pick_range(object *objp, vector *predicted_target_pos, float weapon_subsys_strength);
+void flak_pick_range(object *objp, vector *predicted_target_pos,
+                     float weapon_subsys_strength);
 
 // add some jitter to a flak gun's aiming direction, take into account range to target so that we're never _too_ far off
 // assumes dir is normalized
-void flak_jitter_aim(vector *dir, float dist_to_target, float weapon_subsys_strength);
+void flak_jitter_aim(vector *dir, float dist_to_target,
+                     float weapon_subsys_strength);
 
 // create a muzzle flash from a flak gun based upon firing position and weapon type
 void flak_muzzle_flash(vector *pos, vector *dir, int turret_weapon_class);

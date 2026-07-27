@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 // (windows.h removed)
 // (windowsx.h removed)
@@ -16,34 +16,36 @@
 #include <graphics/line.hh>
 #include <io/key.hh>
 
-
-void gr8_uline(int x1,int y1,int x2,int y2)
+void
+gr8_uline(int x1, int y1, int x2, int y2)
 {
-	int i;
-   int xstep,ystep;
-   int dy=y2-y1;
-   int dx=x2-x1;
-   int error_term=0;
+    int i;
+    int xstep, ystep;
+    int dy = y2 - y1;
+    int dx = x2 - x1;
+    int error_term = 0;
 
-	gr_lock();
-	ubyte *dptr = GR_SCREEN_PTR(ubyte,x1,y1);
-	ubyte color = gr_screen.current_color.raw8;
-		
-	if(dy<0)	{
-		dy=-dy;
-      ystep=-gr_screen.rowsize / gr_screen.bytes_per_pixel;
-	}	else	{
-      ystep=gr_screen.rowsize / gr_screen.bytes_per_pixel;
-	}
+    gr_lock();
+    ubyte *dptr = GR_SCREEN_PTR(ubyte, x1, y1);
+    ubyte color = gr_screen.current_color.raw8;
 
-   if(dx<0)	{
-      dx=-dx;
-      xstep=-1;
-   } else {
-      xstep=1;
-	}
+    if (dy < 0) {
+        dy = -dy;
+        ystep = -gr_screen.rowsize / gr_screen.bytes_per_pixel;
+    }
+    else {
+        ystep = gr_screen.rowsize / gr_screen.bytes_per_pixel;
+    }
 
-	/* HARDWARE_ONLY - removed alpha color table stuff
+    if (dx < 0) {
+        dx = -dx;
+        xstep = -1;
+    }
+    else {
+        xstep = 1;
+    }
+
+    /* HARDWARE_ONLY - removed alpha color table stuff
 	if ( Current_alphacolor )	{
 		if(dx>dy)	{
 
@@ -73,45 +75,40 @@ void gr8_uline(int x1,int y1,int x2,int y2)
 		}
 	} else {
 	*/
-		if(dx>dy)	{
+    if (dx > dy) {
+        for (i = dx + 1; i > 0; i--) {
+            *dptr = color;
+            dptr += xstep;
+            error_term += dy;
 
-			for(i=dx+1;i>0;i--) {
-				*dptr = color;
-				dptr += xstep;
-				error_term+=dy;
-
-				if(error_term>dx)	{
-					error_term-=dx;
-					dptr+=ystep;
-				}
-			}
-		} else {
-
-			for(i=dy+1;i>0;i--)	{
-				*dptr = color;
-				dptr += ystep;
-				error_term+=dx;
-				if(error_term>0)	{
-					error_term-=dy;
-					dptr+=xstep;
-				}
-
-			}
-
-		}	
-	gr_unlock();
-}  
-
-
-
-void gr8_line(int x1,int y1,int x2,int y2)
-{
-	int clipped = 0, swapped=0;
-
-	INT_CLIPLINE(x1,y1,x2,y2,gr_screen.clip_left,gr_screen.clip_top,gr_screen.clip_right,gr_screen.clip_bottom,return,clipped=1,swapped=1);
-
-	gr8_uline(x1,y1,x2,y2);
+            if (error_term > dx) {
+                error_term -= dx;
+                dptr += ystep;
+            }
+        }
+    }
+    else {
+        for (i = dy + 1; i > 0; i--) {
+            *dptr = color;
+            dptr += ystep;
+            error_term += dx;
+            if (error_term > 0) {
+                error_term -= dy;
+                dptr += xstep;
+            }
+        }
+    }
+    gr_unlock();
 }
 
+void
+gr8_line(int x1, int y1, int x2, int y2)
+{
+    int clipped = 0, swapped = 0;
 
+    INT_CLIPLINE(x1, y1, x2, y2, gr_screen.clip_left, gr_screen.clip_top,
+                 gr_screen.clip_right, gr_screen.clip_bottom, return, clipped = 1,
+                 swapped = 1);
 
+    gr8_uline(x1, y1, x2, y2);
+}

@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #ifndef __FREESPACE_MISSIONRECOMMEND_H__
 #define __FREESPACE_MISSIONRECOMMEND_H__

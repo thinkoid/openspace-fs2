@@ -5,55 +5,55 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #ifndef __FREESPACE_HUDTARGETBOX_H__
 #define __FREESPACE_HUDTARGETBOX_H__
 
-#define TBOX_FLASH_DURATION	1400
-#define TBOX_FLASH_INTERVAL	200
+#define TBOX_FLASH_DURATION 1400
+#define TBOX_FLASH_INTERVAL 200
 
-#define NUM_TBOX_FLASH_TIMERS		14
-#define TBOX_FLASH_NAME				0
-#define TBOX_FLASH_CARGO			1
-#define TBOX_FLASH_HULL				2
-#define TBOX_FLASH_STATUS			3
-#define TBOX_FLASH_SUBSYS			4
-#define TBOX_FLASH_DOCKED			5
-#define TBOX_FLASH_SQUADMSG		6
-#define TBOX_FLASH_OBJECTIVE		7
-#define TBOX_FLASH_COLLISION		8
-#define TBOX_FLASH_CMEASURE		9
-#define TBOX_FLASH_NETLAG			10
-#define TBOX_FLASH_BLAST			11
-#define TBOX_FLASH_EMP				12
-#define TBOX_FLASH_ENGINE_WASH	13
+#define NUM_TBOX_FLASH_TIMERS 14
+#define TBOX_FLASH_NAME 0
+#define TBOX_FLASH_CARGO 1
+#define TBOX_FLASH_HULL 2
+#define TBOX_FLASH_STATUS 3
+#define TBOX_FLASH_SUBSYS 4
+#define TBOX_FLASH_DOCKED 5
+#define TBOX_FLASH_SQUADMSG 6
+#define TBOX_FLASH_OBJECTIVE 7
+#define TBOX_FLASH_COLLISION 8
+#define TBOX_FLASH_CMEASURE 9
+#define TBOX_FLASH_NETLAG 10
+#define TBOX_FLASH_BLAST 11
+#define TBOX_FLASH_EMP 12
+#define TBOX_FLASH_ENGINE_WASH 13
 
 extern int Target_static_looping;
 
 extern int Target_window_coords[GR_NUM_RESOLUTIONS][4];
 
-// flag to indicate whether to show the extra information about a target 
+// flag to indicate whether to show the extra information about a target
 // The HUD_config controls whether this can be shown... but the player can still toggle it on/off
 // during the game.
 extern int Targetbox_show_extra_info;
 
-void	hud_targetbox_init();
-void	hud_targetbox_init_flash();
-void	hud_render_target_model();
-void	hud_show_target_data(float frametime);
-void	hud_get_target_strength(object *objp, float *shields, float *integrity);
+void hud_targetbox_init();
+void hud_targetbox_init_flash();
+void hud_render_target_model();
+void hud_show_target_data(float frametime);
+void hud_get_target_strength(object *objp, float *shields, float *integrity);
 
 // used to flash text, uses the TBOX_FLASH_ #defines above
-void	hud_targetbox_start_flash(int index, int duration=TBOX_FLASH_DURATION);
-int	hud_targetbox_maybe_flash(int index, int flash_fast=0);
-void	hud_targetbox_end_flash(int index);
-int	hud_targetbox_is_bright(int index);
-int	hud_targetbox_flash_expired(int index);
+void hud_targetbox_start_flash(int index, int duration = TBOX_FLASH_DURATION);
+int hud_targetbox_maybe_flash(int index, int flash_fast = 0);
+void hud_targetbox_end_flash(int index);
+int hud_targetbox_is_bright(int index);
+int hud_targetbox_flash_expired(int index);
 
 // functions to manage the targetbox static that appears when sensors are severely damaged
-void	hud_targetbox_static_init();
-int	hud_targetbox_static_maybe_blit(float frametime);
+void hud_targetbox_static_init();
+int hud_targetbox_static_maybe_blit(float frametime);
 
 void hud_render_target_ship(object *target_objp);
 void hud_render_target_debris(object *target_objp);

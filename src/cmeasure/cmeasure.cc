@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #include <globalincs/pstypes.hh>
 #include <globalincs/systemvars.hh>
@@ -22,7 +22,7 @@
 #include <io/timer.hh>
 #include <fireball/fireballs.hh>
 #include <radar/radar.hh>
-#include <mission/missionparse.hh>		// For MAX_SPECIES_NAMES
+#include <mission/missionparse.hh> // For MAX_SPECIES_NAMES
 #include <gamesnd/gamesnd.hh>
 #include <object/objectsnd.hh>
 #include <sound/sound.hh>
@@ -31,21 +31,23 @@
 cmeasure_info Cmeasure_info[MAX_CMEASURE_TYPES];
 cmeasure Cmeasures[MAX_CMEASURES];
 
-int	Num_cmeasure_types = 0;
-int	Num_cmeasures = 0;
-int	Cmeasure_inited = 0;
-int	Cmeasures_homing_check = 0;
-int	Countermeasures_enabled = 1;			//	Debug, set to 0 means no one can fire countermeasures.
+int Num_cmeasure_types = 0;
+int Num_cmeasures = 0;
+int Cmeasure_inited = 0;
+int Cmeasures_homing_check = 0;
+int Countermeasures_enabled =
+    1; //	Debug, set to 0 means no one can fire countermeasures.
 
 // This will get called at the start of each level.
-void cmeasure_init()
+void
+cmeasure_init()
 {
-	int i;
+    int i;
 
-	if ( !Cmeasure_inited ) {
-		Cmeasure_inited = 1;
+    if (!Cmeasure_inited) {
+        Cmeasure_inited = 1;
 
-/*		// Do all the processing that happens only once
+        /*		// Do all the processing that happens only once
 		if ( Debris_model < 0 )		{
 			if (Debris_model>-1)	{
 				polymodel * pm;
@@ -60,51 +62,51 @@ void cmeasure_init()
 				Warning( LOCATION, "Couldn't load species %d debris\ntexture, '%s'\n", i, Debris_texture_files[i] );
 			}
 		}
-*/	
-	}
+*/
+    }
 
-	// Reset everything between levels
-	Num_cmeasures = 0;
+    // Reset everything between levels
+    Num_cmeasures = 0;
 
-	for (i=0; i<MAX_CMEASURES; i++ )	{
-		Cmeasures[i].subtype = CMEASURE_UNUSED;
-	}
-		
+    for (i = 0; i < MAX_CMEASURES; i++) {
+        Cmeasures[i].subtype = CMEASURE_UNUSED;
+    }
 }
 
-void cmeasure_render(object * objp)
+void
+cmeasure_render(object *objp)
 {
-	// JAS TODO: Replace with proper fireball
-	cmeasure			*cmp;
-	cmeasure_info	*cmip;
-	
-	cmp = &Cmeasures[objp->instance];
-	cmip = &Cmeasure_info[cmp->subtype];
+    // JAS TODO: Replace with proper fireball
+    cmeasure *cmp;
+    cmeasure_info *cmip;
 
-	if ( cmp->subtype == CMEASURE_UNUSED )	{
-		Int3();	//	Hey, what are we doing in here?
-		return;
-	}
+    cmp = &Cmeasures[objp->instance];
+    cmip = &Cmeasure_info[cmp->subtype];
 
-//	float				size = -1.0f;
-//	vertex			p;
-//	g3_rotate_vertex(&p, &objp->pos );
-//	if ( rand() > RAND_MAX/2 )	{
-//		gr_set_color( 255, 0, 0 );
-//	} else {
-//		gr_set_color( 255, 255, 255 );
-//	}
-//	g3_draw_sphere(&p, 100.0f );
-	
-	if ( cmip->model_num > -1 )	{
-		model_clear_instance(cmip->model_num);
-		model_render(cmip->model_num, &objp->orient, &objp->pos, MR_NO_LIGHTING );
-	} else {
-		mprintf(( "Not rendering countermeasure because model_num is negative\n" ));
-	}
+    if (cmp->subtype == CMEASURE_UNUSED) {
+        Int3(); //	Hey, what are we doing in here?
+        return;
+    }
 
+    //	float				size = -1.0f;
+    //	vertex			p;
+    //	g3_rotate_vertex(&p, &objp->pos );
+    //	if ( rand() > RAND_MAX/2 )	{
+    //		gr_set_color( 255, 0, 0 );
+    //	} else {
+    //		gr_set_color( 255, 255, 255 );
+    //	}
+    //	g3_draw_sphere(&p, 100.0f );
 
-/*
+    if (cmip->model_num > -1) {
+        model_clear_instance(cmip->model_num);
+        model_render(cmip->model_num, &objp->orient, &objp->pos, MR_NO_LIGHTING);
+    }
+    else {
+        mprintf(("Not rendering countermeasure because model_num is negative\n"));
+    }
+
+    /*
 	// JAS TODO: Replace with proper fireball
 	int				framenum = -1;
 	float				size = -1.0f;
@@ -135,160 +137,178 @@ void cmeasure_render(object * objp)
 */
 }
 
-void cmeasure_delete( object * objp )
+void
+cmeasure_delete(object *objp)
 {
-	int num;
+    int num;
 
-	num = objp->instance;
+    num = objp->instance;
 
-//	Assert( Cmeasures[num].objnum == OBJ_INDEX(objp));
+    //	Assert( Cmeasures[num].objnum == OBJ_INDEX(objp));
 
-	Cmeasures[num].subtype = CMEASURE_UNUSED;
-	Num_cmeasures--;
-	Assert( Num_cmeasures >= 0 );
+    Cmeasures[num].subtype = CMEASURE_UNUSED;
+    Num_cmeasures--;
+    Assert(Num_cmeasures >= 0);
 }
 
 // broke cmeasure_move into two functions -- process_pre and process_post (as was done with
 // all *_move functions).  Nothing to do for process_pre
 
-void cmeasure_process_pre( object *objp, float frame_time)
+void
+cmeasure_process_pre(object *objp, float frame_time)
+{ }
+
+void
+cmeasure_process_post(object *objp, float frame_time)
 {
+    int num;
+    num = objp->instance;
+
+    //	Assert( Cmeasures[num].objnum == objnum );
+    cmeasure *cmp = &Cmeasures[num];
+
+    if (cmp->lifeleft >= 0.0f) {
+        cmp->lifeleft -= frame_time;
+        if (cmp->lifeleft < 0.0f) {
+            objp->flags |= OF_SHOULD_BE_DEAD;
+            //			demo_do_flag_dead(OBJ_INDEX(objp));
+        }
+    }
 }
 
-void cmeasure_process_post(object * objp, float frame_time)
-{
-	int num;
-	num = objp->instance;
-	
-//	Assert( Cmeasures[num].objnum == objnum );
-	cmeasure *cmp = &Cmeasures[num];
-
-	if ( cmp->lifeleft >= 0.0f) {
-		cmp->lifeleft -= frame_time;
-		if ( cmp->lifeleft < 0.0f )	{
-			objp->flags |= OF_SHOULD_BE_DEAD;
-//			demo_do_flag_dead(OBJ_INDEX(objp));
-		}
-	}
-
-}
-
-float Skill_level_cmeasure_life_scale[NUM_SKILL_LEVELS] = {3.0f, 2.0f, 1.5f, 1.25f, 1.0f};
+float Skill_level_cmeasure_life_scale[NUM_SKILL_LEVELS] = { 3.0f, 2.0f, 1.5f,
+                                                            1.25f, 1.0f };
 
 // creates one countermeasure.  A ship fires 1 of these per launch.  rand_val is used
 // in multiplayer.  If -1, then create a random number.  If non-negative, use this
 // number for static_rand functions
-int cmeasure_create( object * source_obj, vector * pos, int cm_type, int rand_val )
+int
+cmeasure_create(object *source_obj, vector *pos, int cm_type, int rand_val)
 {
-	int		n, objnum, parent_objnum, arand;
-	object	* obj;
-	ship		*shipp;
-	cmeasure	*cmp;
-	cmeasure_info	*cmeasurep;
+    int n, objnum, parent_objnum, arand;
+    object *obj;
+    ship *shipp;
+    cmeasure *cmp;
+    cmeasure_info *cmeasurep;
 
 #ifndef NDEBUG
-	if (!Countermeasures_enabled || !Ai_firing_enabled)
-		return -1;
+    if (!Countermeasures_enabled || !Ai_firing_enabled)
+        return -1;
 #endif
 
-	Cmeasures_homing_check = 2;		//	Tell homing code to scan everything for two frames.  If only one frame, get sync problems due to objects being created at end of frame!
+    Cmeasures_homing_check =
+        2; //	Tell homing code to scan everything for two frames.  If only one frame, get sync problems due to objects being created at end of frame!
 
-	parent_objnum = OBJ_INDEX(source_obj);
+    parent_objnum = OBJ_INDEX(source_obj);
 
-	Assert( source_obj->type == OBJ_SHIP );	
-	Assert( source_obj->instance >= 0 && source_obj->instance < MAX_SHIPS );	
-	
-	shipp = &Ships[source_obj->instance];
+    Assert(source_obj->type == OBJ_SHIP);
+    Assert(source_obj->instance >= 0 && source_obj->instance < MAX_SHIPS);
 
-	if ( Num_cmeasures >= MAX_CMEASURES)
-		return -1;
+    shipp = &Ships[source_obj->instance];
 
-	for (n=0; n<MAX_CMEASURES; n++ )	
-		if ( Cmeasures[n].subtype == CMEASURE_UNUSED)
-			break;
-	if ( n == MAX_CMEASURES)
-		return -1;
+    if (Num_cmeasures >= MAX_CMEASURES)
+        return -1;
 
-	nprintf(("Network", "Cmeasure created by %s\n", Ships[source_obj->instance].ship_name));
+    for (n = 0; n < MAX_CMEASURES; n++)
+        if (Cmeasures[n].subtype == CMEASURE_UNUSED)
+            break;
+    if (n == MAX_CMEASURES)
+        return -1;
 
-	cmp = &Cmeasures[n];
-	cmeasurep = &Cmeasure_info[cm_type];
+    nprintf(("Network", "Cmeasure created by %s\n",
+             Ships[source_obj->instance].ship_name));
 
-	if ( pos == NULL )
-		pos = &source_obj->pos;
+    cmp = &Cmeasures[n];
+    cmeasurep = &Cmeasure_info[cm_type];
 
-	objnum = obj_create( OBJ_CMEASURE, parent_objnum, n, &source_obj->orient, pos, 1.0f, OF_RENDERS | OF_PHYSICS );
-	
-	Assert( objnum >= 0 && objnum < MAX_OBJECTS );
+    if (pos == NULL)
+        pos = &source_obj->pos;
 
-	// Create Debris piece n!
-	if ( rand_val == -1 )
-		arand = myrand();				// use a random number to get lifeleft, and random vector for displacement from ship
-	else
-		arand = rand_val;
+    objnum = obj_create(OBJ_CMEASURE, parent_objnum, n, &source_obj->orient, pos,
+                        1.0f, OF_RENDERS | OF_PHYSICS);
 
-	cmp->lifeleft = static_randf(arand) * (cmeasurep->life_max - cmeasurep->life_min) / cmeasurep->life_min;
-	if (source_obj->flags & OF_PLAYER_SHIP){
-		cmp->lifeleft *= Skill_level_cmeasure_life_scale[Game_skill_level];
-	}
-	cmp->lifeleft = cmeasurep->life_min + cmp->lifeleft * (cmeasurep->life_max - cmeasurep->life_min);
+    Assert(objnum >= 0 && objnum < MAX_OBJECTS);
 
-	//	cmp->objnum = objnum;
-	cmp->team = shipp->team;
-	cmp->subtype = cm_type;
-	cmp->objnum = objnum;
-	cmp->source_objnum = parent_objnum;
-	cmp->source_sig = Objects[objnum].signature;
+    // Create Debris piece n!
+    if (rand_val == -1)
+        arand =
+            myrand(); // use a random number to get lifeleft, and random vector for displacement from ship
+    else
+        arand = rand_val;
 
-	cmp->flags = 0;
+    cmp->lifeleft = static_randf(arand) *
+                    (cmeasurep->life_max - cmeasurep->life_min) /
+                    cmeasurep->life_min;
+    if (source_obj->flags & OF_PLAYER_SHIP) {
+        cmp->lifeleft *= Skill_level_cmeasure_life_scale[Game_skill_level];
+    }
+    cmp->lifeleft = cmeasurep->life_min +
+                    cmp->lifeleft * (cmeasurep->life_max - cmeasurep->life_min);
 
-	nprintf(("Jim", "Frame %i: Launching countermeasure #%i\n", Framecount, Objects[objnum].signature));
+    //	cmp->objnum = objnum;
+    cmp->team = shipp->team;
+    cmp->subtype = cm_type;
+    cmp->objnum = objnum;
+    cmp->source_objnum = parent_objnum;
+    cmp->source_sig = Objects[objnum].signature;
 
-	obj = &Objects[objnum];
-	
-	Num_cmeasures++;
+    cmp->flags = 0;
 
-	vector vel, rand_vec;
+    nprintf(("Jim", "Frame %i: Launching countermeasure #%i\n", Framecount,
+             Objects[objnum].signature));
 
-	vm_vec_scale_add(&vel, &source_obj->phys_info.vel, &source_obj->orient.fvec, -25.0f);
+    obj = &Objects[objnum];
 
-	static_randvec(arand+1, &rand_vec);
+    Num_cmeasures++;
 
-	vm_vec_scale_add2(&vel, &rand_vec, 2.0f);
+    vector vel, rand_vec;
 
-	obj->phys_info.vel = vel;
+    vm_vec_scale_add(&vel, &source_obj->phys_info.vel, &source_obj->orient.fvec,
+                     -25.0f);
 
-	vm_vec_zero(&obj->phys_info.rotvel);
+    static_randvec(arand + 1, &rand_vec);
 
-	// blow out his reverse thrusters. Or drag, same thing.
-	obj->phys_info.rotdamp = 10000.0f;
-	obj->phys_info.side_slip_time_const = 10000.0f;
+    vm_vec_scale_add2(&vel, &rand_vec, 2.0f);
 
-	vm_vec_zero(&obj->phys_info.max_vel);		// make so he can't turn on his own VOLITION anymore.
-	obj->phys_info.max_vel.z = -25.0f;
-	vm_vec_copy_scale(&obj->phys_info.desired_vel, &obj->orient.fvec, obj->phys_info.max_vel.z );
+    obj->phys_info.vel = vel;
 
-	vm_vec_zero(&obj->phys_info.max_rotvel);	// make so he can't change speed on his own VOLITION anymore.
+    vm_vec_zero(&obj->phys_info.rotvel);
 
-//	obj->phys_info.flags |= PF_USE_VEL;
+    // blow out his reverse thrusters. Or drag, same thing.
+    obj->phys_info.rotdamp = 10000.0f;
+    obj->phys_info.side_slip_time_const = 10000.0f;
 
-	return arand;										// need to return this value for multiplayer purposes
+    vm_vec_zero(
+        &obj->phys_info
+             .max_vel); // make so he can't turn on his own VOLITION anymore.
+    obj->phys_info.max_vel.z = -25.0f;
+    vm_vec_copy_scale(&obj->phys_info.desired_vel, &obj->orient.fvec,
+                      obj->phys_info.max_vel.z);
+
+    vm_vec_zero(
+        &obj->phys_info
+             .max_rotvel); // make so he can't change speed on his own VOLITION anymore.
+
+    //	obj->phys_info.flags |= PF_USE_VEL;
+
+    return arand; // need to return this value for multiplayer purposes
 }
 
-void cmeasure_select_next(object *objp)
+void
+cmeasure_select_next(object *objp)
 {
-	ship	*shipp;
+    ship *shipp;
 
-	Assert(objp->type == OBJ_SHIP);
+    Assert(objp->type == OBJ_SHIP);
 
-	shipp = &Ships[objp->instance];
-	shipp->current_cmeasure++;
+    shipp = &Ships[objp->instance];
+    shipp->current_cmeasure++;
 
-	if (shipp->current_cmeasure >= Num_cmeasure_types)
-		shipp->current_cmeasure = 0;
+    if (shipp->current_cmeasure >= Num_cmeasure_types)
+        shipp->current_cmeasure = 0;
 
-	//snd_play( &Snds[SND_CMEASURE_CYCLE] );
+    //snd_play( &Snds[SND_CMEASURE_CYCLE] );
 
-	mprintf(("Countermeasure type set to %i in frame %i\n", shipp->current_cmeasure, Framecount));
+    mprintf(("Countermeasure type set to %i in frame %i\n",
+             shipp->current_cmeasure, Framecount));
 }
-

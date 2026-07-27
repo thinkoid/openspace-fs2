@@ -29,35 +29,34 @@ extern void message_pagein_mission_messages();
 
 // Pages in all the texutures for the currently
 // loaded mission.  Call game_busy() occasionally...
-void level_page_in()
+void
+level_page_in()
 {
+    mprintf(("Beginning level bitmap paging...\n"));
 
-	mprintf(( "Beginning level bitmap paging...\n" ));
+    bm_page_in_start();
 
-	bm_page_in_start();
+    // Most important ones first
+    ship_page_in();
+    weapons_page_in();
+    fireballs_page_in();
+    particle_page_in();
+    debris_page_in();
+    hud_page_in();
+    radar_page_in();
+    training_mission_page_in();
+    stars_page_in();
+    shockwave_page_in();
+    shield_hit_page_in();
+    asteroid_page_in();
+    neb2_page_in();
 
-	// Most important ones first
-	ship_page_in();
-	weapons_page_in();
-	fireballs_page_in();
-	particle_page_in();
-	debris_page_in();
-	hud_page_in();
-	radar_page_in();
-	training_mission_page_in();
-	stars_page_in();
-	shockwave_page_in();
-	shield_hit_page_in();
-	asteroid_page_in();
-	neb2_page_in();
+    // preload mission messages if NOT running low-memory (greater than 48MB)
+    if (game_using_low_mem() == false) {
+        message_pagein_mission_messages();
+    }
 
-	// preload mission messages if NOT running low-memory (greater than 48MB)
-	if (game_using_low_mem() == false) {
-		message_pagein_mission_messages();
-	}
+    bm_page_in_stop();
 
-	bm_page_in_stop();
-
-	mprintf(( "Ending level bitmap paging...\n" ));
-
+    mprintf(("Ending level bitmap paging...\n"));
 }

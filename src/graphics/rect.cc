@@ -5,78 +5,81 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #include <graphics/2d.hh>
 #include <graphics/grinternal.hh>
 
-void grx_rect(int x,int y,int w,int h)
+void
+grx_rect(int x, int y, int w, int h)
 {
-	int i;
-	int x1 = x, x2;
-	int y1 = y, y2;
+    int i;
+    int x1 = x, x2;
+    int y1 = y, y2;
 
-	if ( w > 0 )
-		 x2 = x + w - 1;
-	else
-		 x2 = x + w + 1;
+    if (w > 0)
+        x2 = x + w - 1;
+    else
+        x2 = x + w + 1;
 
-	if ( h > 0 )
-		y2 = y + h - 1;
-	else
-		y2 = y + h + 1;
-		
-	if ( x2 < x1 )	{
-		int tmp;	
-		tmp = x1;
-		x1 = x2;
-		x2 = tmp;
-	}
+    if (h > 0)
+        y2 = y + h - 1;
+    else
+        y2 = y + h + 1;
 
-	if ( y2 < y1 )	{
-		int tmp;	
-		tmp = y1;
-		y1 = y2;
-		y2 = tmp;
-	}
+    if (x2 < x1) {
+        int tmp;
+        tmp = x1;
+        x1 = x2;
+        x2 = tmp;
+    }
 
-	// Check for completely offscreen!
-	if ( x1 > gr_screen.clip_right )
-		return;
+    if (y2 < y1) {
+        int tmp;
+        tmp = y1;
+        y1 = y2;
+        y2 = tmp;
+    }
 
-	if ( x2 < gr_screen.clip_left )
-		return;
+    // Check for completely offscreen!
+    if (x1 > gr_screen.clip_right)
+        return;
 
-	if ( y1 > gr_screen.clip_bottom )
-		return;
+    if (x2 < gr_screen.clip_left)
+        return;
 
-	if ( y2 < gr_screen.clip_top )
-		return;
+    if (y1 > gr_screen.clip_bottom)
+        return;
 
-	// Now clip
-	if ( x1 < gr_screen.clip_left ) 
-		x1 = gr_screen.clip_left;
+    if (y2 < gr_screen.clip_top)
+        return;
 
-	if ( x2 > gr_screen.clip_right ) 
-		x2 = gr_screen.clip_right;
+    // Now clip
+    if (x1 < gr_screen.clip_left)
+        x1 = gr_screen.clip_left;
 
-	if ( y1 < gr_screen.clip_top ) 
-		y1 = gr_screen.clip_top;
+    if (x2 > gr_screen.clip_right)
+        x2 = gr_screen.clip_right;
 
-	if ( y2 > gr_screen.clip_bottom ) 
-		y2 = gr_screen.clip_bottom;
+    if (y1 < gr_screen.clip_top)
+        y1 = gr_screen.clip_top;
 
-	w = x2-x1+1;
-	if ( w < 1 ) return;
+    if (y2 > gr_screen.clip_bottom)
+        y2 = gr_screen.clip_bottom;
 
-	h = y2-y1+1;
-	if ( h < 1 ) return;
+    w = x2 - x1 + 1;
+    if (w < 1)
+        return;
 
-	gr_lock();
+    h = y2 - y1 + 1;
+    if (h < 1)
+        return;
 
-	ubyte *dptr;
+    gr_lock();
 
-	/* HARDWARE_ONLY
+    ubyte *dptr;
+
+    /* HARDWARE_ONLY
 	if ( Current_alphacolor )	{
 		for (i=0; i<h; i++ )	{
 			dptr = GR_SCREEN_PTR(ubyte,x1,y1+i);
@@ -88,11 +91,9 @@ void grx_rect(int x,int y,int w,int h)
 		}
 	} else {
 	*/
-		for (i=0; i<h; i++ )	{
-			dptr = GR_SCREEN_PTR(ubyte,x1,y1+i);
-			memset( dptr, gr_screen.current_color.raw8, w );
-		}	
-	gr_unlock();
-
+    for (i = 0; i < h; i++) {
+        dptr = GR_SCREEN_PTR(ubyte, x1, y1 + i);
+        memset(dptr, gr_screen.current_color.raw8, w);
+    }
+    gr_unlock();
 }
-

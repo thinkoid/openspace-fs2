@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #ifndef _GRSOFT_H
 #define _GRSOFT_H
@@ -13,12 +13,11 @@
 void gr_soft_init();
 void gr_soft_cleanup();
 
-
 // Functions/variables common between grsoft and grdirectdraw
 extern int Grx_mouse_saved;
-void grx_save_mouse_area(int x, int y, int w, int h );
+void grx_save_mouse_area(int x, int y, int w, int h);
 void grx_restore_mouse_area();
-void grx_print_screen(char * filename);
+void grx_print_screen(char *filename);
 int gr8_save_screen();
 void gr8_restore_screen(int id);
 void gr8_free_screen(int id);

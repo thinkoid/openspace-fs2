@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #ifndef _FLOATING_H
 #define _FLOATING_H
@@ -13,7 +13,7 @@
 #include <math.h>
 #include <float.h>
 
-extern float fl_isqrt( float a );
+extern float fl_isqrt(float a);
 extern float frand();
 extern int rand_chance(float frametime, float chance = 1.0f);
 float frand_range(float min, float max);
@@ -24,20 +24,20 @@ float frand_range(float min, float max);
 // Handy macros to prevent type casting all over the place
 
 #define fl_sqrt(fl) (float)sqrt((float)(fl))
-#define fl_isqrt(fl) (1.0f/(float)sqrt((float)(fl)))
+#define fl_isqrt(fl) (1.0f / (float)sqrt((float)(fl)))
 #define fl_abs(fl) (float)fabs((double)(fl))
 #define i2fl(i) ((float)(i))
 #define fl2i(fl) ((int)(fl))
 #define flceil(fl) (int)ceil(fl)
 #define flfloor(fl) (int)floor(fl)
-#define f2fl(fx) ((float)(fx)/65536.0f)
-#define fl2f(fl) (int)((fl)*65536.0f)
+#define f2fl(fx) ((float)(fx) / 65536.0f)
+#define fl2f(fl) (int)((fl) * 65536.0f)
 
 // convert a measurement in degrees to radians
-#define fl_radian(fl)	((float)((fl * 3.14159f)/180.0f))
+#define fl_radian(fl) ((float)((fl * 3.14159f) / 180.0f))
 
 // convert a measurement in radians to degrees
-#define fl_degrees(fl)	((float)((fl * 180.0f)/3.14159))
+#define fl_degrees(fl) ((float)((fl * 180.0f) / 3.14159))
 
 // use this instead of:
 // for:  (int)floor(x+0.5f) use fl_round_2048(x)
@@ -56,9 +56,10 @@ float frand_range(float min, float max);
 // x87 extended-precision float arithmetic: under SSE2 the float add wipes
 // out x and the low word reads back 0 for every input.  lrintf() is the
 // same round-to-nearest-even the x87 trick computed.
-inline int fl_round_2048( float x )
+inline int
+fl_round_2048(float x)
 {
-	return (int)lrintf(x);
+    return (int)lrintf(x);
 }
 
 /*
@@ -85,10 +86,7 @@ float fl_isqrt( float x )
 } 
 */
 
-
-
 // rounds off a floating point number to a multiple of some number
 extern float fl_roundoff(float x, int multiple);
-
 
 #endif

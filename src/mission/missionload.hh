@@ -5,7 +5,7 @@
  * or otherwise commercially exploit the source or things you created based on the 
  * source.
  *
-*/ 
+*/
 
 #ifndef _MISSIONLOAD_H
 #define _MISSIONLOAD_H
@@ -15,9 +15,9 @@
 // -----------------------------------------------
 // For recording most recent missions played
 // -----------------------------------------------
-#define			MAX_RECENT_MISSIONS	10
-extern	char	Recent_missions[MAX_RECENT_MISSIONS][MAX_FILENAME_LEN];
-extern	int	Num_recent_missions;
+#define MAX_RECENT_MISSIONS 10
+extern char Recent_missions[MAX_RECENT_MISSIONS][MAX_FILENAME_LEN];
+extern int Num_recent_missions;
 
 // Mission_load takes no parameters.
 // It expects the following variables to be set correctly:

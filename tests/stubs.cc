@@ -7,7 +7,6 @@
 
 #include <globalincs/pstypes.hh>
 
-
 // debugconsole/console.cpp
 int Dc_command;
 int Dc_help;
@@ -19,23 +18,24 @@ char *Dc_command_line;
 int Dc_arg_int;
 float Dc_arg_float;
 
-void dc_printf(const char *format, ...)
+void
+dc_printf(const char *format, ...)
 {
-	va_list args;
+    va_list args;
 
-	va_start(args, format);
-	vfprintf(stderr, format, args);
-	va_end(args);
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
 }
 
-void dc_get_arg(uint /*flags*/)
-{
-}
+void
+dc_get_arg(uint /*flags*/)
+{ }
 
-debug_command::debug_command(const char *_name, const char *_help, void (*_func)())
+debug_command::debug_command(const char *_name, const char *_help,
+                             void (*_func)())
 {
-	name = _name;
-	help = _help;
-	func = _func;
+    name = _name;
+    help = _help;
+    func = _func;
 }
-

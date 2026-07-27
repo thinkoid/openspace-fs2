@@ -21,17 +21,13 @@ Revision History:
 
 --*/
 
-
-
 //
 // Define the various device type values.  Note that values used by Microsoft
 // Corporation are in the range 0-32767, and 32768-65535 are reserved for use
 // by customers.
 //
 
-#define FILE_DEVICE_MONO  0x00008100
-
-
+#define FILE_DEVICE_MONO 0x00008100
 
 //
 // Macro definition for defining IOCTL and FSCTL function control codes.  Note
@@ -39,20 +35,15 @@ Revision History:
 // 2048-4095 are reserved for customers.
 //
 
-#define MONO_IOCTL_INDEX  0x810
-
-
+#define MONO_IOCTL_INDEX 0x810
 
 //
 // The MONO device driver IOCTLs
 //
 
-#define IOCTL_MONO_PRINT          CTL_CODE(FILE_DEVICE_MONO,     \
-                                           MONO_IOCTL_INDEX,     \
-                                           METHOD_BUFFERED,      \
-                                           FILE_ANY_ACCESS)
+#define IOCTL_MONO_PRINT                                                         \
+    CTL_CODE(FILE_DEVICE_MONO, MONO_IOCTL_INDEX, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
-#define IOCTL_MONO_CLEAR_SCREEN   CTL_CODE(FILE_DEVICE_MONO,     \
-                                           MONO_IOCTL_INDEX + 1, \
-                                           METHOD_BUFFERED,      \
-                                           FILE_ANY_ACCESS)
+#define IOCTL_MONO_CLEAR_SCREEN                                                  \
+    CTL_CODE(FILE_DEVICE_MONO, MONO_IOCTL_INDEX + 1, METHOD_BUFFERED,            \
+             FILE_ANY_ACCESS)

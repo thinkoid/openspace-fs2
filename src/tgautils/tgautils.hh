@@ -7,7 +7,6 @@
  *
 */
 
-
 #ifndef __TARGA_H
 #define __TARGA_H
 
@@ -19,9 +18,9 @@
 //
 // --------------------
 
-#define TARGA_ERROR_NONE			0
-#define TARGA_ERROR_READING		1
-#define TARGA_ERROR_WRITING		2
+#define TARGA_ERROR_NONE 0
+#define TARGA_ERROR_READING 1
+#define TARGA_ERROR_WRITING 2
 
 // --------------------
 //
@@ -29,13 +28,16 @@
 //
 // --------------------
 
-int targa_read_header(char *filename, int *w, int *h, int *bpp, ubyte *palette=NULL );
-int targa_read_bitmap(char *filename, ubyte *data, ubyte *palette, int dest_size );
-int targa_write_bitmap(char *filename, ubyte *data, ubyte *palette, int w, int h, int bpp);
+int targa_read_header(char *filename, int *w, int *h, int *bpp,
+                      ubyte *palette = NULL);
+int targa_read_bitmap(char *filename, ubyte *data, ubyte *palette, int dest_size);
+int targa_write_bitmap(char *filename, ubyte *data, ubyte *palette, int w, int h,
+                       int bpp);
 
 // The following are used by the tools\vani code.
 int targa_compress(char *out, char *in, int outsize, int pixsize, int bytecount);
 // (retail header declared 4 params; the implementation and caller use 5)
-int targa_uncompress( ubyte *dst, ubyte *src, int bitmap_width, int bytes_per_pixel, int dest_size );
+int targa_uncompress(ubyte *dst, ubyte *src, int bitmap_width,
+                     int bytes_per_pixel, int dest_size);
 
 #endif // __TARGA_H

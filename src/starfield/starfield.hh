@@ -13,29 +13,32 @@
 #include <parse/parselo.hh>
 #include <cfile/cfile.hh>
 
-#define MAX_STARFIELD_BITMAP_LISTS	1
-#define MAX_STARFIELD_BITMAPS			60
-#define MAX_ASTEROID_FIELDS			4
+#define MAX_STARFIELD_BITMAP_LISTS 1
+#define MAX_STARFIELD_BITMAPS 60
+#define MAX_ASTEROID_FIELDS 4
 
 // nice low polygon background
-#define BACKGROUND_MODEL_FILENAME					"spherec.pof"
+#define BACKGROUND_MODEL_FILENAME "spherec.pof"
 
 // global info (not individual instances)
-typedef struct starfield_bitmap {
-	char filename[MAX_FILENAME_LEN+1];				// bitmap filename
-	char glow_filename[MAX_FILENAME_LEN+1];		// only for suns	
-	int bitmap;												// bitmap handle
-	int glow_bitmap;										// only for suns
-	int xparent;	
-	float r, g, b, i;										// only for suns
+typedef struct starfield_bitmap
+{
+    char filename[MAX_FILENAME_LEN + 1]; // bitmap filename
+    char glow_filename[MAX_FILENAME_LEN + 1]; // only for suns
+    int bitmap; // bitmap handle
+    int glow_bitmap; // only for suns
+    int xparent;
+    float r, g, b, i; // only for suns
 } starfield_bitmap;
 
 // starfield bitmap instance
-typedef struct starfield_bitmap_instance {
-	char filename[MAX_FILENAME_LEN+1];				// used to match up into the starfield_bitmap array	
-	float scale_x, scale_y;								// x and y scale
-	int div_x, div_y;										// # of x and y divisions
-	angles ang;												// angles from fred
+typedef struct starfield_bitmap_instance
+{
+    char filename[MAX_FILENAME_LEN +
+                  1]; // used to match up into the starfield_bitmap array
+    float scale_x, scale_y; // x and y scale
+    int div_x, div_y; // # of x and y divisions
+    angles ang; // angles from fred
 } starfield_bitmap_instance;
 
 // background bitmaps
@@ -59,7 +62,8 @@ void stars_level_init();
 
 // This *must* be called to initialize the lighting.
 // You can turn off all the stars and suns and nebulas, though.
-void stars_draw(int show_stars, int show_suns, int show_nebulas, int show_subspace);
+void stars_draw(int show_stars, int show_suns, int show_nebulas,
+                int show_subspace);
 // void calculate_bitmap_matrix(starfield_bitmaps *bm, vector *v);
 // void calculate_bitmap_points(starfield_bitmaps *bm, float bank = 0.0f);
 

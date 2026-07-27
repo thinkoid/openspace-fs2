@@ -12,9 +12,9 @@
 
 // return values for popup_do_frame for multiplayer
 
-void	popupdead_start();
-void	popupdead_close();
-int	popupdead_do_frame(float frametime);
-int	popupdead_is_active();
+void popupdead_start();
+void popupdead_close();
+int popupdead_do_frame(float frametime);
+int popupdead_is_active();
 
 #endif
