@@ -19,10 +19,14 @@
 #include <globalincs/linklist.hh>
 #include <weapon/emp.hh>
 
-#define FADE_FACTOR 2 // how much the bounding brackets get faded
-#define LOWEST_RED 50 // lowest r value for bounding bracket
-#define LOWEST_GREEN 50 // lowest g value for bounding bracket
-#define LOWEST_BLUE 50 // lowest b value for bounding bracket
+// how much the bounding brackets get faded
+#define FADE_FACTOR 2
+// lowest r value for bounding bracket
+#define LOWEST_RED 50
+// lowest g value for bounding bracket
+#define LOWEST_GREEN 50
+// lowest b value for bounding bracket
+#define LOWEST_BLUE 50
 
 char Ships_attack_fname[GR_NUM_RESOLUTIONS][MAX_FILENAME_LEN] = { "attacker",
                                                                   "attacker" };

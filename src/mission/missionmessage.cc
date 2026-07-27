@@ -127,10 +127,10 @@ int Message_shipnum; // ship number of who is sending message to player -- used 
 // variables to control message queuing.  All new messages to the player are queued.  The array
 // will be ordered by priority, then time submitted.
 
-#define MQF_CONVERT_TO_COMMAND                                                   \
-    (1 << 0) // convert this queued message to terran command
-#define MQF_CHECK_ALIVE                                                          \
-    (1 << 1) // check for the existence of who_from before sending
+// convert this queued message to terran command
+#define MQF_CONVERT_TO_COMMAND (1 << 0)
+// check for the existence of who_from before sending
+#define MQF_CHECK_ALIVE (1 << 1)
 
 typedef struct message_q
 {
@@ -147,17 +147,19 @@ typedef struct message_q
 } message_q;
 
 #define MAX_MESSAGE_Q 30
-#define MAX_MESSAGE_LIFE                                                         \
-    F1_0 * 30 // After being queued for 30 seconds, don't play it
-#define DEFAULT_MESSAGE_LENGTH                                                   \
-    3000 // default number of milliseconds to display message indicator on hud
+// After being queued for 30 seconds, don't play it
+#define MAX_MESSAGE_LIFE F1_0 * 30
+// default number of milliseconds to display message indicator on hud
+#define DEFAULT_MESSAGE_LENGTH 3000
 message_q MessageQ[MAX_MESSAGE_Q];
 int MessageQ_num; // keeps track of number of entries on the queue.
 
-#define MESSAGE_IMMEDIATE_TIMESTAMP                                              \
-    1000 // immediate messages must play within 1 second
-#define MESSAGE_SOON_TIMESTAMP 5000 // "soon" messages must play within 5 seconds
-#define MESSAGE_ANYTIME_TIMESTAMP -1 // anytime timestamps are invalid
+// immediate messages must play within 1 second
+#define MESSAGE_IMMEDIATE_TIMESTAMP 1000
+// "soon" messages must play within 5 seconds
+#define MESSAGE_SOON_TIMESTAMP 5000
+// anytime timestamps are invalid
+#define MESSAGE_ANYTIME_TIMESTAMP -1
 
 // Persona information
 int Num_personas;

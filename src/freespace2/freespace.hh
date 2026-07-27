@@ -80,11 +80,16 @@ extern int Game_weapons_tbl_valid;
 
 // this is a mission actually designed at Volition
 #define MAX_BUILTIN_MISSIONS 100
-#define FSB_FROM_VOLITION (1 << 0) // we made it in-house
-#define FSB_MULTI (1 << 1) // is a multiplayer mission
-#define FSB_TRAINING (1 << 2) // is a training mission
-#define FSB_CAMPAIGN (1 << 3) // is a campaign mission
-#define FSB_CAMPAIGN_FILE (1 << 4) // is actually a campaign file
+// we made it in-house
+#define FSB_FROM_VOLITION (1 << 0)
+// is a multiplayer mission
+#define FSB_MULTI (1 << 1)
+// is a training mission
+#define FSB_TRAINING (1 << 2)
+// is a campaign mission
+#define FSB_CAMPAIGN (1 << 3)
+// is actually a campaign file
+#define FSB_CAMPAIGN_FILE (1 << 4)
 
 typedef struct fs_builtin_mission
 {

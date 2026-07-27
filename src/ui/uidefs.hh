@@ -20,8 +20,8 @@
 #define CGREEN Color_green
 #define CBRIGHT_GREEN Color_bright_green
 #define CGRAY Color_grey
-#define CDARK_GRAY                                                               \
-    Color_bright_white // since gray doesn't work with our current color system..
+// since gray doesn't work with our current color system..
+#define CDARK_GRAY Color_bright_white
 #define CWHITE Color_white
 #define CBRIGHT Color_bright_white
 

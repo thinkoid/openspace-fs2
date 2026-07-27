@@ -31,17 +31,26 @@
 //    1.20  German release version
 
 #if defined(FS2_DEMO)
-#define FS_VERSION_MAJOR 01 // Major is 0 for pre-release and 1 for 1.0 release
-#define FS_VERSION_MINOR 10 // Increase by 1 for minor revs, 10 for major.
-#define FS_VERSION_BUILD 00 // Build version
+// Major is 0 for pre-release and 1 for 1.0 release
+#define FS_VERSION_MAJOR 01
+// Increase by 1 for minor revs, 10 for major.
+#define FS_VERSION_MINOR 10
+// Build version
+#define FS_VERSION_BUILD 00
 #elif defined(OEM_BUILD)
-#define FS_VERSION_MAJOR 01 // Major is 0 for pre-release and 1 for 1.0 release
-#define FS_VERSION_MINOR 00 // Increase by 1 for minor revs, 10 for major.
-#define FS_VERSION_BUILD 00 // Build version
+// Major is 0 for pre-release and 1 for 1.0 release
+#define FS_VERSION_MAJOR 01
+// Increase by 1 for minor revs, 10 for major.
+#define FS_VERSION_MINOR 00
+// Build version
+#define FS_VERSION_BUILD 00
 #else
-#define FS_VERSION_MAJOR 01 // Major is 0 for pre-release and 1 for 1.0 release
-#define FS_VERSION_MINOR 20 // Increase by 1 for minor revs, 10 for major.
-#define FS_VERSION_BUILD 00 // Build version
+// Major is 0 for pre-release and 1 for 1.0 release
+#define FS_VERSION_MAJOR 01
+// Increase by 1 for minor revs, 10 for major.
+#define FS_VERSION_MINOR 20
+// Build version
+#define FS_VERSION_BUILD 00
 #endif
 
 #define VERSION_LOC_FNAME "version.nfo"

@@ -15,8 +15,10 @@
 #include <weapon/trails.hh>
 
 // corkscrew structure flags
-#define CS_FLAG_USED (1 << 0) // this structure is in use
-#define CS_FLAG_COUNTER (1 << 1) // counterrotate this guy
+// this structure is in use
+#define CS_FLAG_USED (1 << 0)
+// counterrotate this guy
+#define CS_FLAG_COUNTER (1 << 1)
 
 // corkscrew settings
 int Corkscrew_missile_delay = 30; // delay between missile firings

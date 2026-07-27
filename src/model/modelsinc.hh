@@ -34,28 +34,46 @@
 
 // FREESPACE1 FORMAT
 #if defined(FREESPACE1_FORMAT)
-#define ID_OHDR 'RDHO' // POF file header
-#define ID_SOBJ 'JBOS' // Subobject header
+// POF file header
+#define ID_OHDR 'RDHO'
+// Subobject header
+#define ID_SOBJ 'JBOS'
 #else
-#define ID_OHDR '2RDH' // POF file header
-#define ID_SOBJ '2JBO' // Subobject header
+// POF file header
+#define ID_OHDR '2RDH'
+// Subobject header
+#define ID_SOBJ '2JBO'
 #endif
-#define ID_TXTR 'RTXT' // Texture filename list
-#define ID_INFO 'FNIP' // POF file information, like command line, etc
-#define ID_GRID 'DIRG' // Grid information
-#define ID_SPCL                                                                  \
-    'LCPS' // Special object -- like a gun, missile, docking point, etc.
-#define ID_PATH 'HTAP' // A spline based path
-#define ID_GPNT 'TNPG' // gun points
-#define ID_MPNT 'TNPM' // missile points
-#define ID_DOCK 'KCOD' // docking points
-#define ID_TGUN 'NUGT' // turret gun points
-#define ID_TMIS 'SIMT' // turret missile points
-#define ID_FUEL 'LEUF' // thruster points
-#define ID_SHLD 'DLHS' // shield definition
-#define ID_EYE ' EYE' // eye information
-#define ID_INSG 'GSNI' // insignia information
-#define ID_ACEN 'NECA' // autocentering information
+// Texture filename list
+#define ID_TXTR 'RTXT'
+// POF file information, like command line, etc
+#define ID_INFO 'FNIP'
+// Grid information
+#define ID_GRID 'DIRG'
+// Special object -- like a gun, missile, docking point, etc.
+#define ID_SPCL 'LCPS'
+// A spline based path
+#define ID_PATH 'HTAP'
+// gun points
+#define ID_GPNT 'TNPG'
+// missile points
+#define ID_MPNT 'TNPM'
+// docking points
+#define ID_DOCK 'KCOD'
+// turret gun points
+#define ID_TGUN 'NUGT'
+// turret missile points
+#define ID_TMIS 'SIMT'
+// thruster points
+#define ID_FUEL 'LEUF'
+// shield definition
+#define ID_SHLD 'DLHS'
+// eye information
+#define ID_EYE ' EYE'
+// insignia information
+#define ID_INSG 'GSNI'
+// autocentering information
+#define ID_ACEN 'NECA'
 
 #define uw(p) (*((uint *)(p)))
 #define w(p) (*((int *)(p)))
@@ -79,8 +97,10 @@ int read_model_file(polymodel *pm, char *filename, int n_subsystems,
 
 void interp_clear_instance();
 
-#define MAX_POLYGON_VECS 1100 //6500 (7x)
-#define MAX_POLYGON_NORMS 2800 //6500 (3x)
+// 6500 (7x)
+#define MAX_POLYGON_VECS 1100
+// 6500 (3x)
+#define MAX_POLYGON_NORMS 2800
 
 extern vector *Interp_verts[MAX_POLYGON_VECS];
 

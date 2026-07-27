@@ -54,9 +54,11 @@ extern asteroid_obj Asteroid_obj_list;
 
 extern debris_struct Field_debris_info[];
 
-#define MAX_ASTEROID_POFS 3 // Max number of POFs per asteroid type
+// Max number of POFs per asteroid type
+#define MAX_ASTEROID_POFS 3
 
-#define AF_USED (1 << 0) //   Set means used.
+// Set means used.
+#define AF_USED (1 << 0)
 
 typedef struct asteroid_info
 {

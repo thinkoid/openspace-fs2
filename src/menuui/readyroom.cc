@@ -148,7 +148,8 @@ int Sim_misc_text_coords[GR_NUM_RESOLUTIONS][NUM_SIM_MISC_TEXT][2] = {
 #define READYROOM_LINE_CMISSION 2
 #define READYROOM_LINE_MISSION 3
 
-#define READYROOM_FLAG_FROM_VOLITION (1 << 0) // volition made
+// volition made
+#define READYROOM_FLAG_FROM_VOLITION (1 << 0)
 static struct
 {
     int type; // see READYROOM_LINE_* defines above
@@ -202,7 +203,8 @@ static int Hash_table_inited = 0;
 
 // special icons (1.04 + stuff)
 #define NUM_MISSION_ICONS 1
-#define MISSION_ICON_VOLITION 0 // mini volition death's head :)
+// mini volition death's head :)
+#define MISSION_ICON_VOLITION 0
 
 // icon offsets (see LIST_ defines above
 //#define MISSION_ICON_VOLITION_X            (46)

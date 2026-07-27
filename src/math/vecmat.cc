@@ -15,7 +15,8 @@
 
 #define SMALL_NUM 1e-7
 #define SMALLER_NUM 1e-20
-#define CONVERT_RADIANS 0.017453 // conversion factor from degrees to radians
+// conversion factor from degrees to radians
+#define CONVERT_RADIANS 0.017453
 int index_largest(
     float a, float b,
     float c); // returns index of largest, NO_LARGEST if all less than SMALL_NUM

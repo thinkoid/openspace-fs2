@@ -27,9 +27,10 @@
 
 #ifndef FS2_DEMO
 
-#define ASTEROID_OBJ_USED (1 << 0) // flag used in asteroid_obj struct
-#define MAX_ASTEROID_OBJS                                                        \
-    MAX_ASTEROIDS // max number of asteroids tracked in asteroid list
+// flag used in asteroid_obj struct
+#define ASTEROID_OBJ_USED (1 << 0)
+// max number of asteroids tracked in asteroid list
+#define MAX_ASTEROID_OBJS MAX_ASTEROIDS
 asteroid_obj
     Asteroid_objs[MAX_ASTEROID_OBJS]; // array used to store asteroid object indexes
 asteroid_obj Asteroid_obj_list; // head of linked list of asteroid_obj structs
@@ -84,12 +85,12 @@ asteroid_field Asteroid_field;
 static int Asteroid_impact_explosion_ani;
 static float Asteroid_impact_explosion_radius;
 
-#define ASTEROID_CHECK_WRAP_TIMESTAMP                                            \
-    2000 // how often an asteroid gets checked for wrapping
-#define ASTEROID_UPDATE_COLLIDE_TIMESTAMP                                        \
-    2000 // how often asteroid is checked for impending collisions with escort ships
-#define ASTEROID_MIN_COLLIDE_TIME                                                \
-    24 // time in seconds to check for asteroid colliding
+// how often an asteroid gets checked for wrapping
+#define ASTEROID_CHECK_WRAP_TIMESTAMP 2000
+// how often asteroid is checked for impending collisions with escort ships
+#define ASTEROID_UPDATE_COLLIDE_TIMESTAMP 2000
+// time in seconds to check for asteroid colliding
+#define ASTEROID_MIN_COLLIDE_TIME 24
 
 // Force updating of pair stuff for asteroid *objp.
 void

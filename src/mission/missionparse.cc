@@ -91,7 +91,8 @@ int Current_file_length = 0;
 char Mission_alt_types[MAX_ALT_TYPE_NAMES][NAME_LENGTH];
 int Mission_alt_type_count = 0;
 
-#define SHIP_WARP_TIME 5.0f // how many seconds it takes for ship to warp in
+// how many seconds it takes for ship to warp in
+#define SHIP_WARP_TIME 5.0f
 
 // the ship arrival list will contain a list of ships that are yet to arrive.  This
 // list could also include ships that are part of wings!
@@ -298,9 +299,10 @@ int Mission_arrival_timestamp;
 int Mission_departure_timestamp;
 fix Mission_end_time;
 
-#define ARRIVAL_TIMESTAMP 2000 // every 2 seconds
-#define DEPARTURE_TIMESTAMP                                                      \
-    2200 // every 2.2 seconds -- just to be a little different
+// every 2 seconds
+#define ARRIVAL_TIMESTAMP 2000
+// every 2.2 seconds -- just to be a little different
+#define DEPARTURE_TIMESTAMP 2200
 
 // calculates a "unique" file signature as a ushort (checksum) and an int (file length)
 // the amount of The_mission we're going to checksum
@@ -4568,8 +4570,10 @@ mission_parse_fixup_players()
 // player some distance.  Should be sufficient.
 
 #define WARP_IN_MIN_DISTANCE 1000.0f
-#define WARP_IN_TIME_MIN 3000 // warps in min 3 seconds later
-#define WARP_IN_TIME_MAX 6000 // warps in max 6 seconds later
+// warps in min 3 seconds later
+#define WARP_IN_TIME_MIN 3000
+// warps in max 6 seconds later
+#define WARP_IN_TIME_MAX 6000
 
 // function which adds requester_objp onto the queue of ships for the arriving support ship to service
 void

@@ -53,9 +53,10 @@ typedef struct obj_pair
 #define COLLISION_OF(a, b) (((a) << 8) | (b))
 
 #define COLLISION_TYPE_NONE 0
-#define COLLISION_TYPE_OLD 1 // checks all n objects with each other each frame
-#define COLLISION_TYPE_NEW                                                       \
-    2 // keeps track of collision pairs.  throws out collisions that won't happen.
+// checks all n objects with each other each frame
+#define COLLISION_TYPE_OLD 1
+// keeps track of collision pairs.  throws out collisions that won't happen.
+#define COLLISION_TYPE_NEW 2
 
 extern int collision_type;
 

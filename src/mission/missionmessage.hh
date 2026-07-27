@@ -86,16 +86,17 @@ extern char *Builtin_message_types[MAX_BUILTIN_MESSAGE_TYPES];
 #define MESSAGE_REPAIR_DONE 21
 #define MESSAGE_REPAIR_ABORTED 22
 #define MESSAGE_HAMMER_SWINE 23
-#define MESSAGE_REARM_REQUEST                                                    \
-    24 // wingman messages player when he calls a support ship
+// wingman messages player when he calls a support ship
+#define MESSAGE_REARM_REQUEST 24
 #define MESSAGE_DISABLE_TARGET 25
 #define MESSAGE_DISARM_TARGET 26
-#define MESSAGE_PLAYED_DIED 27 // message sent when player starts death roll
+// message sent when player starts death roll
+#define MESSAGE_PLAYED_DIED 27
 #define MESSAGE_WINGMAN_SCREAM 28
 #define MESSAGE_SUPPORT_KILLED 29
 #define MESSAGE_ALL_CLEAR 30
-#define MESSAGE_ALL_ALONE                                                        \
-    31 // message sent when player is last ship left and primary objectives still exist
+// message sent when player is last ship left and primary objectives still exist
+#define MESSAGE_ALL_ALONE 31
 #define MESSAGE_REPAIR_REQUEST 32
 #define MESSAGE_DELTA_ARRIVED 33
 #define MESSAGE_EPSILON_ARRIVED 34
@@ -145,8 +146,10 @@ extern int Message_shipnum; // used to display info on hud when message is sent
 // the persona_type_names defined in missionmessage.cpp
 #define PERSONA_FLAG_WINGMAN (1 << 0)
 #define PERSONA_FLAG_SUPPORT (1 << 1)
-#define PERSONA_FLAG_LARGE (1 << 2) // for large ships
-#define PERSONA_FLAG_COMMAND (1 << 3) // for terran command
+// for large ships
+#define PERSONA_FLAG_LARGE (1 << 2)
+// for terran command
+#define PERSONA_FLAG_COMMAND (1 << 3)
 // be sure that MAX_PERSONA_TYPES is always 1 greater than the last type bitfield above!!!
 
 #define PERSONA_FLAG_VASUDAN (1 << 30)

@@ -20,8 +20,8 @@
 //
 
 // temporary - max distance from target that a jittered flak aim direction can point at
-#define FLAK_MAX_ERROR                                                           \
-    60.0f // aim at _most_ this far off of the predicted target position
+// aim at _most_ this far off of the predicted target position
+#define FLAK_MAX_ERROR 60.0f
 float Flak_error = FLAK_MAX_ERROR;
 
 // muzzle flash animation
@@ -35,8 +35,8 @@ int Flak_muzzle_flash_ani = -1;
 int Flak_muzzle_mod = 0;
 
 // flak ranging info
-#define FLAK_RANGE_DEFAULT                                                       \
-    65.0f // spherical radius around the predicted target position
+// spherical radius around the predicted target position
+#define FLAK_RANGE_DEFAULT 65.0f
 float Flak_range = FLAK_RANGE_DEFAULT;
 
 // flak info

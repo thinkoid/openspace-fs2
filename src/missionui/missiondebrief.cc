@@ -270,8 +270,8 @@ static int Stage_voice;
 // voice id's for debriefing text
 static int Debrief_voices[MAX_DEBRIEF_STAGES];
 
-#define DEBRIEF_VOICE_DELAY                                                      \
-    400 // time to delay voice playback when a new stage starts
+// time to delay voice playback when a new stage starts
+#define DEBRIEF_VOICE_DELAY 400
 static int Debrief_cue_voice; // timestamp to cue the playback of the voice
 static int Debrief_first_voice_flag =
     1; // used to delay the first voice playback extra long

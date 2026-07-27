@@ -27,7 +27,8 @@
 #include <sound/ds3d.hh>
 #include <sound/acm.hh>
 
-#define SND_F_USED (1 << 0) // Sounds[] element is used
+// Sounds[] element is used
+#define SND_F_USED (1 << 0)
 
 typedef struct sound
 {

@@ -1489,7 +1489,8 @@ vector g3_square[4] = { { -1.0f, -1.0f, 20.0f },
                         { 1.0f, 1.0f, 20.0f },
                         { 1.0f, -1.0f, 20.0f } };
 
-#define MAX_PERSPECTIVE_DIVISIONS 5 // should never even come close to this limit
+// should never even come close to this limit
+#define MAX_PERSPECTIVE_DIVISIONS 5
 
 void
 stars_project_2d_onto_sphere(vector *pnt, float rho, float phi, float theta)

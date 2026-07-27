@@ -33,7 +33,8 @@
 extern int Brief_background_bitmap;
 
 // Sounds
-#define BRIEFING_MUSIC_DELAY 2500 // 650 ms delay before breifing music starts
+// 650 ms delay before breifing music starts
+#define BRIEFING_MUSIC_DELAY 2500
 extern int Briefing_music_handle;
 extern int Briefing_music_begin_timestamp;
 

@@ -46,9 +46,11 @@
 #define BEAM_RANDOM_FACTOR 0.4f
 
 #define MAX_BEAMS 40
-#define BEAM_DAMAGE_TIME 170 // apply damage
+// apply damage
+#define BEAM_DAMAGE_TIME 170
 #define MAX_SHOT_POINTS 30
-#define SHOT_POINT_TIME 200 // 5 arcs a second
+// 5 arcs a second
+#define SHOT_POINT_TIME 200
 
 #define TOOLTIME 1500.0f
 
@@ -59,7 +61,8 @@
 #define BF_SAFETY                                                                \
     (1                                                                           \
      << 0) // if this is set, don't collide or render for this frame. lifetime still increases though
-#define BF_SHRINK (1 << 1) // if this is set, the beam is in the warmdown phase
+// if this is set, the beam is in the warmdown phase
+#define BF_SHRINK (1 << 1)
 
 // beam struct (the actual weapon/object)
 typedef struct beam
@@ -139,7 +142,8 @@ float Beam_friendly_cap[NUM_SKILL_LEVELS] = { 0.0f, 5.0f, 10.0f, 20.0f, 30.0f };
 int Beam_lighting = 1;
 
 // debug stuff - keep track of how many collision tests we perform a second and how many we toss a second
-#define BEAM_TEST_STAMP_TIME 4000 // every 4 seconds
+// every 4 seconds
+#define BEAM_TEST_STAMP_TIME 4000
 int Beam_test_stamp = -1;
 int Beam_test_ints = 0;
 int Beam_test_ship = 0;

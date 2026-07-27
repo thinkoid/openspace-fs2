@@ -25,10 +25,14 @@ extern float Neb_backg_fog_near;
 extern float Neb_backg_fog_far;
 
 // nebula rendering mode
-#define NEB2_RENDER_NONE 0 // no rendering
-#define NEB2_RENDER_POLY 1 // background is the old-school polygons
-#define NEB2_RENDER_POF 2 // background is the nice pof file
-#define NEB2_RENDER_LAME 3 // super simple nebula effect
+// no rendering
+#define NEB2_RENDER_NONE 0
+// background is the old-school polygons
+#define NEB2_RENDER_POLY 1
+// background is the nice pof file
+#define NEB2_RENDER_POF 2
+// super simple nebula effect
+#define NEB2_RENDER_LAME 3
 extern int Neb2_render_mode;
 
 // the AWACS suppresion level for the nebula
@@ -60,7 +64,8 @@ typedef struct cube_poof
     float rot_speed; // rotation speed
     float flash; // lightning flash
 } cube_poof;
-#define MAX_CPTS 5 // should always be <= slices
+// should always be <= slices
+#define MAX_CPTS 5
 extern cube_poof Neb2_cubes[MAX_CPTS][MAX_CPTS][MAX_CPTS];
 
 // --------------------------------------------------------------------------------------------------------

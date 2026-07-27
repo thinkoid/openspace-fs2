@@ -16,11 +16,16 @@ struct CFILE;
 
 #define ANI_STREAM_CACHE_SIZE 4096
 
-#define PACKER_CODE 0xEE // Use'd by PACKING_METHOD_RLE
-#define PACKING_METHOD_RLE 0 // Hoffoss's RLE format
-#define PACKING_METHOD_RLE_KEY 1 // Hoffoss's key frame RLE format
-#define PACKING_METHOD_STD_RLE 2 // Standard RLE format (high bit is count)
-#define PACKING_METHOD_STD_RLE_KEY 3 // Standard RLE format key frame
+// Use'd by PACKING_METHOD_RLE
+#define PACKER_CODE 0xEE
+// Hoffoss's RLE format
+#define PACKING_METHOD_RLE 0
+// Hoffoss's key frame RLE format
+#define PACKING_METHOD_RLE_KEY 1
+// Standard RLE format (high bit is count)
+#define PACKING_METHOD_STD_RLE 2
+// Standard RLE format key frame
+#define PACKING_METHOD_STD_RLE_KEY 3
 
 #define STD_RLE_CODE 0x80
 
@@ -30,9 +35,11 @@ typedef struct key_frame
     int offset; // offset from the start of data block
 } key_frame;
 
-#define ANF_MEM_MAPPED (1 << 0) // animation is memory-mapped file
+// animation is memory-mapped file
+#define ANF_MEM_MAPPED (1 << 0)
 #define ANF_STREAMED (1 << 1)
-#define ANF_XPARENT (1 << 2) // animation has transparency
+// animation has transparency
+#define ANF_XPARENT (1 << 2)
 #define ANF_ALL_KEYFRAMES                                                        \
     (1                                                                           \
      << 3) // all the frames are keyframes (this is necessary if we want to play the file backwards)

@@ -14,7 +14,8 @@
 #include <io/timer.hh>
 #include <globalincs/alphacolors.hh>
 
-#define INPUTBOX_PASSWD_CHAR '*' // the password protected char
+// the password protected char
+#define INPUTBOX_PASSWD_CHAR '*'
 
 // Retuen true if c is a letter, else return false.
 int

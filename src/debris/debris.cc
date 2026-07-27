@@ -24,9 +24,10 @@
 #include <io/timer.hh>
 
 #define MAX_LIFE 10.0f
-#define MIN_RADIUS_FOR_PERSISTANT_DEBRIS                                         \
-    50 // ship radius at which debris from it becomes persistant
-#define DEBRIS_SOUND_DELAY 2000 // time to start debris sound after created
+// ship radius at which debris from it becomes persistant
+#define MIN_RADIUS_FOR_PERSISTANT_DEBRIS 50
+// time to start debris sound after created
+#define DEBRIS_SOUND_DELAY 2000
 
 // limit the number of hull debris chunks that can exist.
 #define MAX_HULL_PIECES 10
@@ -50,13 +51,18 @@ char *Debris_texture_files[MAX_SPECIES_NAMES] = {
 
 int Debris_textures[MAX_SPECIES_NAMES];
 
-#define MAX_DEBRIS_DIST 10000.0f // Debris goes away if it's this far away.
-#define DEBRIS_DISTANCE_CHECK_TIME (10 * 1000) //  Check every 10 seconds.
+// Debris goes away if it's this far away.
+#define MAX_DEBRIS_DIST 10000.0f
+// Check every 10 seconds.
+#define DEBRIS_DISTANCE_CHECK_TIME (10 * 1000)
 #define DEBRIS_INDEX(dp) (dp - Debris)
 
-#define MAX_SPEED_SMALL_DEBRIS 200 // maximum velocity of small debris piece
-#define MAX_SPEED_BIG_DEBRIS 150 // maximum velocity of big debris piece
-#define MAX_SPEED_CAPITAL_DEBRIS 100 // maximum velocity of capital debris piece
+// maximum velocity of small debris piece
+#define MAX_SPEED_SMALL_DEBRIS 200
+// maximum velocity of big debris piece
+#define MAX_SPEED_BIG_DEBRIS 150
+// maximum velocity of capital debris piece
+#define MAX_SPEED_CAPITAL_DEBRIS 100
 #define DEBRIS_SPEED_DEBUG
 
 // ---------------------------------------------------------------------------------------

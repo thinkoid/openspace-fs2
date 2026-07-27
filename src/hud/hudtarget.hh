@@ -20,29 +20,29 @@
 #define DECREASING 1
 #define NO_CHANGE 2
 
-#define MATCH_SPEED_THRESHOLD                                                    \
-    0.1f // minimum speed target must be moving for match speed to apply
-#define CARGO_RADIUS_DELTA                                                       \
-    100 // distance added to radius required for cargo scanning
-#define CAPITAL_CARGO_RADIUS_DELTA                                               \
-    250 // distance added to radius required for cargo scanning
-#define CARGO_REVEAL_MIN_DIST                                                    \
-    150 // minimum distance for reveal cargo (used if radius+CARGO_RADIUS_DELTA < CARGO_REVEAL_MIN_DIST)
-#define CAP_CARGO_REVEAL_MIN_DIST                                                \
-    300 // minimum distance for reveal cargo (used if radius+CARGO_RADIUS_DELTA < CARGO_REVEAL_MIN_DIST)
-#define CARGO_MIN_DOT_TO_REVEAL                                                  \
-    0.95 // min dot to proceed to have cargo scanning take place
+// minimum speed target must be moving for match speed to apply
+#define MATCH_SPEED_THRESHOLD 0.1f
+// distance added to radius required for cargo scanning
+#define CARGO_RADIUS_DELTA 100
+// distance added to radius required for cargo scanning
+#define CAPITAL_CARGO_RADIUS_DELTA 250
+// minimum distance for reveal cargo (used if radius+CARGO_RADIUS_DELTA < CARGO_REVEAL_MIN_DIST)
+#define CARGO_REVEAL_MIN_DIST 150
+// minimum distance for reveal cargo (used if radius+CARGO_RADIUS_DELTA < CARGO_REVEAL_MIN_DIST)
+#define CAP_CARGO_REVEAL_MIN_DIST 300
+// min dot to proceed to have cargo scanning take place
+#define CARGO_MIN_DOT_TO_REVEAL 0.95
 
 // structure and defines used for hotkey targeting
-#define MAX_HOTKEY_TARGET_ITEMS                                                  \
-    50 // maximum number of ships that can be targeted on *all* keys
-#define SELECTION_SET                                                            \
-    0x5000 // variable used for drawing brackets.  The bracketinng code uses
-        // TEAM_* values.  I picked this value to be totally out of that
-        // range.  Only used for drawing selection sets
-#define MESSAGE_SENDER                                                           \
-    0x5001 // variable used for drawing brackets around a message sender.
-        // See above comments for SELECTION_SET
+// maximum number of ships that can be targeted on *all* keys
+#define MAX_HOTKEY_TARGET_ITEMS 50
+// variable used for drawing brackets.  The bracketinng code uses
+// TEAM_* values.  I picked this value to be totally out of that
+// range.  Only used for drawing selection sets
+#define SELECTION_SET 0x5000
+// variable used for drawing brackets around a message sender.
+// See above comments for SELECTION_SET
+#define MESSAGE_SENDER 0x5001
 
 // defines used to tell how a particular hotkey was added
 #define HOTKEY_USER_ADDED 1

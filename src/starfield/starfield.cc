@@ -367,16 +367,20 @@ extern object *Player_obj;
 #define STAR_AMOUNT_DEFAULT 0.75f
 #define STAR_DIM_DEFAULT 7800.0f
 #define STAR_CAP_DEFAULT 75.0f
-#define STAR_MAX_LENGTH_DEFAULT 0.04f // 312
+// 312
+#define STAR_MAX_LENGTH_DEFAULT 0.04f
 
 float Star_amount = STAR_AMOUNT_DEFAULT;
 float Star_dim = STAR_DIM_DEFAULT;
 float Star_cap = STAR_CAP_DEFAULT;
 float Star_max_length = STAR_MAX_LENGTH_DEFAULT;
 
-#define STAR_FLAG_TAIL (1 << 0) // Draw a tail when moving
-#define STAR_FLAG_DIM (1 << 1) // Dim as you move
-#define STAR_FLAG_ANTIALIAS (1 << 2) // Draw the star using antialiased lines
+// Draw a tail when moving
+#define STAR_FLAG_TAIL (1 << 0)
+// Dim as you move
+#define STAR_FLAG_DIM (1 << 1)
+// Draw the star using antialiased lines
+#define STAR_FLAG_ANTIALIAS (1 << 2)
 #define STAR_FLAG_DEFAULT (STAR_FLAG_TAIL | STAR_FLAG_DIM)
 
 uint Star_flags = STAR_FLAG_DEFAULT;

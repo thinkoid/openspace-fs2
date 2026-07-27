@@ -32,57 +32,75 @@
 #define WRT_POF 2
 
 // Bitflags controlling weapon behavior
-#define MAX_WEAPON_FLAGS                                                         \
-    18 //   Maximum number of different bit flags legal to specify in a single weapons.tbl Flags line
+// Maximum number of different bit flags legal to specify in a single weapons.tbl Flags line
+#define MAX_WEAPON_FLAGS 18
 
-#define WIF_HOMING_HEAT (1 << 0) // if set, this weapon homes via seeking heat
-#define WIF_HOMING_ASPECT                                                        \
-    (1 << 1) //   if set, this weapon homes via chasing aspect
-#define WIF_ELECTRONICS (1 << 2) // Takes out electronics systems.
-#define WIF_SPAWN (1 << 3) // Spawns projectiles on detonation.
-#define WIF_REMOTE (1 << 4) //   Can be remotely detonated by parent.
-#define WIF_PUNCTURE (1 << 5) // Punctures armor, damaging subsystems.
+// if set, this weapon homes via seeking heat
+#define WIF_HOMING_HEAT (1 << 0)
+// if set, this weapon homes via chasing aspect
+#define WIF_HOMING_ASPECT (1 << 1)
+// Takes out electronics systems.
+#define WIF_ELECTRONICS (1 << 2)
+// Spawns projectiles on detonation.
+#define WIF_SPAWN (1 << 3)
+// Can be remotely detonated by parent.
+#define WIF_REMOTE (1 << 4)
+// Punctures armor, damaging subsystems.
+#define WIF_PUNCTURE (1 << 5)
 #define WIF_SUPERCAP                                                             \
     (1                                                                           \
      << 6) //  This is a weapon which does supercap class damage (meaning, it applies real damage to supercap ships)
-#define WIF_AREA_EFFECT (1 << 7) // Explosion has an area effect
-#define WIF_SHOCKWAVE (1 << 8) //   Explosion has a shockwave
-#define WIF_TURNS                                                                \
-    (1 << 9) // Set this if the weapon ever changes heading.  If you
-        // don't set this and the weapon turns, collision detection
-        // won't work, I promise!
-#define WIF_SWARM                                                                \
-    (1 << 10) // Missile "swarms".. ie changes heading and twists on way to target
-#define WIF_TRAIL (1 << 11) //   Has a trail
-#define WIF_BIG_ONLY                                                             \
-    (1 << 12) //  Only big ships (cruiser, capital, etc.) can arm this weapon
+// Explosion has an area effect
+#define WIF_AREA_EFFECT (1 << 7)
+// Explosion has a shockwave
+#define WIF_SHOCKWAVE (1 << 8)
+// Set this if the weapon ever changes heading.  If you
+// don't set this and the weapon turns, collision detection
+// won't work, I promise!
+#define WIF_TURNS (1 << 9)
+// Missile "swarms".. ie changes heading and twists on way to target
+#define WIF_SWARM (1 << 10)
+// Has a trail
+#define WIF_TRAIL (1 << 11)
+// Only big ships (cruiser, capital, etc.) can arm this weapon
+#define WIF_BIG_ONLY (1 << 12)
 #define WIF_CHILD                                                                \
     (1                                                                           \
      << 13) // No ship can have this weapon.  It gets created by weapon detonations.
-#define WIF_BOMB (1 << 14) // Bomb-type missile, can be targeted
-#define WIF_HUGE                                                                 \
-    (1 << 15) //  Huge damage (generally 500+), probably only fired at huge ships.
-#define WIF_NO_DUMBFIRE                                                          \
-    (1 << 16) // Missile cannot be fired dumbfire (ie requires aspect lock)
-#define WIF_THRUSTER (1 << 17) // Has thruster cone and/or glow
+// Bomb-type missile, can be targeted
+#define WIF_BOMB (1 << 14)
+// Huge damage (generally 500+), probably only fired at huge ships.
+#define WIF_HUGE (1 << 15)
+// Missile cannot be fired dumbfire (ie requires aspect lock)
+#define WIF_NO_DUMBFIRE (1 << 16)
+// Has thruster cone and/or glow
+#define WIF_THRUSTER (1 << 17)
 #define WIF_IN_TECH_DATABASE (1 << 18)
-#define WIF_PLAYER_ALLOWED                                                       \
-    (1 << 19) // allowed to be on starting wing ships/in weaponry pool
+// allowed to be on starting wing ships/in weaponry pool
+#define WIF_PLAYER_ALLOWED (1 << 19)
 #define WIF_BOMBER_PLUS                                                          \
     (1                                                                           \
      << 20) // Fire this missile only at a bomber or big ship.  But not a fighter.
 
-#define WIF_CORKSCREW (1 << 21) // corkscrew style missile
-#define WIF_PARTICLE_SPEW (1 << 22) // spews particles as it travels
-#define WIF_EMP (1 << 23) // weapon explodes with a serious EMP effect
-#define WIF_ENERGY_SUCK (1 << 24) // energy suck primary (impact effect)
-#define WIF_FLAK (1 << 25) // use for big-ship turrets - flak gun
-#define WIF_BEAM (1 << 26) // if this is a beam weapon : NOTE - VERY SPECIAL CASE
-#define WIF_TAG (1 << 27) // this weapon has a tag effect when it hits
+// corkscrew style missile
+#define WIF_CORKSCREW (1 << 21)
+// spews particles as it travels
+#define WIF_PARTICLE_SPEW (1 << 22)
+// weapon explodes with a serious EMP effect
+#define WIF_EMP (1 << 23)
+// energy suck primary (impact effect)
+#define WIF_ENERGY_SUCK (1 << 24)
+// use for big-ship turrets - flak gun
+#define WIF_FLAK (1 << 25)
+// if this is a beam weapon : NOTE - VERY SPECIAL CASE
+#define WIF_BEAM (1 << 26)
+// this weapon has a tag effect when it hits
+#define WIF_TAG (1 << 27)
 #define WIF_SHUDDER                                                              \
     (1                                                                           \
      << 28) // causes the weapon to shudder. shudder is proportional to the mass and damage of the weapon
-#define WIF_MFLASH (1 << 29) // has muzzle flash
+// has muzzle flash
+#define WIF_MFLASH (1 << 29)
 #define WIF_LOCKARM                                                              \
     (1                                                                           \
      << 30) // if the missile was fired without a lock, it does significanlty less damage on impact
@@ -93,22 +111,26 @@
 #define WIF_HOMING (WIF_HOMING_HEAT | WIF_HOMING_ASPECT)
 #define WIF_HURTS_BIG_SHIPS (WIF_BOMB | WIF_BEAM | WIF_HUGE | WIF_BIG_ONLY)
 
-#define WEAPON_EXHAUST_DELTA_TIME                                                \
-    75 //   Delay in milliseconds between exhaust blobs
+// Delay in milliseconds between exhaust blobs
+#define WEAPON_EXHAUST_DELTA_TIME 75
 
-#define WF_LOCK_WARNING_PLAYED                                                   \
-    (1 << 0) // set when a lock warning sound is played for the player
-        //  (needed since we don't want to play multiple lock sounds)
+// set when a lock warning sound is played for the player
+// (needed since we don't want to play multiple lock sounds)
+#define WF_LOCK_WARNING_PLAYED (1 << 0)
 #define WF_ALREADY_APPLIED_STATS                                                 \
     (1                                                                           \
      << 1) // for use in ship_apply_local and ship_apply_global damage functions
         // so that we don't record multiple hits (stats) for one impact
-#define WF_PLAYED_FLYBY_SOUND                                                    \
-    (1 << 2) // flyby sound has been played for this weapon
-#define WF_CONSIDER_FOR_FLYBY_SOUND (1 << 3) // consider for flyby
-#define WF_DEAD_IN_WATER (1 << 4) // a missiles engines have died
-#define WF_LOCKED_WHEN_FIRED (1 << 5) // fired with a lock
-#define WF_DESTROYED_BY_WEAPON (1 << 6) // destroyed by damage from other weapon
+// flyby sound has been played for this weapon
+#define WF_PLAYED_FLYBY_SOUND (1 << 2)
+// consider for flyby
+#define WF_CONSIDER_FOR_FLYBY_SOUND (1 << 3)
+// a missiles engines have died
+#define WF_DEAD_IN_WATER (1 << 4)
+// fired with a lock
+#define WF_LOCKED_WHEN_FIRED (1 << 5)
+// destroyed by damage from other weapon
+#define WF_DESTROYED_BY_WEAPON (1 << 6)
 
 typedef struct weapon
 {

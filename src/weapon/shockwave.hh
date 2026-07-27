@@ -16,8 +16,8 @@
 #define SW_USED (1 << 0)
 #define SW_WEAPON (1 << 1)
 #define SW_SHIP_DEATH (1 << 2)
-#define SW_WEAPON_KILL                                                           \
-    (1 << 3) // Shockwave created when weapon destroyed by another
+// Shockwave created when weapon destroyed by another
+#define SW_WEAPON_KILL (1 << 3)
 
 #define MAX_SHOCKWAVES 16
 #define MAX_SHOCKWAVE_TYPES 1

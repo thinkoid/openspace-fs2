@@ -54,11 +54,12 @@ typedef struct shader
     ubyte lookup[256];
 } shader;
 
-#define AC_TYPE_NONE 0 // Not an alphacolor
-#define AC_TYPE_HUD                                                              \
-    1 // Doesn't change hue depending on background.  Used for HUD stuff.
-#define AC_TYPE_BLEND                                                            \
-    2 // Changes hue depending on background.  Used for stars, etc.
+// Not an alphacolor
+#define AC_TYPE_NONE 0
+// Doesn't change hue depending on background.  Used for HUD stuff.
+#define AC_TYPE_HUD 1
+// Changes hue depending on background.  Used for stars, etc.
+#define AC_TYPE_BLEND 2
 
 // NEVER REFERENCE THESE VALUES OUTSIDE OF THE GRAPHICS LIBRARY!!!
 // If you need to get the rgb values of a "color" struct call
@@ -77,16 +78,21 @@ typedef struct color
     int magic;
 } color;
 
-#define GR_ALPHABLEND_NONE 0 // no blending
-#define GR_ALPHABLEND_FILTER                                                     \
-    1 // 50/50 mix of foreground, background, using intensity as alpha
+// no blending
+#define GR_ALPHABLEND_NONE 0
+// 50/50 mix of foreground, background, using intensity as alpha
+#define GR_ALPHABLEND_FILTER 1
 
-#define GR_BITBLT_MODE_NORMAL 0 // Normal bitblting
-#define GR_BITBLT_MODE_RLE 1 // RLE would be faster
+// Normal bitblting
+#define GR_BITBLT_MODE_NORMAL 0
+// RLE would be faster
+#define GR_BITBLT_MODE_RLE 1
 
 // fog modes
-#define GR_FOGMODE_NONE 0 // set this to turn off fog
-#define GR_FOGMODE_FOG 1 // linear fog
+// set this to turn off fog
+#define GR_FOGMODE_NONE 0
+// linear fog
+#define GR_FOGMODE_FOG 1
 
 typedef struct screen
 {
@@ -314,13 +320,17 @@ extern int Gr_mmx;
 //--------------------------------------
 // Call this at application startup
 
-#define GR_SOFTWARE (100) // The software renderer.
-#define GR_OPENGL (104) // OpenGL hardware renderer (retail's mode number)
+// The software renderer.
+#define GR_SOFTWARE (100)
+// OpenGL hardware renderer (retail's mode number)
+#define GR_OPENGL (104)
 
 // resolution constants   - always keep resolutions in ascending order and starting from 0
 #define GR_NUM_RESOLUTIONS 2
-#define GR_640 0 // 640 x 480
-#define GR_1024 1 // 1024 x 768
+// 640 x 480
+#define GR_640 0
+// 1024 x 768
+#define GR_1024 1
 
 extern int gr_init(int res, int mode, int depth = 16, int fred_x = -1,
                    int fred_y = -1);

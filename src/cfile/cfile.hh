@@ -31,15 +31,17 @@ typedef struct
     time_t write_time;
 } file_list_info;
 
-#define CF_MAX_FILENAME_LENGTH                                                   \
-    32 // Includes null terminater, so real length is 31
-#define CF_MAX_PATHNAME_LENGTH                                                   \
-    256 // Includes null terminater, so real length is 255
+// Includes null terminater, so real length is 31
+#define CF_MAX_FILENAME_LENGTH 32
+// Includes null terminater, so real length is 255
+#define CF_MAX_PATHNAME_LENGTH 256
 
-#define CF_TYPE_ANY -1 // Used to check in any directory
+// Used to check in any directory
+#define CF_TYPE_ANY -1
 
 #define CF_TYPE_INVALID 0
-#define CF_TYPE_ROOT 1 // Root must be 1!!
+// Root must be 1!!
+#define CF_TYPE_ROOT 1
 #define CF_TYPE_DATA 2
 #define CF_TYPE_MAPS 3
 #define CF_TYPE_TEXT 4
@@ -75,15 +77,18 @@ typedef struct
 #define CF_TYPE_CBANIMS 34
 #define CF_TYPE_INTEL_ANIMS 35
 
-#define CF_MAX_PATH_TYPES 36 // Can be as high as you'd like
+// Can be as high as you'd like
+#define CF_MAX_PATH_TYPES 36
 
 // TRUE if type is specified and valid
 #define CF_TYPE_SPECIFIED(path_type)                                             \
     (((path_type) > CF_TYPE_INVALID) && ((path_type) < CF_MAX_PATH_TYPES))
 
 // #define's for the type parameter in cfopen.
-#define CFILE_NORMAL 0 // open file normally
-#define CFILE_MEMORY_MAPPED (1 << 0) //   open file as a memory-mapped file
+// open file normally
+#define CFILE_NORMAL 0
+// open file as a memory-mapped file
+#define CFILE_MEMORY_MAPPED (1 << 0)
 
 #define CF_SORT_NONE 0
 #define CF_SORT_NAME 1
@@ -211,9 +216,12 @@ int
 cfexist(char *filename); // Returns true if file exists on disk (1) or in hog (2).
 
 // rename a file, utilizing the extension to determine where file is.
-#define CF_RENAME_SUCCESS 0 // successfully renamed the file
-#define CF_RENAME_FAIL_ACCESS 1 // new name could not be created
-#define CF_RENAME_FAIL_EXIST 2 // old name does not exist
+// successfully renamed the file
+#define CF_RENAME_SUCCESS 0
+// new name could not be created
+#define CF_RENAME_FAIL_ACCESS 1
+// old name does not exist
+#define CF_RENAME_FAIL_EXIST 2
 int cf_rename(char *old_name, char *name, int type = CF_TYPE_ANY);
 
 // changes the attributes of a file

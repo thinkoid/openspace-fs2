@@ -14,22 +14,23 @@
 #include <freespace2/freespace.hh> // for Missiontime
 #include <globalincs/linklist.hh>
 
-#define SWARM_DIST_OFFSET                                                        \
-    2.0 // distance swarm missile should vary from original path
-#define SWARM_CONE_LENGTH                                                        \
-    10000.0f // used to pick a target point far in the distance
-#define SWARM_CHANGE_DIR_TIME                                                    \
-    400 // time to force change in direction of swarm missile
-#define SWARM_ANGLE_CHANGE (4 * PI / 180) // in rad
-#define SWARM_MISSILE_DELAY                                                      \
-    150 // time delay between each swarm missile that is fired
-#define SWARM_TIME_VARIANCE                                                      \
-    100 // max time variance when deciding when to change swarm missile course
+// distance swarm missile should vary from original path
+#define SWARM_DIST_OFFSET 2.0
+// used to pick a target point far in the distance
+#define SWARM_CONE_LENGTH 10000.0f
+// time to force change in direction of swarm missile
+#define SWARM_CHANGE_DIR_TIME 400
+// in rad
+#define SWARM_ANGLE_CHANGE (4 * PI / 180)
+// time delay between each swarm missile that is fired
+#define SWARM_MISSILE_DELAY 150
+// max time variance when deciding when to change swarm missile course
+#define SWARM_TIME_VARIANCE 100
 
 #define SWARM_DIST_STOP_SWARMING 300
 
-#define TURRET_SWARM_VALIDITY_CHECKTIME                                          \
-    5000 // number of ms between checks on turret_swam_info checks
+// number of ms between checks on turret_swam_info checks
+#define TURRET_SWARM_VALIDITY_CHECKTIME 5000
 
 #define SWARM_USED (1 << 0)
 #define SWARM_POSITIVE_PATH (1 << 1)

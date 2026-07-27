@@ -29,7 +29,8 @@ void common_play_highlight_sound(); // called from interface code
 // Misc_sounds[] holds handles for misc sounds in the game (list appears in sounds.tbl)
 #define MAX_GAME_SOUNDS 200
 #define MAX_INTERFACE_SOUNDS 70
-#define MAX_SPECIES_FLYBY_SOUNDS 4 // 4 different possible flybys for species
+// 4 different possible flybys for species
+#define MAX_SPECIES_FLYBY_SOUNDS 4
 
 extern game_snd Snds[MAX_GAME_SOUNDS];
 extern game_snd Snds_iface[MAX_INTERFACE_SOUNDS];
@@ -101,7 +102,8 @@ extern game_snd Snds_flyby[MAX_SPECIES_NAMES][2];
 #define SND_SHIELD_XFER_OK 43
 #define SND_ENGINE_WASH 44
 #define SND_WARP_IN 45
-#define SND_WARP_OUT 46 // Same as warp in for now
+// Same as warp in for now
+#define SND_WARP_OUT 46
 #define SND_PLAYER_WARP_FAIL 47
 #define SND_STATIC 48
 #define SND_SHIP_EXPLODE_2 49
@@ -187,11 +189,16 @@ extern game_snd Snds_flyby[MAX_SPECIES_NAMES][2];
 #define SND_REPAIR_SHIP_ENG 135
 
 // Debris electric arcing sounds
-#define SND_DEBRIS_ARC_01 139 // 0.10 second spark sound effect (3d sound)
-#define SND_DEBRIS_ARC_02 140 // 0.25 second spark sound effect (3d sound)
-#define SND_DEBRIS_ARC_03 141 // 0.50 second spark sound effect (3d sound)
-#define SND_DEBRIS_ARC_04 142 // 0.75 second spark sound effect (3d sound)
-#define SND_DEBRIS_ARC_05 143 // 1.00 second spark sound effect (3d sound)
+// 0.10 second spark sound effect (3d sound)
+#define SND_DEBRIS_ARC_01 139
+// 0.25 second spark sound effect (3d sound)
+#define SND_DEBRIS_ARC_02 140
+// 0.50 second spark sound effect (3d sound)
+#define SND_DEBRIS_ARC_03 141
+// 0.75 second spark sound effect (3d sound)
+#define SND_DEBRIS_ARC_04 142
+// 1.00 second spark sound effect (3d sound)
+#define SND_DEBRIS_ARC_05 143
 
 // copilot
 #define SND_COPILOT 162
@@ -228,26 +235,32 @@ extern game_snd Snds_flyby[MAX_SPECIES_NAMES][2];
 #define SND_USER_SELECT 18
 #define SND_RESET_PRESSED 19
 #define SND_BRIEF_TEXT_WIPE 20
-#define SND_VASUDAN_PA_1 21 // vasudan pa 1
+// vasudan pa 1
+#define SND_VASUDAN_PA_1 21
 #define SND_WEAPON_ANIM_START 22
 #define SND_MAIN_HALL_DOOR_OPEN 23
 #define SND_MAIN_HALL_DOOR_CLOSE 24
 #define SND_GLOW_OPEN 25
-#define SND_VASUDAN_PA_2 26 // vasudan pa 2
+// vasudan pa 2
+#define SND_VASUDAN_PA_2 26
 #define SND_AMBIENT_MENU 27
 #define SND_POPUP_APPEAR 28
 #define SND_POPUP_DISAPPEAR 29
 #define SND_VOICE_SLIDER_CLIP 30
-#define SND_VASUDAN_PA_3 31 // vasudan pa 3
+// vasudan pa 3
+#define SND_VASUDAN_PA_3 31
 #define SND_MAIN_HALL_GET_PEPSI 32
 #define SND_MAIN_HALL_LIFT_UP 33
 #define SND_MAIN_HALL_WELD1 34
 #define SND_MAIN_HALL_WELD2 35
 #define SND_MAIN_HALL_WELD3 36
 #define SND_MAIN_HALL_WELD4 37
-#define SND_MAIN_HALL_INT1 38 // random intercom message 1
-#define SND_MAIN_HALL_INT2 39 // random intercom message 2
-#define SND_MAIN_HALL_INT3 40 // random intercom message 3
+// random intercom message 1
+#define SND_MAIN_HALL_INT1 38
+// random intercom message 2
+#define SND_MAIN_HALL_INT2 39
+// random intercom message 3
+#define SND_MAIN_HALL_INT3 40
 #define SND_ICON_HIGHLIGHT 41
 #define SND_BRIEFING_STATIC 42
 #define SND_MAIN_HALL2_CRANE1_1 43

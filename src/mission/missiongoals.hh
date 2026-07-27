@@ -16,7 +16,8 @@
 
 // defines for types of primary and secondary missions
 
-#define MAX_GOALS 30 // maximum number of goals for any given mission
+// maximum number of goals for any given mission
+#define MAX_GOALS 30
 
 // defines for types of goals.  We will use part of the int field of the mission_goal struct
 // as a bit field for goal flags
@@ -26,12 +27,15 @@
 #define BONUS_GOAL 2
 
 // defines for bitfields of type, (and mask to get the type field quickly)
-#define INVALID_GOAL (1 << 16) // is this goal valid or not?
-#define GOAL_TYPE_MASK (0xffff) // mask to get us the type
+// is this goal valid or not?
+#define INVALID_GOAL (1 << 16)
+// mask to get us the type
+#define GOAL_TYPE_MASK (0xffff)
 
 // defines for goal status.  These status are also used in campaign file for marking goal status
 // in campaign save file
-#define GOAL_FAILED 0 // status of goal
+// status of goal
+#define GOAL_FAILED 0
 #define GOAL_COMPLETE 1
 #define GOAL_INCOMPLETE 2
 
@@ -45,7 +49,8 @@ extern char *Goal_type_text(int n);
 
 #define MAX_GOAL_TEXT 128
 
-#define MGF_NO_MUSIC (1 << 0) // don't play any event music when goal is achieved
+// don't play any event music when goal is achieved
+#define MGF_NO_MUSIC (1 << 0)
 
 typedef struct mission_goal
 {
@@ -72,18 +77,21 @@ extern int Num_goals; // number of goals for this mission
 
 // defined for event states.  We will also use the satisfied/failed for saving event information
 // in campaign save file
-#define EVENT_UNBORN 0 // event can't be evaluated yet
-#define EVENT_CURRENT                                                            \
-    1 // event can currently be evaluated, but not satisfied or failed yet
+// event can't be evaluated yet
+#define EVENT_UNBORN 0
+// event can currently be evaluated, but not satisfied or failed yet
+#define EVENT_CURRENT 1
 #define EVENT_SATISFIED 2
 #define EVENT_FAILED 3
-#define EVENT_INCOMPLETE                                                         \
-    4 // used in campaign save file.  used when event isn't satisfied yet
+// used in campaign save file.  used when event isn't satisfied yet
+#define EVENT_INCOMPLETE 4
 
-#define MEF_CURRENT (1 << 0) // is event current or past current yet?
-#define MEF_DIRECTIVE_SPECIAL                                                    \
-    (1 << 1) // used to mark a directive as true even though not fully satisfied
-#define MEF_DIRECTIVE_TEMP_TRUE (1 << 2) // this directive is temporarily true.
+// is event current or past current yet?
+#define MEF_CURRENT (1 << 0)
+// used to mark a directive as true even though not fully satisfied
+#define MEF_DIRECTIVE_SPECIAL (1 << 1)
+// this directive is temporarily true.
+#define MEF_DIRECTIVE_TEMP_TRUE (1 << 2)
 
 typedef struct mission_event
 {

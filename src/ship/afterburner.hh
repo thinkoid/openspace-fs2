@@ -11,7 +11,8 @@
 #define __AFTERBURNER_H__
 
 #define AFTERBURNER_MIN_DELAY 1000
-#define ABURN_DECAY_TIME 1500 // time in ms ship shakes after afterburner pressed
+// time in ms ship shakes after afterburner pressed
+#define ABURN_DECAY_TIME 1500
 
 #include <cfile/cfile.hh>
 #include <object/object.hh>

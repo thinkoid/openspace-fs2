@@ -1036,7 +1036,8 @@ grx_flash(int r, int g, int b)
 
 static int gr_palette_faded_out = 0;
 
-#define FADE_TIME (F1_0 / 4) // How long to fade out
+// How long to fade out
+#define FADE_TIME (F1_0 / 4)
 
 void
 grx_fade_out(int instantaneous)

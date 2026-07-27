@@ -19,7 +19,8 @@
 // #define PD_BUILD                 // fred documentation/evaluation build
 // #define FRENCH_BUILD          // build for French (obsolete)
 // #define GERMAN_BUILD          // build for German (this is now used)
-#define RELEASE_REAL // this means that it is an actual release candidate, not just an optimized/release build
+// this means that it is an actual release candidate, not just an optimized/release build
+#define RELEASE_REAL
 
 // uncomment this #define for DVD version (makes popups say DVD instead of CD 2 or whatever): JCF 5/10/2000
 // #define DVD_MESSAGE_HACK
@@ -97,7 +98,8 @@ long filelength(int fd);
 
 #define STRUCT_CMP(a, b) memcmp((void *)&a, (void *)&b, sizeof(a))
 
-#define LOCAL static // make module local varilable static.
+// make module local varilable static.
+#define LOCAL static
 
 typedef long long longlong;
 typedef long fix;
@@ -179,10 +181,14 @@ typedef struct vertex
     ubyte pad[2]; // pad structure to be 4 byte aligned.
 } vertex;
 
-#define BMP_AABITMAP (1 << 0) // antialiased bitmap
-#define BMP_TEX_XPARENT (1 << 1) // transparent texture
-#define BMP_TEX_NONDARK (1 << 2) // nondarkening texture
-#define BMP_TEX_OTHER (1 << 3) // so we can identify all "normal" textures
+// antialiased bitmap
+#define BMP_AABITMAP (1 << 0)
+// transparent texture
+#define BMP_TEX_XPARENT (1 << 1)
+// nondarkening texture
+#define BMP_TEX_NONDARK (1 << 2)
+// so we can identify all "normal" textures
+#define BMP_TEX_OTHER (1 << 3)
 
 // any texture type
 #define BMP_TEX_ANY (BMP_TEX_XPARENT | BMP_TEX_NONDARK | BMP_TEX_OTHER)
@@ -295,7 +301,8 @@ max(A a, B b)
 }
 
 #define PI 3.141592654f
-#define PI2 (3.141592654f * 2.0f) // PI*2
+// PI*2
+#define PI2 (3.141592654f * 2.0f)
 #define ANG_TO_RAD(x) ((x) * PI / 180)
 
 extern int Fred_running; // Is Fred running, or FreeSpace?
@@ -381,22 +388,33 @@ void dc_printf(const char *format, ...);
 // This is because some things can fit into two catagories.
 // Like 1 can be an integer, a float, a string, or a true boolean
 // value.
-#define ARG_NONE (1 << 0) // no argument
-#define ARG_ANY 0xFFFFFFFF // Anything.
-#define ARG_STRING (1 << 1) // any valid string
-#define ARG_QUOTE (1 << 2) // a quoted string
-#define ARG_INT (1 << 3) // a valid integer
-#define ARG_FLOAT (1 << 4) // a valid floating point number
+// no argument
+#define ARG_NONE (1 << 0)
+// Anything.
+#define ARG_ANY 0xFFFFFFFF
+// any valid string
+#define ARG_STRING (1 << 1)
+// a quoted string
+#define ARG_QUOTE (1 << 2)
+// a valid integer
+#define ARG_INT (1 << 3)
+// a valid floating point number
+#define ARG_FLOAT (1 << 4)
 
 // some specific commonly used predefined types. Can add up to (1<<31)
 #define ARG_HEX                                                                  \
     (1                                                                           \
      << 5) // a valid hexadecimal integer. Note that ARG_INT will always be set also in this case.
-#define ARG_TRUE (1 << 6) // on, true, non-zero number
-#define ARG_FALSE (1 << 7) // off, false, zero
-#define ARG_PLUS (1 << 8) // Plus sign
-#define ARG_MINUS (1 << 9) // Minus sign
-#define ARG_COMMA (1 << 10) // a comma
+// on, true, non-zero number
+#define ARG_TRUE (1 << 6)
+// off, false, zero
+#define ARG_FALSE (1 << 7)
+// Plus sign
+#define ARG_PLUS (1 << 8)
+// Minus sign
+#define ARG_MINUS (1 << 9)
+// a comma
+#define ARG_COMMA (1 << 10)
 
 // A shortcut for boolean only variables.
 // Example:
@@ -431,8 +449,10 @@ void dc_printf(const char *format, ...);
 #include <math/floating.hh>
 
 // Some constants for stuff
-#define MAX_FILENAME_LEN 32 // Length for filenames, ie "title.pcx"
-#define MAX_PATH_LEN 128 // Length for pathnames, ie "c:\bitmaps\title.pcx"
+// Length for filenames, ie "title.pcx"
+#define MAX_FILENAME_LEN 32
+// Length for pathnames, ie "c:\bitmaps\title.pcx"
+#define MAX_PATH_LEN 128
 
 // contants and defined for byteswapping routines (useful for mac)
 

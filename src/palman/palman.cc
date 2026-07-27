@@ -279,7 +279,8 @@ palette_find(int r, int g, int b)
 // version 18 - fixed bug with blue nondarkening colors
 // version 19 - fixed bug where only colors divisible by 4 got used.
 // version 20 - added flag to only use lower 128 colors for palette.
-#define PAL_ID 'LAPV' // VPAL (Volition Palette)
+// VPAL (Volition Palette)
+#define PAL_ID 'LAPV'
 #define PAL_VERSION 20
 #define PAL_LAST_COMPATIBLE_VERSION 20
 

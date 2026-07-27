@@ -54,16 +54,25 @@ int Player_select_max_lines[GR_NUM_RESOLUTIONS] = {
 };
 
 // button control defines
-#define NUM_PLAYER_SELECT_BUTTONS 8 // button control defines
+// button control defines
+#define NUM_PLAYER_SELECT_BUTTONS 8
 
-#define CREATE_PILOT_BUTTON 0 //
-#define CLONE_BUTTON 1 //
-#define DELETE_BUTTON 2 //
-#define SCROLL_LIST_UP_BUTTON 3 //
-#define SCROLL_LIST_DOWN_BUTTON 4 //
-#define ACCEPT_BUTTON 5 //
-#define SINGLE_BUTTON 6 //
-#define MULTI_BUTTON 7 //
+// 
+#define CREATE_PILOT_BUTTON 0
+// 
+#define CLONE_BUTTON 1
+// 
+#define DELETE_BUTTON 2
+// 
+#define SCROLL_LIST_UP_BUTTON 3
+// 
+#define SCROLL_LIST_DOWN_BUTTON 4
+// 
+#define ACCEPT_BUTTON 5
+// 
+#define SINGLE_BUTTON 6
+// 
+#define MULTI_BUTTON 7
 
 // list text display area
 int Choose_list_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
@@ -77,9 +86,11 @@ char *Player_select_background_bitmap_name[GR_NUM_RESOLUTIONS] = {
 char *Player_select_background_mask_bitmap[GR_NUM_RESOLUTIONS] = {
     "ChoosePilot-m", "2_ChoosePilot-m"
 };
-#define PLAYER_SELECT_PALETTE NOX("ChoosePilotPalette") // palette for the screen
+// palette for the screen
+#define PLAYER_SELECT_PALETTE NOX("ChoosePilotPalette")
 
-#define PLAYER_SELECT_MAIN_HALL_OVERLAY NOX("MainHall1") // main hall help overlay
+// main hall help overlay
+#define PLAYER_SELECT_MAIN_HALL_OVERLAY NOX("MainHall1")
 
 // convenient struct for handling all button controls
 struct barracks_buttons

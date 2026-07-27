@@ -19,9 +19,12 @@
 #define MAX_LIGHTS 256
 #define MAX_LIGHT_LEVELS 16
 
-#define LT_DIRECTIONAL 0 // A light like a sun
-#define LT_POINT 1 // A point light, like an explosion
-#define LT_TUBE 2 // A tube light, like a fluorescent light
+// A light like a sun
+#define LT_DIRECTIONAL 0
+// A point light, like an explosion
+#define LT_POINT 1
+// A tube light, like a fluorescent light
+#define LT_TUBE 2
 
 typedef struct light
 {
@@ -57,8 +60,8 @@ static int Light_in_shadow = 0; // If true, this means we're in a shadow
 #define LM_BRIGHTEN 0
 #define LM_DARKEN 1
 
-#define MIN_LIGHT                                                                \
-    0.03f // When light drops below this level, ignore it.  Must be non-zero! (1/32)
+// When light drops below this level, ignore it.  Must be non-zero! (1/32)
+#define MIN_LIGHT 0.03f
 
 int Lighting_off = 0;
 
@@ -66,12 +69,16 @@ int Lighting_off = 0;
 
 #if 1 // ADAM'S new stuff
 int Lighting_mode = LM_BRIGHTEN;
-#define AMBIENT_LIGHT_DEFAULT 0.15f //0.10f
-#define REFLECTIVE_LIGHT_DEFAULT 0.75f //0.90f
+// 0.10f
+#define AMBIENT_LIGHT_DEFAULT 0.15f
+// 0.90f
+#define REFLECTIVE_LIGHT_DEFAULT 0.75f
 #else
 int Lighting_mode = LM_DARKEN;
-#define AMBIENT_LIGHT_DEFAULT 0.75f //0.10f
-#define REFLECTIVE_LIGHT_DEFAULT 0.50f //0.90f
+// 0.10f
+#define AMBIENT_LIGHT_DEFAULT 0.75f
+// 0.90f
+#define REFLECTIVE_LIGHT_DEFAULT 0.50f
 #endif
 
 float Ambient_light = AMBIENT_LIGHT_DEFAULT;

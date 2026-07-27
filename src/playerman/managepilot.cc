@@ -31,8 +31,8 @@
 // update this when altering data that is read/written to .PLR file
 #define CURRENT_PLAYER_FILE_VERSION 140
 #define FS2_DEMO_PLAYER_FILE_VERSION 135
-#define LOWEST_COMPATIBLE_PLAYER_FILE_VERSION                                    \
-    CURRENT_PLAYER_FILE_VERSION // demo plr files should work in final
+// demo plr files should work in final
+#define LOWEST_COMPATIBLE_PLAYER_FILE_VERSION CURRENT_PLAYER_FILE_VERSION
 
 // keep track of pilot file changes here
 // version 2   : Added squad logo filename
@@ -49,8 +49,8 @@
 // version 139 : # medals increased - added compatibility with old plr file versions
 // version 140 : ships table reordered. clear out old pilot files
 // search for PLAYER INIT for new pilot initialization stuff. I _think_ its in the right spot for now
-#define PLR_FILE_ID                                                              \
-    'FPSF' // unique signiture to identify a .PLR file (FreeSpace Player File)  // FPSF appears as FSPF in file.
+// unique signiture to identify a .PLR file (FreeSpace Player File)  // FPSF appears as FSPF in file.
+#define PLR_FILE_ID 'FPSF'
 
 // Current content of a .PLR file
 //

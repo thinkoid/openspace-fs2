@@ -15,8 +15,8 @@
 struct object;
 
 #define MAX_PRIMARY_BANKS 3
-#define MAX_SECONDARY_BANKS                                                      \
-    4 // Lowered from 5 to 4 by MK on 3/25/98.  This needs to be <= MAX_WL_SECONDARY or you'll get stack overwrites.
+// Lowered from 5 to 4 by MK on 3/25/98.  This needs to be <= MAX_WL_SECONDARY or you'll get stack overwrites.
+#define MAX_SECONDARY_BANKS 4
 
 #define MAX_POLYGON_MODELS 128
 #define MAX_DEBRIS_OBJECTS 32
@@ -30,7 +30,8 @@ struct object;
 #define MOVEMENT_TYPE_NONE -1
 #define MOVEMENT_TYPE_POS 0
 #define MOVEMENT_TYPE_ROT 1
-#define MOVEMENT_TYPE_ROT_SPECIAL 2 // for turrets only
+// for turrets only
+#define MOVEMENT_TYPE_ROT_SPECIAL 2
 
 // DA 11/13/98 Reordered to account for difference between max and game
 #define MOVEMENT_AXIS_NONE -1
@@ -58,12 +59,14 @@ struct object;
 #define SUBSYSTEM_ACTIVATION 10
 #define SUBSYSTEM_UNKNOWN 11
 
-#define SUBSYSTEM_MAX 12 //   maximum value for subsystem_xxx, for error checking
+// maximum value for subsystem_xxx, for error checking
+#define SUBSYSTEM_MAX 12
 
-#define MAX_TFP 4 // maximum number of turret firing points
+// maximum number of turret firing points
+#define MAX_TFP 4
 
-#define MAX_SPLIT_PLANE                                                          \
-    3 // number of artist specified split planes (used in big ship explosions)
+// number of artist specified split planes (used in big ship explosions)
+#define MAX_SPLIT_PLANE 3
 
 // Data specific to a particular instance of a submodel.  This gets stuffed/unstuffed using
 // the model_clear_instance, model_set_instance, model_get_instance functions.
@@ -81,20 +84,22 @@ typedef struct submodel_instance_info
 
 } submodel_instance_info;
 
-#define MAX_MODEL_SUBSYSTEMS                                                     \
-    128 // used in ships.cpp (only place?) for local stack variable
-        // when reading in ships.tbl
+// used in ships.cpp (only place?) for local stack variable
+// when reading in ships.tbl
+#define MAX_MODEL_SUBSYSTEMS 128
 
-#define MSS_FLAG_ROTATES                                                         \
-    (1 << 0) // This means the object rotates automatically with "turn_rate"
-#define MSS_FLAG_STEPPED_ROTATE                                                  \
-    (1 << 1) // This means that the rotation occurs in steps
-#define MSS_FLAG_AI_ROTATE                                                       \
-    (1 << 2) // This means that the rotation is controlled by ai
-#define MSS_FLAG_CREWPOINT (1 << 3) // If set, this is a crew point.
-#define MSS_FLAG_TURRET_MATRIX                                                   \
-    (1 << 4) // If set, this has it's turret matrix created correctly.
-#define MSS_FLAG_AWACS (1 << 5) // If set, this subsystem has AWACS capability
+// This means the object rotates automatically with "turn_rate"
+#define MSS_FLAG_ROTATES (1 << 0)
+// This means that the rotation occurs in steps
+#define MSS_FLAG_STEPPED_ROTATE (1 << 1)
+// This means that the rotation is controlled by ai
+#define MSS_FLAG_AI_ROTATE (1 << 2)
+// If set, this is a crew point.
+#define MSS_FLAG_CREWPOINT (1 << 3)
+// If set, this has it's turret matrix created correctly.
+#define MSS_FLAG_TURRET_MATRIX (1 << 4)
+// If set, this subsystem has AWACS capability
+#define MSS_FLAG_AWACS (1 << 5)
 
 // definition of stepped rotation struct
 typedef struct stepped_rotation
@@ -171,8 +176,10 @@ typedef struct model_special
 } model_special;
 
 // model arc types
-#define MARC_TYPE_NORMAL 0 // standard freespace 1 blue lightning arcs
-#define MARC_TYPE_EMP 1 // EMP blast type arcs
+// standard freespace 1 blue lightning arcs
+#define MARC_TYPE_NORMAL 0
+// EMP blast type arcs
+#define MARC_TYPE_EMP 1
 
 #define MAX_LIVE_DEBRIS 7
 
@@ -405,8 +412,10 @@ typedef struct insignia
     vector offset; // global position offset for this insignia
 } insignia;
 
-#define PM_FLAG_ALLOW_TILING (1 << 0) // Allow texture tiling
-#define PM_FLAG_AUTOCEN (1 << 1) // contains autocentering info
+// Allow texture tiling
+#define PM_FLAG_ALLOW_TILING (1 << 0)
+// contains autocentering info
+#define PM_FLAG_AUTOCEN (1 << 1)
 
 //used to describe a polygon model
 typedef struct polymodel
@@ -525,44 +534,62 @@ void model_set_outline_color_fast(void *outline_color);
 void model_set_detail_level(int n);
 
 // Flags you can pass to model_render
-#define MR_NORMAL (0) // Draw a normal object
+// Draw a normal object
+#define MR_NORMAL (0)
 #define MR_SHOW_OUTLINE                                                          \
     (1                                                                           \
      << 0) // Draw the object in outline mode. Color specified by model_set_outline_color
-#define MR_SHOW_PIVOTS (1 << 1) // Show the pivot points
-#define MR_SHOW_PATHS (1 << 2) // Show the paths associated with a model
-#define MR_SHOW_RADIUS (1 << 3) // Show the radius around the object
-#define MR_SHOW_DAMAGE (1 << 4) // Show the "destroyed" subobjects
-#define MR_SHOW_SHIELDS (1 << 5) // Show the sheild mesh
+// Show the pivot points
+#define MR_SHOW_PIVOTS (1 << 1)
+// Show the paths associated with a model
+#define MR_SHOW_PATHS (1 << 2)
+// Show the radius around the object
+#define MR_SHOW_RADIUS (1 << 3)
+// Show the "destroyed" subobjects
+#define MR_SHOW_DAMAGE (1 << 4)
+// Show the sheild mesh
+#define MR_SHOW_SHIELDS (1 << 5)
 #define MR_SHOW_THRUSTERS                                                        \
     (1                                                                           \
      << 6) // Show the engine thrusters. See model_set_thrust for how long it draws.
-#define MR_LOCK_DETAIL                                                           \
-    (1 << 7) // Only draw the detail level defined in model_set_detail_level
-#define MR_NO_POLYS (1 << 8) // Don't draw the polygons.
-#define MR_NO_LIGHTING (1 << 9) // Don't perform any lighting on the model.
-#define MR_NO_TEXTURING (1 << 10) // Draw textures as flat-shaded polygons.
-#define MR_NO_CORRECT (1 << 11) // Don't to correct texture mapping
-#define MR_NO_SMOOTHING (1 << 12) // Don't perform smoothing on vertices.
-#define MR_ALWAYS_REDRAW                                                         \
-    (1 << 13) // Don't do any model caching; redraw this model each frame!
-#define MR_IS_ASTEROID (1 << 14) // When set, treat this as an asteroid.
+// Only draw the detail level defined in model_set_detail_level
+#define MR_LOCK_DETAIL (1 << 7)
+// Don't draw the polygons.
+#define MR_NO_POLYS (1 << 8)
+// Don't perform any lighting on the model.
+#define MR_NO_LIGHTING (1 << 9)
+// Draw textures as flat-shaded polygons.
+#define MR_NO_TEXTURING (1 << 10)
+// Don't to correct texture mapping
+#define MR_NO_CORRECT (1 << 11)
+// Don't perform smoothing on vertices.
+#define MR_NO_SMOOTHING (1 << 12)
+// Don't do any model caching; redraw this model each frame!
+#define MR_ALWAYS_REDRAW (1 << 13)
+// When set, treat this as an asteroid.
+#define MR_IS_ASTEROID (1 << 14)
 #define MR_IS_MISSILE                                                            \
     (1                                                                           \
      << 15) // When set, treat this as a missilie.  No lighting, small thrusters.
-#define MR_SHOW_OUTLINE_PRESET                                                   \
-    (1 << 16) // Draw the object in outline mode. Color assumed to be set already.
-#define MR_SHOW_INVISIBLE_FACES (1 << 17) // Show invisible faces as green...
+// Draw the object in outline mode. Color assumed to be set already.
+#define MR_SHOW_OUTLINE_PRESET (1 << 16)
+// Show invisible faces as green...
+#define MR_SHOW_INVISIBLE_FACES (1 << 17)
 #define MR_AUTOCENTER                                                            \
     (1                                                                           \
      << 18) // Always use the center of the hull bounding box as the center, instead of the pivot point
-#define MR_BAY_PATHS (1 << 19) // draw bay paths
-#define MR_ALL_XPARENT (1 << 20) // render it fully transparent
-#define MR_NO_ZBUFFER (1 << 21) // switch z-buffering off completely
-#define MR_NO_CULL (1 << 22) // don't cull backfacing poly's
-#define MR_FORCE_TEXTURE (1 << 23) // force a given texture to always be used
-#define MR_FORCE_LOWER_DETAIL                                                    \
-    (1 << 24) // force the model to draw 1 LOD lower, if possible
+// draw bay paths
+#define MR_BAY_PATHS (1 << 19)
+// render it fully transparent
+#define MR_ALL_XPARENT (1 << 20)
+// switch z-buffering off completely
+#define MR_NO_ZBUFFER (1 << 21)
+// don't cull backfacing poly's
+#define MR_NO_CULL (1 << 22)
+// force a given texture to always be used
+#define MR_FORCE_TEXTURE (1 << 23)
+// force the model to draw 1 LOD lower, if possible
+#define MR_FORCE_LOWER_DETAIL (1 << 24)
 
 // Renders a model and all it's submodels.
 // See MR_? defines for values for flags
@@ -760,26 +787,29 @@ typedef struct mc_info
 //======== MODEL_COLLIDE ============
 
 // Model Collision flags, used in model_collide()
-#define MC_CHECK_MODEL (1 << 0) // Check the polygons in the model.
-#define MC_CHECK_SHIELD                                                          \
-    (1 << 1) //   check for collision against shield, if it exists.
-#define MC_ONLY_SPHERE                                                           \
-    (1 << 2) // Only check bounding sphere. Not accurate, but fast.
-        // NOTE!  This doesn't set hit_point correctly with MC_CHECK_SPHERELINE
+// Check the polygons in the model.
+#define MC_CHECK_MODEL (1 << 0)
+// check for collision against shield, if it exists.
+#define MC_CHECK_SHIELD (1 << 1)
+// Only check bounding sphere. Not accurate, but fast.
+// NOTE!  This doesn't set hit_point correctly with MC_CHECK_SPHERELINE
+#define MC_ONLY_SPHERE (1 << 2)
 #define MC_ONLY_BOUND_BOX                                                        \
     (1                                                                           \
      << 3) // Only check bounding boxes.  Pretty accurate and slower than MC_ONLY_SPHERE.
         // Checks the rotatated bounding box of each submodel.
         // NOTE!  This doesn't set hit_point correctly with MC_CHECK_SPHERELINE
-#define MC_CHECK_RAY (1 << 4) // Checks a ray from p0 *through* p1 on to infinity
-#define MC_CHECK_SPHERELINE                                                      \
-    (1 << 5) // Checks a moving sphere rather than just a ray.  Radius
+// Checks a ray from p0 *through* p1 on to infinity
+#define MC_CHECK_RAY (1 << 4)
+// Checks a moving sphere rather than just a ray.  Radius
+#define MC_CHECK_SPHERELINE (1 << 5)
 #define MC_SUBMODEL                                                              \
     (1                                                                           \
      << 6) // If this is set, only check the submodel specified in mc->submodel_num. Use with MC_CHECK_MODEL
-#define MC_SUBMODEL_INSTANCE                                                     \
-    (1 << 7) // Check submodel and its children (of a rotating submodel)
-#define MC_CHECK_INVISIBLE_FACES (1 << 8) // Check the invisible faces.
+// Check submodel and its children (of a rotating submodel)
+#define MC_SUBMODEL_INSTANCE (1 << 7)
+// Check the invisible faces.
+#define MC_CHECK_INVISIBLE_FACES (1 << 8)
 
 /*
    Checks to see if a vector from p0 to p0 collides with a model of

@@ -27,7 +27,8 @@ typedef struct fhash_node
 } fhash_node;
 
 // hash table itself (with chained nodes)
-#define HASH_TABLE_SIZE 253 // works better when not a power of 2, and is prime
+// works better when not a power of 2, and is prime
+#define HASH_TABLE_SIZE 253
 fhash_node *Hash_table_fred[HASH_TABLE_SIZE];
 
 // if the hash table is active

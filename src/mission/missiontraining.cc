@@ -34,24 +34,32 @@
 //#define TRAINING_MSG_WINDOW_X        174
 //#define TRAINING_MSG_WINDOW_Y        40
 #define TRAINING_MSG_WINDOW_WIDTH 266
-#define TRAINING_LINE_WIDTH 250 // width in pixels of actual text
-#define TRAINING_TIMING 150 // milliseconds per character to display messages
-#define TRAINING_TIMING_BASE 1000 // Minimum milliseconds to display any message
+// width in pixels of actual text
+#define TRAINING_LINE_WIDTH 250
+// milliseconds per character to display messages
+#define TRAINING_TIMING 150
+// Minimum milliseconds to display any message
+#define TRAINING_TIMING_BASE 1000
 //#define TRAINING_OBJ_WND_X           0     // offset of left edge of window
 //#define TRAINING_OBJ_WND_Y           180   // offset of top edge of window
 //#define TRAINING_OBJ_WND_Y           187   // offset of top edge of window
-#define TRAINING_OBJ_WND_WIDTH 170 // number of pixels wide window is.
-#define TRAINING_OBJ_LINE_WIDTH 150 // number of pixels wide text can be
-#define TRAINING_OBJ_LINES 50 // number of lines to track in objective list
-#define TRAINING_OBJ_DISPLAY_LINES 5 // only display this many lines on screen max
+// number of pixels wide window is.
+#define TRAINING_OBJ_WND_WIDTH 170
+// number of pixels wide text can be
+#define TRAINING_OBJ_LINE_WIDTH 150
+// number of lines to track in objective list
+#define TRAINING_OBJ_LINES 50
+// only display this many lines on screen max
+#define TRAINING_OBJ_DISPLAY_LINES 5
 #define MAX_TRAINING_MSG_MODS 20
 #define TRAINING_MSG_QUE_MAX 40
 
-#define TRAINING_OBJ_STATUS_UNKNOWN (1 << 28) // directive status is unknown
-#define TRAINING_OBJ_STATUS_KNOWN                                                \
-    (1 << 29) // directive status is known (satisfied or failed)
-#define TRAINING_OBJ_LINES_KEY                                                   \
-    (1 << 30) // flag indicating line describes the key associated with objective
+// directive status is unknown
+#define TRAINING_OBJ_STATUS_UNKNOWN (1 << 28)
+// directive status is known (satisfied or failed)
+#define TRAINING_OBJ_STATUS_KNOWN (1 << 29)
+// flag indicating line describes the key associated with objective
+#define TRAINING_OBJ_LINES_KEY (1 << 30)
 #define TRAINING_OBJ_LINES_EVENT_STATUS_MASK                                     \
     (TRAINING_OBJ_STATUS_KNOWN | TRAINING_OBJ_STATUS_UNKNOWN)
 

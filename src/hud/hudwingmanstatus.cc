@@ -50,13 +50,17 @@ static char *Wingman_status_filenames[GR_NUM_RESOLUTIONS]
 static hud_frames Wingman_status_frames[HUD_WINGMAN_STATUS_NUM_FRAMES];
 static int Wingman_status_gauge_loaded = 0;
 
-#define HUD_WINGMAN_STATUS_NONE 0 // wingman doesn't exist
-#define HUD_WINGMAN_STATUS_DEAD 1 // wingman has died
-#define HUD_WINGMAN_STATUS_ALIVE 2 // wingman is in the mission
-#define HUD_WINGMAN_STATUS_NOT_HERE 3 // wingman hasn't arrived, or has departed
+// wingman doesn't exist
+#define HUD_WINGMAN_STATUS_NONE 0
+// wingman has died
+#define HUD_WINGMAN_STATUS_DEAD 1
+// wingman is in the mission
+#define HUD_WINGMAN_STATUS_ALIVE 2
+// wingman hasn't arrived, or has departed
+#define HUD_WINGMAN_STATUS_NOT_HERE 3
 
-#define HUD_WINGMAN_MAX_WINGS                                                    \
-    6 // upped to 6 to hold room for Zeta in team v team.
+// upped to 6 to hold room for Zeta in team v team.
+#define HUD_WINGMAN_MAX_WINGS 6
 #define HUD_WINGMAN_MAX_SHIPS_PER_WINGS 6
 
 typedef struct Wingman_status

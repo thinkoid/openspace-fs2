@@ -14,18 +14,30 @@
 
 // Identifies songs in the Soundtrack_filenames[] structure.  The order matches up with
 // what is in music.tbl.  Do not modify without synching music.tbl.
-#define SONG_NRML_1 0 // Normal Song 1
-#define SONG_AARV_1 1 // Allied Arrival 1
-#define SONG_EARV_1 2 // Enemy Arrival 1
-#define SONG_BTTL_1 3 // Battle Song 1
-#define SONG_BTTL_2 4 // Battle Song 2
-#define SONG_BTTL_3 5 // Battle Song 3
-#define SONG_AARV_2 6 // Allied Arrival 2
-#define SONG_EARV_2 7 // Enemy Arrival 2
-#define SONG_VICT_1 8 // Victory Song 1
-#define SONG_VICT_2 9 // Victory Song 2
-#define SONG_FAIL_1 10 // Goal Failed
-#define SONG_DEAD_1 11 // Death Song 1
+// Normal Song 1
+#define SONG_NRML_1 0
+// Allied Arrival 1
+#define SONG_AARV_1 1
+// Enemy Arrival 1
+#define SONG_EARV_1 2
+// Battle Song 1
+#define SONG_BTTL_1 3
+// Battle Song 2
+#define SONG_BTTL_2 4
+// Battle Song 3
+#define SONG_BTTL_3 5
+// Allied Arrival 2
+#define SONG_AARV_2 6
+// Enemy Arrival 2
+#define SONG_EARV_2 7
+// Victory Song 1
+#define SONG_VICT_1 8
+// Victory Song 2
+#define SONG_VICT_2 9
+// Goal Failed
+#define SONG_FAIL_1 10
+// Death Song 1
+#define SONG_DEAD_1 11
 
 #define MAX_PATTERNS 12
 

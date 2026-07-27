@@ -20,7 +20,8 @@
 // Fred.  If the goal you add doesn't have a target (such as chase_any), then you don't have
 // to worry about doing this.  Also add it to list in Fred\Management.cpp, and let Hoffoss know!
 #define AI_GOAL_CHASE (1 << 1)
-#define AI_GOAL_DOCK (1 << 2) // used for undocking as well
+// used for undocking as well
+#define AI_GOAL_DOCK (1 << 2)
 #define AI_GOAL_WAYPOINTS (1 << 3)
 #define AI_GOAL_WAYPOINTS_ONCE (1 << 4)
 #define AI_GOAL_WARP (1 << 5)

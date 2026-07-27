@@ -35,12 +35,16 @@
 
 /* replaced with those static ints that follow
 #define LIST_X    46
-#define LIST_X2   108  // second column x start position
+// second column x start position
+#define LIST_X2 108
 #define LIST_Y    60
-#define LIST_W    558  // total width including both columns
-#define LIST_W2   (LIST_W + LIST_X - LIST_X2)  // width of second column
+// total width including both columns
+#define LIST_W 558
+// width of second column
+#define LIST_W2 (LIST_W + LIST_X - LIST_X2)
 #define LIST_H    297
-#define LIST_H_O  275  // applies only to objectives mode
+// applies only to objectives mode
+#define LIST_H_O 275
 */
 
 // 1st column, width includes both columns
@@ -99,8 +103,8 @@ static int Hud_mission_log_time2_coords[GR_NUM_RESOLUTIONS][2] = {
 #define SHOW_OBJS_BUTTON 4
 #define ACCEPT_BUTTON 5
 
-#define HUD_MESSAGE_TOTAL_LIFE                                                   \
-    14000 // total time a HUD message is alive (in milliseconds)
+// total time a HUD message is alive (in milliseconds)
+#define HUD_MESSAGE_TOTAL_LIFE 14000
 
 #define HUD_MSG_LENGTH_MAX 2048
 //#define HUD_MSG_MAX_PIXEL_W 439   // maximum number of pixels wide message display area is

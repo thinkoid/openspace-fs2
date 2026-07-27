@@ -42,41 +42,43 @@
 #pragma optimize("", off)
 #pragma auto_inline(off)
 
-#define SCAN_FIGHTERS_INTERVAL                                                   \
-    2000 // how often an AI fighter/bomber should scan for enemy fighter/bombers
-        // if sitting still and pounding on a big ship.  If enemy fighters are
-        // close ( < ENTER_STRAFE_THREAT_DIST ), then enter AIM_STRAFE
+// how often an AI fighter/bomber should scan for enemy fighter/bombers
+// if sitting still and pounding on a big ship.  If enemy fighters are
+// close ( < ENTER_STRAFE_THREAT_DIST ), then enter AIM_STRAFE
+#define SCAN_FIGHTERS_INTERVAL 2000
 
-#define ENTER_STRAFE_THREAT_DIST_SQUARED                                         \
-    360000 // use squared distance, instead of 600
+// use squared distance, instead of 600
+#define ENTER_STRAFE_THREAT_DIST_SQUARED 360000
 
 #define MIN_DOT_TO_ATTACK_SUBSYS 0.7f
 #define MIN_DOT_TO_ATTACK_MOVING_SUBSYS 0.97f
 
 // AI BIG MAGIC NUMBERS
-#define STRAFE_RETREAT_COLLIDE_TIME                                              \
-    2.0 // when anticipated collision time is less than this, begin retreat
-#define STRAFE_RETREAT_COLLIDE_DIST                                              \
-    100 // when perpendicular distance to *surface* is less than this, begin retreat
-#define STRAFE_RETREAT_BOX_DIST 300 // distance beyond the bounding box to retreat
+// when anticipated collision time is less than this, begin retreat
+#define STRAFE_RETREAT_COLLIDE_TIME 2.0
+// when perpendicular distance to *surface* is less than this, begin retreat
+#define STRAFE_RETREAT_COLLIDE_DIST 100
+// distance beyond the bounding box to retreat
+#define STRAFE_RETREAT_BOX_DIST 300
 
-#define EVADE_BOX_BASE_DISTANCE 300 // standard distance to end evade submode
-#define EVADE_BOX_MIN_DISTANCE                                                   \
-    200 // minimun distance to end evade submode, after long time
+// standard distance to end evade submode
+#define EVADE_BOX_BASE_DISTANCE 300
+// minimun distance to end evade submode, after long time
+#define EVADE_BOX_MIN_DISTANCE 200
 
-#define ATTACK_STOP_DISTANCE                                                     \
-    150 // when distance to target is less than this, put on brakes
+// when distance to target is less than this, put on brakes
+#define ATTACK_STOP_DISTANCE 150
 
-#define ATTACK_COLLIDE_BASE_DIST                                                 \
-    300 // absolute distance at which to begin checking for possible collision
-#define ATTACK_COLLIDE_AVOID_DIST                                                \
-    60 // perpendicular distance to attack surface at which begin avoiding
-#define ATTACK_COLLIDE_AVOID_TIME                                                \
-    1.0 // anticipated collision time at which to begin evade
-#define ATTACK_COLLIDE_SLOW_DIST                                                 \
-    150 // perpendicular distance to attack surface at which begin slowing down
-#define ATTACK_COLLIDE_SLOW_TIME                                                 \
-    1.5 // anticipated collision time at which to begin slowing down
+// absolute distance at which to begin checking for possible collision
+#define ATTACK_COLLIDE_BASE_DIST 300
+// perpendicular distance to attack surface at which begin avoiding
+#define ATTACK_COLLIDE_AVOID_DIST 60
+// anticipated collision time at which to begin evade
+#define ATTACK_COLLIDE_AVOID_TIME 1.0
+// perpendicular distance to attack surface at which begin slowing down
+#define ATTACK_COLLIDE_SLOW_DIST 150
+// anticipated collision time at which to begin slowing down
+#define ATTACK_COLLIDE_SLOW_TIME 1.5
 
 // forward declarations
 void ai_big_evade_ship();

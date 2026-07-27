@@ -33,7 +33,8 @@
 #define KEY_DESCRIPTION_OFFSET 193
 
 // different gameplay help pages
-#define GP_FIRST_SCREEN 0 // keep up to date
+// keep up to date
+#define GP_FIRST_SCREEN 0
 
 #define GP_HELP_BASIC_KEYS 0
 #define GP_HELP_MOVEMENT_KEYS 1
@@ -46,8 +47,10 @@
 #define GP_HELP_MISC_KEYS 8
 #define GP_HELP_MULTI_KEYS 9
 
-#define GP_LAST_SCREEN_SINGLE 8 // keep up to date
-#define GP_LAST_SCREEN_MULTI 9 // keep up to date
+// keep up to date
+#define GP_LAST_SCREEN_SINGLE 8
+// keep up to date
+#define GP_LAST_SCREEN_MULTI 9
 
 // set this to GP_LAST_SCREEN_SINGLE or GP_LAST_SCREEN_MULTI based upon what game mode we're in
 int Gp_last_screen;

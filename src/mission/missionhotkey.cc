@@ -43,8 +43,8 @@ static int Hotkey_sets_saved; // have we saved the sets for this mission
 
 static int
     Mission_hotkey_save_timestamp; // timestamp used to tell us when we can save
-#define HOTKEY_SAVE_TIME                                                         \
-    15000 // save sets this number of milliseconds into the mission
+// save sets this number of milliseconds into the mission
+#define HOTKEY_SAVE_TIME 15000
 
 typedef struct
 {
@@ -95,7 +95,8 @@ static char *Hotkey_mask_fname[GR_NUM_RESOLUTIONS] = {
 #define HOTKEY_LINE_HEADING 1
 #define HOTKEY_LINE_WING 2
 #define HOTKEY_LINE_SHIP 3
-#define HOTKEY_LINE_SUBSHIP 4 // ship that is in a wing
+// ship that is in a wing
+#define HOTKEY_LINE_SUBSHIP 4
 
 #define WING_FLAG 0x80000
 

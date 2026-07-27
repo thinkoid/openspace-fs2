@@ -36,7 +36,8 @@ static int
 static int Red_alert_num_slots_used = 0;
 static int Red_alert_voice_started;
 
-#define RED_ALERT_WARN_TIME 4000 // time to warn user that new orders are coming
+// time to warn user that new orders are coming
+#define RED_ALERT_WARN_TIME 4000
 
 #define RED_ALERT_NONE 0
 #define RED_ALERT_MISSION 1

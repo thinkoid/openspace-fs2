@@ -42,7 +42,8 @@ badge_stuff Badge_info[MAX_BADGES];
 int Badge_index[MAX_BADGES];
 
 // the rank section of the screen
-#define RANK_MEDAL_REGION 12 // region number of the rank medal
+// region number of the rank medal
+#define RANK_MEDAL_REGION 12
 
 // coords for indiv medal bitmaps
 int Medal_coords[GR_NUM_RESOLUTIONS][NUM_MEDALS][2] = {
@@ -140,7 +141,8 @@ player *Medals_player;
 // -----------------------------------------------------------------------------
 // Main medals screen state
 //
-#define NUM_MEDAL_REGIONS NUM_MEDALS + 1 // the extra one is for the rank medal
+// the extra one is for the rank medal
+#define NUM_MEDAL_REGIONS NUM_MEDALS + 1
 
 static bitmap *Medals_mask;
 int Medals_mask_w, Medals_mask_h;

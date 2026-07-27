@@ -154,8 +154,8 @@ typedef struct config_item
 
 #define XFER_SHIELD 81
 #define XFER_LASER 82
-#define SHOW_DAMAGE_POPUP                                                        \
-    83 // AL: this binding should be removing next time the controls are reorganized
+// AL: this binding should be removing next time the controls are reorganized
+#define SHOW_DAMAGE_POPUP 83
 
 #define BANK_WHEN_PRESSED 84
 #define SHOW_NAVMAP 85

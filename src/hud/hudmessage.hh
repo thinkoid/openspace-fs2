@@ -10,11 +10,13 @@
 #ifndef _HUDMESSAGE_H
 #define _HUDMESSAGE_H
 
-#define SCROLL_BUFFER_LINES                                                      \
-    128 // maximum number of HUD messages that can be stored
-#define SCROLL_TIME 30 // time in milliseconds between scrolling a message
+// maximum number of HUD messages that can be stored
+#define SCROLL_BUFFER_LINES 128
+// time in milliseconds between scrolling a message
+#define SCROLL_TIME 30
 #define SCROLL_STEP_SIZE 3
-#define MAX_HUD_LINE_LEN 256 // maximum number of characters for a HUD message
+// maximum number of characters for a HUD message
+#define MAX_HUD_LINE_LEN 256
 #define MAX_ACTIVE_BUFFER_LINES 10
 
 #define HUD_SOURCE_COMPUTER 0

@@ -16,26 +16,30 @@
 #define PF_USE_VEL                                                               \
     (1                                                                           \
      << 2) //  Use velocity present in physics_info struct, don't call physics_sim_vel.
-#define PF_AFTERBURNER_ON (1 << 3) //  Afterburner currently engaged.
-#define PF_SLIDE_ENABLED (1 << 4) // Allow descent style sliding
+// Afterburner currently engaged.
+#define PF_AFTERBURNER_ON (1 << 3)
+// Allow descent style sliding
+#define PF_SLIDE_ENABLED (1 << 4)
 #define PF_REDUCED_DAMP                                                          \
     (1                                                                           \
      << 5) // Allows reduced damping on z (for death, shockwave) (CAN be reset in physics)
 #define PF_IN_SHOCKWAVE                                                          \
     (1                                                                           \
      << 6) // Indicates whether object has recently been hit by shockwave (used to enable shake)
-#define PF_DEAD_DAMP                                                             \
-    (1 << 7) // Makes forward damping same as sideways (NOT reset in physics)
+// Makes forward damping same as sideways (NOT reset in physics)
+#define PF_DEAD_DAMP (1 << 7)
 #define PF_AFTERBURNER_WAIT                                                      \
     (1                                                                           \
      << 8) // true when afterburner cannot be used.  replaces variable used in afterburner code
-#define PF_CONST_VEL                                                             \
-    (1 << 9) // Use velocity in phys_info struct.  Optimize weapons in phys_sim
-#define PF_WARP_IN (1 << 10) //  Use when ship is warping in
+// Use velocity in phys_info struct.  Optimize weapons in phys_sim
+#define PF_CONST_VEL (1 << 9)
+// Use when ship is warping in
+#define PF_WARP_IN (1 << 10)
 #define PF_SPECIAL_WARP_IN                                                       \
     (1                                                                           \
      << 11) // Use when ship is warping in and we want to slow the ship faster than normal game physics
-#define PF_WARP_OUT (1 << 12) // Use when ship is warping out
+// Use when ship is warping out
+#define PF_WARP_OUT (1 << 12)
 #define PF_SPECIAL_WARP_OUT                                                      \
     (1                                                                           \
      << 13) // Use when ship is warping out and we want to slow the ship faster than normal game physics

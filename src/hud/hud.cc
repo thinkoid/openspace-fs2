@@ -394,7 +394,8 @@ HUD_init_colors()
 // a new sound and/or adjust the volume.  This occurs in update_throttle_sound()
 //
 static float last_percent_throttle;
-#define THROTTLE_SOUND_CHECK_INTERVAL 50 // in ms
+// in ms
+#define THROTTLE_SOUND_CHECK_INTERVAL 50
 static int throttle_sound_check_id;
 
 // used for the display of damaged subsystems

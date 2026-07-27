@@ -13,9 +13,12 @@
 #include <object/object.hh>
 #include <math/vecmat.hh>
 
-#define OBS_MAX_VEL_X (85.0f) // side to side
-#define OBS_MAX_VEL_Y (85.0f) // side to side
-#define OBS_MAX_VEL_Z (85.0f) // forwards and backwards
+// side to side
+#define OBS_MAX_VEL_X (85.0f)
+// side to side
+#define OBS_MAX_VEL_Y (85.0f)
+// forwards and backwards
+#define OBS_MAX_VEL_Z (85.0f)
 
 #define OBS_FLAG_USED (1 << 1)
 

@@ -21,30 +21,39 @@
 #include <io/key.hh>
 
 // defines for physics functions
-#define MAX_TURN_LIMIT 0.2618f // about 15 degrees
+// about 15 degrees
+#define MAX_TURN_LIMIT 0.2618f
 
 #define ROT_DEBUG
-#define ROTVEL_TOL 0.1 // Amount of rotvel is decreased if over cap
-#define ROTVEL_CAP 14.0 // Rotational velocity cap for live objects
-#define DEAD_ROTVEL_CAP 16.3 // Rotational velocity cap for dead objects
+// Amount of rotvel is decreased if over cap
+#define ROTVEL_TOL 0.1
+// Rotational velocity cap for live objects
+#define ROTVEL_CAP 14.0
+// Rotational velocity cap for dead objects
+#define DEAD_ROTVEL_CAP 16.3
 
-#define MAX_SHIP_SPEED 300 // Maximum speed allowed after whack or shockwave
-#define RESET_SHIP_SPEED                                                         \
-    240 // Speed that a ship is reset to after exceeding MAX_SHIP_SPEED
+// Maximum speed allowed after whack or shockwave
+#define MAX_SHIP_SPEED 300
+// Speed that a ship is reset to after exceeding MAX_SHIP_SPEED
+#define RESET_SHIP_SPEED 240
 
-#define SW_ROT_FACTOR 5 // increase in rotational time constant in shockwave
-#define SW_BLAST_DURATION 2000 // maximum duration of shockwave
-#define REDUCED_DAMP_FACTOR                                                      \
-    10 // increase in side_slip and acceleration time constants (scaled according to reduced damp time)
-#define REDUCED_DAMP_VEL                                                         \
-    30 // change in velocity at which reduced_damp_time is 2000 ms
-#define REDUCED_DAMP_TIME 2000 // ms (2.0 sec)
-#define WEAPON_SHAKE_TIME                                                        \
-    500 //  ms (0.5 sec)   viewer shake time after hit by weapon (implemented via afterburner shake)
-#define SPECIAL_WARP_T_CONST                                                     \
-    0.651 // special warp time constant (loose 99 % of excess speed in 3 sec)
+// increase in rotational time constant in shockwave
+#define SW_ROT_FACTOR 5
+// maximum duration of shockwave
+#define SW_BLAST_DURATION 2000
+// increase in side_slip and acceleration time constants (scaled according to reduced damp time)
+#define REDUCED_DAMP_FACTOR 10
+// change in velocity at which reduced_damp_time is 2000 ms
+#define REDUCED_DAMP_VEL 30
+// ms (2.0 sec)
+#define REDUCED_DAMP_TIME 2000
+// ms (0.5 sec)   viewer shake time after hit by weapon (implemented via afterburner shake)
+#define WEAPON_SHAKE_TIME 500
+// special warp time constant (loose 99 % of excess speed in 3 sec)
+#define SPECIAL_WARP_T_CONST 0.651
 
-#define PHYS_DEBUG // check if (vel > 500) or (displacement in one frame > 350)
+// check if (vel > 500) or (displacement in one frame > 350)
+#define PHYS_DEBUG
 
 void update_reduced_damp_timestamp(physics_info *pi, float impulse);
 
@@ -874,12 +883,18 @@ velocity_ramp(float v_in, float v_goal, float ramp_time_const, float t)
 //
 // outputs: makes changes to physics_info structure rotvel and vel variables
 //
-#define STD_PRESSURE 1000 // amplitude of standard shockwave blasts
-#define MIN_RADIUS 10 // radius within which full rotvel and shake applied
-#define MAX_RADIUS 50 // radius at which no rotvel or shake applied
-#define MAX_ROTVEL 0.4 // max rotational velocity
-#define MAX_SHAKE 0.1 // max rotational amplitude of shake
-#define MAX_VEL 8 // max vel from shockwave
+// amplitude of standard shockwave blasts
+#define STD_PRESSURE 1000
+// radius within which full rotvel and shake applied
+#define MIN_RADIUS 10
+// radius at which no rotvel or shake applied
+#define MAX_RADIUS 50
+// max rotational velocity
+#define MAX_ROTVEL 0.4
+// max rotational amplitude of shake
+#define MAX_SHAKE 0.1
+// max vel from shockwave
+#define MAX_VEL 8
 void
 physics_apply_shock(vector *direction_vec, float pressure, physics_info *pi,
                     matrix *orient, vector *min, vector *max, float radius)

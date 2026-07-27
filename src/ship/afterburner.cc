@@ -38,16 +38,18 @@ static int Player_afterburner_start_time;
 // The minimum required fuel to engage afterburners
 #define MIN_AFTERBURNER_FUEL_TO_ENGAGE 10
 
-#define AFTERBURNER_DEFAULT_VOL 0.5f // default starting volume (0.0f -> 1.0f)
-#define AFTERBURNER_PERCENT_VOL_ATTENUATE                                        \
-    0.30f // % at which afterburner volume is reduced
+// default starting volume (0.0f -> 1.0f)
+#define AFTERBURNER_DEFAULT_VOL 0.5f
+// % at which afterburner volume is reduced
+#define AFTERBURNER_PERCENT_VOL_ATTENUATE 0.30f
 #define AFTERBURNER_PERCENT_FOR_LOOP_SND 0.33f
-#define AFTERBURNER_VOLUME_UPDATE                                                \
-    250 // consider changing afterburner volume every 100 ms
-#define AFTERBURNER_LOOP_DELAY 200 // ms after engage, to start looping sound
+// consider changing afterburner volume every 100 ms
+#define AFTERBURNER_VOLUME_UPDATE 250
+// ms after engage, to start looping sound
+#define AFTERBURNER_LOOP_DELAY 200
 
-#define DISENGAGE_TIME                                                           \
-    1500 // time in ms to play faded loop sound when afterburner disengages
+// time in ms to play faded loop sound when afterburner disengages
+#define DISENGAGE_TIME 1500
 
 float Skill_level_afterburner_recharge_scale[NUM_SKILL_LEVELS] = { 5.0f, 3.0f,
                                                                    2.0f, 1.5f,

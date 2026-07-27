@@ -432,8 +432,8 @@ shipfx_calculate_effect_radius(object *objp)
 // There are different times for small, medium, and large ships.
 // The appropriate values are picked depending on the ship's
 // radius.
-#define SHIPFX_WARP_DELAY                                                        \
-    (2.0f) // time for warp effect to ramp up before ship moves into it.
+// time for warp effect to ramp up before ship moves into it.
+#define SHIPFX_WARP_DELAY (2.0f)
 
 // Give object objp, calculate how long it should take the
 // ship to go through the warp effect and how fast the ship
@@ -1232,9 +1232,12 @@ shipfx_eye_in_shadow(vector *eye_pos, object *src_obj, int sun_n)
 
 // STUFF FOR DOING SHIP GUN FLASHES
 
-#define MAX_FLASHES 128 // How many flashes total
-#define FLASH_LIFE_PRIMARY 0.25f // How long flash lives
-#define FLASH_LIFE_SECONDARY 0.50f // How long flash lives
+// How many flashes total
+#define MAX_FLASHES 128
+// How long flash lives
+#define FLASH_LIFE_PRIMARY 0.25f
+// How long flash lives
+#define FLASH_LIFE_SECONDARY 0.50f
 
 typedef struct ship_flash
 {
@@ -1642,7 +1645,8 @@ DCF(bs_exp_fire_time_mult,
     }
 }
 
-#define MAX_SPLIT_SHIPS 3 // How many can explode at once.  Each one is about 1K.
+// How many can explode at once.  Each one is about 1K.
+#define MAX_SPLIT_SHIPS 3
 
 #define DEBRIS_NONE 0
 #define DEBRIS_DRAW 1
@@ -2753,7 +2757,8 @@ shipfx_do_shockwave_stuff(ship *shipp, shockwave_create_info *sci)
 
 int Wash_on = 1;
 DCF_BOOL(engine_wash, Wash_on);
-#define ENGINE_WASH_CHECK_INTERVAL 250 // (4x sec)
+// (4x sec)
+#define ENGINE_WASH_CHECK_INTERVAL 250
 // Do engine wash effect for ship
 // Assumes length of engine wash is greater than radius of engine wash hemisphere
 void

@@ -47,7 +47,8 @@ int Lock_gauge_loaded = 0;
 hud_anim Lock_gauge;
 int Lock_gauge_draw = 0;
 int Lock_gauge_draw_stamp = -1;
-#define LOCK_GAUGE_BLINK_RATE 5 // blinks/sec
+// blinks/sec
+#define LOCK_GAUGE_BLINK_RATE 5
 
 int Lockspin_half_w[GR_NUM_RESOLUTIONS] = { 31, 50 };
 int Lockspin_half_h[GR_NUM_RESOLUTIONS] = { 32, 52 };

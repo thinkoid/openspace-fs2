@@ -52,12 +52,15 @@
 #define NUM_DOOR_SOUNDS_0 6
 #define NUM_DOOR_SOUNDS_1 6
 
-#define MISC_ANIM_MODE_LOOP 0 // loop the animation
-#define MISC_ANIM_MODE_HOLD 1 // play to the end and hold the animation
-#define MISC_ANIM_MODE_TIMED                                                     \
-    2 // uses timestamps to determine when a finished anim should be checked again
+// loop the animation
+#define MISC_ANIM_MODE_LOOP 0
+// play to the end and hold the animation
+#define MISC_ANIM_MODE_HOLD 1
+// uses timestamps to determine when a finished anim should be checked again
+#define MISC_ANIM_MODE_TIMED 2
 
-#define NUM_REGIONS 7 // (6 + 1 for multiplayer equivalent of campaign room)
+// (6 + 1 for multiplayer equivalent of campaign room)
+#define NUM_REGIONS 7
 typedef struct main_hall_defines
 {
     // bitmap and mask
@@ -188,7 +191,8 @@ int Main_hall_right_click;
 int Main_hall_last_clicked_region;
 
 // use this to determine how long the cursor has to linger on a region before it starts playing
-#define MAIN_HALL_REGION_LINGER 175 // in ms
+// in ms
+#define MAIN_HALL_REGION_LINGER 175
 int Main_hall_region_linger_stamp = -1;
 
 // handle any right clicks which may have occured

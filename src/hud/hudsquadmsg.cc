@@ -35,18 +35,27 @@
 
 // defines for different modes in the squad messaging system
 
-#define SM_MODE_TYPE_SELECT 1 //am I going to message a ship or a wing
-#define SM_MODE_SHIP_SELECT 2 //choosing actual ship
-#define SM_MODE_WING_SELECT 3 //choosing actual wing
-#define SM_MODE_SHIP_COMMAND 4 //which command to send to a ship
-#define SM_MODE_WING_COMMAND 5 //which command to send to a wing
-#define SM_MODE_REINFORCEMENTS 6 //call for reinforcements
-#define SM_MODE_REPAIR_REARM 7 //repair/rearm player ship
-#define SM_MODE_REPAIR_REARM_ABORT 8 //abort repair/rearm of player ship
-#define SM_MODE_ALL_FIGHTERS 9 //message all fighters/bombers
+// am I going to message a ship or a wing
+#define SM_MODE_TYPE_SELECT 1
+// choosing actual ship
+#define SM_MODE_SHIP_SELECT 2
+// choosing actual wing
+#define SM_MODE_WING_SELECT 3
+// which command to send to a ship
+#define SM_MODE_SHIP_COMMAND 4
+// which command to send to a wing
+#define SM_MODE_WING_COMMAND 5
+// call for reinforcements
+#define SM_MODE_REINFORCEMENTS 6
+// repair/rearm player ship
+#define SM_MODE_REPAIR_REARM 7
+// abort repair/rearm of player ship
+#define SM_MODE_REPAIR_REARM_ABORT 8
+// message all fighters/bombers
+#define SM_MODE_ALL_FIGHTERS 9
 
-#define DEFAULT_MSG_TIMEOUT                                                      \
-    (8 * 1000) // number of seconds * 1000 to get milliseconds
+// number of seconds * 1000 to get milliseconds
+#define DEFAULT_MSG_TIMEOUT (8 * 1000)
 #define MSG_KEY_EAT_TIME (300)
 
 LOCAL int Squad_msg_mode; // current mode that the messaging system is in
@@ -102,8 +111,10 @@ typedef struct mmode_item
     char text[NAME_LENGTH]; // text to display on the menu
 } mmode_item;
 
-#define MAX_MENU_ITEMS 50 // max number of items in the menu
-#define MAX_MENU_DISPLAY 10 // max number that can be displayed
+// max number of items in the menu
+#define MAX_MENU_ITEMS 50
+// max number that can be displayed
+#define MAX_MENU_DISPLAY 10
 
 mmode_item MsgItems[MAX_MENU_ITEMS];
 int Num_menu_items = -1; // number of items for a message menu
@@ -123,7 +134,8 @@ typedef struct key_store
 } key_store;
 
 #define MAX_KEYS_NO_SCROLL 10
-#define MAX_KEYS_USED 12 // maximum number of keys used for the messaging system
+// maximum number of keys used for the messaging system
+#define MAX_KEYS_USED 12
 
 key_store key_save
     [MAX_KEYS_USED]; // array to save the key information during messaging mode

@@ -61,11 +61,11 @@
 
 #define INSTRUCTOR_SHIP_NAME NOX("instructor")
 
-#define AICODE_SMALL_MAGNITUDE                                                   \
-    0.001f // cosider a vector NULL if mag is less than this
+// cosider a vector NULL if mag is less than this
+#define AICODE_SMALL_MAGNITUDE 0.001f
 
-#define NEXT_REARM_TIMESTAMP                                                     \
-    (60 * 1000) //   Ships will re-request rearm, typically, after this long.
+// Ships will re-request rearm, typically, after this long.
+#define NEXT_REARM_TIMESTAMP (60 * 1000)
 
 #define BEAM_NEBULA_RANGE_REDUCE_FACTOR 0.8
 
@@ -159,16 +159,17 @@ waypoint_list Waypoint_lists[MAX_WAYPOINT_LISTS];
 #define AICODE_TURRET_HEATSEEK_ANGLE (0.7f)
 #define AICODE_TURRET_MAX_TIME_IN_RANGE (5.0f)
 
-#define REARM_SOUND_DELAY                                                        \
-    (3 * F1_0) // Amount of time to delay rearm/repair after mode start
-#define REARM_BREAKOFF_DELAY                                                     \
-    (3 * F1_0) // Amount of time to wait after fully rearmed to breakoff.
+// Amount of time to delay rearm/repair after mode start
+#define REARM_SOUND_DELAY (3 * F1_0)
+// Amount of time to wait after fully rearmed to breakoff.
+#define REARM_BREAKOFF_DELAY (3 * F1_0)
 
 #define MIN_DIST_TO_WAYPOINT_GOAL 5.0f
 #define MAX_GUARD_DIST 250.0f
 #define BIG_GUARD_RADIUS 500.0f
 
-#define MAX_EVADE_TIME (15 * 1000) //  Max time to evade a weapon.
+// Max time to evade a weapon.
+#define MAX_EVADE_TIME (15 * 1000)
 
 // defines for repair ship stuff.
 #define MAX_REPAIR_SPEED 25.0f
@@ -178,10 +179,12 @@ waypoint_list Waypoint_lists[MAX_WAYPOINT_LISTS];
 #define MAX_EMP_INACCURACY 50.0f
 
 // defines for stealth
-#define MAX_STEALTH_INACCURACY 50.0f // at max view dist
-#define STEALTH_MAX_VIEW_DIST                                                    \
-    400 // dist at which 1) stealth no longer visible 2) firing inaccuracy is greatest
-#define STEALTH_VIEW_CONE_DOT 0.707 // (half angle of 45 degrees)
+// at max view dist
+#define MAX_STEALTH_INACCURACY 50.0f
+// dist at which 1) stealth no longer visible 2) firing inaccuracy is greatest
+#define STEALTH_MAX_VIEW_DIST 400
+// (half angle of 45 degrees)
+#define STEALTH_VIEW_CONE_DOT 0.707
 
 ai_class Ai_classes[MAX_AI_CLASSES];
 int Ai_firing_enabled = 1;
@@ -12879,7 +12882,8 @@ ai_chase_circle(object *objp)
     set_accel_for_target_speed(Pl_objp, target_speed);
 }
 
-#define SHIELD_BALANCE_RATE 0.2f // 0.1f -> takes 10 seconds to equalize shield.
+// 0.1f -> takes 10 seconds to equalize shield.
+#define SHIELD_BALANCE_RATE 0.2f
 
 // Transfer shield energy to most recently hit section from others.
 void
@@ -15188,8 +15192,8 @@ ai_do_default_behavior(object *obj)
     aip->active_goal = AI_GOAL_NONE;
 }
 
-#define FRIENDLY_DAMAGE_THRESHOLD                                                \
-    50.0f //   Display a message at this threshold.  Note, this gets scaled by Skill_level
+// Display a message at this threshold.  Note, this gets scaled by Skill_level
+#define FRIENDLY_DAMAGE_THRESHOLD 50.0f
 
 // send the given message from objp.  called from the maybe_process_friendly_hit
 // code below when a message must get send to the player when he fires on friendlies

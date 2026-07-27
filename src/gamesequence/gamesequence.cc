@@ -16,9 +16,10 @@
 #include <gamesequence/gamesequence.hh>
 
 // local defines
-#define MAX_GAMESEQ_EVENTS                                                       \
-    20 // maximum number of events on the game sequencing queue
-#define GS_STACK_SIZE 10 // maximum number of stacked states
+// maximum number of events on the game sequencing queue
+#define MAX_GAMESEQ_EVENTS 20
+// maximum number of stacked states
+#define GS_STACK_SIZE 10
 
 // local variables
 typedef struct state_stack

@@ -20,19 +20,19 @@
 #include <weapon/emp.hh>
 #include <localization/localize.hh>
 
-#define ENERGY_DIVERT_DELTA                                                      \
-    0.2f // percentage of energy transferred in a shield->weapon or weapon->shield energy transfer
-#define INTIAL_SHIELD_RECHARGE_INDEX                                             \
-    4 // default shield charge rate (index in Energy_levels[])
-#define INTIAL_WEAPON_RECHARGE_INDEX                                             \
-    4 // default weapon charge rate (index in Energy_levels[])
-#define INTIAL_ENGINE_RECHARGE_INDEX                                             \
-    4 // default engine charge rate (index in Energy_levels[])
+// percentage of energy transferred in a shield->weapon or weapon->shield energy transfer
+#define ENERGY_DIVERT_DELTA 0.2f
+// default shield charge rate (index in Energy_levels[])
+#define INTIAL_SHIELD_RECHARGE_INDEX 4
+// default weapon charge rate (index in Energy_levels[])
+#define INTIAL_WEAPON_RECHARGE_INDEX 4
+// default engine charge rate (index in Energy_levels[])
+#define INTIAL_ENGINE_RECHARGE_INDEX 4
 
-#define MAX_SHIELD_REGEN_PER_SECOND                                              \
-    0.02f //   max percent/100 of shield energy regenerated per second
-#define MAX_WEAPON_REGEN_PER_SECOND                                              \
-    0.04f // max percent/100 of weapon energy regenerated per second
+// max percent/100 of shield energy regenerated per second
+#define MAX_SHIELD_REGEN_PER_SECOND 0.02f
+// max percent/100 of weapon energy regenerated per second
+#define MAX_WEAPON_REGEN_PER_SECOND 0.04f
 
 #define NUM_ENERGY_LEVELS 13
 #define MAX_ENERGY_INDEX (NUM_ENERGY_LEVELS - 1)
@@ -41,8 +41,8 @@ float Energy_levels[NUM_ENERGY_LEVELS] = { 0.0f,   0.0833f, 0.167f, 0.25f,
                                            0.667f, 0.75f,   0.833f, 0.9167f,
                                            1.0f };
 
-#define AI_MODIFY_ETS_INTERVAL                                                   \
-    500 // time between ets modifications for ai's (in milliseconds)
+// time between ets modifications for ai's (in milliseconds)
+#define AI_MODIFY_ETS_INTERVAL 500
 
 int Weapon_energy_cheat = 0;
 

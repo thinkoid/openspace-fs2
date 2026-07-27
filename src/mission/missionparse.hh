@@ -17,12 +17,13 @@
 #include <mission/missionbriefcommon.hh>
 #include <weapon/weapon.hh>
 
-#define NUM_NEBULAS 3 // how many background nebulas we have altogether
+// how many background nebulas we have altogether
+#define NUM_NEBULAS 3
 #define NUM_NEBULA_COLORS 9
 
 // arrival anchor types
-#define SPECIAL_ARRIVAL_ANCHORS_OFFSET                                           \
-    90000 // offset used to avoid conflicting with ship anchors
+// offset used to avoid conflicting with ship anchors
+#define SPECIAL_ARRIVAL_ANCHORS_OFFSET 90000
 #define ANY_FRIENDLY (SPECIAL_ARRIVAL_ANCHORS_OFFSET + 0)
 #define ANY_HOSTILE (SPECIAL_ARRIVAL_ANCHORS_OFFSET + 1)
 #define ANY_NEUTRAL (SPECIAL_ARRIVAL_ANCHORS_OFFSET + 2)
@@ -41,14 +42,15 @@
 #define MAX_STARTING_WINGS 3
 extern char *Starting_wing_names[MAX_STARTING_WINGS + 1];
 
-#define WING_PLAYER_BASE                                                         \
-    0x80000 // used by Fred to tell ship_index in a wing points to a player
+// used by Fred to tell ship_index in a wing points to a player
+#define WING_PLAYER_BASE 0x80000
 
 // defines used for parse_mission() to tell what kind of information to get from the mission file
 #define MISSION_PARSE_MISSION_INFO 1
 
 // bitfield definitions for missions game types
-#define OLD_MAX_GAME_TYPES 4 // needed for compatibility
+// needed for compatibility
+#define OLD_MAX_GAME_TYPES 4
 #define OLD_GAME_TYPE_SINGLE_ONLY 0
 #define OLD_GAME_TYPE_MULTI_ONLY 1
 #define OLD_GAME_TYPE_SINGLE_MULTI 2
@@ -62,12 +64,16 @@ extern char *Starting_wing_names[MAX_STARTING_WINGS + 1];
 #define MISSION_TYPE_MULTI_TEAMS (1 << 4)
 #define MISSION_TYPE_MULTI_DOGFIGHT (1 << 5)
 
-#define MISSION_FLAG_SUBSPACE (1 << 0) // mission takes place in subspace
-#define MISSION_FLAG_NO_PROMOTION                                                \
-    (1 << 1) // cannot get promoted or badges in this mission
-#define MISSION_FLAG_FULLNEB (1 << 2) // mission is a full nebula mission
-#define MISSION_FLAG_NO_BUILTIN_MSGS (1 << 3) // disables builtin msgs
-#define MISSION_FLAG_NO_TRAITOR (1 << 4) // player cannot become a traitor
+// mission takes place in subspace
+#define MISSION_FLAG_SUBSPACE (1 << 0)
+// cannot get promoted or badges in this mission
+#define MISSION_FLAG_NO_PROMOTION (1 << 1)
+// mission is a full nebula mission
+#define MISSION_FLAG_FULLNEB (1 << 2)
+// disables builtin msgs
+#define MISSION_FLAG_NO_BUILTIN_MSGS (1 << 3)
+// player cannot become a traitor
+#define MISSION_FLAG_NO_TRAITOR (1 << 4)
 
 // some mice macros for mission type
 #define IS_MISSION_MULTI_COOP (The_mission.game_type & MISSION_TYPE_MULTI_COOP)
@@ -289,7 +295,8 @@ typedef struct p_object
 #define P_SF_LOCKED (1 << 10)
 #define P_SF_INVULNERABLE (1 << 11)
 #define P_SF_HIDDEN_FROM_SENSORS (1 << 12)
-#define P_SF_SCANNABLE (1 << 13) // ship is a "scannable" ship
+// ship is a "scannable" ship
+#define P_SF_SCANNABLE (1 << 13)
 #define P_AIF_KAMIKAZE (1 << 14)
 #define P_AIF_NO_DYNAMIC (1 << 15)
 #define P_SF_RED_ALERT_STORE_STATUS (1 << 16)
@@ -301,13 +308,16 @@ typedef struct p_object
 #define P_SF_USE_UNIQUE_ORDERS                                                   \
     (1                                                                           \
      << 26) // tells a newly created ship to use the default orders for that ship
-#define P_SF_INITIALLY_DOCKED                                                    \
-    (1 << 27) // is this parse object initially docked with something else
-#define P_SF_CANNOT_ARRIVE                                                       \
-    (1 << 28) // used to indicate that this ship's arrival cue will never be true
-#define P_SF_WARP_BROKEN (1 << 29) // warp engine should be broken for this ship
-#define P_SF_WARP_NEVER (1 << 30) // warp drive is destroyed
-#define P_SF_PLAYER_START_VALID (1 << 31) // this is a valid player start object
+// is this parse object initially docked with something else
+#define P_SF_INITIALLY_DOCKED (1 << 27)
+// used to indicate that this ship's arrival cue will never be true
+#define P_SF_CANNOT_ARRIVE (1 << 28)
+// warp engine should be broken for this ship
+#define P_SF_WARP_BROKEN (1 << 29)
+// warp drive is destroyed
+#define P_SF_WARP_NEVER (1 << 30)
+// this is a valid player start object
+#define P_SF_PLAYER_START_VALID (1 << 31)
 
 extern p_object ship_arrival_list; // used by sexpression parser
 
@@ -315,8 +325,10 @@ extern p_object ship_arrival_list; // used by sexpression parser
 #define MAX_SHIP_ARRIVALS 45
 #define MAX_WING_ARRIVALS 10
 #else
-#define MAX_SHIP_ARRIVALS 90 // maximum of 90 objects can arrive later
-#define MAX_WING_ARRIVALS 20 // maximum of 20 wings can arrive later
+// maximum of 90 objects can arrive later
+#define MAX_SHIP_ARRIVALS 90
+// maximum of 20 wings can arrive later
+#define MAX_WING_ARRIVALS 20
 #endif
 
 extern p_object ship_arrivals[MAX_SHIP_ARRIVALS];

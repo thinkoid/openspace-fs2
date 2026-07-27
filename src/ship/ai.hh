@@ -32,93 +32,124 @@
 #include <cfile/cfile.hh>
 #include <globalincs/systemvars.hh>
 
-#define AI_DEFAULT_CLASS 3 // default AI class for new ships (Fred)
+// default AI class for new ships (Fred)
+#define AI_DEFAULT_CLASS 3
 
-#define AIF_FORMATION_WING (1 << 0) // Fly in formation as part of wing.
-#define AIF_AWAITING_REPAIR (1 << 1) //   Awaiting a repair ship.
-#define AIF_BEING_REPAIRED (1 << 2) // Currently docked with repair ship.
-#define AIF_REPAIRING (1 << 3) //   Repairing a ship (or going to repair a ship)
-#define AIF_DOCKED (1 << 4) // this object docked with something else
+// Fly in formation as part of wing.
+#define AIF_FORMATION_WING (1 << 0)
+// Awaiting a repair ship.
+#define AIF_AWAITING_REPAIR (1 << 1)
+// Currently docked with repair ship.
+#define AIF_BEING_REPAIRED (1 << 2)
+// Repairing a ship (or going to repair a ship)
+#define AIF_REPAIRING (1 << 3)
+// this object docked with something else
+#define AIF_DOCKED (1 << 4)
 #define AIF_SEEK_LOCK                                                            \
     (1                                                                           \
      << 5) //  set if should focus on gaining aspect lock, not hitting with lasers
-#define AIF_FORMATION_OBJECT (1 << 6) //  Fly in formation off a specific object.
+// Fly in formation off a specific object.
+#define AIF_FORMATION_OBJECT (1 << 6)
 #define AIF_TEMPORARY_IGNORE                                                     \
     (1                                                                           \
      << 7) //  Means current ignore_objnum is only temporary, not an order from the player.
-#define AIF_USE_EXIT_PATH                                                        \
-    (1 << 8) // Used by path code, to flag path as an exit path
-#define AIF_USE_STATIC_PATH                                                      \
-    (1 << 9) // Used by path code, use fixed path, don't try to recreate
+// Used by path code, to flag path as an exit path
+#define AIF_USE_EXIT_PATH (1 << 8)
+// Used by path code, use fixed path, don't try to recreate
+#define AIF_USE_STATIC_PATH (1 << 9)
 #define AIF_TARGET_COLLISION                                                     \
     (1                                                                           \
      << 10) // Collided with aip->target_objnum last frame.  Avoid that ship for half a second or so.
-#define AIF_UNLOAD_SECONDARIES (1 << 11) //  Fire secondaries as fast as possible!
-#define AIF_ON_SUBSYS_PATH (1 << 12) // Current path leads to a subsystem
-#define AIF_AVOID_SHOCKWAVE_SHIP                                                 \
-    (1 << 13) //  Avoid an existing shockwave from a ship.
+// Fire secondaries as fast as possible!
+#define AIF_UNLOAD_SECONDARIES (1 << 11)
+// Current path leads to a subsystem
+#define AIF_ON_SUBSYS_PATH (1 << 12)
+// Avoid an existing shockwave from a ship.
+#define AIF_AVOID_SHOCKWAVE_SHIP (1 << 13)
 #define AIF_AVOID_SHOCKWAVE_WEAPON                                               \
     (1                                                                           \
      << 14) // Avoid an expected shockwave from a weapon.  shockwave_object field contains object index.
 #define AIF_AVOID_SHOCKWAVE_STARTED                                              \
     (1                                                                           \
      << 15) // Already started avoiding shockwave, don't keep deciding whether to avoid.
-#define AIF_ATTACK_SLOWLY (1 << 16) // Move slowly while attacking.
-#define AIF_REPAIR_OBSTRUCTED                                                    \
-    (1 << 17) //  Ship wants to be repaired, but path is obstructed.
-#define AIF_KAMIKAZE (1 << 18) //   Crash into target
-#define AIF_NO_DYNAMIC (1 << 19) // Not allowed to get dynamic goals
-#define AIF_AVOIDING_SMALL_SHIP (1 << 20) // Avoiding a player ship.
-#define AIF_AVOIDING_BIG_SHIP (1 << 21) //   Avoiding a large ship.
-#define AIF_BIG_SHIP_COLLIDE_RECOVER_1                                           \
-    (1 << 22) //  Collided into a big ship.  Recovering by flying away.
+// Move slowly while attacking.
+#define AIF_ATTACK_SLOWLY (1 << 16)
+// Ship wants to be repaired, but path is obstructed.
+#define AIF_REPAIR_OBSTRUCTED (1 << 17)
+// Crash into target
+#define AIF_KAMIKAZE (1 << 18)
+// Not allowed to get dynamic goals
+#define AIF_NO_DYNAMIC (1 << 19)
+// Avoiding a player ship.
+#define AIF_AVOIDING_SMALL_SHIP (1 << 20)
+// Avoiding a large ship.
+#define AIF_AVOIDING_BIG_SHIP (1 << 21)
+// Collided into a big ship.  Recovering by flying away.
+#define AIF_BIG_SHIP_COLLIDE_RECOVER_1 (1 << 22)
 #define AIF_BIG_SHIP_COLLIDE_RECOVER_2                                           \
     (1                                                                           \
      << 23) // Collided into a big ship.  Fly towards big ship sphere perimeter.
-#define AIF_STEALTH_PURSIUT (1 << 24) // Ai is trying to fight stealth ship
+// Ai is trying to fight stealth ship
+#define AIF_STEALTH_PURSIUT (1 << 24)
 
 #define AIF_AVOID_SHOCKWAVE                                                      \
     (AIF_AVOID_SHOCKWAVE_SHIP | AIF_AVOID_SHOCKWAVE_WEAPON)
 #define AIF_FORMATION (AIF_FORMATION_WING | AIF_FORMATION_OBJECT)
 
 // dock_orient_and_approach() modes.
-#define DOA_APPROACH 1 //  Approach the current point on the path (aip->path_cur)
-#define DOA_DOCK 2 //   Dock with goal object.
-#define DOA_UNDOCK_1 3 //  Begin undocking with goal object.  Just move away.
-#define DOA_UNDOCK_2 4 //  Secondary undocking.  Move away.
-#define DOA_UNDOCK_3 5 //  Tertiary undocking.  Move away and orient away.
-#define DOA_DOCK_STAY 6 // Rigidly maintain position in dock bay.
+// Approach the current point on the path (aip->path_cur)
+#define DOA_APPROACH 1
+// Dock with goal object.
+#define DOA_DOCK 2
+// Begin undocking with goal object.  Just move away.
+#define DOA_UNDOCK_1 3
+// Secondary undocking.  Move away.
+#define DOA_UNDOCK_2 4
+// Tertiary undocking.  Move away and orient away.
+#define DOA_UNDOCK_3 5
+// Rigidly maintain position in dock bay.
+#define DOA_DOCK_STAY 6
 
 // Type values for ai_dock_with_object() dock_type parameter.
-#define AIDO_DOCK 1 //  Set goal of docking with object.
-#define AIDO_DOCK_NOW                                                            \
-    2 // Immediately move into dock position.  For ships that start mission docked.
-#define AIDO_UNDOCK 3 //   Set goal of undocking with object.
+// Set goal of docking with object.
+#define AIDO_DOCK 1
+// Immediately move into dock position.  For ships that start mission docked.
+#define AIDO_DOCK_NOW 2
+// Set goal of undocking with object.
+#define AIDO_UNDOCK 3
 
 #define MAX_AI_GOALS 5
 
 // Submodes for seeking safety.
-#define AISS_1 41 // Pick a spot to fly to.
-#define AISS_2 42 // Flying to spot.
-#define AISS_3 43 // Gotten near spot, fly about there.
-#define AISS_1a                                                                  \
-    44 //   Pick a new nearby spot because we are endangered, then go to AISS_2
+// Pick a spot to fly to.
+#define AISS_1 41
+// Flying to spot.
+#define AISS_2 42
+// Gotten near spot, fly about there.
+#define AISS_3 43
+// Pick a new nearby spot because we are endangered, then go to AISS_2
+#define AISS_1a 44
 
 // types of ai goals -- tyese types will help us to determination on which goals should
 // have priority over others (i.e. when a player issues a goal to a wing, then a seperate
 // goal to a ship in that wing).  We would probably use this type in conjunction with
 // goal priority to establish which goal to follow
-#define AIG_TYPE_EVENT_SHIP 1 // from mission event direct to ship
-#define AIG_TYPE_EVENT_WING 2 // from mission event direct to wing
-#define AIG_TYPE_PLAYER_SHIP 3 // from player direct to ship
-#define AIG_TYPE_PLAYER_WING 4 // from player direct to wing
-#define AIG_TYPE_DYNAMIC 5 // created on the fly
+// from mission event direct to ship
+#define AIG_TYPE_EVENT_SHIP 1
+// from mission event direct to wing
+#define AIG_TYPE_EVENT_WING 2
+// from player direct to ship
+#define AIG_TYPE_PLAYER_SHIP 3
+// from player direct to wing
+#define AIG_TYPE_PLAYER_WING 4
+// created on the fly
+#define AIG_TYPE_DYNAMIC 5
 
 // flags for AI_GOALS
-#define AIGF_DOCKER_NAME_VALID                                                   \
-    (1 << 0) // when set, name field for docker is valid
-#define AIGF_DOCKEE_NAME_VALID                                                   \
-    (1 << 1) // when set, name field for dockee is valid
+// when set, name field for docker is valid
+#define AIGF_DOCKER_NAME_VALID (1 << 0)
+// when set, name field for dockee is valid
+#define AIGF_DOCKEE_NAME_VALID (1 << 1)
 #define AIGF_GOAL_ON_HOLD                                                        \
     (1                                                                           \
      << 2) // when set, this goal cannot currently be satisfied, although it could be in the future
@@ -128,15 +159,17 @@
 #define AIGF_GOAL_OVERRIDE                                                       \
     (1                                                                           \
      << 4) // paired with AIG_TYPE_DYNAMIC to mean this goal overrides any other goal
-#define AIGF_PURGE (1 << 5) // purge this goal next time we process
-#define AIGF_GOALS_PURGED                                                        \
-    (1 << 6) // this goal has already caused other goals to get purged
+// purge this goal next time we process
+#define AIGF_PURGE (1 << 5)
+// this goal has already caused other goals to get purged
+#define AIGF_GOALS_PURGED (1 << 6)
 
 // Flags to ai_turn_towards_vector().
-#define AITTV_FAST (1 << 0) //   Turn fast, not slowed down based on skill level.
+// Turn fast, not slowed down based on skill level.
+#define AITTV_FAST (1 << 0)
 
-#define KAMIKAZE_HULL_ON_DEATH                                                   \
-    -1000.0f //   Hull strength ship gets set to if it crash-dies.
+// Hull strength ship gets set to if it crash-dies.
+#define KAMIKAZE_HULL_ON_DEATH -1000.0f
 
 // structure for AI goals
 typedef struct ai_goals
@@ -176,32 +209,50 @@ typedef struct ai_goals
 #define AIM_CHASE 0
 #define AIM_EVADE 1
 #define AIM_GET_BEHIND 2
-#define AIM_STAY_NEAR 3 // Stay near another ship.
-#define AIM_STILL 4 //  Sit still.  Don't move.  Hold your breath.  Don't blink.
-#define AIM_GUARD 5 //  Guard an object
-#define AIM_AVOID 6 //  Avoid an object
-#define AIM_WAYPOINTS 7 // Fly waypoints
-#define AIM_DOCK 8 //   Dock with ship.
-#define AIM_NONE 9 //   Uh, do nothing.
-#define AIM_BIGSHIP 10 //  Like a capital ship, doesn't focus on one ship.
-#define AIM_PATH 11 //  Follow path on ship
-#define AIM_BE_REARMED 12 //  Allow self to be rearmed
-#define AIM_SAFETY 13 //   Seek safety at periphery of battle
-#define AIM_EVADE_WEAPON 14 //   Evade a weapon.
-#define AIM_STRAFE 15 // attack a big ship by strafing it
-#define AIM_PLAY_DEAD 16 //   Play dead.  Get it?  Don't move, fire, etc.
-#define AIM_BAY_EMERGE 17 // Emerging from a fighter bay, following path to do so
-#define AIM_BAY_DEPART 18 // Departing to a fighter bay, following path to do so
-#define AIM_SENTRYGUN 19 // AI mode for sentry guns only (floating turrets)
-#define AIM_WARP_OUT                                                             \
-    20 //   Commence warp out sequence.  Point in legal direction.  Then call John's code.
+// Stay near another ship.
+#define AIM_STAY_NEAR 3
+// Sit still.  Don't move.  Hold your breath.  Don't blink.
+#define AIM_STILL 4
+// Guard an object
+#define AIM_GUARD 5
+// Avoid an object
+#define AIM_AVOID 6
+// Fly waypoints
+#define AIM_WAYPOINTS 7
+// Dock with ship.
+#define AIM_DOCK 8
+// Uh, do nothing.
+#define AIM_NONE 9
+// Like a capital ship, doesn't focus on one ship.
+#define AIM_BIGSHIP 10
+// Follow path on ship
+#define AIM_PATH 11
+// Allow self to be rearmed
+#define AIM_BE_REARMED 12
+// Seek safety at periphery of battle
+#define AIM_SAFETY 13
+// Evade a weapon.
+#define AIM_EVADE_WEAPON 14
+// attack a big ship by strafing it
+#define AIM_STRAFE 15
+// Play dead.  Get it?  Don't move, fire, etc.
+#define AIM_PLAY_DEAD 16
+// Emerging from a fighter bay, following path to do so
+#define AIM_BAY_EMERGE 17
+// Departing to a fighter bay, following path to do so
+#define AIM_BAY_DEPART 18
+// AI mode for sentry guns only (floating turrets)
+#define AIM_SENTRYGUN 19
+// Commence warp out sequence.  Point in legal direction.  Then call John's code.
+#define AIM_WARP_OUT 20
 
-#define MAX_AI_BEHAVIORS 21 //   Number of AIM_xxxx types
+// Number of AIM_xxxx types
+#define MAX_AI_BEHAVIORS 21
 
 #define MAX_WAYPOINTS_PER_LIST 20
 #define MAX_WAYPOINT_LISTS 32
-#define MAX_ENEMY_DISTANCE                                                       \
-    2500.0f // maximum distance from which a ship will pursue an enemy.
+// maximum distance from which a ship will pursue an enemy.
+#define MAX_ENEMY_DISTANCE 2500.0f
 
 // waypoint list flags bitmasks.
 #define WL_MARKED 0x01
@@ -229,8 +280,8 @@ typedef struct ai_class
 
 // Submode definitions.
 // Note: These need to be renamed to be of the form: AIS_mode_xxxx
-#define SM_CONTINUOUS_TURN                                                       \
-    1 // takes parm: vector_id {0..3 = right, -right, up, -up}
+// takes parm: vector_id {0..3 = right, -right, up, -up}
+#define SM_CONTINUOUS_TURN 1
 #define SM_ATTACK 2
 #define SM_EVADE_SQUIGGLE 3
 #define SM_EVADE_BRAKE 4
@@ -239,18 +290,22 @@ typedef struct ai_class
 #define SM_AVOID 7
 #define SM_GET_BEHIND 8
 #define SM_GET_AWAY 9
-#define SM_EVADE_WEAPON 10 // Evade incoming weapon
-#define SM_FLY_AWAY 11 //  Fly away from target_objnum
-#define SM_ATTACK_FOREVER                                                        \
-    12 //   Engine subsystem destroyed, so attack, never evading, avoiding, etc.
-#define SM_STEALTH_FIND                                                          \
-    13 // Stealth ship is "targeted", but not visible, so try to find based on predicted pos
-#define SM_STEALTH_SWEEP                                                         \
-    14 // General sweep, looking for stealth after not visible for some time.
-#define SM_BIG_APPROACH 15 // Big ship approaches another
-#define SM_BIG_CIRCLE                                                            \
-    16 // Big ship flies circle around other big ship to get good angle to go parallel
-#define SM_BIG_PARALLEL 17 // Big ship flies parallel to another
+// Evade incoming weapon
+#define SM_EVADE_WEAPON 10
+// Fly away from target_objnum
+#define SM_FLY_AWAY 11
+// Engine subsystem destroyed, so attack, never evading, avoiding, etc.
+#define SM_ATTACK_FOREVER 12
+// Stealth ship is "targeted", but not visible, so try to find based on predicted pos
+#define SM_STEALTH_FIND 13
+// General sweep, looking for stealth after not visible for some time.
+#define SM_STEALTH_SWEEP 14
+// Big ship approaches another
+#define SM_BIG_APPROACH 15
+// Big ship flies circle around other big ship to get good angle to go parallel
+#define SM_BIG_CIRCLE 16
+// Big ship flies parallel to another
+#define SM_BIG_PARALLEL 17
 
 // Submodes for docking behavior
 #define AIS_DOCK_0 21
@@ -258,8 +313,10 @@ typedef struct ai_class
 #define AIS_DOCK_2 23
 #define AIS_DOCK_3 24
 #define AIS_DOCK_3A 25
-#define AIS_DOCK_4 26 //   Only for rearm/repair.
-#define AIS_DOCK_4A 27 //  Only for not rearm/repair.  MK, 7/15/97
+// Only for rearm/repair.
+#define AIS_DOCK_4 26
+// Only for not rearm/repair.  MK, 7/15/97
+#define AIS_DOCK_4A 27
 #define AIS_UNDOCK_0 30
 #define AIS_UNDOCK_1 31
 #define AIS_UNDOCK_2 32
@@ -270,15 +327,19 @@ typedef struct ai_class
 #define AIS_GUARD_PATROL 101
 #define AIS_GUARD_ATTACK 102
 #define AIS_GUARD_2 103
-#define AIS_GUARD_STATIC                                                         \
-    104 //  maintain current relative position to guard object, if possible
+// maintain current relative position to guard object, if possible
+#define AIS_GUARD_STATIC 104
 
 // Submodes for strafing big ships behavior (AIM_STRAFE)
-#define AIS_STRAFE_ATTACK 201 // fly towards target and attack
-#define AIS_STRAFE_AVOID 202 // fly evasive vector to avoid incoming fire
-#define AIS_STRAFE_RETREAT1 203 // fly away from attack point
+// fly towards target and attack
+#define AIS_STRAFE_ATTACK 201
+// fly evasive vector to avoid incoming fire
+#define AIS_STRAFE_AVOID 202
+// fly away from attack point
+#define AIS_STRAFE_RETREAT1 203
 #define AIS_STRAFE_RETREAT2 204
-#define AIS_STRAFE_POSITION 205 // re-position to resume strafing attack
+// re-position to resume strafing attack
+#define AIS_STRAFE_POSITION 205
 
 #define WPF_REPEAT (1 << 0)
 #define WPF_BACKTRACK (1 << 1)
@@ -286,11 +347,12 @@ typedef struct ai_class
 #define PD_FORWARD 1
 #define PD_BACKWARD -1
 
-#define MIN_TRACKABLE_ASPECT_DOT                                                 \
-    0.992f //  dot of fvec and vec_to_enemy to progress towards aspect lock
+// dot of fvec and vec_to_enemy to progress towards aspect lock
+#define MIN_TRACKABLE_ASPECT_DOT 0.992f
 
 // Submodes for warping out.
-#define AIS_WARP_1 300 //  Make sure there is no obstruction to warping out.
+// Make sure there is no obstruction to warping out.
+#define AIS_WARP_1 300
 #define AIS_WARP_2 301
 #define AIS_WARP_3 302
 #define AIS_WARP_4 303
@@ -502,9 +564,10 @@ typedef struct ai_info
 #define SUBSYS_PATH_DIST 500.0f
 
 // Friendly damage defines
-#define MAX_BURST_DAMAGE 20 // max damage that can be done in BURST_DURATION
-#define BURST_DURATION                                                           \
-    500 // decay time over which Player->damage_this_burst falls from MAX_BURST_DAMAGE to 0
+// max damage that can be done in BURST_DURATION
+#define MAX_BURST_DAMAGE 20
+// decay time over which Player->damage_this_burst falls from MAX_BURST_DAMAGE to 0
+#define BURST_DURATION 500
 
 extern int Mission_all_attack; //   !0 means all teams attack all teams.
 extern int Total_goal_ship_names;

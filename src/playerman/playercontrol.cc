@@ -1235,7 +1235,8 @@ player_stop_cargo_scan_sound()
 // exit: 1  => a praise message was delivered to the player, or a praise is pending
 //       0  => no praise is pending
 
-#define PLAYER_ALLOW_PRAISE_INTERVAL 60000 // minimum time between praises
+// minimum time between praises
+#define PLAYER_ALLOW_PRAISE_INTERVAL 60000
 
 int
 player_process_pending_praise()

@@ -25,7 +25,8 @@
 #define MAX_OBJECTS 1000
 #endif
 
-#define MAX_SHIELD_SECTIONS 4 // Number of sections in shield.
+// Number of sections in shield.
+#define MAX_SHIELD_SECTIONS 4
 
 #ifndef NDEBUG
 #define OBJECT_CHECK
@@ -42,25 +43,38 @@
 #define MAX_TEAM_NAMES_INDEX TEAM_TRAITOR
 
 //Object types
-#define OBJ_NONE 0 //unused object
-#define OBJ_SHIP 1 //a ship
-#define OBJ_WEAPON 2 //a laser, missile, etc
-#define OBJ_FIREBALL 3 //an explosion
-#define OBJ_START 4 //a starting point marker (player start, etc)
-#define OBJ_WAYPOINT 5 //a waypoint object, maybe only ever used by Fred
-#define OBJ_DEBRIS 6 //a flying piece of ship debris
-#define OBJ_CMEASURE 7 //a countermeasure, such as chaff
-#define OBJ_GHOST 8 //so far, just a placeholder for when a player dies.
-#define OBJ_POINT 9 //generic object type to display a point in Fred.
-#define OBJ_SHOCKWAVE 10 // a shockwave
-#define OBJ_WING 11 // not really a type used anywhere, but I need it for Fred.
-#define OBJ_OBSERVER                                                             \
-    12 // used for multiplayer observers (possibly single player later)
-#define OBJ_ASTEROID                                                             \
-    13 //   An asteroid, you know, a big rock, like debris, sort of.
-#define OBJ_JUMP_NODE 14 // A jump node object, used only in Fred.
-#define OBJ_BEAM                                                                 \
-    15 // beam weapons. we have to roll them into the object system to get the benefits of the collision pairs
+// unused object
+#define OBJ_NONE 0
+// a ship
+#define OBJ_SHIP 1
+// a laser, missile, etc
+#define OBJ_WEAPON 2
+// an explosion
+#define OBJ_FIREBALL 3
+// a starting point marker (player start, etc)
+#define OBJ_START 4
+// a waypoint object, maybe only ever used by Fred
+#define OBJ_WAYPOINT 5
+// a flying piece of ship debris
+#define OBJ_DEBRIS 6
+// a countermeasure, such as chaff
+#define OBJ_CMEASURE 7
+// so far, just a placeholder for when a player dies.
+#define OBJ_GHOST 8
+// generic object type to display a point in Fred.
+#define OBJ_POINT 9
+// a shockwave
+#define OBJ_SHOCKWAVE 10
+// not really a type used anywhere, but I need it for Fred.
+#define OBJ_WING 11
+// used for multiplayer observers (possibly single player later)
+#define OBJ_OBSERVER 12
+// An asteroid, you know, a big rock, like debris, sort of.
+#define OBJ_ASTEROID 13
+// A jump node object, used only in Fred.
+#define OBJ_JUMP_NODE 14
+// beam weapons. we have to roll them into the object system to get the benefits of the collision pairs
+#define OBJ_BEAM 15
 
 //Make sure to change Object_type_names in Object.c when adding another type!
 #define MAX_OBJECT_TYPES 16
@@ -121,23 +135,25 @@ extern char *Object_type_names[MAX_OBJECT_TYPES];
 // }
 
 //Misc object flags
-#define OF_RENDERS                                                               \
-    (1 << 0) //It renders as something ( objtype_render gets called)
+// It renders as something ( objtype_render gets called)
+#define OF_RENDERS (1 << 0)
 #define OF_COLLIDES                                                              \
     (1                                                                           \
      << 1) //It collides with stuff (objtype_check_impact & objtype_hit gets called)
-#define OF_PHYSICS (1 << 2) //It moves with standard physics.
+// It moves with standard physics.
+#define OF_PHYSICS (1 << 2)
 #define OF_SHOULD_BE_DEAD                                                        \
     (1                                                                           \
      << 3) //this object should be dead, so next time we can, we should delete this object.
-#define OF_INVULNERABLE (1 << 4) // invulnerable
-#define OF_PROTECTED                                                             \
-    (1 << 5) // Don't kill this object, probably mission-critical.
+// invulnerable
+#define OF_INVULNERABLE (1 << 4)
+// Don't kill this object, probably mission-critical.
+#define OF_PROTECTED (1 << 5)
 #define OF_PLAYER_SHIP                                                           \
     (1                                                                           \
      << 6) // this object under control of some player -- don't do ai stuff on it!!!
-#define OF_NO_SHIELDS                                                            \
-    (1 << 7) // object has no shield generator system (i.e. no shileds)
+// object has no shield generator system (i.e. no shileds)
+#define OF_NO_SHIELDS (1 << 7)
 #define OF_JUST_UPDATED                                                          \
     (1                                                                           \
      << 8) // for multiplayer -- indicates that we received object update this frame
@@ -147,22 +163,26 @@ extern char *Object_type_names[MAX_OBJECT_TYPES];
 #define OF_WAS_RENDERED                                                          \
     (1                                                                           \
      << 10) // Set if this object was rendered this frame.  Only gets set if OF_RENDERS set.  Gets cleared or set in obj_render_all().
-#define OF_NOT_IN_COLL (1 << 11) // object has not been added to collision list
+// object has not been added to collision list
+#define OF_NOT_IN_COLL (1 << 11)
 #define OF_BEAM_PROTECTED                                                        \
     (1                                                                           \
      << 12) // don't fire beam weapons at this type of object, probably mission critical.
-#define OF_GUARDIAN (1 << 13) // Don't allow ship to die, keep at least 1% hull
-#define OF_SPECIAL_WARP (1 << 14) // Object has special warp-in enabled.
+// Don't allow ship to die, keep at least 1% hull
+#define OF_GUARDIAN (1 << 13)
+// Object has special warp-in enabled.
+#define OF_SPECIAL_WARP (1 << 14)
 
 // Flags used by Fred
 #define OF_MARKED                                                                \
     (1                                                                           \
      << 16) //Object is marked (Fred).  Can be reused in Freespace for anything that won't be used by Fred.
-#define OF_TEMP_MARKED (1 << 17) //Temporarily marked (Fred).
-#define OF_REFERENCED                                                            \
-    (1 << 18) // (Fred) Object is referenced by something somewhere
-#define OF_HIDDEN                                                                \
-    (1 << 19) // Object is hidden (not shown) and can't be manipulated
+// Temporarily marked (Fred).
+#define OF_TEMP_MARKED (1 << 17)
+// (Fred) Object is referenced by something somewhere
+#define OF_REFERENCED (1 << 18)
+// Object is hidden (not shown) and can't be manipulated
+#define OF_HIDDEN (1 << 19)
 
 // max # of object sounds per object
 #define MAX_OBJECT_SOUNDS 4
@@ -207,7 +227,8 @@ extern int Object_inited;
 extern int Show_waypoints;
 
 // The next signature for the next newly created object. Zero is bogus
-#define OBJECT_SIG_SHIP_START 300000; // ships start at this signature
+// ships start at this signature
+#define OBJECT_SIG_SHIP_START 300000;
 extern int Object_next_ship_signature;
 extern int Object_next_signature;
 extern int num_objects;

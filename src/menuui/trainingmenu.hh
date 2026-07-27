@@ -10,7 +10,8 @@
 #ifndef _TRAININGMENU_H
 #define _TRAININGMENU_H
 
-#define TRAINING_MENU_MAX_CHOICES 3 // keep up to date if any more choices added!
+// keep up to date if any more choices added!
+#define TRAINING_MENU_MAX_CHOICES 3
 
 // these are the colour values of the pixels that form the different training menu regions
 #define TRAINING_MENU_TRAINING_MISSIONS_MASK 1

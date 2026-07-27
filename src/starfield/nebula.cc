@@ -59,8 +59,10 @@ nebula_close()
 }
 
 #define NEBULA_FILE_ID NOX("NEBU")
-#define NEBULA_MAJOR_VERSION 1 // Can be 1-?
-#define NEBULA_MINOR_VERSION 0 // Can be 0-99
+// Can be 1-?
+#define NEBULA_MAJOR_VERSION 1
+// Can be 0-99
+#define NEBULA_MINOR_VERSION 0
 
 // given:
 // u,v in range 0-1

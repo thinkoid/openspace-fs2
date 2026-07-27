@@ -34,8 +34,10 @@
 #include <globalincs/alphacolors.hh>
 
 // timestamp stuff for evaluating mission goals
-#define GOAL_TIMESTAMP 0 // make immediately eval
-#define GOAL_TIMESTAMP_TRAINING 500 // every half second
+// make immediately eval
+#define GOAL_TIMESTAMP 0
+// every half second
+#define GOAL_TIMESTAMP_TRAINING 500
 
 #define MAX_GOALS_PER_LIST 15
 #define MAX_GOAL_LINES 200
@@ -113,7 +115,8 @@ static int Objective_key_icon_coords[GR_NUM_RESOLUTIONS][3][2] = {
 };
 #endif
 
-#define NUM_GOAL_SCREEN_BUTTONS 3 // total number of buttons
+// total number of buttons
+#define NUM_GOAL_SCREEN_BUTTONS 3
 #define GOAL_SCREEN_BUTTON_SCROLL_UP 0
 #define GOAL_SCREEN_BUTTON_SCROLL_DOWN 1
 #define GOAL_SCREEN_BUTTON_RETURN 2
@@ -169,10 +172,10 @@ mission_event Mission_events[MAX_MISSION_EVENTS];
 mission_goal Mission_goals[MAX_GOALS]; // structure for the goals of this mission
 goal_text Goal_text;
 
-#define DIRECTIVE_SOUND_DELAY                                                    \
-    500 // time directive success sound effect is delayed
-#define DIRECTIVE_SPECIAL_DELAY                                                  \
-    7000 // mark special directives as true after 7 seconds
+// time directive success sound effect is delayed
+#define DIRECTIVE_SOUND_DELAY 500
+// mark special directives as true after 7 seconds
+#define DIRECTIVE_SPECIAL_DELAY 7000
 
 static int
     Mission_directive_sound_timestamp; // timestamp to control when directive succcess sound gets played

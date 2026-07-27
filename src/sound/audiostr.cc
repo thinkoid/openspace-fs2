@@ -25,7 +25,8 @@
 
 // Constants
 #ifndef SUCCESS
-#define SUCCESS TRUE // Error returns for all member functions
+// Error returns for all member functions
+#define SUCCESS TRUE
 #define FAILURE FALSE
 #endif // SUCCESS
 
@@ -33,8 +34,8 @@ typedef int (*TIMERCALLBACK)(void *);
 
 #define MAX_STREAM_BUFFERS 4
 
-#define BIGBUF_SIZE                                                              \
-    180000 // This can be reduced to 88200 once we don't use any stereo
+// This can be reduced to 88200 once we don't use any stereo
+#define BIGBUF_SIZE 180000
 //#define BIGBUF_SIZE               88300       // This can be reduced to 88200 once we don't use any stereo
 unsigned char *Wavedata_load_buffer = NULL; // buffer used for cueing audiostreams
 unsigned char *Wavedata_service_buffer =
@@ -51,7 +52,8 @@ unsigned char *Compressed_buffer =
 unsigned char *Compressed_service_buffer =
     NULL; // Used to read in compressed data during a service interval
 
-#define AS_HIGHEST_MAX 999999999 // max uncompressed filesize supported is 999 meg
+// max uncompressed filesize supported is 999 meg
+#define AS_HIGHEST_MAX 999999999
 
 // the on-disk WAVEFORMATEX is 18 bytes; the ds.h struct pads to 20.  The ACM
 // decoder parses the fmt chunk verbatim, so the ADPCM extra bytes must sit
@@ -578,8 +580,10 @@ AudioStream::GetMaxWriteSize(void)
 // Routine to service buffer requests initiated by periodic timer.
 //
 // Returns TRUE if buffer serviced normally; otherwise returns FALSE.
-#define FADE_VOLUME_INTERVAL 400 // 100 == 1db
-#define VOLUME_ATTENUATION_BEFORE_CUTOFF 3000 //  12db
+// 100 == 1db
+#define FADE_VOLUME_INTERVAL 400
+// 12db
+#define VOLUME_ATTENUATION_BEFORE_CUTOFF 3000
 int
 AudioStream::ServiceBuffer(void)
 {

@@ -57,13 +57,14 @@ int Radar_blip_radius_target[GR_NUM_RESOLUTIONS] = { 5, 8 };
 
 float radx, rady;
 
-#define MAX_RADAR_LEVELS 2 // bright and dim radar dots are allowed
+// bright and dim radar dots are allowed
+#define MAX_RADAR_LEVELS 2
 
 #define BLIP_CURRENT_TARGET (1 << 0)
-#define BLIP_DRAW_DIM                                                            \
-    (1 << 1) // object is farther than Radar_dim_range units away
-#define BLIP_DRAW_DISTORTED                                                      \
-    (1 << 2) // object is resistant to sensors, so draw distorted
+// object is farther than Radar_dim_range units away
+#define BLIP_DRAW_DIM (1 << 1)
+// object is resistant to sensors, so draw distorted
+#define BLIP_DRAW_DISTORTED (1 << 2)
 
 typedef struct blip
 {

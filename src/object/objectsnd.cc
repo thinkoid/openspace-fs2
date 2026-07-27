@@ -32,10 +32,12 @@ typedef struct _obj_snd
     vector offset; // offset from the center of the object where the sound lives
 } obj_snd;
 
-#define VOL_PAN_UPDATE 50 // time in ms to update a persistant sound vol/pan
+// time in ms to update a persistant sound vol/pan
+#define VOL_PAN_UPDATE 50
 #define MIN_PERSISTANT_VOL 0.10f
 #define MIN_FORWARD_SPEED 5
-#define SPEED_SOUND 600.0f // speed of sound in FreeSpace
+// speed of sound in FreeSpace
+#define SPEED_SOUND 600.0f
 
 #define MAX_OBJ_SOUNDS_PLAYING 5
 static int Num_obj_sounds_playing;
@@ -56,8 +58,10 @@ int Obj_snd_level_inited = 0;
 #define FLYBY_MIN_DISTANCE 90
 #define FLYBY_MIN_SPEED 50
 #define FLYBY_MIN_RELATIVE_SPEED 100
-#define FLYBY_MIN_NEXT_TIME 1000 // in ms
-#define FLYBY_MIN_REPEAT_TIME 4000 // in ms
+// in ms
+#define FLYBY_MIN_NEXT_TIME 1000
+// in ms
+#define FLYBY_MIN_REPEAT_TIME 4000
 int Flyby_next_sound;
 int Flyby_next_repeat;
 object *Flyby_last_objp;

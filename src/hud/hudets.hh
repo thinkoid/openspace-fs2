@@ -12,7 +12,8 @@
 
 #include <object/object.hh>
 
-#define ETS_RECHARGE_RATE 4.0f //   Recharge this percent of total shields/second
+// Recharge this percent of total shields/second
+#define ETS_RECHARGE_RATE 4.0f
 
 extern float Energy_levels[];
 extern int Weapon_energy_cheat;

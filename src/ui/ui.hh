@@ -25,30 +25,36 @@
 #define UI_KIND_SLIDER2 11
 #define UI_KIND_DOT_SLIDER_NEW 12
 
-#define MAX_KEY_BUFFER 32 // for listboxes
+// for listboxes
+#define MAX_KEY_BUFFER 32
 
 #define MAX_BMAPS_PER_GADGET 15
 
-#define UI_INPUTBOX_FLAG_INVIS (1 << 0) // don't draw the input box boarders
-#define UI_INPUTBOX_FLAG_KEYTHRU (1 << 1) // pass all keypresses through to parent
-#define UI_INPUTBOX_FLAG_ESC_CLR (1 << 2) // allow escape key to clear input box
-#define UI_INPUTBOX_FLAG_ESC_FOC (1 << 3) // escape loses focus for the input box
-#define UI_INPUTBOX_FLAG_PASSWD                                                  \
-    (1 << 4) // display all characters as special "password" characters
-#define UI_INPUTBOX_FLAG_EAT_USED                                                \
-    (1 << 5) // don't return any characters actually used by inputbox
-#define UI_INPUTBOX_FLAG_LETTER_FIRST                                            \
-    (1 << 6) // require input string to begin with a letter.
-#define UI_INPUTBOX_FLAG_NO_LETTERS                                              \
-    (1 << 7) // don't allow [a-z,A-Z] at all, no matter what
-#define UI_INPUTBOX_FLAG_NO_NUMERALS                                             \
-    (1 << 8) // don't allow [0-9] at all, no matter what
-#define UI_INPUTBOX_FLAG_TEXT_CEN                                                \
-    (1 << 9) // always draw text centered in the inputbox
-#define UI_INPUTBOX_FLAG_NO_BACK                                                 \
-    (1 << 10) // don't draw a black background rectangle
+// don't draw the input box boarders
+#define UI_INPUTBOX_FLAG_INVIS (1 << 0)
+// pass all keypresses through to parent
+#define UI_INPUTBOX_FLAG_KEYTHRU (1 << 1)
+// allow escape key to clear input box
+#define UI_INPUTBOX_FLAG_ESC_CLR (1 << 2)
+// escape loses focus for the input box
+#define UI_INPUTBOX_FLAG_ESC_FOC (1 << 3)
+// display all characters as special "password" characters
+#define UI_INPUTBOX_FLAG_PASSWD (1 << 4)
+// don't return any characters actually used by inputbox
+#define UI_INPUTBOX_FLAG_EAT_USED (1 << 5)
+// require input string to begin with a letter.
+#define UI_INPUTBOX_FLAG_LETTER_FIRST (1 << 6)
+// don't allow [a-z,A-Z] at all, no matter what
+#define UI_INPUTBOX_FLAG_NO_LETTERS (1 << 7)
+// don't allow [0-9] at all, no matter what
+#define UI_INPUTBOX_FLAG_NO_NUMERALS (1 << 8)
+// always draw text centered in the inputbox
+#define UI_INPUTBOX_FLAG_TEXT_CEN (1 << 9)
+// don't draw a black background rectangle
+#define UI_INPUTBOX_FLAG_NO_BACK (1 << 10)
 
-#define UI_GF_MOUSE_CAPTURED (1 << 31) // gadget has all rights to the mouse
+// gadget has all rights to the mouse
+#define UI_GF_MOUSE_CAPTURED (1 << 31)
 
 class UI_WINDOW;
 class UI_BUTTON;
@@ -163,8 +169,10 @@ public:
 
 // xstrings for a window
 #define UI_NUM_XSTR_COLORS 2
-#define UI_XSTR_COLOR_GREEN 0 // shades of green/gray
-#define UI_XSTR_COLOR_PINK 1 // pinkish hue
+// shades of green/gray
+#define UI_XSTR_COLOR_GREEN 0
+// pinkish hue
+#define UI_XSTR_COLOR_PINK 1
 typedef struct UI_XSTR
 {
     char *xstr; // base string
@@ -192,16 +200,18 @@ typedef struct UI_XSTR
 #define BF_JUST_RELEASED (1 << 3)
 #define BF_CLICKED (1 << 4)
 #define BF_DOUBLE_CLICKED (1 << 5)
-#define BF_HIGHLIGHTED                                                           \
-    (1 << 6) // button is not highlighted (ie mouse is not over)
-#define BF_JUST_HIGHLIGHTED                                                      \
-    (1 << 7) // button has just been highlighted, true for 1 frame
-#define BF_IGNORE_FOCUS                                                          \
-    (1 << 8) // button should not use focus to accept space/enter keypresses
-#define BF_HOTKEY_JUST_PRESSED (1 << 9) // button hotkey was just pressed
-#define BF_REPEATS (1 << 10) // if held down, generates repeating presses
-#define BF_SKIP_FIRST_HIGHLIGHT_CALLBACK                                         \
-    (1 << 11) // skip first callback for mouse over event
+// button is not highlighted (ie mouse is not over)
+#define BF_HIGHLIGHTED (1 << 6)
+// button has just been highlighted, true for 1 frame
+#define BF_JUST_HIGHLIGHTED (1 << 7)
+// button should not use focus to accept space/enter keypresses
+#define BF_IGNORE_FOCUS (1 << 8)
+// button hotkey was just pressed
+#define BF_HOTKEY_JUST_PRESSED (1 << 9)
+// if held down, generates repeating presses
+#define BF_REPEATS (1 << 10)
+// skip first callback for mouse over event
+#define BF_SKIP_FIRST_HIGHLIGHT_CALLBACK (1 << 11)
 
 class UI_BUTTON : public UI_GADGET
 {
@@ -334,10 +344,10 @@ public:
 };
 
 // Icon flags
-#define ICON_NOT_HIGHLIGHTED                                                     \
-    (1 << 0) // icon is not highlighted (ie mouse is not over)
-#define ICON_JUST_HIGHLIGHTED                                                    \
-    (1 << 1) // icon has just been highlighted, true for 1 frame
+// icon is not highlighted (ie mouse is not over)
+#define ICON_NOT_HIGHLIGHTED (1 << 0)
+// icon has just been highlighted, true for 1 frame
+#define ICON_JUST_HIGHLIGHTED (1 << 1)
 
 class UI_ICON : public UI_GADGET
 {

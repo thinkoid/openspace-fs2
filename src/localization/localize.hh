@@ -15,7 +15,8 @@
 //
 
 // language defines
-#define LCL_NUM_LANGUAGES 3 // keep this up to date
+// keep this up to date
+#define LCL_NUM_LANGUAGES 3
 #define LCL_ENGLISH 0
 #define LCL_GERMAN 1
 #define LCL_FRENCH 2

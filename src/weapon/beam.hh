@@ -27,13 +27,16 @@ struct vector;
 // REMINDER : if you change the behavior of any of these beam types, make sure to update their "cones" of possible
 // movement inside of the function beam_get_cone_dot(...) in beam.cpp  Otherwise it could cause collisions to not
 // function properly!!!!!!
-#define BEAM_TYPE_A 0 // unidirectional beam
-#define BEAM_TYPE_B 1 // "slash" in one direction
-#define BEAM_TYPE_C 2 // targeting lasers (only lasts one frame)
-#define BEAM_TYPE_D                                                              \
-    3 // similar to the type A beams, but takes multiple shots and "chases" fighters around
-#define BEAM_TYPE_E                                                              \
-    4 // stupid beam. like type A, only it doesn't aim. it just shoots directly out of the turret
+// unidirectional beam
+#define BEAM_TYPE_A 0
+// "slash" in one direction
+#define BEAM_TYPE_B 1
+// targeting lasers (only lasts one frame)
+#define BEAM_TYPE_C 2
+// similar to the type A beams, but takes multiple shots and "chases" fighters around
+#define BEAM_TYPE_D 3
+// stupid beam. like type A, only it doesn't aim. it just shoots directly out of the turret
+#define BEAM_TYPE_E 4
 
 // max # of "shots" an individual beam will take
 #define MAX_BEAM_SHOTS 5

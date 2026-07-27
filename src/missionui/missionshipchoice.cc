@@ -220,7 +220,8 @@ int Ship_select_background_bitmap;
 #define SS_BUTTON_SCROLL_UP 0
 #define SS_BUTTON_SCROLL_DOWN 1
 #define SS_BUTTON_RESET 2
-#define SS_BUTTON_DUMMY 3 // needed to capture mouse for drag/drop icons
+// needed to capture mouse for drag/drop icons
+#define SS_BUTTON_DUMMY 3
 
 // convenient struct for handling all button controls
 struct ss_buttons

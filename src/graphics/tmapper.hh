@@ -22,31 +22,41 @@ void tmapper_set_light(vertex *v, uint flags);
 // gr_tmapper equivalent!!!!
 extern void grx_tmapper(int nv, vertex *verts[], uint flags);
 
-#define TMAP_MAX_VERTS 25 // Max number of vertices per polygon
+// Max number of vertices per polygon
+#define TMAP_MAX_VERTS 25
 
 // Flags to pass to g3_draw_??? routines
-#define TMAP_FLAG_TEXTURED (1 << 0) // Uses texturing (Interpolate uv's)
-#define TMAP_FLAG_CORRECT (1 << 1) // Perspective correct (Interpolate sw)
-#define TMAP_FLAG_RAMP (1 << 2) // Use RAMP lighting (interpolate L)
-#define TMAP_FLAG_RGB (1 << 3) // Use RGB lighting (interpolate RGB)
-#define TMAP_FLAG_GOURAUD                                                        \
-    (1 << 4) // Lighting values differ on each vertex.
-        // If this is not set, then the texture mapper will use
-        // the lighting parameters in each vertex, otherwise it
-        // will use the ones specified in tmapper_set_??
-#define TMAP_FLAG_XPARENT (1 << 5) // texture could have transparency
-#define TMAP_FLAG_TILED (1 << 6) // This means uv's can be > 1.0
+// Uses texturing (Interpolate uv's)
+#define TMAP_FLAG_TEXTURED (1 << 0)
+// Perspective correct (Interpolate sw)
+#define TMAP_FLAG_CORRECT (1 << 1)
+// Use RAMP lighting (interpolate L)
+#define TMAP_FLAG_RAMP (1 << 2)
+// Use RGB lighting (interpolate RGB)
+#define TMAP_FLAG_RGB (1 << 3)
+// Lighting values differ on each vertex.
+// If this is not set, then the texture mapper will use
+// the lighting parameters in each vertex, otherwise it
+// will use the ones specified in tmapper_set_??
+#define TMAP_FLAG_GOURAUD (1 << 4)
+// texture could have transparency
+#define TMAP_FLAG_XPARENT (1 << 5)
+// This means uv's can be > 1.0
+#define TMAP_FLAG_TILED (1 << 6)
 #define TMAP_FLAG_NEBULA                                                         \
     (1                                                                           \
      << 7) // Must be used with RAMP and GOURAUD.  Means l 0-1 is 0-31 palette entries
 
-#define TMAP_HIGHEST_FLAG_BIT 7 // The highest bit used in the TMAP_FLAGS
+// The highest bit used in the TMAP_FLAGS
+#define TMAP_HIGHEST_FLAG_BIT 7
 #define TMAP_MAX_SCANLINES (1 << (TMAP_HIGHEST_FLAG_BIT + 1))
 
 // Add any entries that don't work for software under here:
 // Make sure to disable them at top of grx_tmapper
-#define TMAP_FLAG_ALPHA (1 << 8) // Has an alpha component
-#define TMAP_FLAG_NONDARKENING (1 << 9) // RGB=255,255,255 doesn't darken
+// Has an alpha component
+#define TMAP_FLAG_ALPHA (1 << 8)
+// RGB=255,255,255 doesn't darken
+#define TMAP_FLAG_NONDARKENING (1 << 9)
 
 // flags for full nebula effect
 #define TMAP_FLAG_PIXEL_FOG                                                      \

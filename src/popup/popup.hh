@@ -24,40 +24,47 @@
 // NEVER ADD FLAGS LESS THAN 10 here. there are some internal flags which use those
 
 // font size
-#define PF_TITLE                                                                 \
-    (1 << 10) // Draw title centered in regular font (title is first line)
-#define PF_TITLE_BIG                                                             \
-    (1 << 11) // Draw title centered in large font (title is first line)
-#define PF_BODY_BIG (1 << 12) // Draw message body in large font
+// Draw title centered in regular font (title is first line)
+#define PF_TITLE (1 << 10)
+// Draw title centered in large font (title is first line)
+#define PF_TITLE_BIG (1 << 11)
+// Draw message body in large font
+#define PF_BODY_BIG (1 << 12)
 
 // color
-#define PF_TITLE_RED (1 << 13) // Color to draw title, if different from default
+// Color to draw title, if different from default
+#define PF_TITLE_RED (1 << 13)
 #define PF_TITLE_GREEN (1 << 14)
 #define PF_TITLE_BLUE (1 << 15)
 #define PF_TITLE_WHITE (1 << 16)
-#define PF_BODY_RED (1 << 17) // Color to draw body, if different from title
+// Color to draw body, if different from title
+#define PF_BODY_RED (1 << 17)
 #define PF_BODY_GREEN (1 << 18)
 #define PF_BODY_BLUE (1 << 19)
 
 // icon choices
-#define PF_USE_NEGATIVE_ICON (1 << 20) // Always drawn as first icon if set
+// Always drawn as first icon if set
+#define PF_USE_NEGATIVE_ICON (1 << 20)
 #define PF_USE_AFFIRMATIVE_ICON                                                  \
     (1                                                                           \
      << 21) // Always drawn as second icon if two choices (if 1 choice, it is the only icon)
 
 // misc
-#define PF_RUN_STATE                                                             \
-    (1 << 22) // call the do frame of the current state underneath the popup
-#define PF_IGNORE_ESC (1 << 23) // ignore the escape character
-#define PF_ALLOW_DEAD_KEYS                                                       \
-    (1 << 24) // Allow player to use keyset that exists when player dies
+// call the do frame of the current state underneath the popup
+#define PF_RUN_STATE (1 << 22)
+// ignore the escape character
+#define PF_IGNORE_ESC (1 << 23)
+// Allow player to use keyset that exists when player dies
+#define PF_ALLOW_DEAD_KEYS (1 << 24)
 
 // no special buttons
 #define PF_NO_SPECIAL_BUTTONS (1 << 26)
 
 // special web mouseover cursor flags
-#define PF_WEB_CURSOR_1 (1 << 27) // button 1 will get web cursor
-#define PF_WEB_CURSOR_2 (1 << 28) // button 2 will get web cursor
+// button 1 will get web cursor
+#define PF_WEB_CURSOR_1 (1 << 27)
+// button 2 will get web cursor
+#define PF_WEB_CURSOR_2 (1 << 28)
 
 // input:   flags       =>    formatting specificatons (PF_... shown above)
 //          nchoices    =>    number of choices popup has

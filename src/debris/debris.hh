@@ -13,7 +13,8 @@
 struct object;
 struct CFILE;
 
-#define MAX_DEBRIS_ARCS 8 // Must be less than MAX_ARC_EFFECTS in model.h
+// Must be less than MAX_ARC_EFFECTS in model.h
+#define MAX_DEBRIS_ARCS 8
 
 typedef struct debris
 {
@@ -44,8 +45,8 @@ typedef struct debris
 
 // flags for debris pieces
 #define DEBRIS_USED (1 << 0)
-#define DEBRIS_EXPIRE                                                            \
-    (1 << 1) // debris can expire (ie hull chunks from small ships)
+// debris can expire (ie hull chunks from small ships)
+#define DEBRIS_EXPIRE (1 << 1)
 
 #ifdef FS2_DEMO
 #define MAX_DEBRIS_PIECES 48

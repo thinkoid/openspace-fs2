@@ -20,7 +20,8 @@
 // specify the max distance that the radar should detect objects
 // Index in Radar_ranges[] array to get values
 
-#define RR_MAX_RANGES 3 // keep up to date
+// keep up to date
+#define RR_MAX_RANGES 3
 #define RR_SHORT 0
 #define RR_LONG 1
 #define RR_INFINITY 2

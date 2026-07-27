@@ -50,7 +50,8 @@ typedef struct cf_root_sort
 } cf_root_sort;
 
 #define CF_NUM_ROOTS_PER_BLOCK 32
-#define CF_MAX_ROOT_BLOCKS 256 // Can store 32*256 = 8192 Roots
+// Can store 32*256 = 8192 Roots
+#define CF_MAX_ROOT_BLOCKS 256
 #define CF_MAX_ROOTS (CF_NUM_ROOTS_PER_BLOCK * CF_MAX_ROOT_BLOCKS)
 
 typedef struct cf_root_block
@@ -73,7 +74,8 @@ typedef struct cf_file
 } cf_file;
 
 #define CF_NUM_FILES_PER_BLOCK 256
-#define CF_MAX_FILE_BLOCKS 128 // Can store 256*128 = 32768 files
+// Can store 256*128 = 32768 files
+#define CF_MAX_FILE_BLOCKS 128
 
 typedef struct cf_file_block
 {

@@ -176,8 +176,8 @@ typedef struct big_expl_flash
 #define DEFAULT_SKILL_LEVEL 1
 int Game_skill_level = DEFAULT_SKILL_LEVEL;
 
-#define VIEWER_ZOOM_DEFAULT                                                      \
-    0.75f //   Default viewer zoom, 0.625 as per multi-lateral agreement on 3/24/97
+// Default viewer zoom, 0.625 as per multi-lateral agreement on 3/24/97
+#define VIEWER_ZOOM_DEFAULT 0.75f
 float Viewer_zoom = VIEWER_ZOOM_DEFAULT;
 
 #define EXE_FNAME ("fs2.exe")
@@ -275,7 +275,8 @@ int Debug_dump_frames =
 int Debug_dump_trigger = 0;
 int Debug_dump_frame_count;
 int Debug_dump_frame_num = 0;
-#define DUMP_BUFFER_NUM_FRAMES 1 // store every 15 frames
+// store every 15 frames
+#define DUMP_BUFFER_NUM_FRAMES 1
 #endif
 
 // amount of time to wait after the player has died before we display the death died popup
@@ -3507,10 +3508,10 @@ game_frame()
     Timing_flip = f2fl(flip_time2 - flip_time1) * 1000.0f;
 }
 
-#define MAX_FRAMETIME                                                            \
-    (F1_0 / 4) // Frametime gets saturated at this.  Changed by MK on 11/1/97.
-        //  Some bug was causing Frametime to always get saturated at 2.0 seconds after the player
-        //  died.  This resulted in screwed up death sequences.
+// Frametime gets saturated at this.  Changed by MK on 11/1/97.
+// Some bug was causing Frametime to always get saturated at 2.0 seconds after the player
+//  died.  This resulted in screwed up death sequences.
+#define MAX_FRAMETIME (F1_0 / 4)
 
 fix Last_time =
     0; // The absolute time of game at end of last frame (beginning of this frame)
@@ -3746,7 +3747,8 @@ game_check_key()
 
 #ifdef FS2_DEMO
 
-#define DEMO_TRAILER_TIMEOUT_MS 45000 // 45 seconds of no input, play trailer
+// 45 seconds of no input, play trailer
+#define DEMO_TRAILER_TIMEOUT_MS 45000
 static int Demo_show_trailer_timestamp = 0;
 
 void

@@ -28,8 +28,8 @@
 #include <gamesnd/gamesnd.hh>
 #include <localization/localize.hh>
 
-#define WARPHOLE_GROW_TIME                                                       \
-    (1.5f) // time for warphole to reach max size (also time to shrink to nothing once it begins to shrink)
+// time for warphole to reach max size (also time to shrink to nothing once it begins to shrink)
+#define WARPHOLE_GROW_TIME (1.5f)
 
 #define MAX_FIREBALL_LOD 4
 

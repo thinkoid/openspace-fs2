@@ -61,19 +61,27 @@
 #define FIX_XY_TO_INT(x) ((long int)(x) >> (long int)FIX_XY_SHIFT)
 
 // Sizes for tables in Draw
-#define FILTER_WIDTH                                                             \
-    0.75 // Line filter width adjustment  // .75      // .5 works good with 5.0 gamma
-#define F_TABLE_SIZE 64 // Filter table size
-#define SC_TABLE_SIZE 32 // Slope correction table size
-#define SRT_INT 5 // Sqrt table index integer bits
-#define SRT_FRACT 4 //   ...fraction bits
-#define SR_INT 3 // Square root result integer bits
-#define SR_FRACT 5 //   ...fraction bits
+// Line filter width adjustment  // .75      // .5 works good with 5.0 gamma
+#define FILTER_WIDTH 0.75
+// Filter table size
+#define F_TABLE_SIZE 64
+// Slope correction table size
+#define SC_TABLE_SIZE 32
+// Sqrt table index integer bits
+#define SRT_INT 5
+// ...fraction bits
+#define SRT_FRACT 4
+// Square root result integer bits
+#define SR_INT 3
+// ...fraction bits
+#define SR_FRACT 5
 #define SR_TABLE_SIZE (1 << (SRT_INT + SRT_FRACT))
 #define INV_FILTER 47
 
-#define EP_MASK (long int)0x000f0000u // AA line end-point filter mask
-#define EP_SHIFT 13u // Number of bits to shift end-point
+// AA line end-point filter mask
+#define EP_MASK (long int)0x000f0000u
+// Number of bits to shift end-point
+#define EP_SHIFT 13u
 
 typedef long int fix_xy; // S11.20
 

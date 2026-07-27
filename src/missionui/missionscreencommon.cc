@@ -46,8 +46,10 @@ int Drop_icon_mflag, Drop_on_wing_mflag, Brief_mouse_up_flag;
 int Mouse_down_last_frame = 0;
 
 // Timers used to flash buttons after timeouts
-#define MSC_FLASH_AFTER_TIME 60000 //  time before flashing a button
-#define MSC_FLASH_INTERVAL 200 // time between flashes
+// time before flashing a button
+#define MSC_FLASH_AFTER_TIME 60000
+// time between flashes
+#define MSC_FLASH_INTERVAL 200
 int Flash_timer; //  timestamp used to start flashing
 int Flash_toggle; // timestamp used to toggle flashing
 int Flash_bright; // state of button to flash

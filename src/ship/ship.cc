@@ -83,19 +83,20 @@ extern void ssm_create(vector *target, vector *start, int ssm_index);
 #ifdef FS2_DEMO
 #define MAX_SHIP_SUBOBJECTS 360
 #else
-#define MAX_SHIP_SUBOBJECTS                                                      \
-    700 //  Reduced from 1000 to 400 by MK on 4/1/98.
-        // Highest I saw was 164 in sm2-03a which Sandeep says has a lot of ships.
-        // JAS: sm3-01 needs 460.   You cannot know this number until *all* ships
-        // have warped in.   So I put code in the paging code which knows all ships
-        // that will warp in.
+// Reduced from 1000 to 400 by MK on 4/1/98.
+// Highest I saw was 164 in sm2-03a which Sandeep says has a lot of ships.
+// JAS: sm3-01 needs 460.   You cannot know this number until *all* ships
+// have warped in.   So I put code in the paging code which knows all ships
+// that will warp in.
+#define MAX_SHIP_SUBOBJECTS 700
 #endif
 
 //#define MIN_COLLISION_MOVE_DIST      5.0
 //#define COLLISION_VEL_CONST       0.1
-#define COLLISION_FRICTION_FACTOR                                                \
-    0.0 // ratio of maximum friction impulse to repulsion impulse
-#define COLLISION_ROTATION_FACTOR 1.0 // increase in rotation from collision
+// ratio of maximum friction impulse to repulsion impulse
+#define COLLISION_FRICTION_FACTOR 0.0
+// increase in rotation from collision
+#define COLLISION_ROTATION_FACTOR 1.0
 
 int Ai_render_debug_flag = 0;
 #ifndef NDEBUG
@@ -126,8 +127,10 @@ int Num_ship_subobj_types;
 int Num_ship_subobjects;
 int Player_ship_class; // needs to be player specific, move to player structure
 
-#define SHIP_OBJ_USED (1 << 0) // flag used in ship_obj struct
-#define MAX_SHIP_OBJS MAX_SHIPS // max number of ships tracked in ship list
+// flag used in ship_obj struct
+#define SHIP_OBJ_USED (1 << 0)
+// max number of ships tracked in ship list
+#define MAX_SHIP_OBJS MAX_SHIPS
 ship_obj Ship_objs[MAX_SHIP_OBJS]; // array used to store ship object indexes
 ship_obj Ship_obj_list; // head of linked list of ship_obj structs
 
@@ -3257,10 +3260,10 @@ ship_do_weapon_thruster_frame(weapon *weaponp, object *objp, float frametime)
 //
 // NOTE: need to update current_hits in the sp->subsys_list element, and the sp->subsys_info[]
 // element.
-#define SHIP_REPAIR_SUBSYSTEM_RATE                                               \
-    0.01f // percent repair per second for a subsystem
-#define SUBSYS_REPAIR_THRESHOLD                                                  \
-    0.1 // only repair subsystems that have > 10% strength
+// percent repair per second for a subsystem
+#define SHIP_REPAIR_SUBSYSTEM_RATE 0.01f
+// only repair subsystems that have > 10% strength
+#define SUBSYS_REPAIR_THRESHOLD 0.1
 void
 ship_auto_repair_frame(int shipnum, float frametime)
 {
@@ -3319,12 +3322,12 @@ ship_auto_repair_frame(int shipnum, float frametime)
 // this function checks to see how far the player has strayed from his starting location (should be
 // single player only).  Issues a warning at some distance.  Makes mission end if he keeps flying away
 // 3 strikes and you're out or too far away
-#define PLAYER_MAX_DIST_WARNING                                                  \
-    70000 // distance in KM at which player gets warning to return to battle
-#define PLAYER_DISTANCE_MAX_WARNINGS                                             \
-    3 // maximum number of warnings player can receive before mission ends
-#define PLAYER_MAX_DIST_END                                                      \
-    75000 // distance from starting loc at which we end mission
+// distance in KM at which player gets warning to return to battle
+#define PLAYER_MAX_DIST_WARNING 70000
+// maximum number of warnings player can receive before mission ends
+#define PLAYER_DISTANCE_MAX_WARNINGS 3
+// distance from starting loc at which we end mission
+#define PLAYER_MAX_DIST_END 75000
 #define PLAYER_WARN_DELTA_TIME 10000
 #define PLAYER_DEATH_DELTA_TIME 5000
 
@@ -6249,9 +6252,12 @@ ship_set_subsystem_strength(ship *shipp, int type, float strength)
     shipp->subsys_info[type].current_hits = total_current_hits;
 }
 
-#define SHIELD_REPAIR_RATE 0.20f // Percent of shield repaired per second.
-#define HULL_REPAIR_RATE 0.15f //   Percent of hull repaired per second.
-#define SUBSYS_REPAIR_RATE 0.10f // Percent of subsystems repaired per second.
+// Percent of shield repaired per second.
+#define SHIELD_REPAIR_RATE 0.20f
+// Percent of hull repaired per second.
+#define HULL_REPAIR_RATE 0.15f
+// Percent of subsystems repaired per second.
+#define SUBSYS_REPAIR_RATE 0.10f
 
 // ship_do_rearm_frame()
 //
@@ -6259,8 +6265,8 @@ ship_set_subsystem_strength(ship *shipp, int type, float strength)
 // some function of a similar name).  Returns 1 when ship is fully repaired and rearmed, 0 otherwise
 //
 
-#define REARM_NUM_MISSILES_PER_BATCH                                             \
-    4 // how many missiles are dropped in per load sound
+// how many missiles are dropped in per load sound
+#define REARM_NUM_MISSILES_PER_BATCH 4
 
 int
 ship_do_rearm_frame(object *objp, float frametime)
@@ -7892,14 +7898,16 @@ ship_check_cargo_all()
 //
 // NOTE: there are no filters on enemy_sp, so it could be any ship type
 //
-#define PLAYER_ALLOW_WARN_INTERVAL 60000 // minimum time between warnings
-#define PLAYER_CHECK_WARN_INTERVAL 300 // how often we check for warnings
-#define PLAYER_MAX_WARNINGS                                                      \
-    2 // max number of warnings player can receive in a mission
-#define PLAYER_MIN_WARN_DIST                                                     \
-    100 // minimum distance attacking ship can be from player and still allow warning
-#define PLAYER_MAX_WARN_DIST                                                     \
-    1000 // maximum distance attacking ship can be from plyaer and still allow warning
+// minimum time between warnings
+#define PLAYER_ALLOW_WARN_INTERVAL 60000
+// how often we check for warnings
+#define PLAYER_CHECK_WARN_INTERVAL 300
+// max number of warnings player can receive in a mission
+#define PLAYER_MAX_WARNINGS 2
+// minimum distance attacking ship can be from player and still allow warning
+#define PLAYER_MIN_WARN_DIST 100
+// maximum distance attacking ship can be from plyaer and still allow warning
+#define PLAYER_MAX_WARN_DIST 1000
 
 void
 ship_maybe_warn_player(ship *enemy_sp, float dist)
@@ -8010,8 +8018,8 @@ warn_player_done:
 }
 
 // player has just killed a ship, maybe offer send a 'good job' message
-#define PLAYER_MAX_PRAISES                                                       \
-    10 // max number of praises player can receive in a mission
+// max number of praises player can receive in a mission
+#define PLAYER_MAX_PRAISES 10
 void
 ship_maybe_praise_player(ship *deader_sp)
 {
@@ -8053,14 +8061,18 @@ ship_maybe_praise_player(ship *deader_sp)
 }
 
 // player has just killed a ship, maybe offer send a 'good job' message
-#define PLAYER_ASK_HELP_INTERVAL 60000 // minimum time between praises
-#define PLAYER_MAX_ASK_HELP                                                      \
-    10 // max number of warnings player can receive in a mission
-#define ASK_HELP_SHIELD_PERCENT                                                  \
-    0.1 // percent shields at which ship will ask for help
-#define ASK_HELP_HULL_PERCENT 0.3 // percent hull at which ship will ask for help
-#define AWACS_HELP_HULL_HI 0.75 // percent hull at which ship will ask for help
-#define AWACS_HELP_HULL_LOW 0.25 // percent hull at which ship will ask for help
+// minimum time between praises
+#define PLAYER_ASK_HELP_INTERVAL 60000
+// max number of warnings player can receive in a mission
+#define PLAYER_MAX_ASK_HELP 10
+// percent shields at which ship will ask for help
+#define ASK_HELP_SHIELD_PERCENT 0.1
+// percent hull at which ship will ask for help
+#define ASK_HELP_HULL_PERCENT 0.3
+// percent hull at which ship will ask for help
+#define AWACS_HELP_HULL_HI 0.75
+// percent hull at which ship will ask for help
+#define AWACS_HELP_HULL_LOW 0.25
 
 // -----------------------------------------------------------------------------
 void

@@ -14,7 +14,8 @@
 #define ASF_SOUNDFX 0
 #define ASF_EVENTMUSIC 1
 #define ASF_VOICE 2
-#define ASF_NONE 3 // used to catch errors
+// used to catch errors
+#define ASF_NONE 3
 
 // Initializes the audio streaming library.  Called
 // automatically when the sound stuff is inited.

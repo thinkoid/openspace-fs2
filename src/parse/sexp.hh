@@ -13,74 +13,111 @@
 #include <cfile/cfile.hh>
 #include <ship/ship.hh>
 
-#define OPERATOR_LENGTH 24 // if this ever exceeds TOKEN_LENGTH, let JasonH know!
+// if this ever exceeds TOKEN_LENGTH, let JasonH know!
+#define OPERATOR_LENGTH 24
 #define TOKEN_LENGTH 32
 
 #ifdef FS2_DEMO
 #define MAX_SEXP_NODES 1600
 #else
-#define MAX_SEXP_NODES                                                           \
-    2200 // Reduced from 2000 to 1200 by MK on 4/1/98.
-        //  Most used nodes is 698 in sm1-10a.  Sandeep thinks that's the most complex mission.
-        // AL 2-4-98: upped to 1600, btm03 ran out of sexps, since campaign took a bunch
-        // DA 12/15 bumped up to 2000 - Dan ran out
+// Reduced from 2000 to 1200 by MK on 4/1/98.
+//  Most used nodes is 698 in sm1-10a.  Sandeep thinks that's the most complex mission.
+// AL 2-4-98: upped to 1600, btm03 ran out of sexps, since campaign took a bunch
+// DA 12/15 bumped up to 2000 - Dan ran out
+#define MAX_SEXP_NODES 2200
 #endif
 
 #define MAX_SEXP_VARIABLES 100
 
 #define MAX_SEXP_TEXT 2000
-#define MAX_OPERATORS 200 // Yes, this is used, but not by the Sexp code.
+// Yes, this is used, but not by the Sexp code.
+#define MAX_OPERATORS 200
 
 // Operator argument formats (data types of an argument)
-#define OPF_NONE 1 // argument cannot exist at this position if it's this
-#define OPF_NULL 2 // no value.  Can still be used for type matching, however
+// argument cannot exist at this position if it's this
+#define OPF_NONE 1
+// no value.  Can still be used for type matching, however
+#define OPF_NULL 2
 #define OPF_BOOL 3
 #define OPF_NUMBER 4
 #define OPF_SHIP 5
 #define OPF_WING 6
 #define OPF_SUBSYSTEM 7
-#define OPF_POINT 8 // either a 3d point in space, or a waypoint name
+// either a 3d point in space, or a waypoint name
+#define OPF_POINT 8
 #define OPF_IFF 9
-#define OPF_AI_GOAL 10 // special to match ai goals
-#define OPF_DOCKER_POINT 11 // docking point on docker ship
-#define OPF_DOCKEE_POINT 12 // docking point on dockee ship
-#define OPF_MESSAGE 13 // the name (id) of a message in Messages[] array
-#define OPF_WHO_FROM                                                             \
-    14 // who sent the message -- doesn't necessarily have to be a ship!!!
-#define OPF_PRIORITY 15 // priority for messages
-#define OPF_WAYPOINT_PATH 16 // name of a waypoint
-#define OPF_POSITIVE 17 // positive number or zero
-#define OPF_MISSION_NAME                                                         \
-    18 // name of a mission for various mission related things
-#define OPF_SHIP_POINT 19 // a waypoint or a ship
-#define OPF_GOAL_NAME 20 // name of goal (or maybe event?) from a mission
-#define OPF_SHIP_WING 21 // either a ship or wing name (they don't conflict)
-#define OPF_SHIP_WING_POINT 22 // name of a ship, wing, or a point
-#define OPF_SHIP_TYPE 23 // type of ship (fighter/bomber/etc)
-#define OPF_KEYPRESS 24 // a default key
-#define OPF_EVENT_NAME 25 // name of an event
-#define OPF_AI_ORDER 26 // a squadmsg order player can give to a ship
-#define OPF_SKILL_LEVEL 27 // current skill level of the game
-#define OPF_MEDAL_NAME 28 // name of medals
-#define OPF_WEAPON_NAME 29 // name of a weapon
-#define OPF_SHIP_CLASS_NAME 30 // name of a ship class
-#define OPF_HUD_GAUGE_NAME 31 // name of HUD gauge
-#define OPF_HUGE_WEAPON 32 // name of a secondary bomb type weapon
-#define OPF_SHIP_NOT_PLAYER 33 // a ship, but not a player ship
-#define OPF_JUMP_NODE_NAME 34 // name of a jump node
-#define OPF_VARIABLE_NAME 35 // variable name
-#define OPF_AMBIGUOUS 36 // type used with variable
-#define OPF_AWACS_SUBSYSTEM 37 // an awacs subsystem
+// special to match ai goals
+#define OPF_AI_GOAL 10
+// docking point on docker ship
+#define OPF_DOCKER_POINT 11
+// docking point on dockee ship
+#define OPF_DOCKEE_POINT 12
+// the name (id) of a message in Messages[] array
+#define OPF_MESSAGE 13
+// who sent the message -- doesn't necessarily have to be a ship!!!
+#define OPF_WHO_FROM 14
+// priority for messages
+#define OPF_PRIORITY 15
+// name of a waypoint
+#define OPF_WAYPOINT_PATH 16
+// positive number or zero
+#define OPF_POSITIVE 17
+// name of a mission for various mission related things
+#define OPF_MISSION_NAME 18
+// a waypoint or a ship
+#define OPF_SHIP_POINT 19
+// name of goal (or maybe event?) from a mission
+#define OPF_GOAL_NAME 20
+// either a ship or wing name (they don't conflict)
+#define OPF_SHIP_WING 21
+// name of a ship, wing, or a point
+#define OPF_SHIP_WING_POINT 22
+// type of ship (fighter/bomber/etc)
+#define OPF_SHIP_TYPE 23
+// a default key
+#define OPF_KEYPRESS 24
+// name of an event
+#define OPF_EVENT_NAME 25
+// a squadmsg order player can give to a ship
+#define OPF_AI_ORDER 26
+// current skill level of the game
+#define OPF_SKILL_LEVEL 27
+// name of medals
+#define OPF_MEDAL_NAME 28
+// name of a weapon
+#define OPF_WEAPON_NAME 29
+// name of a ship class
+#define OPF_SHIP_CLASS_NAME 30
+// name of HUD gauge
+#define OPF_HUD_GAUGE_NAME 31
+// name of a secondary bomb type weapon
+#define OPF_HUGE_WEAPON 32
+// a ship, but not a player ship
+#define OPF_SHIP_NOT_PLAYER 33
+// name of a jump node
+#define OPF_JUMP_NODE_NAME 34
+// variable name
+#define OPF_VARIABLE_NAME 35
+// type used with variable
+#define OPF_AMBIGUOUS 36
+// an awacs subsystem
+#define OPF_AWACS_SUBSYSTEM 37
 
 // Operand return types
-#define OPR_NUMBER 1 // returns number
-#define OPR_BOOL 2 // returns true/false value
-#define OPR_NULL 3 // doesn't return a value
-#define OPR_AI_GOAL                                                              \
-    4 // is an ai operator (doesn't really return a value, but used for type matching)
-#define OPR_POSITIVE 5 // returns a non-negative number
-#define OPR_STRING 6 // not really a return type, but used for type matching.
-#define OPR_AMBIGUOUS 7 // not really a return type, but used for type matching.
+// returns number
+#define OPR_NUMBER 1
+// returns true/false value
+#define OPR_BOOL 2
+// doesn't return a value
+#define OPR_NULL 3
+// is an ai operator (doesn't really return a value, but used for type matching)
+#define OPR_AI_GOAL 4
+// returns a non-negative number
+#define OPR_POSITIVE 5
+// not really a return type, but used for type matching.
+#define OPR_STRING 6
+// not really a return type, but used for type matching.
+#define OPR_AMBIGUOUS 7
 
 #define OP_INSERT_FLAG 0x8000
 #define OP_REPLACE_FLAG 0x4000
@@ -97,7 +134,8 @@
 #define OP_CATAGORY_CHANGE 0x0600
 #define OP_CATAGORY_CONDITIONAL 0x0700
 #define OP_CATAGORY_DEBUG 0x0800
-#define OP_CATAGORY_AI 0x0900 // used for AI goals
+// used for AI goals
+#define OP_CATAGORY_AI 0x0900
 #define OP_CATAGORY_TRAINING 0x0a00
 #define OP_CATAGORY_UNLISTED 0x0b00
 #define OP_CATAGORY_GOAL_EVENT 0x0c00
@@ -300,8 +338,8 @@
 #define OP_AI_PLAY_DEAD (0x0012 | OP_CATAGORY_AI | OP_NONCAMPAIGN_FLAG)
 
 #define OP_GOALS_ID (0x0001 | OP_CATAGORY_UNLISTED)
-#define OP_NEXT_MISSION                                                          \
-    (0x0002 | OP_CATAGORY_UNLISTED) // used in campaign files for branching
+// used in campaign files for branching
+#define OP_NEXT_MISSION (0x0002 | OP_CATAGORY_UNLISTED)
 #define OP_IS_DESTROYED (0x0003 | OP_CATAGORY_UNLISTED)
 #define OP_IS_SUBSYSTEM_DESTROYED (0x0004 | OP_CATAGORY_UNLISTED)
 #define OP_IS_DISABLED (0x0005 | OP_CATAGORY_UNLISTED)
@@ -359,7 +397,8 @@ char *CTEXT(int n);
 #define REF_TYPE_WING 2
 #define REF_TYPE_PLAYER 3
 #define REF_TYPE_WAYPOINT 4
-#define REF_TYPE_PATH 5 // waypoint path
+// waypoint path
+#define REF_TYPE_PATH 5
 
 #define SRC_SHIP_ARRIVAL 0x10000
 #define SRC_SHIP_DEPARTURE 0x20000
@@ -386,8 +425,8 @@ char *CTEXT(int n);
 #define SEXP_ATOM 2
 
 // flags for sexpressions -- masked onto the end of the type field
-#define SEXP_FLAG_PERSISTENT                                                     \
-    (1 << 31) // should this sexp node be persistant across missions
+// should this sexp node be persistant across missions
+#define SEXP_FLAG_PERSISTENT (1 << 31)
 #define SEXP_FLAG_VARIABLE (1 << 30)
 
 // sexp variable definitions
@@ -429,43 +468,63 @@ char *CTEXT(int n);
 #define SEXP_KNOWN_FALSE -1
 #define SEXP_KNOWN_TRUE -2
 #define SEXP_UNKNOWN -3
-#define SEXP_NAN                                                                 \
-    -4 // not a number -- used when ships/wing part of boolean and haven't arrived yet
-#define SEXP_NAN_FOREVER                                                         \
-    -5 // not a number and will never change -- used to falsify boolean sexpressions
-#define SEXP_CANT_EVAL                                                           \
-    -6 // can't evaluate yet for whatever reason (acts like false)
-#define SEXP_NUM_EVAL                                                            \
-    -7 // already completed an arithmetic operation and result is stored
+// not a number -- used when ships/wing part of boolean and haven't arrived yet
+#define SEXP_NAN -4
+// not a number and will never change -- used to falsify boolean sexpressions
+#define SEXP_NAN_FOREVER -5
+// can't evaluate yet for whatever reason (acts like false)
+#define SEXP_CANT_EVAL -6
+// already completed an arithmetic operation and result is stored
+#define SEXP_NUM_EVAL -7
 
 // defines for check_sexp_syntax
-#define SEXP_CHECK_NONOP_ARGS -1 // non-operator has arguments
-#define SEXP_CHECK_OP_EXPTECTED -2 // operator expected, but found data instead
-#define SEXP_CHECK_UNKNOWN_OP -3 // unrecognized operator
-#define SEXP_CHECK_TYPE_MISMATCH -4 // return type or data type mismatch
-#define SEXP_CHECK_BAD_ARG_COUNT -5 // argument count in incorrect
-#define SEXP_CHECK_UNKNOWN_TYPE -6 // unrecognized return type of data type
+// non-operator has arguments
+#define SEXP_CHECK_NONOP_ARGS -1
+// operator expected, but found data instead
+#define SEXP_CHECK_OP_EXPTECTED -2
+// unrecognized operator
+#define SEXP_CHECK_UNKNOWN_OP -3
+// return type or data type mismatch
+#define SEXP_CHECK_TYPE_MISMATCH -4
+// argument count in incorrect
+#define SEXP_CHECK_BAD_ARG_COUNT -5
+// unrecognized return type of data type
+#define SEXP_CHECK_UNKNOWN_TYPE -6
 
-#define SEXP_CHECK_INVALID_NUM -101 // number is not valid
-#define SEXP_CHECK_INVALID_SHIP -102 // invalid ship name
-#define SEXP_CHECK_INVALID_WING -103 // invalid wing name
-#define SEXP_CHECK_INVALID_SUBSYS -104 // invalid subsystem
-#define SEXP_CHECK_INVALID_IFF -105 // invalid iff string
-#define SEXP_CHECK_INVALID_POINT -106 // invalid point
-#define SEXP_CHECK_NEGATIVE_NUM -107 // negative number wasn't allowed
-#define SEXP_CHECK_INVALID_SHIP_WING -108 // invalid ship/wing
-#define SEXP_CHECK_INVALID_SHIP_TYPE -109 // invalid ship type
-#define SEXP_CHECK_UNKNOWN_MESSAGE -110 // invalid message
-#define SEXP_CHECK_INVALID_PRIORITY -111 // invalid priority for a message
-#define SEXP_CHECK_INVALID_MISSION_NAME -112 // invalid mission name
-#define SEXP_CHECK_INVALID_GOAL_NAME -113 // invalid goal name
-#define SEXP_CHECK_INVALID_LEVEL -114 // mission level too high in campaign
-#define SEXP_CHECK_INVALID_MSG_SOURCE                                            \
-    -115 // invalid 'who-from' for a message being sent
+// number is not valid
+#define SEXP_CHECK_INVALID_NUM -101
+// invalid ship name
+#define SEXP_CHECK_INVALID_SHIP -102
+// invalid wing name
+#define SEXP_CHECK_INVALID_WING -103
+// invalid subsystem
+#define SEXP_CHECK_INVALID_SUBSYS -104
+// invalid iff string
+#define SEXP_CHECK_INVALID_IFF -105
+// invalid point
+#define SEXP_CHECK_INVALID_POINT -106
+// negative number wasn't allowed
+#define SEXP_CHECK_NEGATIVE_NUM -107
+// invalid ship/wing
+#define SEXP_CHECK_INVALID_SHIP_WING -108
+// invalid ship type
+#define SEXP_CHECK_INVALID_SHIP_TYPE -109
+// invalid message
+#define SEXP_CHECK_UNKNOWN_MESSAGE -110
+// invalid priority for a message
+#define SEXP_CHECK_INVALID_PRIORITY -111
+// invalid mission name
+#define SEXP_CHECK_INVALID_MISSION_NAME -112
+// invalid goal name
+#define SEXP_CHECK_INVALID_GOAL_NAME -113
+// mission level too high in campaign
+#define SEXP_CHECK_INVALID_LEVEL -114
+// invalid 'who-from' for a message being sent
+#define SEXP_CHECK_INVALID_MSG_SOURCE -115
 #define SEXP_CHECK_INVALID_DOCKER_POINT -116
 #define SEXP_CHECK_INVALID_DOCKEE_POINT -117
-#define SEXP_CHECK_ORDER_NOT_ALLOWED                                             \
-    -118 // ship goal (order) isn't allowed for given ship
+// ship goal (order) isn't allowed for given ship
+#define SEXP_CHECK_ORDER_NOT_ALLOWED -118
 #define SEXP_CHECK_DOCKING_NOT_ALLOWED -119
 #define SEXP_CHECK_NUM_RANGE_INVALID -120
 #define SEXP_CHECK_INVALID_EVENT_NAME -121

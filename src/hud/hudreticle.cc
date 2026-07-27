@@ -28,8 +28,8 @@
 
 static int Reticle_inited = 0;
 
-#define NUM_RETICLE_ANIS                                                         \
-    6 // keep up to date when modifying the number of reticle ani files
+// keep up to date when modifying the number of reticle ani files
+#define NUM_RETICLE_ANIS 6
 
 #define RETICLE_TOP_ARC 0
 #define RETICLE_LASER_WARN 1
@@ -136,9 +136,10 @@ hud_frames Reticle_gauges[NUM_RETICLE_ANIS];
 #define THREAT_ATTEMPT_LOCK (1 << 1)
 #define THREAT_LOCK (1 << 2)
 
-#define THREAT_UPDATE_DUMBFIRE_TIME                                              \
-    1000 // time between checking for dumbfire threats
-#define THREAT_UPDATE_LOCK_TIME 500 // time between checking for lock threats
+// time between checking for dumbfire threats
+#define THREAT_UPDATE_DUMBFIRE_TIME 1000
+// time between checking for lock threats
+#define THREAT_UPDATE_LOCK_TIME 500
 
 #define THREAT_DUMBFIRE_FLASH 180
 #define THREAT_LOCK_FLASH 180

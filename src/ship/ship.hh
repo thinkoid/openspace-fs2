@@ -28,26 +28,31 @@ extern vector Dead_camera_pos, Original_vec_to_deader;
 
 #ifdef NDEBUG
 #ifdef FRED
-#define MAX_SHIPS 100 // max number of ship instances there can be.
-#define SHIPS_LIMIT                                                              \
-    100 // what MAX_SHIPS will be at release time (for error checking in debug mode)
+// max number of ship instances there can be.
+#define MAX_SHIPS 100
+// what MAX_SHIPS will be at release time (for error checking in debug mode)
+#define SHIPS_LIMIT 100
 #else
-#define MAX_SHIPS 150 // max number of ship instances there can be.
-#define SHIPS_LIMIT                                                              \
-    150 // what MAX_SHIPS will be at release time (for error checking in debug mode)
+// max number of ship instances there can be.
+#define MAX_SHIPS 150
+// what MAX_SHIPS will be at release time (for error checking in debug mode)
+#define SHIPS_LIMIT 150
 #endif
 #else
-#define MAX_SHIPS 200 // max number of ship instances there can be.
-#define SHIPS_LIMIT                                                              \
-    200 // what MAX_SHIPS will be at release time (for error checking in debug mode)
+// max number of ship instances there can be.
+#define MAX_SHIPS 200
+// what MAX_SHIPS will be at release time (for error checking in debug mode)
+#define SHIPS_LIMIT 200
 #endif
 
-#define HULL_DAMAGE_THRESHOLD_PERCENT                                            \
-    0.25f //   Apply damage to hull, not shield if shield < this
-#define HP_SCALE 1.2 // 1.2 means die when 20% of hits remaining
-#define MAX_SHIP_HITS 8 // hits to kill a ship
-#define MAX_SHIP_DETAIL_LEVELS                                                   \
-    5 // maximum detail levels that a ship can render at
+// Apply damage to hull, not shield if shield < this
+#define HULL_DAMAGE_THRESHOLD_PERCENT 0.25f
+// 1.2 means die when 20% of hits remaining
+#define HP_SCALE 1.2
+// hits to kill a ship
+#define MAX_SHIP_HITS 8
+// maximum detail levels that a ship can render at
+#define MAX_SHIP_DETAIL_LEVELS 5
 #define MAX_REINFORCEMENTS 10
 
 #define MAX_ESCORT_SHIPS 3
@@ -76,7 +81,8 @@ extern vector Dead_camera_pos, Original_vec_to_deader;
 
 #define MAX_REINFORCEMENT_MESSAGES 5
 
-#define RF_IS_AVAILABLE (1 << 0) // reinforcement is now available
+// reinforcement is now available
+#define RF_IS_AVAILABLE (1 << 0)
 
 typedef struct
 {
@@ -95,9 +101,12 @@ typedef struct
 } reinforcements;
 
 // ship weapon flags
-#define SW_FLAG_BEAM_FREE (1 << 0) // if this is a beam weapon, its free to fire
-#define SW_FLAG_TURRET_LOCK (1 << 1) //   is this turret is free to fire or locked
-#define SW_FLAG_TAGGED_ONLY (1 << 2) // only fire if target is tagged
+// if this is a beam weapon, its free to fire
+#define SW_FLAG_BEAM_FREE (1 << 0)
+// is this turret is free to fire or locked
+#define SW_FLAG_TURRET_LOCK (1 << 1)
+// only fire if target is tagged
+#define SW_FLAG_TAGGED_ONLY (1 << 2)
 
 typedef struct
 {
@@ -224,14 +233,20 @@ extern color IFF_colors[MAX_IFF_COLORS][2];
 // low bits are for mission file savable flags..
 // FRED needs these to be the low-order bits with no holes,
 // because it indexes into an array, Hoffoss says.
-#define SF_IGNORE_COUNT                                                          \
-    (1 << 0) // ignore this ship when counting ship types for goals
-#define SF_REINFORCEMENT (1 << 1) // this ship is a reinforcement ship
-#define SF_ESCORT (1 << 2) // this ship is an escort ship
-#define SF_NO_ARRIVAL_MUSIC (1 << 3) // don't play arrival music when ship arrives
-#define SF_NO_ARRIVAL_WARP (1 << 4) // no arrival warp in effect
-#define SF_NO_DEPARTURE_WARP (1 << 5) // no departure warp in effect
-#define SF_LOCKED (1 << 6) // can't manipulate ship in loadout screens
+// ignore this ship when counting ship types for goals
+#define SF_IGNORE_COUNT (1 << 0)
+// this ship is a reinforcement ship
+#define SF_REINFORCEMENT (1 << 1)
+// this ship is an escort ship
+#define SF_ESCORT (1 << 2)
+// don't play arrival music when ship arrives
+#define SF_NO_ARRIVAL_MUSIC (1 << 3)
+// no arrival warp in effect
+#define SF_NO_ARRIVAL_WARP (1 << 4)
+// no departure warp in effect
+#define SF_NO_DEPARTURE_WARP (1 << 5)
+// can't manipulate ship in loadout screens
+#define SF_LOCKED (1 << 6)
 #define SF_INVULNERABLE (1 << 7)
 
 // high bits are for internal flags not saved to mission files
@@ -239,56 +254,65 @@ extern color IFF_colors[MAX_IFF_COLORS][2];
 #define SF_KILL_BEFORE_MISSION (1 << 31)
 #define SF_DYING (1 << 30)
 #define SF_DISABLED (1 << 29)
-#define SF_DEPART_WARP (1 << 28) // ship is departing via warp-out
-#define SF_DEPART_DOCKBAY (1 << 27) // ship is departing via docking bay
-#define SF_ARRIVING_STAGE_1                                                      \
-    (1 << 26) // ship is arriving. In other words, doing warp in effect, stage 1
-#define SF_ARRIVING_STAGE_2                                                      \
-    (1 << 25) // ship is arriving. In other words, doing warp in effect, stage 2
+// ship is departing via warp-out
+#define SF_DEPART_WARP (1 << 28)
+// ship is departing via docking bay
+#define SF_DEPART_DOCKBAY (1 << 27)
+// ship is arriving. In other words, doing warp in effect, stage 1
+#define SF_ARRIVING_STAGE_1 (1 << 26)
+// ship is arriving. In other words, doing warp in effect, stage 2
+#define SF_ARRIVING_STAGE_2 (1 << 25)
 #define SF_ARRIVING (SF_ARRIVING_STAGE_1 | SF_ARRIVING_STAGE_2)
-#define SF_ENGINES_ON (1 << 24) // engines sound should play if set
+// engines sound should play if set
+#define SF_ENGINES_ON (1 << 24)
 #define SF_INITIALLY_DOCKED                                                      \
     (1                                                                           \
      << 23) // used by Fred to tell if this ship is initially docked with something else
-#define SF_CARGO_REVEALED                                                        \
-    (1 << 22) // ship's cargo is revealed to all friendly ships
-#define SF_FROM_PLAYER_WING                                                      \
-    (1 << 21) // set for ships that are members of any player starting wing
-#define SF_PRIMARY_LINKED (1 << 20) // ships primary weapons are linked together
-#define SF_SECONDARY_DUAL_FIRE                                                   \
-    (1 << 19) // ship is firing two missiles from the current secondary bank
-#define SF_WARP_BROKEN                                                           \
-    (1 << 18) // set when warp drive is not working, but is repairable
-#define SF_WARP_NEVER (1 << 17) // set when ship can never warp
-#define SF_TRIGGER_DOWN (1 << 16) // ship has its "trigger" held down
+// ship's cargo is revealed to all friendly ships
+#define SF_CARGO_REVEALED (1 << 22)
+// set for ships that are members of any player starting wing
+#define SF_FROM_PLAYER_WING (1 << 21)
+// ships primary weapons are linked together
+#define SF_PRIMARY_LINKED (1 << 20)
+// ship is firing two missiles from the current secondary bank
+#define SF_SECONDARY_DUAL_FIRE (1 << 19)
+// set when warp drive is not working, but is repairable
+#define SF_WARP_BROKEN (1 << 18)
+// set when ship can never warp
+#define SF_WARP_NEVER (1 << 17)
+// ship has its "trigger" held down
+#define SF_TRIGGER_DOWN (1 << 16)
 #define SF_AMMO_COUNT_RECORDED                                                   \
     (1                                                                           \
      << 15) // we've recorded the inital secondary weapon count (which is used to limit support ship rearming)
-#define SF_HIDDEN_FROM_SENSORS                                                   \
-    (1 << 14) // ship doesn't show up on sensors, blinks in/out on radar
+// ship doesn't show up on sensors, blinks in/out on radar
+#define SF_HIDDEN_FROM_SENSORS (1 << 14)
 #define SF_SCANNABLE                                                             \
     (1                                                                           \
      << 13) // ship is "scannable".  Play scan effect and report as "Scanned" or "not scanned".
-#define SF_WARPED_SUPPORT                                                        \
-    (1 << 12) // set when this is a support ship which was warped in automatically
-#define SF_EXPLODED (1 << 11) // ship has exploded (needed for kill messages)
-#define SF_SHIP_HAS_SCREAMED (1 << 10) // ship has let out a death scream
-#define SF_RED_ALERT_STORE_STATUS                                                \
-    (1 << 9) // ship status should be stored/restored if red alert mission
-#define SF_VAPORIZE                                                              \
-    (1 << 8) // ship is vaporized by beam - alternative death sequence
+// set when this is a support ship which was warped in automatically
+#define SF_WARPED_SUPPORT (1 << 12)
+// ship has exploded (needed for kill messages)
+#define SF_EXPLODED (1 << 11)
+// ship has let out a death scream
+#define SF_SHIP_HAS_SCREAMED (1 << 10)
+// ship status should be stored/restored if red alert mission
+#define SF_RED_ALERT_STORE_STATUS (1 << 9)
+// ship is vaporized by beam - alternative death sequence
+#define SF_VAPORIZE (1 << 8)
 
 // MWA -- don't go below whatever bitfield is used for Fred above (currently 7)!!!!
 
-#define SF_DEPARTING (SF_DEPART_WARP | SF_DEPART_DOCKBAY) // ship is departing
-#define SF_CANNOT_WARP                                                           \
-    (SF_WARP_BROKEN | SF_WARP_NEVER | SF_DISABLED) // ship cannot warp out
+// ship is departing
+#define SF_DEPARTING (SF_DEPART_WARP | SF_DEPART_DOCKBAY)
+// ship cannot warp out
+#define SF_CANNOT_WARP (SF_WARP_BROKEN | SF_WARP_NEVER | SF_DISABLED)
 
 #define MAX_DAMAGE_SLOTS 32
-#define MAX_SHIP_ARCS                                                            \
-    2 // How many "arcs" can be active at once... Must be less than MAX_ARC_EFFECTS in model.h.
-#define NUM_SUB_EXPL_HANDLES                                                     \
-    2 // How many different big ship sub explosion sounds can be played.
+// How many "arcs" can be active at once... Must be less than MAX_ARC_EFFECTS in model.h.
+#define MAX_SHIP_ARCS 2
+// How many different big ship sub explosion sounds can be played.
+#define NUM_SUB_EXPL_HANDLES 2
 
 #define MAX_SHIP_CONTRAILS 6
 
@@ -484,7 +508,8 @@ typedef struct ship
 #define SEF_DESTROYED (1 << 0)
 #define SEF_DEPARTED (1 << 1)
 #define SEF_CARGO_KNOWN (1 << 2)
-#define SEF_PLAYER_DELETED (1 << 3) // ship deleted by a player in ship select
+// ship deleted by a player in ship select
+#define SEF_PLAYER_DELETED (1 << 3)
 #define SEF_BEEN_TAGGED (1 << 4)
 #define SEF_RED_ALERT_CARRY (1 << 5)
 
@@ -510,55 +535,76 @@ extern int ship_find_exited_ship_by_signature(int signature);
 #define SIF_DO_COLLISION_CHECK (1 << 0)
 #define SIF_PLAYER_SHIP (1 << 1)
 #define SIF_DEFAULT_PLAYER_SHIP (1 << 2)
-#define SIF_PATH_FIXUP                                                           \
-    (1 << 3) // when set, path verts have been set for this ship's model
-#define SIF_SUPPORT (1 << 4) // this ship can perform repair/rearm functions
-#define SIF_AFTERBURNER (1 << 5) // this ship has afterburners
+// when set, path verts have been set for this ship's model
+#define SIF_PATH_FIXUP (1 << 3)
+// this ship can perform repair/rearm functions
+#define SIF_SUPPORT (1 << 4)
+// this ship has afterburners
+#define SIF_AFTERBURNER (1 << 5)
 
 // If you add a new ship type, then please add the appriopriate type in the ship_count
 // structure later in this file!!! and let MWA know!!
-#define SIF_CARGO                                                                \
-    (1 << 6) // is this ship a cargo type ship -- used for docking purposes
-#define SIF_FIGHTER (1 << 7) // this ship is a fighter
-#define SIF_BOMBER (1 << 8) // this ship is a bomber
-#define SIF_CRUISER (1 << 9) // this ship is a cruiser
-#define SIF_FREIGHTER (1 << 10) // this ship is a freighter
-#define SIF_CAPITAL (1 << 11) // this ship is a capital/installation ship
-#define SIF_TRANSPORT (1 << 12) // this ship is a transport
-#define SIF_NAVBUOY (1 << 13) // AL 11-24-97: this is a navbuoy
-#define SIF_SENTRYGUN (1 << 14) // AL 11-24-97: this is a navbuoy with turrets
-#define SIF_ESCAPEPOD                                                            \
-    (1 << 15) // AL 12-09-97: escape pods that fire from big ships
-#define SIF_NO_SHIP_TYPE (1 << 16) // made distinct to help trap errors
+// is this ship a cargo type ship -- used for docking purposes
+#define SIF_CARGO (1 << 6)
+// this ship is a fighter
+#define SIF_FIGHTER (1 << 7)
+// this ship is a bomber
+#define SIF_BOMBER (1 << 8)
+// this ship is a cruiser
+#define SIF_CRUISER (1 << 9)
+// this ship is a freighter
+#define SIF_FREIGHTER (1 << 10)
+// this ship is a capital/installation ship
+#define SIF_CAPITAL (1 << 11)
+// this ship is a transport
+#define SIF_TRANSPORT (1 << 12)
+// AL 11-24-97: this is a navbuoy
+#define SIF_NAVBUOY (1 << 13)
+// AL 11-24-97: this is a navbuoy with turrets
+#define SIF_SENTRYGUN (1 << 14)
+// AL 12-09-97: escape pods that fire from big ships
+#define SIF_ESCAPEPOD (1 << 15)
+// made distinct to help trap errors
+#define SIF_NO_SHIP_TYPE (1 << 16)
 
 #define SIF_SHIP_COPY                                                            \
     (1                                                                           \
      << 17) // this ship is a copy of another ship in the table -- meaningful for scoring and possible other things
-#define SIF_IN_TECH_DATABASE                                                     \
-    (1 << 18) // is ship type to be listed in the tech database?
-#define SIF_IN_TECH_DATABASE_M                                                   \
-    (1 << 19) // is ship type to be listed in the tech database for multiplayer?
+// is ship type to be listed in the tech database?
+#define SIF_IN_TECH_DATABASE (1 << 18)
+// is ship type to be listed in the tech database for multiplayer?
+#define SIF_IN_TECH_DATABASE_M (1 << 19)
 
-#define SIF_STEALTH (1 << 20) // the ship is a stealth ship
-#define SIF_SUPERCAP (1 << 21) // the ship is a supercap
-#define SIF_DRYDOCK (1 << 22) // the ship is a drydock
-#define SIF_DONT_COLLIDE_INVIS                                                   \
-    (1 << 23) // Don't collide with this ship's invisible polygons
+// the ship is a stealth ship
+#define SIF_STEALTH (1 << 20)
+// the ship is a supercap
+#define SIF_SUPERCAP (1 << 21)
+// the ship is a drydock
+#define SIF_DRYDOCK (1 << 22)
+// Don't collide with this ship's invisible polygons
+#define SIF_DONT_COLLIDE_INVIS (1 << 23)
 
-#define SIF_BIG_DAMAGE (1 << 24) // this ship is classified as a big damage ship
-#define SIF_HAS_AWACS (1 << 25) // ship has an awacs subsystem
+// this ship is classified as a big damage ship
+#define SIF_BIG_DAMAGE (1 << 24)
+// ship has an awacs subsystem
+#define SIF_HAS_AWACS (1 << 25)
 
 #define SIF_CORVETTE                                                             \
     (1                                                                           \
      << 26) // corvette class (currently this only means anything for briefing icons)
-#define SIF_GAS_MINER (1 << 27) // also just for briefing icons
-#define SIF_AWACS (1 << 28) // ditto
+// also just for briefing icons
+#define SIF_GAS_MINER (1 << 27)
+// ditto
+#define SIF_AWACS (1 << 28)
 
-#define SIF_KNOSSOS_DEVICE (1 << 29) // this is the knossos device
+// this is the knossos device
+#define SIF_KNOSSOS_DEVICE (1 << 29)
 
-#define SIF_NO_FRED (1 << 30) // not available in fred
+// not available in fred
+#define SIF_NO_FRED (1 << 30)
 
-#define MAX_SHIP_FLAGS 8 //   Number of flags for flags field in ship_info struct
+// Number of flags for flags field in ship_info struct
+#define MAX_SHIP_FLAGS 8
 #define SIF_DEFAULT_VALUE (SIF_DO_COLLISION_CHECK)
 #define SIF_ALL_SHIP_TYPES                                                       \
     (SIF_CARGO | SIF_FIGHTER | SIF_BOMBER | SIF_CRUISER | SIF_FREIGHTER |        \
@@ -759,30 +805,37 @@ extern engine_wash_info Engine_wash_info[MAX_ENGINE_WASH_TYPES];
 #define MAX_WINGS 25
 #endif
 
-#define MAX_PLAYER_WINGS 3 // number of wings player can start a mission with
+// number of wings player can start a mission with
+#define MAX_PLAYER_WINGS 3
 
 // flags defined for wings
-#define MAX_WING_FLAGS                                                           \
-    8 // total number of flags in the wing structure -- used for parsing wing flags
-#define WF_WING_GONE (1 << 0) // all ships were either destroyed or departed
-#define WF_WING_DEPARTING (1 << 1) // wing's departure cue turned true
-#define WF_IGNORE_COUNT                                                          \
-    (1 << 2) // ignore all ships in this wing for goal counting purposes.
-#define WF_REINFORCEMENT (1 << 3) // is this wing a reinforcement wing
+// total number of flags in the wing structure -- used for parsing wing flags
+#define MAX_WING_FLAGS 8
+// all ships were either destroyed or departed
+#define WF_WING_GONE (1 << 0)
+// wing's departure cue turned true
+#define WF_WING_DEPARTING (1 << 1)
+// ignore all ships in this wing for goal counting purposes.
+#define WF_IGNORE_COUNT (1 << 2)
+// is this wing a reinforcement wing
+#define WF_REINFORCEMENT (1 << 3)
 #define WF_RESET_REINFORCEMENT                                                   \
     (1                                                                           \
      << 4) // needed when we need to reset the wing's reinforcement flag (after calling it in)
-#define WF_NO_ARRIVAL_MUSIC (1 << 5) // don't play arrival music when wing arrives
-#define WF_EXPANDED (1 << 6) // wing expanded in hotkey select screen
-#define WF_NO_ARRIVAL_MESSAGE (1 << 7) // don't play any arrival message
-#define WF_NO_ARRIVAL_WARP                                                       \
-    (1 << 8) // don't play warp effect for any arriving ships in this wing.
-#define WF_NO_DEPARTURE_WARP                                                     \
-    (1 << 9) // don't play warp effect for any departing ships in this wing.
-#define WF_NO_DYNAMIC                                                            \
-    (1 << 10) // members of this wing relentlessly pursue their ai goals
-#define WF_DEPARTURE_ORDERED                                                     \
-    (1 << 11) // departure of this wing was ordered by player
+// don't play arrival music when wing arrives
+#define WF_NO_ARRIVAL_MUSIC (1 << 5)
+// wing expanded in hotkey select screen
+#define WF_EXPANDED (1 << 6)
+// don't play any arrival message
+#define WF_NO_ARRIVAL_MESSAGE (1 << 7)
+// don't play warp effect for any arriving ships in this wing.
+#define WF_NO_ARRIVAL_WARP (1 << 8)
+// don't play warp effect for any departing ships in this wing.
+#define WF_NO_DEPARTURE_WARP (1 << 9)
+// members of this wing relentlessly pursue their ai goals
+#define WF_NO_DYNAMIC (1 << 10)
+// departure of this wing was ordered by player
+#define WF_DEPARTURE_ORDERED (1 << 11)
 #define WF_NEVER_EXISTED                                                         \
     (1                                                                           \
      << 12) // this wing never existed because something prevented it from being created (like its mother ship being destroyed)

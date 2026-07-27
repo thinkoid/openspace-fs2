@@ -13,7 +13,8 @@
 #include <io/key.hh>
 #include <globalincs/alphacolors.hh>
 
-#define KEY_BUFFER_TIMEOUT 1000 // time to clear buffer in milliseconds
+// time to clear buffer in milliseconds
+#define KEY_BUFFER_TIMEOUT 1000
 
 #define DEFAULT_LISTBOX_ITEM_LENGTH 40
 

@@ -31,7 +31,8 @@
 #define BUILTIN_CAMPAIGN_NAME "The Main Freespace2 Campaign"
 #endif
 
-#define MAX_CAMPAIGN_MISSIONS 100 // maximum number of missions in a campaign
+// maximum number of missions in a campaign
+#define MAX_CAMPAIGN_MISSIONS 100
 
 #define CAMPAIGN_ERROR_CORRUPT -1
 #define CAMPAIGN_ERROR_SEXP_EXHAUSTED -2
@@ -56,9 +57,10 @@
 #define CAMPAIGN_PERSISTENT_SHIP 1
 #define CAMPAIGN_PERSISTENT_WEAPON 2
 
-#define CMISSION_FLAG_BASTION                                                    \
-    (1 << 0) // set if stationed on Bastion, else Galatea
-#define CMISSION_FLAG_SKIPPED (1 << 1) // set if skipped, else not
+// set if stationed on Bastion, else Galatea
+#define CMISSION_FLAG_BASTION (1 << 0)
+// set if skipped, else not
+#define CMISSION_FLAG_SKIPPED (1 << 1)
 
 #define CAMPAIGN_LOOP_MISSION_UNINITIALIZED -2
 

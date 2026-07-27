@@ -33,8 +33,8 @@
 #define DEPART_ITEM (1 << 14)
 #define DISABLE_SUBSYSTEM_ITEM (1 << 15)
 
-#define MAX_SHIP_ORDERS                                                          \
-    13 // Must sync correctly with Comm_orders array in HUDsquadmsg.cpp
+// Must sync correctly with Comm_orders array in HUDsquadmsg.cpp
+#define MAX_SHIP_ORDERS 13
 
 // following defines are the set of possible commands that can be given to a ship.  A mission designer
 // might not allow some messages
@@ -44,17 +44,18 @@
      PROTECT_TARGET_ITEM | IGNORE_TARGET_ITEM | FORMATION_ITEM | COVER_ME_ITEM | \
      ENGAGE_ENEMY_ITEM | DEPART_ITEM | DISABLE_SUBSYSTEM_ITEM)
 
-#define BOMBER_MESSAGES                                                          \
-    FIGHTER_MESSAGES // bombers can do the same things as fighters
+// bombers can do the same things as fighters
+#define BOMBER_MESSAGES FIGHTER_MESSAGES
 
 #define TRANSPORT_MESSAGES                                                       \
     (ATTACK_TARGET_ITEM | CAPTURE_TARGET_ITEM | DEPART_ITEM)
-#define FREIGHTER_MESSAGES                                                       \
-    TRANSPORT_MESSAGES // freighters can do the same things as transports
+// freighters can do the same things as transports
+#define FREIGHTER_MESSAGES TRANSPORT_MESSAGES
 
 #define CRUISER_MESSAGES (ATTACK_TARGET_ITEM | DEPART_ITEM)
 
-#define CAPITAL_MESSAGES (DEPART_ITEM) // can't order capitals to do much!!!!
+// can't order capitals to do much!!!!
+#define CAPITAL_MESSAGES (DEPART_ITEM)
 
 #define SUPPORT_MESSAGES                                                         \
     (REARM_REPAIR_ME_ITEM | ABORT_REARM_REPAIR_ITEM | STAY_NEAR_ME_ITEM |        \

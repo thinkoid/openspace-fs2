@@ -15,8 +15,10 @@
 #define MAX_FONTS 3
 
 #define FONT_VERSION 0
-#define WIDEST_DIGIT "4" // the widest number character
-#define WIDEST_CHAR "W" // the widest character
+// the widest number character
+#define WIDEST_DIGIT "4"
+// the widest character
+#define WIDEST_CHAR "W"
 
 typedef struct font_char
 {
@@ -63,9 +65,12 @@ extern int Num_fonts;
 extern font Fonts[MAX_FONTS];
 extern font *Current_font;
 
-#define FONT1 0 // font01.vf
-#define FONT2 1 // font02.vf
-#define FONT3 2 // font03.vf
+// font01.vf
+#define FONT1 0
+// font02.vf
+#define FONT2 1
+// font03.vf
+#define FONT3 2
 
 // extern definitions for basic font functions
 extern void grx_set_font(int fontnum);

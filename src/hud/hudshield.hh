@@ -10,12 +10,14 @@
 #ifndef __FREESPACE_HUDSHIELD_H__
 #define __FREESPACE_HUDSHIELD_H__
 
-#define SHIELD_HIT_DURATION 1400 // time a shield quadrant flashes after being hit
-#define SHIELD_FLASH_INTERVAL 200 // time between shield quadrant flashes
+// time a shield quadrant flashes after being hit
+#define SHIELD_HIT_DURATION 1400
+// time between shield quadrant flashes
+#define SHIELD_FLASH_INTERVAL 200
 
 #define NUM_SHIELD_HIT_MEMBERS 5
-#define HULL_HIT_OFFSET                                                          \
-    4 // used to access the members in shield_hit_info that pertain to the hull
+// used to access the members in shield_hit_info that pertain to the hull
+#define HULL_HIT_OFFSET 4
 typedef struct shield_hit_info
 {
     int shield_hit_status; // bitfield, if offset for shield quadrant is set, that means shield is being hit

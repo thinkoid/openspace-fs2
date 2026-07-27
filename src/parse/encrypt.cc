@@ -11,7 +11,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#define ENCRYPT_NEW // new, better encryption scheme
+// new, better encryption scheme
+#define ENCRYPT_NEW
 
 #include <globalincs/pstypes.hh>
 #include <parse/encrypt.hh>

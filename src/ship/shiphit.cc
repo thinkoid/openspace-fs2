@@ -69,8 +69,8 @@ typedef struct spark_pair
 
 #define MAX_SPARK_PAIRS ((MAX_SHIP_HITS * MAX_SHIP_HITS - MAX_SHIP_HITS) / 2)
 
-#define BIG_SHIP_MIN_RADIUS                                                      \
-    80.0f //   ship radius above which death rolls can't be shortened by excessive damage
+// ship radius above which death rolls can't be shortened by excessive damage
+#define BIG_SHIP_MIN_RADIUS 80.0f
 
 vector Dead_camera_pos;
 vector Original_vec_to_deader;
@@ -310,8 +310,8 @@ subsys_get_range(object *other_obj, ship_subsys *subsys)
     return range;
 }
 
-#define MAX_DEBRIS_SHARDS                                                        \
-    16 // cap the amount of debris shards that fly off per hit
+// cap the amount of debris shards that fly off per hit
+#define MAX_DEBRIS_SHARDS 16
 
 // Make some random debris particles.  Previous way was not very random.  Create debris 75% of the time.
 // Don't worry about multiplayer since this debris is the small stuff that cannot collide
@@ -1157,19 +1157,20 @@ player_died_start(object *killer_objp)
     emp_stop_local();
 }
 
-#define DEATHROLL_TIME                                                           \
-    3000 // generic deathroll is 3 seconds (3 * 1000 milliseconds)
-#define MIN_PLAYER_DEATHROLL_TIME                                                \
-    1000 // at least one second deathroll for a player
-#define DEATHROLL_ROTVEL_CAP                                                     \
-    6.3f // maximum added deathroll rotvel in rad/sec (about 1 rev / sec)
-#define DEATHROLL_ROTVEL_MIN                                                     \
-    0.8f // minimum added deathroll rotvel in rad/sec (about 1 rev / 12 sec)
-#define DEATHROLL_MASS_STANDARD 50 // approximate mass of lightest ship
-#define DEATHROLL_VELOCITY_STANDARD                                              \
-    70 // deathroll rotvel is scaled according to ship velocity
-#define DEATHROLL_ROTVEL_SCALE                                                   \
-    4 // constant determines how quickly deathroll rotvel is ramped up  (smaller is faster)
+// generic deathroll is 3 seconds (3 * 1000 milliseconds)
+#define DEATHROLL_TIME 3000
+// at least one second deathroll for a player
+#define MIN_PLAYER_DEATHROLL_TIME 1000
+// maximum added deathroll rotvel in rad/sec (about 1 rev / sec)
+#define DEATHROLL_ROTVEL_CAP 6.3f
+// minimum added deathroll rotvel in rad/sec (about 1 rev / 12 sec)
+#define DEATHROLL_ROTVEL_MIN 0.8f
+// approximate mass of lightest ship
+#define DEATHROLL_MASS_STANDARD 50
+// deathroll rotvel is scaled according to ship velocity
+#define DEATHROLL_VELOCITY_STANDARD 70
+// constant determines how quickly deathroll rotvel is ramped up  (smaller is faster)
+#define DEATHROLL_ROTVEL_SCALE 4
 
 void ai_announce_ship_dying(object *dying_objp);
 

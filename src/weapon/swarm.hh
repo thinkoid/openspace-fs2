@@ -14,8 +14,8 @@
 #include <cfile/cfile.hh>
 #include <ship/ship.hh>
 
-#define SWARM_DEFAULT_NUM_MISSILES_FIRED                                         \
-    4 // number of swarm missiles that launch when fired
+// number of swarm missiles that launch when fired
+#define SWARM_DEFAULT_NUM_MISSILES_FIRED 4
 
 void swarm_level_init();
 void swarm_delete(int index);

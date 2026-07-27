@@ -7,9 +7,12 @@
  *
 */
 
-#define POPUPDEAD_NUM_CHOICES 3 // normal
-#define POPUPDEAD_NUM_CHOICES_RA 4 // red alert
-#define POPUPDEAD_NUM_CHOICES_SKIP 3 // skip mission menu
+// normal
+#define POPUPDEAD_NUM_CHOICES 3
+// red alert
+#define POPUPDEAD_NUM_CHOICES_RA 4
+// skip mission menu
+#define POPUPDEAD_NUM_CHOICES_SKIP 3
 
 #define POPUPDEAD_NUM_CHOICES_MAX 4
 

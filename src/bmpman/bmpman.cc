@@ -34,8 +34,10 @@ int bm_inited = 0;
 #define BM_TYPE_NONE 0
 #define BM_TYPE_PCX 1
 #define BM_TYPE_USER 2
-#define BM_TYPE_ANI 3 // in-house ANI format
-#define BM_TYPE_TGA 4 // 16 bit targa
+// in-house ANI format
+#define BM_TYPE_ANI 3
+// 16 bit targa
+#define BM_TYPE_TGA 4
 
 typedef union bm_extra_info
 {

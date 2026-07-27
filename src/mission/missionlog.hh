@@ -35,13 +35,20 @@
 
 // structure definition for log entries
 
-#define MLF_ESSENTIAL (1 << 0) // this entry is essential for goal checking code
-#define MLF_OBSOLETE (1 << 1) // this entry is obsolete and will be removed
-#define MLF_PRIMARY_FRIENDLY (1 << 2) // primary object in this entry is friendly
-#define MLF_PRIMARY_HOSTILE (1 << 3) // primary object in this entry is hostile
-#define MLF_SECONDARY_FRIENDLY (1 << 4) // secondary object is friendly
-#define MLF_SECONDARY_HOSTILE (1 << 5) // secondary object is hostile
-#define MLF_HIDDEN (1 << 6) // entry doesn't show up in displayed log.
+// this entry is essential for goal checking code
+#define MLF_ESSENTIAL (1 << 0)
+// this entry is obsolete and will be removed
+#define MLF_OBSOLETE (1 << 1)
+// primary object in this entry is friendly
+#define MLF_PRIMARY_FRIENDLY (1 << 2)
+// primary object in this entry is hostile
+#define MLF_PRIMARY_HOSTILE (1 << 3)
+// secondary object is friendly
+#define MLF_SECONDARY_FRIENDLY (1 << 4)
+// secondary object is hostile
+#define MLF_SECONDARY_HOSTILE (1 << 5)
+// entry doesn't show up in displayed log.
+#define MLF_HIDDEN (1 << 6)
 
 typedef struct
 {

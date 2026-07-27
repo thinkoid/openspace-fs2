@@ -284,15 +284,15 @@ DECLARE_INTERFACE_(IVFX, IUnknown)
 //
 // --- SideWinder specific
 //
-#define DEFAULT_ROM_EFFECT_GAIN                                                  \
-    100 // Set dwGain to this for Default
-        // ROM Effect gain
-#define DEFAULT_ROM_EFFECT_DURATION                                              \
-    1000 // Set dwDuration to this for Default
-        // ROM Effect Duration
-#define DEFAULT_ROM_EFFECT_OUTPUTRATE                                            \
-    1000 // Set dwSampleRate to this for
-        // Default ROM Effect output rate
+// Set dwGain to this for Default
+// ROM Effect gain
+#define DEFAULT_ROM_EFFECT_GAIN 100
+// Set dwDuration to this for Default
+// ROM Effect Duration
+#define DEFAULT_ROM_EFFECT_DURATION 1000
+// Set dwSampleRate to this for
+// Default ROM Effect output rate
+#define DEFAULT_ROM_EFFECT_OUTPUTRATE 1000
 
 #define MIN_ANGLE 0
 #define MAX_ANGLE 36000
@@ -302,13 +302,19 @@ DECLARE_INTERFACE_(IVFX, IUnknown)
 #define MAX_FORCE 10000
 #define MIN_FORCE -10000
 #define MIN_TIME_PERIOD 1
-#define MAX_TIME_PERIOD 4294967296L // 4096 * 10^^6 usecs
+// 4096 * 10^^6 usecs
+#define MAX_TIME_PERIOD 4294967296L
 
-#define SCALE_GAIN 100 // DX is +/- 10000
-#define SCALE_TIME 1000 // DX is in microseconds
-#define SCALE_POSITION 100 // DX is +/- 10000
-#define SCALE_CONSTANTS 100 // DX is +/- 10000
-#define SCALE_DIRECTION 100 // DX is 0 to 35900
+// DX is +/- 10000
+#define SCALE_GAIN 100
+// DX is in microseconds
+#define SCALE_TIME 1000
+// DX is +/- 10000
+#define SCALE_POSITION 100
+// DX is +/- 10000
+#define SCALE_CONSTANTS 100
+// DX is 0 to 35900
+#define SCALE_DIRECTION 100
 
 //
 // --- Default Values
@@ -327,8 +333,10 @@ DECLARE_INTERFACE_(IVFX, IUnknown)
 //
 // --- WALL Effect
 //
-#define WALL_INNER 0 // Wall material:from center to Wall Distance
-#define WALL_OUTER 1 // Wall material:greater than Wall Distance
+// Wall material:from center to Wall Distance
+#define WALL_INNER 0
+// Wall material:greater than Wall Distance
+#define WALL_OUTER 1
 
 typedef struct _BE_WALL_PARAM
 {
@@ -347,11 +355,12 @@ typedef struct _BE_WALL_PARAM
 #define VFX_FILENAME 0L
 #define VFX_BUFFER 1L
 
-#define DEFAULT_VFX_EFFECT_GAIN 10000 // set dwGain to this for default gain
-#define DEFAULT_VFX_EFFECT_DIRECTION                                             \
-    0 // set polar direction to this for default direction
-#define DEFAULT_VFX_EFFECT_DURATION                                              \
-    1000 // set dwDuration to this for default duration
+// set dwGain to this for default gain
+#define DEFAULT_VFX_EFFECT_GAIN 10000
+// set polar direction to this for default direction
+#define DEFAULT_VFX_EFFECT_DIRECTION 0
+// set dwDuration to this for default duration
+#define DEFAULT_VFX_EFFECT_DURATION 1000
 
 typedef struct _VFX_PARAM
 {

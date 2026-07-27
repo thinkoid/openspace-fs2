@@ -64,11 +64,12 @@ extern int Key_normal_game;
 #define KEY_ALTED 0x2000
 #define KEY_CTRLED 0x4000
 #define KEY_DEBUGGED 0x8000
-#define KEY_DEBUGGED1 0x0800 //  Cheat bit in release version of game.
+// Cheat bit in release version of game.
+#define KEY_DEBUGGED1 0x0800
 #define KEY_MASK 0x00FF
 
-#define KEY_DEBUG_KEY                                                            \
-    0x29 // KEY_LAPOSTRO (shifted = tilde, near upper-left of keyboard)
+// KEY_LAPOSTRO (shifted = tilde, near upper-left of keyboard)
+#define KEY_DEBUG_KEY 0x29
 
 #define KEY_0 0x0B
 #define KEY_1 0x02
@@ -184,7 +185,8 @@ extern int Key_normal_game;
 #define KEY_RIGHT 0xCD
 
 #define KEY_PRINT_SCRN 0xB7
-#define KEY_PAUSE 0x45 //DOS: 0x61
+// DOS: 0x61
+#define KEY_PAUSE 0x45
 #define KEY_BREAK 0xc6
 
 /*

@@ -27,8 +27,8 @@
 
 #define COLLISION_FRICTION_FACTOR 0.0
 #define COLLISION_ROTATION_FACTOR 0.2
-#define SEP_VEL                                                                  \
-    5.0f // separation velocity between two ships that collide on same team.
+// separation velocity between two ships that collide on same team.
+#define SEP_VEL 5.0f
 
 #define COLLIDE_DEBUG
 #undef COLLIDE_DEBUG
@@ -1008,7 +1008,8 @@ get_I_inv(matrix *I_inv, matrix *I_inv_body, matrix *orient)
 }
 
 #define PLANET_DAMAGE_SCALE 4.0f
-#define PLANET_DAMAGE_RANGE 3 // If within this factor of radius, apply damage.
+// If within this factor of radius, apply damage.
+#define PLANET_DAMAGE_RANGE 3
 
 fix Last_planet_damage_time = 0;
 extern void hud_start_text_flash(char *txt);
@@ -1088,8 +1089,8 @@ get_ship_quadrant_from_global(vector *global_pos, object *objp)
     return get_quadrant(&rotpos);
 }
 
-#define MIN_REL_SPEED_FOR_LOUD_COLLISION                                         \
-    50 // relative speed of two colliding objects at which we play the "loud" collide sound
+// relative speed of two colliding objects at which we play the "loud" collide sound
+#define MIN_REL_SPEED_FOR_LOUD_COLLISION 50
 
 void
 collide_ship_ship_sounds_init()

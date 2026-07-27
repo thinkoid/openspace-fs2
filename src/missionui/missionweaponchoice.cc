@@ -72,7 +72,8 @@ typedef struct wl_bitmap_group
 #ifdef FS2_DEMO
 #define WEAPON_ANIM_LOOP_FRAME 1
 #else
-#define WEAPON_ANIM_LOOP_FRAME 52 // frame (from 0) to loop weapon anim
+// frame (from 0) to loop weapon anim
+#define WEAPON_ANIM_LOOP_FRAME 52
 #endif
 
 #define WEAPON_ICON_FRAME_NORMAL 0
@@ -269,10 +270,12 @@ static int Hot_weapon_bank_icon = -1;
 static int Wl_mouse_down_on_region = -1;
 
 // weapon desc stuff
-#define WEAPON_DESC_WIPE_TIME                                                    \
-    1.5f // time in seconds for wipe to occur (over WEAPON_DESC_MAX_LENGTH number of chars)
-#define WEAPON_DESC_MAX_LINES 7 // max lines in the description incl. title
-#define WEAPON_DESC_MAX_LENGTH 50 // max chars per line of description text
+// time in seconds for wipe to occur (over WEAPON_DESC_MAX_LENGTH number of chars)
+#define WEAPON_DESC_WIPE_TIME 1.5f
+// max lines in the description incl. title
+#define WEAPON_DESC_MAX_LINES 7
+// max chars per line of description text
+#define WEAPON_DESC_MAX_LENGTH 50
 static int Weapon_desc_wipe_done = 0;
 static float Weapon_desc_wipe_time_elapsed = 0.0f;
 static char Weapon_desc_lines

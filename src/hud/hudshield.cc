@@ -24,11 +24,13 @@
 
 #define NUM_SHIELD_LEVELS 8
 
-#define SHIELD_TRANSFER_PERCENT 0.083f // 1/12 total shield strength
+// 1/12 total shield strength
+#define SHIELD_TRANSFER_PERCENT 0.083f
 
-#define SHIELD_HIT_DURATION_SHORT                                                \
-    300 // time a shield quadrant flashes after being hit
-#define SHIELD_FLASH_INTERVAL_FAST 200 // time between shield quadrant flashes
+// time a shield quadrant flashes after being hit
+#define SHIELD_HIT_DURATION_SHORT 300
+// time between shield quadrant flashes
+#define SHIELD_FLASH_INTERVAL_FAST 200
 
 // now read in from hud.tbl
 #define MAX_SHIELD_ICONS 40

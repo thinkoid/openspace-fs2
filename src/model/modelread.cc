@@ -27,7 +27,8 @@
 #include <freespace2/freespace.hh> // For flFrameTime
 #include <math/fvi.hh>
 
-#define MAX_SUBMODEL_COLLISION_ROT_ANGLE (PI / 6.0f) // max 30 degrees per frame
+// max 30 degrees per frame
+#define MAX_SUBMODEL_COLLISION_ROT_ANGLE (PI / 6.0f)
 
 // info for special polygon lists
 

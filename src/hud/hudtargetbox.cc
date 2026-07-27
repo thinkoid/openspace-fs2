@@ -79,7 +79,8 @@ int Target_view_extra_loaded = 0;
 hud_frames Target_view_integrity_gauge;
 int Target_view_integrity_gauge_loaded = 0;
 
-#define NUM_TBOX_COORDS 11 // keep up to date
+// keep up to date
+#define NUM_TBOX_COORDS 11
 #define TBOX_BACKGROUND 0
 #define TBOX_NAME 1
 #define TBOX_CLASS 2

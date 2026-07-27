@@ -63,7 +63,8 @@ SOUNDTRACK_INFO Soundtracks[MAX_SOUNDTRACKS];
 int Num_soundtracks;
 int Current_soundtrack_num; // Active soundtrack for the current mission.. index into Soundtracks[]
 
-#define PATTERN_DELAY 1000 // in ms
+// in ms
+#define PATTERN_DELAY 1000
 int Current_pattern = -1; // currently playing part of track
 int Pending_pattern = -1;
 int Pattern_timer_id = 0;

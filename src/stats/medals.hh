@@ -14,8 +14,8 @@
 #include <stats/scoring.hh>
 
 #define MAX_BADGES 3
-#define MAX_ASSIGNABLE_MEDALS                                                    \
-    12 // index into Medals array of the first medal which cannot be assigned
+// index into Medals array of the first medal which cannot be assigned
+#define MAX_ASSIGNABLE_MEDALS 12
 
 extern scoring_struct *Player_score;
 
@@ -43,9 +43,10 @@ extern int Badge_index
 extern void parse_medal_tbl();
 
 // modes for this screen
-#define MM_NORMAL 0 // normal - run through the state code
-#define MM_POPUP                                                                 \
-    1 // called from within some other tight loop (don't use gameseq_ functions)
+// normal - run through the state code
+#define MM_NORMAL 0
+// called from within some other tight loop (don't use gameseq_ functions)
+#define MM_POPUP 1
 
 // main medals screen
 void medal_main_init(player *pl, int mode = MM_NORMAL);

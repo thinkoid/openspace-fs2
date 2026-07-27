@@ -63,9 +63,10 @@ static int Weapon_flyby_sound_timer;
 weapon Weapons[MAX_WEAPONS];
 weapon_info Weapon_info[MAX_WEAPON_TYPES];
 
-#define MISSILE_OBJ_USED (1 << 0) // flag used in missile_obj struct
-#define MAX_MISSILE_OBJS                                                         \
-    MAX_WEAPONS // max number of missiles tracked in missile list
+// flag used in missile_obj struct
+#define MISSILE_OBJ_USED (1 << 0)
+// max number of missiles tracked in missile list
+#define MAX_MISSILE_OBJS MAX_WEAPONS
 missile_obj
     Missile_objs[MAX_MISSILE_OBJS]; // array used to store missile object indexes
 missile_obj Missile_obj_list; // head of linked list of missile_obj structs
@@ -106,7 +107,8 @@ char *Weapon_names[MAX_WEAPON_TYPES];
 
 int First_secondary_index = -1;
 
-#define MAX_SPAWN_WEAPONS 10 //  Up to 10 weapons can spawn weapons.
+// Up to 10 weapons can spawn weapons.
+#define MAX_SPAWN_WEAPONS 10
 
 int Num_spawn_types;
 char Spawn_names[MAX_SPAWN_WEAPONS][NAME_LENGTH];
@@ -118,7 +120,8 @@ int Player_weapon_precedence
 // Used to avoid playing too many impact sounds in too short a time interval.
 // This will elimate the odd "stereo" effect that occurs when two weapons impact at
 // nearly the same time, like from a double laser (also saves sound channels!)
-#define IMPACT_SOUND_DELTA 50 // in milliseconds
+// in milliseconds
+#define IMPACT_SOUND_DELTA 50
 int Weapon_impact_timer; // timer, initalized at start of each mission
 
 // energy suck defines

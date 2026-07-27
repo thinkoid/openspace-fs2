@@ -2458,8 +2458,8 @@ cmd_brief_reset()
         Cmd_briefs[i].num_stages = 0;
 }
 
-#define STAGE_ADVANCE_DELAY                                                      \
-    1000 // time in ms to wait after voice stops before advancing stage
+// time in ms to wait after voice stops before advancing stage
+#define STAGE_ADVANCE_DELAY 1000
 
 // should briefing advance to the next stage?
 int

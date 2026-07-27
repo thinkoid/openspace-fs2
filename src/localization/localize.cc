@@ -87,10 +87,14 @@ CFILE *Lcl_ext_file = NULL;
 // for scanning/parsing tstrings.tbl (from ExStr)
 #define PARSE_TEXT_STRING_LEN 2048
 #define PARSE_ID_STRING_LEN 128
-#define TS_SCANNING 0 // scanning for a line of text
-#define TS_ID_STRING 1 // reading in an id string
-#define TS_OPEN_QUOTE 2 // looking for an open quote
-#define TS_STRING 3 // reading in the text string itself
+// scanning for a line of text
+#define TS_SCANNING 0
+// reading in an id string
+#define TS_ID_STRING 1
+// looking for an open quote
+#define TS_OPEN_QUOTE 2
+// reading in the text string itself
+#define TS_STRING 3
 int Ts_current_state = 0;
 char Ts_text[PARSE_TEXT_STRING_LEN]; // string we're currently working with
 char Ts_id_text[PARSE_ID_STRING_LEN]; // id string we're currently working with
@@ -103,9 +107,10 @@ int Ts_id_text_size;
 // granularity 10       :     11 secs
 // granularity 5        :     9 secs
 // granularity 2        :     7-8 secs
-#define LCL_GRANULARITY                                                          \
-    1 // how many strings between each pointer (lower granularities should give faster lookup times)
-#define LCL_MAX_POINTERS 4500 // max # of pointers
+// how many strings between each pointer (lower granularities should give faster lookup times)
+#define LCL_GRANULARITY 1
+// max # of pointers
+#define LCL_MAX_POINTERS 4500
 #define LCL_MAX_STRINGS (LCL_GRANULARITY * LCL_MAX_POINTERS)
 int Lcl_pointers[LCL_MAX_POINTERS];
 int Lcl_pointer_count = 0;

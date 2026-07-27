@@ -20,32 +20,51 @@
 //                           2) Increment MAX_HELP_OVERLAYS
 //                           3) Add the filename for the help overlay to Help_overlays[] array in ContextHelp.cpp
 //
-#define MAX_HELP_OVERLAYS 16 // Must be kept current
+// Must be kept current
+#define MAX_HELP_OVERLAYS 16
 
-#define SS_OVERLAY 0 // ship selection help
-#define WL_OVERLAY 1 // weapons loadout help
-#define BR_OVERLAY 2 // briefing help
-#define MH_OVERLAY 3 // main hall help
-#define BARRACKS_OVERLAY 4 // barracks help
-#define CONTROL_CONFIG_OVERLAY 5 // control config help
-#define DEBRIEFING_OVERLAY 6 // debriefing help
-#define MULTI_CREATE_OVERLAY 7 // multi create game help
-#define MULTI_START_OVERLAY 8 // multi start game help overlay
-#define MULTI_JOIN_OVERLAY 9 // join game help overlay
-#define MH2_OVERLAY 10 // main hall 2 help overlay
-#define HOTKEY_OVERLAY 11 // hotkey assignment help overlay
-#define CAMPAIGN_ROOM_OVERLAY 12 // campaign room help overlay
-#define SIM_ROOM_OVERLAY 13 // sim room help overlay
-#define TECH_ROOM_OVERLAY 14 // tech room (general) help overlay
-#define CMD_BRIEF_OVERLAY 15 // command briefing help overlay
+// ship selection help
+#define SS_OVERLAY 0
+// weapons loadout help
+#define WL_OVERLAY 1
+// briefing help
+#define BR_OVERLAY 2
+// main hall help
+#define MH_OVERLAY 3
+// barracks help
+#define BARRACKS_OVERLAY 4
+// control config help
+#define CONTROL_CONFIG_OVERLAY 5
+// debriefing help
+#define DEBRIEFING_OVERLAY 6
+// multi create game help
+#define MULTI_CREATE_OVERLAY 7
+// multi start game help overlay
+#define MULTI_START_OVERLAY 8
+// join game help overlay
+#define MULTI_JOIN_OVERLAY 9
+// main hall 2 help overlay
+#define MH2_OVERLAY 10
+// hotkey assignment help overlay
+#define HOTKEY_OVERLAY 11
+// campaign room help overlay
+#define CAMPAIGN_ROOM_OVERLAY 12
+// sim room help overlay
+#define SIM_ROOM_OVERLAY 13
+// tech room (general) help overlay
+#define TECH_ROOM_OVERLAY 14
+// command briefing help overlay
+#define CMD_BRIEF_OVERLAY 15
 
 // other help overlay constants
-#define HELP_MAX_ITEM                                                            \
-    50 // max number of screen elements per element type per overlay
-#define HELP_PADDING 1 //
-#define HELP_MAX_STRING_LENGTH 128 // max string length for text overlay element
-#define HELP_MAX_PLINE_VERTICES                                                  \
-    21 // good for 20 segments, can prolly reduce this (FIXME)
+// max number of screen elements per element type per overlay
+#define HELP_MAX_ITEM 50
+// 
+#define HELP_PADDING 1
+// max string length for text overlay element
+#define HELP_MAX_STRING_LENGTH 128
+// good for 20 segments, can prolly reduce this (FIXME)
+#define HELP_MAX_PLINE_VERTICES 21
 #define HELP_PLINE_THICKNESS 2
 #define HELP_OVERLAY_FILENAME "help.tbl"
 

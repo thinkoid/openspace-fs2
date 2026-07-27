@@ -20,12 +20,13 @@
 
 #define MAX_CMEASURE_TYPES 3
 
-#define CMEASURE_WAIT 333 //  delay in milliseconds between countermeasure firing.
+// delay in milliseconds between countermeasure firing.
+#define CMEASURE_WAIT 333
 
-#define CMF_DUD_HEAT                                                             \
-    0x01 // If set, this cmeasure is a dud to heat seekers.  Set at create time.
-#define CMF_DUD_ASPECT                                                           \
-    0x02 // If set, this cmeasure is a dud to aspect seekers.  Set at create time.
+// If set, this cmeasure is a dud to heat seekers.  Set at create time.
+#define CMF_DUD_HEAT 0x01
+// If set, this cmeasure is a dud to aspect seekers.  Set at create time.
+#define CMF_DUD_ASPECT 0x02
 
 #define CMF_DUD (CMF_DUD_HEAT | CMF_DUD_ASPECT)
 

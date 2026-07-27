@@ -25,12 +25,17 @@
 #include <globalincs/alphacolors.hh>
 #include <osapi/osapi.hh>
 
-#define POPUP_MAX_CHOICES 3 // max number of buttons allowed on popup
+// max number of buttons allowed on popup
+#define POPUP_MAX_CHOICES 3
 
-#define POPUP_MAX_LINE_CHARS 256 // max chars of msg text allowed per line
-#define POPUP_MAX_LINES 30 // max lines of text allowed
-#define POPUP_MAX_CHARS 2048 // total max chars
-#define POPUP_INPUT_MAX_CHARS 255 // max length of input string
+// max chars of msg text allowed per line
+#define POPUP_MAX_LINE_CHARS 256
+// max lines of text allowed
+#define POPUP_MAX_LINES 30
+// total max chars
+#define POPUP_MAX_CHARS 2048
+// max length of input string
+#define POPUP_INPUT_MAX_CHARS 255
 
 #define POPUP_NOCHANGE 100
 #define POPUP_ABORT 101
@@ -47,7 +52,8 @@ int Popup_slider_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
 ////////////////////////////////////////////////////////////////
 // Internal popup flags
 ////////////////////////////////////////////////////////////////
-#define PF_INPUT (1 << 0) // contents of the box is an inputbox and a caption
+// contents of the box is an inputbox and a caption
+#define PF_INPUT (1 << 0)
 
 ////////////////////////////////////////////////////////////////
 // Popup data struct

@@ -24,8 +24,10 @@ typedef struct menu_region
 } MENU_REGION;
 
 // These are the actions thare are returned in the action parameter.
-#define SNAZZY_OVER 1 // mouse is over a region
-#define SNAZZY_CLICKED 2 // mouse button has gone from down to up over a region
+// mouse is over a region
+#define SNAZZY_OVER 1
+// mouse button has gone from down to up over a region
+#define SNAZZY_CLICKED 2
 
 int snazzy_menu_do(ubyte *data, int mask_w, int mask_h, int num_regions,
                    MENU_REGION *regions, int *action, int poll_key = 1,

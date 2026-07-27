@@ -47,14 +47,16 @@ typedef struct hud_frames_info
 extern color HUD_color_defaults[HUD_NUM_COLOR_LEVELS];
 
 // extern globals that will control the color of the HUD gauges
-#define HUD_COLOR_ALPHA_USER_MAX 13 // max user-settable alpha, absolute max is 15
-#define HUD_COLOR_ALPHA_USER_MIN 3 // min user-settable alpha, absolute min is 0
+// max user-settable alpha, absolute max is 15
+#define HUD_COLOR_ALPHA_USER_MAX 13
+// min user-settable alpha, absolute min is 0
+#define HUD_COLOR_ALPHA_USER_MIN 3
 
 #define HUD_COLOR_ALPHA_MAX 15
 #define HUD_COLOR_ALPHA_DEFAULT 8
 
-#define HUD_BRIGHT_DELTA                                                         \
-    7 // Level added to HUD_color_alpha to make brightness used for flashing
+// Level added to HUD_color_alpha to make brightness used for flashing
+#define HUD_BRIGHT_DELTA 7
 
 // hud macro for maybe flickering all gauges
 #define GR_AABITMAP(a, b, c)                                                     \

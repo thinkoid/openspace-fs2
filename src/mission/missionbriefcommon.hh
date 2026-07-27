@@ -13,13 +13,15 @@
 #include <anim/packunpack.hh>
 #include <hud/hud.hh>
 
-#define MAX_TEXT_STREAMS 2 // how many concurrent streams of text can be displayed
+// how many concurrent streams of text can be displayed
+#define MAX_TEXT_STREAMS 2
 
 // ------------------------------------------------------------------------
 // names for the icons that can appear in the briefing.  If you modify this list,
 // update the Icons_names[] string array located in MissionParse.cpp
 // ------------------------------------------------------------------------
-#define MAX_BRIEF_ICONS 35 // keep up to date
+// keep up to date
+#define MAX_BRIEF_ICONS 35
 
 #define ICON_FIGHTER 0
 #define ICON_FIGHTER_WING 1
@@ -61,21 +63,31 @@
 // Structures to hold briefing data
 // ------------------------------------------------------------------------
 
-#define MAX_BRIEF_LEN 4096 // size of char array which holds briefing text
+// size of char array which holds briefing text
+#define MAX_BRIEF_LEN 4096
 #define MAX_BRIEF_LINES 50
-#define MAX_BRIEF_LINE_LEN 256 // max number of chars in a briefing line
-#define MAX_BRIEF_LINE_W_640 375 // max width of line in pixels in 640x480 mode
-#define MAX_BRIEF_LINE_W_1024 600 // max width of line in pixels in 1024x768 mode
+// max number of chars in a briefing line
+#define MAX_BRIEF_LINE_LEN 256
+// max width of line in pixels in 640x480 mode
+#define MAX_BRIEF_LINE_W_640 375
+// max width of line in pixels in 1024x768 mode
+#define MAX_BRIEF_LINE_W_1024 600
 
-#define MAX_DEBRIEF_LEN 2048 // size of char array which holds debriefing text
+// size of char array which holds debriefing text
+#define MAX_DEBRIEF_LEN 2048
 #define MAX_DEBRIEF_LINES 60
-#define MAX_DEBRIEF_LINE_LEN 256 // max number of chars in a debriefing line
-#define MAX_DEBRIEF_LINE_W 500 // max width of line in pixels
+// max number of chars in a debriefing line
+#define MAX_DEBRIEF_LINE_LEN 256
+// max width of line in pixels
+#define MAX_DEBRIEF_LINE_W 500
 
-#define MAX_ICON_TEXT_LEN 1024 // max number of chars for icon info
+// max number of chars for icon info
+#define MAX_ICON_TEXT_LEN 1024
 #define MAX_ICON_TEXT_LINES 30
-#define MAX_ICON_TEXT_LINE_LEN 256 // max number of chars in icon info line
-#define MAX_ICON_TEXT_LINE_W 170 // max width of line in pixels
+// max number of chars in icon info line
+#define MAX_ICON_TEXT_LINE_LEN 256
+// max width of line in pixels
+#define MAX_ICON_TEXT_LINE_W 170
 
 #define MAX_STAGE_ICONS 20
 #define MAX_BRIEF_STAGES 15

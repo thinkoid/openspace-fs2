@@ -19,10 +19,12 @@
 #include <stats/scoring.hh> // for scoring/stats
 #include <io/keycontrol.hh> // for button_info
 
-#define CALLSIGN_LEN                                                             \
-    28 //   shortened from 32 to allow .plr to be attached without exceeding MAX_FILENAME_LEN
-#define SHORT_CALLSIGN_PIXEL_W 80 // max width of short_callsign[] in pixels
-#define MAX_KEYED_TARGETS 8 // number of hot keys available to assign targets to
+// shortened from 32 to allow .plr to be attached without exceeding MAX_FILENAME_LEN
+#define CALLSIGN_LEN 28
+// max width of short_callsign[] in pixels
+#define SHORT_CALLSIGN_PIXEL_W 80
+// number of hot keys available to assign targets to
+#define MAX_KEYED_TARGETS 8
 
 // player image defines
 #define PLAYER_PILOT_PIC_W 160
@@ -32,50 +34,60 @@
 #define PLAYER_SQUAD_PIC_H 128
 
 // player flags follow
-#define PLAYER_FLAGS_MATCH_TARGET                                                \
-    (1 << 0) // currently matching speed with selected target
-#define PLAYER_FLAGS_MSG_MODE (1 << 1) // is the player in messaging mode?
-#define PLAYER_FLAGS_AUTO_TARGETING (1 << 2) // is auto targeting on?
-#define PLAYER_FLAGS_AUTO_MATCH_SPEED (1 << 3) // is auto speed matching on?
-#define PLAYER_FLAGS_STRUCTURE_IN_USE                                            \
-    (1 << 4) // is this structure in use -- for multiplayer games
-#define PLAYER_FLAGS_PROMOTED                                                    \
-    (1 << 5) // possibly set in mission to automatically give player promotion
-#define PLAYER_FLAGS_IS_MULTI (1 << 6) // this is a multiplayer pilot
-#define PLAYER_FLAGS_DIST_WARNING                                                \
-    (1 << 7) // is this player under warning for being too far from battle
-#define PLAYER_FLAGS_FORCE_MISSION_OVER                                          \
-    (1 << 8) // mission is being forced over for this player
-#define PLAYER_FLAGS_LINK_PRIMARY                                                \
-    (1 << 9) // primary weapons were linked last mission
-#define PLAYER_FLAGS_LINK_SECONDARY                                              \
-    (1 << 10) // secondary weapons were linked last mission
+// currently matching speed with selected target
+#define PLAYER_FLAGS_MATCH_TARGET (1 << 0)
+// is the player in messaging mode?
+#define PLAYER_FLAGS_MSG_MODE (1 << 1)
+// is auto targeting on?
+#define PLAYER_FLAGS_AUTO_TARGETING (1 << 2)
+// is auto speed matching on?
+#define PLAYER_FLAGS_AUTO_MATCH_SPEED (1 << 3)
+// is this structure in use -- for multiplayer games
+#define PLAYER_FLAGS_STRUCTURE_IN_USE (1 << 4)
+// possibly set in mission to automatically give player promotion
+#define PLAYER_FLAGS_PROMOTED (1 << 5)
+// this is a multiplayer pilot
+#define PLAYER_FLAGS_IS_MULTI (1 << 6)
+// is this player under warning for being too far from battle
+#define PLAYER_FLAGS_DIST_WARNING (1 << 7)
+// mission is being forced over for this player
+#define PLAYER_FLAGS_FORCE_MISSION_OVER (1 << 8)
+// primary weapons were linked last mission
+#define PLAYER_FLAGS_LINK_PRIMARY (1 << 9)
+// secondary weapons were linked last mission
+#define PLAYER_FLAGS_LINK_SECONDARY (1 << 10)
 #define PLAYER_FLAGS_NO_CHECK_ALL_ALONE_MSG                                      \
     (1                                                                           \
      << 11) // player can't receive 'you're all alone...' message from Terran Command
-#define PLAYER_FLAGS_KILLED_BY_EXPLOSION                                         \
-    (1 << 12) // player was killed by an instantaneous area-effect explosion
-#define PLAYER_FLAGS_HAS_PLAYED_PXO                                              \
-    (1 << 13) // this pilot has at least played PXO once in the past.
+// player was killed by an instantaneous area-effect explosion
+#define PLAYER_FLAGS_KILLED_BY_EXPLOSION (1 << 12)
+// this pilot has at least played PXO once in the past.
+#define PLAYER_FLAGS_HAS_PLAYED_PXO (1 << 13)
 #define PLAYER_FLAGS_DIST_TO_BE_KILLED                                           \
     (1                                                                           \
      << 14) // the pilot has been warned about distance and will be killed after message finishes playing
-#define PLAYER_FLAGS_KILLED_BY_ENGINE_WASH                                       \
-    (1 << 15) // player was killed by engine wash
-#define PLAYER_FLAGS_KILLED_SELF_UNKNOWN (1 << 16) // player died by his own hand
-#define PLAYER_FLAGS_KILLED_SELF_MISSILES                                        \
-    (1 << 17) // player died by his own missile
-#define PLAYER_FLAGS_KILLED_SELF_SHOCKWAVE                                       \
-    (1 << 18) // player died by his own shockwave
+// player was killed by engine wash
+#define PLAYER_FLAGS_KILLED_BY_ENGINE_WASH (1 << 15)
+// player died by his own hand
+#define PLAYER_FLAGS_KILLED_SELF_UNKNOWN (1 << 16)
+// player died by his own missile
+#define PLAYER_FLAGS_KILLED_SELF_MISSILES (1 << 17)
+// player died by his own shockwave
+#define PLAYER_FLAGS_KILLED_SELF_SHOCKWAVE (1 << 18)
 
 #define PLAYER_KILLED_SELF                                                       \
     (PLAYER_FLAGS_KILLED_SELF_MISSILES | PLAYER_FLAGS_KILLED_SELF_SHOCKWAVE)
 
-#define PCM_NORMAL 0 // normal flying mode
-#define PCM_WARPOUT_STAGE1 1 // speed up to 40 km/s
-#define PCM_WARPOUT_STAGE2 2 // flying towards and through warp hole
-#define PCM_WARPOUT_STAGE3 3 // through warp hole, waiting for it to disapper.
-#define PCM_SUPERNOVA 4 // supernova. lock everything to where it is.
+// normal flying mode
+#define PCM_NORMAL 0
+// speed up to 40 km/s
+#define PCM_WARPOUT_STAGE1 1
+// flying towards and through warp hole
+#define PCM_WARPOUT_STAGE2 2
+// through warp hole, waiting for it to disapper.
+#define PCM_WARPOUT_STAGE3 3
+// supernova. lock everything to where it is.
+#define PCM_SUPERNOVA 4
 
 // number of times dude can fail a mission in a session before
 // having the opportunity to skip it
@@ -309,11 +321,12 @@ void player_display_packlock_view();
 void player_get_eye(vector *eye_pos, matrix *eye_orient);
 
 //===================== PLAYER WARPOUT STUFF ==================
-#define TARGET_WARPOUT_SPEED 40.0f // speed you need to be going to warpout
-#define TARGET_WARPOUT_MATCH_PERCENT                                             \
-    0.05f // how close to TARGET_WARPOUT_SPEED you need to be
-#define MINIMUM_PLAYER_WARPOUT_TIME                                              \
-    3.0f // How long before you can press 'ESC' to abort warpout
+// speed you need to be going to warpout
+#define TARGET_WARPOUT_SPEED 40.0f
+// how close to TARGET_WARPOUT_SPEED you need to be
+#define TARGET_WARPOUT_MATCH_PERCENT 0.05f
+// How long before you can press 'ESC' to abort warpout
+#define MINIMUM_PLAYER_WARPOUT_TIME 3.0f
 
 extern float Warpout_time; // Declared in Freespace.cpp
 extern int

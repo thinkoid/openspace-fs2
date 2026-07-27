@@ -87,7 +87,8 @@ static MENU_REGION Briefing_select_region[NUM_BREIFING_REGIONS];
 static int Num_briefing_regions;
 
 // For closeup display
-#define ONE_REV_TIME 6 // time (sec) for one revolution
+// time (sec) for one revolution
+#define ONE_REV_TIME 6
 #define MAX_ANG_CHG 0.15f
 
 static int Closeup_coords[GR_NUM_RESOLUTIONS][4] = {

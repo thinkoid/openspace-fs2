@@ -42,22 +42,26 @@ int Show_shield_mesh = 0;
 
 // One unit in 3d means this in the shield hit texture map.
 //#define   SHIELD_HIT_SCALE  0.075f         // Scale decreased by MK on 12/18/97, made about 1/4x as large. Note, larger constant means smaller effect
-#define SHIELD_HIT_SCALE                                                         \
-    0.15f //   Doubled on 12/23/97 by MK.  Was overflowing.  See todo item #924.
+// Doubled on 12/23/97 by MK.  Was overflowing.  See todo item #924.
+#define SHIELD_HIT_SCALE 0.15f
 //#define   MAX_SHIELD_HITS   20
-#define MAX_TRIS_PER_HIT 40 //   Number of triangles per shield hit, maximum.
-#define MAX_SHIELD_HITS 20 // Maximum number of active shield hits.
+// Number of triangles per shield hit, maximum.
+#define MAX_TRIS_PER_HIT 40
+// Maximum number of active shield hits.
+#define MAX_SHIELD_HITS 20
 #define MAX_SHIELD_TRI_BUFFER                                                    \
     (MAX_SHIELD_HITS *                                                           \
      20) // Persistent buffer of triangle comprising all active shield hits.
-#define SHIELD_HIT_DURATION                                                      \
-    (3 * F1_0 / 4) //   Duration, in milliseconds, of shield hit effect
+// Duration, in milliseconds, of shield hit effect
+#define SHIELD_HIT_DURATION (3 * F1_0 / 4)
 
-#define SH_UNUSED -1 // Indicates an unused record in Shield_hits
-#define SH_TYPE_1 1 //  Indicates Shield_hits record is of type 1.
+// Indicates an unused record in Shield_hits
+#define SH_UNUSED -1
+// Indicates Shield_hits record is of type 1.
+#define SH_TYPE_1 1
 
-#define UV_MAX                                                                   \
-    (63.95f / 64.0f) // max allowed value until tmapper bugs fixed, 1/24/97
+// max allowed value until tmapper bugs fixed, 1/24/97
+#define UV_MAX (63.95f / 64.0f)
 
 float Shield_scale = SHIELD_HIT_SCALE;
 

@@ -53,7 +53,8 @@ int Neb2_bitmap_count = 0;
 char Neb2_texture_name[MAX_FILENAME_LEN] = "";
 
 // nebula flags
-#define NF_USED (1 << 0) // if this nebula slot is used
+// if this nebula slot is used
+#define NF_USED (1 << 0)
 
 float max_rotation = 3.75f;
 float neb2_flash_fade = 0.3f;

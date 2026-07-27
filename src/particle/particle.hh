@@ -27,16 +27,20 @@ void particle_kill_all();
 //=============== LOW-LEVEL SINGLE PARTICLE CREATION CODE ====================
 
 // The different types of particles...
-#define PARTICLE_DEBUG 0 // A red sphere, no optional data required
-#define PARTICLE_BITMAP                                                          \
-    1 // A bitmap, optional data is the bitmap number.  If bitmap is an animation,
-        // lifetime is calculated by the number of frames and fps.
-#define PARTICLE_FIRE 2 // The vclip used for explosions, optional means nothing
-#define PARTICLE_SMOKE 3 // The vclip used for smoke, optional means nothing
-#define PARTICLE_SMOKE2 4 // The vclip used for smoke, optional means nothing
-#define PARTICLE_BITMAP_PERSISTENT                                               \
-    5 // A bitmap, optional data is the bitmap number.  If bitmap is an animation,
-        // lifetime is calculated by the number of frames and fps.
+// A red sphere, no optional data required
+#define PARTICLE_DEBUG 0
+// A bitmap, optional data is the bitmap number.  If bitmap is an animation,
+// lifetime is calculated by the number of frames and fps.
+#define PARTICLE_BITMAP 1
+// The vclip used for explosions, optional means nothing
+#define PARTICLE_FIRE 2
+// The vclip used for smoke, optional means nothing
+#define PARTICLE_SMOKE 3
+// The vclip used for smoke, optional means nothing
+#define PARTICLE_SMOKE2 4
+// A bitmap, optional data is the bitmap number.  If bitmap is an animation,
+// lifetime is calculated by the number of frames and fps.
+#define PARTICLE_BITMAP_PERSISTENT 5
 
 // particle creation stuff
 typedef struct particle_info

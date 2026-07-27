@@ -31,13 +31,13 @@ extern jmp_buf parse_abort;
 #define F_DATE 2
 #define F_NOTES 3
 #define F_FILESPEC 4
-#define F_MULTITEXTOLD                                                           \
-    5 // needed for backwards compatability with old briefing format
+// needed for backwards compatability with old briefing format
+#define F_MULTITEXTOLD 5
 #define F_SEXP 6
 #define F_PATHNAME 7
 #define F_SHIPCHOICE 8
-#define F_MESSAGE                                                                \
-    9 // this is now obsolete for mission messages - all messages in missions should now use $MessageNew and stuff strings as F_MULTITEXT
+// this is now obsolete for mission messages - all messages in missions should now use $MessageNew and stuff strings as F_MULTITEXT
+#define F_MESSAGE 9
 #define F_MULTITEXT 10
 
 #define PATHNAME_LENGTH 192
@@ -51,11 +51,13 @@ extern jmp_buf parse_abort;
 #define FILESPEC_LENGTH 64
 #define MESSAGE_LENGTH 512
 
-#define SHIP_TYPE                                                                \
-    0 // used to identify which kind of array to do a search for a name in
+// used to identify which kind of array to do a search for a name in
+#define SHIP_TYPE 0
 #define SHIP_INFO_TYPE 1
-#define WEAPON_LIST_TYPE 2 // to parse an int_list of weapons
-#define RAW_INTEGER_TYPE 3 // to parse a list of integers
+// to parse an int_list of weapons
+#define WEAPON_LIST_TYPE 2
+// to parse a list of integers
+#define RAW_INTEGER_TYPE 3
 #define WEAPON_POOL_TYPE 4
 
 #define SEXP_SAVE_MODE 1

@@ -14,18 +14,20 @@
 #include <cfile/cfile.hh>
 
 // these values correspond to the fireball.tbl entries
-#define FIREBALL_EXPLOSION_MEDIUM                                                \
-    0 // Used for the 4 little explosions before a ship explodes
-#define FIREBALL_WARP_EFFECT 1 // Used for the warp in / warp out effect
-#define FIREBALL_KNOSSOS_EFFECT                                                  \
-    2 // Used for the KNOSSOS warp in / warp out effect
+// Used for the 4 little explosions before a ship explodes
+#define FIREBALL_EXPLOSION_MEDIUM 0
+// Used for the warp in / warp out effect
+#define FIREBALL_WARP_EFFECT 1
+// Used for the KNOSSOS warp in / warp out effect
+#define FIREBALL_KNOSSOS_EFFECT 2
 #define FIREBALL_ASTEROID 3
-#define FIREBALL_EXPLOSION_LARGE1                                                \
-    4 // Used for the big explosion when a ship breaks into pieces
-#define FIREBALL_EXPLOSION_LARGE2                                                \
-    5 // Used for the big explosion when a ship breaks into pieces
+// Used for the big explosion when a ship breaks into pieces
+#define FIREBALL_EXPLOSION_LARGE1 4
+// Used for the big explosion when a ship breaks into pieces
+#define FIREBALL_EXPLOSION_LARGE2 5
 // #define FIREBALL_EXPLOSION_LARGE3   6           // Used for the big explosion when a ship breaks into pieces
-#define MAX_FIREBALL_TYPES 6 // How many types there are
+// How many types there are
+#define MAX_FIREBALL_TYPES 6
 
 #define FIREBALL_NUM_LARGE_EXPLOSIONS 2
 

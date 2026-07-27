@@ -15,11 +15,13 @@
 #ifdef FS2_DEMO
 #define MAX_BITMAPS 3500
 #else
-#define MAX_BITMAPS 3500 // How many bitmaps the game can handle
+// How many bitmaps the game can handle
+#define MAX_BITMAPS 3500
 #endif
 
 // 16 bit pixel formats
-#define BM_PIXEL_FORMAT_ARGB 0 // 1555 LFB writes
+// 1555 LFB writes
+#define BM_PIXEL_FORMAT_ARGB 0
 
 // 16 bit pixel formats
 extern int Bm_pixel_format;

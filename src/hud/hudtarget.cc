@@ -92,14 +92,15 @@ int Wenergy_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
                                               { // GR_1024
                                                 666, 424, 86, 96 } };
 
-#define MIN_DISTANCE_TO_CONSIDER_THREAT                                          \
-    1500 // min distance to show hostile warning triangle
+// min distance to show hostile warning triangle
+#define MIN_DISTANCE_TO_CONSIDER_THREAT 1500
 
 //////////////////////////////////////////////////////////////////////////
 // lists for target in reticle cycling
 //////////////////////////////////////////////////////////////////////////
 #define RL_USED (1 << 0)
-#define RL_USE_DOT (1 << 1) // use dot product result, not distance
+// use dot product result, not distance
+#define RL_USE_DOT (1 << 1)
 
 typedef struct _reticle_list
 {
@@ -330,7 +331,8 @@ char *Weapon_gauge_fnames[GR_NUM_RESOLUTIONS][NUM_WEAPON_GAUGES] = {
 
 // Flash the line for a weapon.  This normally occurs when the player tries to fire that
 // weapon, but the firing fails (due to lack of energy or damaged weapons subsystem).
-#define MAX_WEAPON_FLASH_LINES 7 // 3 primary and 4 secondary
+// 3 primary and 4 secondary
+#define MAX_WEAPON_FLASH_LINES 7
 typedef struct weapon_flash
 {
     int flash_duration[MAX_WEAPON_FLASH_LINES];
@@ -2429,7 +2431,8 @@ hud_target_in_reticle_new()
 // IMPORTANT:  The MIN_DOT_FOR_TARGET value was arrived at by trial and error and
 //             is only valid for the HUD reticle in use at that time.
 
-#define MIN_DOT_FOR_TARGET 0.9726 // fov for targeting in reticle
+// fov for targeting in reticle
+#define MIN_DOT_FOR_TARGET 0.9726
 
 void
 hud_target_in_reticle_old()

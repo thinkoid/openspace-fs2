@@ -14,9 +14,12 @@
 #include <graphics/tmapper.hh>
 
 //flags for point structure
-#define PF_PROJECTED 1 //has been projected, so sx,sy valid
-#define PF_OVERFLOW 2 //can't project
-#define PF_TEMP_POINT 4 //created during clip
+// has been projected, so sx,sy valid
+#define PF_PROJECTED 1
+// can't project
+#define PF_OVERFLOW 2
+// created during clip
+#define PF_TEMP_POINT 4
 
 //clipping codes flags
 #define CC_OFF_LEFT 1
