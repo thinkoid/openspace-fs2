@@ -1985,7 +1985,7 @@ game_show_time_left()
     gr_printf(5, 40, XSTR("Mission time remaining: %d seconds", 179), diff);
 }
 
-//=================== NEW DEBUG CONSOLE COMMANDS TO REPLACE OLD DEBUG PAUSE MENU =========
+// New debug console commands to replace old debug pause menu
 
 #ifndef NDEBUG
 
@@ -2941,7 +2941,7 @@ game_render_frame(vector *eye_pos, matrix *eye_orient)
     snd_spew_debug_info();
 #endif
 
-    //================ END OF 3D RENDERING STUFF ====================
+    // End of 3D rendering stuff
 
     hud_show_radar();
 

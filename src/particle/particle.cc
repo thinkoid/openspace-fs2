@@ -581,7 +581,7 @@ particle_render_all()
     //   mprintf(( "NP=%d, NCP=%d\n", n, nclipped ));
 }
 
-//============== HIGH-LEVEL PARTICLE SYSTEM CREATION CODE ====================
+// High-level particle system creation code
 
 // Use a structure rather than pass a ton of parameters to particle_emit
 /*

@@ -784,7 +784,7 @@ typedef struct mc_info
     // flags can be changed for the case of sphere check finds an edge hit
 } mc_info;
 
-//======== MODEL_COLLIDE ============
+// model_collide
 
 // Model Collision flags, used in model_collide()
 // Check the polygons in the model.
@@ -865,7 +865,7 @@ int model_collide(mc_info *mc_info);
 // If it is false it shows only undamaged submodels.
 void model_show_damaged(int model_num, int show_damaged);
 
-//=========================== MODEL OCTANT STUFF ================================
+// Model octant stuff
 
 //  Models are now divided into 8 octants.    Sheilds too.
 //  This made the collision code faster.   Shield is 4x and ship faces

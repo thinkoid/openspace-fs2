@@ -130,7 +130,7 @@ game_busy()
     }
 }
 
-//======================== CODE TO MONITOR EVENTS ======================
+// Code to monitor events
 
 #ifndef NDEBUG
 

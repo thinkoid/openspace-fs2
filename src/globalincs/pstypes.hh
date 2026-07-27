@@ -309,7 +309,7 @@ extern int Fred_running; // Is Fred running, or FreeSpace?
 extern int Pofview_running;
 extern int Nebedit_running;
 
-//======          D E B U G    C O N S O L E   S T U F F        ========================
+// Debug console stuff
 
 // Here is a a sample command to toggle something that would
 // be called by doing "toggle it" from the debug console command window/

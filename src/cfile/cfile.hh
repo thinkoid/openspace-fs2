@@ -105,7 +105,7 @@ extern int (*Get_file_list_filter)(char *filename);
 #define CFILE_ROOT_DIRECTORY_LEN 256
 extern char Cfile_root_dir[CFILE_ROOT_DIRECTORY_LEN];
 
-//================= LOW-LEVEL FUNCTIONS ==================
+// Low-level functions
 // Call this once at the beginning of the program
 int cfile_init(char *exe_dir, char *cdrom_dir = NULL);
 
@@ -211,7 +211,7 @@ unsigned long cf_add_chksum_long(unsigned long seed, char *buffer, int size);
 
 // convenient for misc checksumming purposes ------------------------------------------
 
-//================= HIGH LEVEL FUNCTIONS ==================
+// High-level functions
 int
 cfexist(char *filename); // Returns true if file exists on disk (1) or in hog (2).
 

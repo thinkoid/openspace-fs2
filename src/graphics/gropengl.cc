@@ -1159,7 +1159,7 @@ gr_opengl_scaler(vertex *va, vertex *vb)
     float xmin, xmax, ymin, ymax;
     int dx0, dy0, dx1, dy1;
 
-    //============= CLIP IT =====================
+    // Clip it
 
     x0 = va->sx;
     y0 = va->sy;
@@ -1228,7 +1228,7 @@ gr_opengl_scaler(vertex *va, vertex *vb)
     if (dy1 <= dy0)
         return;
 
-    //============= DRAW IT =====================
+    // Draw it
 
     vertex v[4];
     vertex *vl[4];

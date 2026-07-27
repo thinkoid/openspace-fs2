@@ -43,7 +43,7 @@ typedef struct tmap_scan_desc
 // Convert from a 0-255 byte to a 0-1.0 float.
 float Light_table[256];
 
-//====================== 8-BPP SCANLINES ========================
+// 8-bpp scanlines
 tmap_scan_desc tmap_scanlines8[] = {
     { 0, tmapscan_flat8 },
     { TMAP_FLAG_TEXTURED, tmapscan_lnn8 },

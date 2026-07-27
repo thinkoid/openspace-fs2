@@ -669,7 +669,7 @@ parse_aitbl()
 
 LOCAL int ai_inited = 0;
 
-//========================= BOOK-KEEPING FUNCTIONS =======================
+// Book-keeping functions
 
 // Called once at game start-up
 void

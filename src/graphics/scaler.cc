@@ -154,7 +154,7 @@ void test_code1()
 //
 // Created code that looked like:
 
-//=============== Pentium ======================
+// Pentium
 // mov eax, 0
 //     mov ah, [esi+????]   ; get the foreground pixel
 //     ; the following lines might be repeated
@@ -163,7 +163,7 @@ void test_code1()
 //     mov [edi+????], bl   ; write it
 //     ...
 
-//============= Pentium Pro code =============
+// Pentium Pro code
 //     xor eax, eax        ; avoid ppro partial register stall
 //     mov ah, [esi+????]   ; get the foreground pixel
 //     ; the following lines might be repeated
@@ -276,7 +276,7 @@ gr8_scaler(vertex *va, vertex *vb)
 
     MONITOR_INC(ScalerNumCalls, 1);
 
-    //============= CLIP IT =====================
+    // Clip it
 
     x0 = va->sx;
     y0 = va->sy;
@@ -345,7 +345,7 @@ gr8_scaler(vertex *va, vertex *vb)
     if (dy1 <= dy0)
         return;
 
-    //============= DRAW IT =====================
+    // Draw it
     int u, v, du, dv;
     int y, w;
     ubyte *sbits, *dbits;
@@ -580,7 +580,7 @@ gr8_aascaler(vertex *va, vertex *vb)
         aiee = 1;
     }
 
-    //============= CLIP IT =====================
+    // Clip it
 
     x0 = va->sx;
     y0 = va->sy;
@@ -649,7 +649,7 @@ gr8_aascaler(vertex *va, vertex *vb)
     if (dy1 <= dy0)
         return;
 
-    //============= DRAW IT =====================
+    // Draw it
     int u, v, du, dv;
     int y, w;
     ubyte *sbits, *dbits;

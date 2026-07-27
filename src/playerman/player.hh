@@ -320,7 +320,7 @@ void player_display_packlock_view();
 // get the player's eye position and orient
 void player_get_eye(vector *eye_pos, matrix *eye_orient);
 
-//===================== PLAYER WARPOUT STUFF ==================
+// Player warpout stuff
 // speed you need to be going to warpout
 #define TARGET_WARPOUT_SPEED 40.0f
 // how close to TARGET_WARPOUT_SPEED you need to be

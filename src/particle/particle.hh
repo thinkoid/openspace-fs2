@@ -10,7 +10,7 @@
 #ifndef _PARTICLE_H
 #define _PARTICLE_H
 
-//==================== PARTICLE SYSTEM GAME SEQUENCING CODE ==================
+// Particle system game sequencing code
 
 // Resets particle system.  Call between levels.
 void particle_init();
@@ -24,7 +24,7 @@ void particle_render_all();
 // kill all active particles
 void particle_kill_all();
 
-//=============== LOW-LEVEL SINGLE PARTICLE CREATION CODE ====================
+// Low-level single particle creation code
 
 // The different types of particles...
 // A red sphere, no optional data required
@@ -65,7 +65,7 @@ void particle_create(particle_info *pinfo);
 void particle_create(vector *pos, vector *vel, float lifetime, float rad,
                      int type, uint optional_data = 0);
 
-//============== HIGH-LEVEL PARTICLE SYSTEM CREATION CODE ====================
+// High-level particle system creation code
 
 // Use a structure rather than pass a ton of parameters to particle_emit
 typedef struct particle_emitter
