@@ -329,13 +329,6 @@ gr_init(int res, int mode, int depth, int fred_x, int fred_y)
         default:
             Int3();
         }
-
-        // Explicit framebuffer size (-res WxH); res stays what it always
-        // really was -- the selector for which authored UI canvas to draw.
-        if (Cmdline_res_w > 0) {
-            max_w = Cmdline_res_w;
-            max_h = Cmdline_res_h;
-        }
     }
     else {
         max_w = fred_x;
@@ -357,6 +350,27 @@ gr_init(int res, int mode, int depth, int fred_x, int fred_y)
     gr_screen.res = res;
     gr_screen.max_w = max_w;
     gr_screen.max_h = max_h;
+
+    // -res WxH asks for a bigger window; the engine keeps rendering the
+    // authored canvas and presentation magnifies by an integer factor
+    // (software: pixel blocks at present; GL: the viewport transform, which
+    // re-rasterizes the 3-D world at the real size for free).  Non-integer
+    // or aspect-changing requests fall back to the canvas size.
+    gr_screen.window_scale = 1;
+    if (Cmdline_res_w > 0 && !Fred_running && !Pofview_running) {
+        int s = Cmdline_res_w / max_w;
+        if (s >= 1 && Cmdline_res_w == max_w * s && Cmdline_res_h == max_h * s) {
+            gr_screen.window_scale = s;
+        }
+        else {
+            mprintf(("-res %dx%d is not an integer multiple of the %dx%d "
+                     "canvas, ignored\n",
+                     Cmdline_res_w, Cmdline_res_h, max_w, max_h));
+        }
+    }
+    gr_screen.window_w = max_w * gr_screen.window_scale;
+    gr_screen.window_h = max_h * gr_screen.window_scale;
+
     gr_screen.aspect = 1.0f; // Normal PC screen
     gr_screen.offset_x = 0;
     gr_screen.offset_y = 0;

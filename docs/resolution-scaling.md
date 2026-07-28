@@ -227,3 +227,27 @@ real work, and §4 argues it is much smaller for retail than the
 `reference/2023` fork's per-call system because retail's UI is single-canvas.
 Blueprint anchors are git-ref form against `reference/2023` — read with `git
 show`. Gated on nothing; pick up when a larger resolution is wanted.*
+
+---
+
+## 6. What landed (2026-07-28) — presentation scaling, the stage the doc didn't have
+
+Implemented: `-res WxH` (integer multiples of the canvas only) presents the
+authored 1024×768 canvas in a magnified window. Software: the present loop
+writes each canvas pixel as an s×s block (`grx_sdl_present`). OpenGL: the
+window and `glViewport` take the real size while the ortho/projection stay
+canvas — GL re-rasterizes, so the 3-D world gains true edge/texture fidelity
+at the real resolution for free; only UI art is sampled up. Mouse divides by
+the factor on input (`osapi.cc`), warps multiply (`mouse.cc`); GL scissor
+scales; GL region reads decimate back to canvas pixels.
+
+Verified by differential oracle: software canvas frame dumps under
+`-res 2048x1536` are **byte-identical** to a plain 1024 run.
+
+Why stages 1–2 of §5 were deferred, discovered the hard way: `max_w/max_h`
+is not the only dual-space state — `clip_*` is read in canvas terms by UI
+code and real terms by g3, and the software backend would need magnifying
+blitters for every glyph/bitmap/aabitmap (the 8bpp path has no sampler).
+That is SCP's whole per-call-resize disease. The native-canvas-scale design
+in §4 remains the blueprint, but it is an OpenGL-era project; presentation
+scaling unblocks playtesting at full size today with zero content risk.

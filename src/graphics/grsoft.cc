@@ -305,13 +305,30 @@ grx_sdl_present()
         SDL_LockSurface(ws);
 
     Assert(ws->format->BytesPerPixel == 4);
-    int w = min(Soft_buffer_w, ws->w);
-    int h = min(Soft_buffer_h, ws->h);
+    int s = max(gr_screen.window_scale, 1);
+    int w = min(Soft_buffer_w, ws->w / s);
+    int h = min(Soft_buffer_h, ws->h / s);
     for (int y = 0; y < h; y++) {
         ubyte *src = Soft_buffer + y * Soft_buffer_w;
-        uint *dst = (uint *)((ubyte *)ws->pixels + y * ws->pitch);
-        for (int x = 0; x < w; x++) {
-            dst[x] = Soft_lut[src[x]];
+        uint *dst = (uint *)((ubyte *)ws->pixels + y * s * ws->pitch);
+
+        if (s == 1) {
+            for (int x = 0; x < w; x++) {
+                dst[x] = Soft_lut[src[x]];
+            }
+        }
+        else {
+            // magnify each canvas pixel into an s x s block: expand one row,
+            // then replicate it downward
+            for (int x = 0; x < w; x++) {
+                uint c = Soft_lut[src[x]];
+                for (int i = 0; i < s; i++) {
+                    dst[x * s + i] = c;
+                }
+            }
+            for (int i = 1; i < s; i++) {
+                memcpy((ubyte *)dst + i * ws->pitch, dst, w * s * sizeof(uint));
+            }
         }
     }
 
@@ -828,7 +845,7 @@ gr_soft_init()
     // the rasterizer is resolution-parametric — FRED ran it at window
     // size — so both retail resolutions are allowed through
 
-    os_create_window(gr_screen.max_w, gr_screen.max_h);
+    os_create_window(gr_screen.window_w, gr_screen.window_h);
 
     Palette_flashed = 0;
     Palette_flashed_last_frame = 0;

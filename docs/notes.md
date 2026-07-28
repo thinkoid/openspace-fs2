@@ -666,3 +666,18 @@ sentinel pun is formally UB (no T object at the head's address), defined
 in practice by the ABI and pinned by static_asserts — container_of
 territory, documented as such. Boost.Intrusive recorded in the itch entry
 as the escalation path if call sites ever modernize wholesale.
+
+## Resolution: presentation scaling landed — the game presents at 2048x1536 (2026-07-28)
+
+`-res WxH` (integer canvas multiples): engine renders the authored 1024
+canvas unchanged; software present magnifies s×s per pixel, GL magnifies via
+viewport (and re-rasterizes the 3-D world at real resolution — free fidelity
+there). Mouse ÷s in, ×s on warp; GL scissor ×s, region reads decimated.
+PROVEN presentation-only: canvas frame dumps byte-identical with and without
+-res. The doc's native canvas-scale plan (resolution-scaling.md §4-5) was
+started (stage-1 framebuffer commit caf4ef7d5, reverted into window
+semantics) and deliberately deferred after survey found clip_* dual-space
+reads + the need for 8bpp magnifying blitters — SCP's per-call disease;
+recorded in the doc §6. GL-native is the follow-up era. Campaign playtest
+now unblocked at playable window size: `./fs2 -window -res 2048x1536` (and
+`-opengl` variant needs a real-display check).

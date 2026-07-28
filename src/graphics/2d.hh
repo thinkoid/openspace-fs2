@@ -98,6 +98,8 @@ typedef struct screen
 {
     uint signature; // changes when mode or palette or width or height changes
     int max_w, max_h; // Width and height
+    int window_w, window_h; // presented window size = canvas * window_scale
+    int window_scale; // integer canvas->window magnification (-res WxH)
     int res; // GR_640 or GR_1024
     int mode; // What mode gr_init was called with.
     float aspect; // Aspect ratio

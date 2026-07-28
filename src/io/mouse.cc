@@ -298,7 +298,9 @@ mouse_force_pos(int x, int y)
         SDL_Window *win = os_get_sdl_window();
 
         if (win) {
-            SDL_WarpMouseInWindow(win, x, y);
+            // x,y are canvas coordinates; the window may be magnified
+            int s = max(gr_screen.window_scale, 1);
+            SDL_WarpMouseInWindow(win, x * s, y * s);
         }
 
         Mouse_x = x;

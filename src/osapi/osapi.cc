@@ -215,9 +215,11 @@ os_poll()
             }
         } break;
 
-        case SDL_MOUSEMOTION:
-            mouse_mark_motion(e.motion.x, e.motion.y);
-            break;
+        case SDL_MOUSEMOTION: {
+            // window coordinates -> authored-canvas coordinates
+            int s = max(gr_screen.window_scale, 1);
+            mouse_mark_motion(e.motion.x / s, e.motion.y / s);
+        } break;
 
         case SDL_WINDOWEVENT:
             switch (e.window.event) {
