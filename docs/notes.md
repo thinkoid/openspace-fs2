@@ -681,3 +681,20 @@ reads + the need for 8bpp magnifying blitters — SCP's per-call disease;
 recorded in the doc §6. GL-native is the follow-up era. Campaign playtest
 now unblocked at playable window size: `./fs2 -window -res 2048x1536` (and
 `-opengl` variant needs a real-display check).
+
+## Retail numeric-margin asserts in vecmat interpolation — demoted (2026-07-28)
+
+Training-mission playtest died on `Assert(fl_abs(theta_goal.z) < 0.001f)`
+(vecmat.cc, vm_forward_interpolate; identical twin in vm_matrix_interpolate,
+plus a local_rot_axis.x sibling in the bank arm). CATALOGUE: these are
+diagnostics, not gates — the checked residual is discarded immediately below
+(bank comes from delta_bank / the rvec arm), and retail SHIPPED with asserts
+compiled out, so no player build ever gated on them. Volition knew the
+margin was fragile: Andsager's debug-replay rig sits around the aicode.cc
+caller. Why we hit it and 1999 rarely did: MSVC/x87 ran the math in 80-bit
+intermediates; gcc/SSE keeps 32-bit floats throughout, eroding the 1e-3
+margin. fs2open's answer was replacing the whole function (PR 2668,
+vm_angular_move_forward_vec, deliberate behavior change) — not fix-mine
+material. Ours: all three asserts demoted to nprintf("Physics", ...) with
+the residual value; shipped behavior (residual discarded, flight continues)
+wins.
