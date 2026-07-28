@@ -24,25 +24,31 @@ int Cmdline_mouse_coords = 0;
 
 int Cmdline_window = 0;
 int Cmdline_opengl = 0;
+int Cmdline_res_w = 0; // framebuffer size override; 0 = retail size
+int Cmdline_res_h = 0;
 
 // the command line options: one row per flag, help text alongside.
 // getopt_long_only accepts both -name and --name spellings.
 struct cmdline_opt
 {
     const char *name;
-    int *flag; // set to 1 when the option is seen
+    int *flag; // set to 1 when the option is seen (flag options only)
+    char arg; // getopt val for argument-taking options; 0 for plain flags
     const char *help;
 };
 
 static cmdline_opt Cmdline_opts[] = {
-    { "nosound", &Cmdline_freespace_no_sound, "run without sound" },
-    { "nomusic", &Cmdline_freespace_no_music, "run without music" },
-    { "pofspew", &Cmdline_spew_pof_info,
+    { "nosound", &Cmdline_freespace_no_sound, 0, "run without sound" },
+    { "nomusic", &Cmdline_freespace_no_music, 0, "run without music" },
+    { "pofspew", &Cmdline_spew_pof_info, 0,
       "dump info on all POF models, then exit" },
-    { "coords", &Cmdline_mouse_coords, "print mouse coordinates on click" },
-    { "window", &Cmdline_window, "run in a window instead of fullscreen" },
-    { "opengl", &Cmdline_opengl, "use the OpenGL renderer (default: software)" },
-    { "help", NULL, "show this help and exit" },
+    { "coords", &Cmdline_mouse_coords, 0, "print mouse coordinates on click" },
+    { "window", &Cmdline_window, 0, "run in a window instead of fullscreen" },
+    { "opengl", &Cmdline_opengl, 0,
+      "use the OpenGL renderer (default: software)" },
+    { "res", NULL, 'r',
+      "framebuffer size WxH (default 1024x768), e.g. -res 2048x1536" },
+    { "help", NULL, 0, "show this help and exit" },
 };
 
 #define NUM_CMDLINE_OPTS (int)(sizeof(Cmdline_opts) / sizeof(Cmdline_opts[0]))
@@ -52,7 +58,10 @@ print_help()
 {
     printf("usage: fs2 [options]\n\noptions:\n");
     for (int i = 0; i < NUM_CMDLINE_OPTS; i++) {
-        printf("  -%-11s %s\n", Cmdline_opts[i].name, Cmdline_opts[i].help);
+        char name[32];
+        snprintf(name, sizeof(name), "%s%s", Cmdline_opts[i].name,
+                 Cmdline_opts[i].arg ? " WxH" : "");
+        printf("  -%-11s %s\n", name, Cmdline_opts[i].help);
     }
 }
 
@@ -98,10 +107,14 @@ parse_cmdline(int argc, char **argv)
     struct option longopts[NUM_CMDLINE_OPTS + 1];
     for (int i = 0; i < NUM_CMDLINE_OPTS; i++) {
         longopts[i].name = Cmdline_opts[i].name;
-        longopts[i].has_arg = no_argument;
+        longopts[i].has_arg = Cmdline_opts[i].arg ? required_argument
+                                                  : no_argument;
         longopts[i].flag = Cmdline_opts[i].flag;
-        longopts[i].val = Cmdline_opts[i].flag ? 1
-                                               : 'h'; // help has no flag variable
+        longopts[i].val = Cmdline_opts[i].flag
+                              ? 1
+                              : (Cmdline_opts[i].arg
+                                     ? Cmdline_opts[i].arg
+                                     : 'h'); // help has no flag variable
     }
     memset(&longopts[NUM_CMDLINE_OPTS], 0, sizeof(struct option));
 
@@ -109,6 +122,14 @@ parse_cmdline(int argc, char **argv)
     while ((c = getopt_long_only(n, merged, "", longopts, NULL)) != -1) {
         switch (c) {
         case 0: // a table flag; getopt set the variable
+            break;
+        case 'r':
+            if (sscanf(optarg, "%dx%d", &Cmdline_res_w, &Cmdline_res_h) != 2 ||
+                Cmdline_res_w < 640 || Cmdline_res_h < 480) {
+                fprintf(stderr, "bad -res `%s' (want WxH, at least 640x480)\n",
+                        optarg);
+                exit(1);
+            }
             break;
         case 'h':
             print_help();

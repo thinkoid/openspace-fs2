@@ -29,5 +29,7 @@ extern int Cmdline_mouse_coords;
 
 extern int Cmdline_window;
 extern int Cmdline_opengl;
+extern int Cmdline_res_w; // framebuffer size override; 0 = retail size
+extern int Cmdline_res_h;
 
 #endif

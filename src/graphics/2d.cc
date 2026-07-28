@@ -12,6 +12,7 @@
 #endif
 
 #include <globalincs/pstypes.hh>
+#include <cmdline/cmdline.hh>
 #include <osapi/osapi.hh>
 #include <graphics/2d.hh>
 #include <render/3d.hh>
@@ -327,6 +328,13 @@ gr_init(int res, int mode, int depth, int fred_x, int fred_y)
 
         default:
             Int3();
+        }
+
+        // Explicit framebuffer size (-res WxH); res stays what it always
+        // really was -- the selector for which authored UI canvas to draw.
+        if (Cmdline_res_w > 0) {
+            max_w = Cmdline_res_w;
+            max_h = Cmdline_res_h;
         }
     }
     else {
