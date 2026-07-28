@@ -649,3 +649,20 @@ subsys/target advance helpers, and muzzleflash.cc's pooled-list machinery
 revealed as Volition-commented dead code (left verbatim). Verified: full
 build warning-set identical to pre-surgery, math + pof-oracle tests green.
 Campaign playtest pending.
+
+## linklist follow-up: the fat sentinel was load-bearing once (2026-07-28)
+
+Auditing the new header's safety comment ("only links are ever touched
+through a sentinel pointer") against the tree found one retail violation:
+aicode.cc shockwave avoidance read `homing_object->type` with a NULL guard
+but no guard against the "not homing on anything" token (weapons.cc stores
+END_OF_LIST(&obj_used_list) at missile birth and on lost aspect lock). The
+fat sentinel's zero-initialized payload absorbed that read benignly for 28
+years; the thin sentinel made it out-of-bounds. One guard added at the
+site. Every other payload access through a possibly-sentinel pointer
+(weapon_home, hudtargetbox, swarm, missionbrief, missionhotkey) checks
+first — audited. Header comment rewritten to state the C++17 truth: the
+sentinel pun is formally UB (no T object at the head's address), defined
+in practice by the ABI and pinned by static_asserts — container_of
+territory, documented as such. Boost.Intrusive recorded in the itch entry
+as the escalation path if call sites ever modernize wholesale.

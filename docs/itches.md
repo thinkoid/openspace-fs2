@@ -29,6 +29,28 @@ Measured: `sizeof(ship)` 1744 → 1352 (`Ships[]` −78 KB); every head 16
 bytes. Build warning-set identical to pre-surgery; math + POF oracle green.
 Campaign playtest pending.
 
+**Post-landing audit (same day).** Auditing the header's "only links are
+ever touched through a sentinel pointer" claim found retail violating it
+once: aicode.cc's shockwave-avoidance read `homing_object->type` guarded
+against NULL but not against the stored "not homing on anything" token —
+for 28 years the fat sentinel's dead payload absorbed that read
+(zero-initialized `type` = benign skip); the thin sentinel turned it into
+an out-of-bounds read. Guarded now; the fat sentinel was load-bearing at
+exactly one address in the engine. Also recorded in the header comment:
+the pun is formally UB under the C++17 object model (no `T` lives at the
+head's address; `std::launder` cannot help) — it is ABI-defined and
+static_assert-pinned, the `container_of` category, not a conformance
+claim.
+
+**Escalation path, if call sites ever modernize wholesale:**
+`boost::intrusive::list` (base hooks). Its iterator `end()` is not a
+storable `T*`, so the sentinel-as-value idiom becomes inexpressible —
+which would have flushed the aicode bug at compile time — and it is fully
+conforming (it does Variant B). Not adopted now because its API costs the
+~620-site rewrite this replay was designed to avoid, for a container with
+no remaining maintenance of its own. Half-adopting (our API over their
+engine) would combine the costs; go all the way or not at all.
+
 ### The entry as written (design record)
 
 **The itch.** `globalincs/linklist.hh` is a circular doubly-linked list with

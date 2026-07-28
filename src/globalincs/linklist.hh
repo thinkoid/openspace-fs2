@@ -22,12 +22,18 @@
 // needs only the element.
 //
 // The links are typed T*, so the sentinel wears a T* uniform (sentinel()).
-// The cast is safe because the links sit at offset 0 of head and node alike
-// (list_links_t is the first base, nothing virtual), and only next/prev are
-// ever touched through a sentinel pointer -- never node payload.  Walking
-// past END_OF_LIST() therefore runs off a 16-byte object, which a sanitizer
-// can catch; the old fat sentinel (a full node as head) made that bug
-// silently readable.
+// By the C++17 paper that is undefined -- no T object lives at the head's
+// address, and std::launder cannot conjure one -- but every ABI we compile
+// for defines it: the links sit at offset 0 of head and node alike
+// (list_links_t is the first base, nothing virtual; the static_asserts in
+// sentinel() pin both), and the accessed member type is T* through every
+// path, so strict aliasing has nothing to bite.  The enforced convention:
+// only next/prev are ever touched through a sentinel pointer, never node
+// payload.  Retail broke that convention once, reading ->type through the
+// stored "not homing on anything" token (guarded now, see aicode.cc) --
+// the old fat sentinel's dead payload had been absorbing the read.
+// Walking past END_OF_LIST() runs off a 16-byte object, which a sanitizer
+// can catch; the fat sentinel made that bug silently readable.
 
 // Deliberately trivial (no constructors, no member initializers): the
 // engine memsets nodes and the structs that embed heads, then list_init()s

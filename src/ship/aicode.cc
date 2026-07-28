@@ -14135,7 +14135,11 @@ aas_1(object *objp, ai_info *aip, vector *safe_pos)
         //  time in the future, this time based on max lifetime and life left.
         if (wip->wi_flags & WIF_HOMING_ASPECT) {
             expected_pos = weaponp->homing_pos;
+            // homing_object may hold the "not homing on anything" token
+            // (weapons.cc stores END_OF_LIST(&obj_used_list)), which carries
+            // no payload -- the fat sentinel used to absorb this read
             if (weaponp->homing_object &&
+                weaponp->homing_object != END_OF_LIST(&obj_used_list) &&
                 weaponp->homing_object->type == OBJ_SHIP) {
                 target_ship_obj = weaponp->homing_object;
             }

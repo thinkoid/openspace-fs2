@@ -1,0 +1,29 @@
+-*- mode: compilation -*-
+
+linklist.hh assessment — 2026-07-28
+
+Overall: the intrusive circular doubly-linked ring is an appropriate design for
+FS2's fixed pools.  A sentinel ring makes insertion/removal branch-free and
+removal head-independent; intrusive links avoid allocation.  The thin head also
+removed substantial fake payload (documented ship shrink: 1744 -> 1352 bytes)
+and the template API caught real retail macro misuse.  This is not suspect merely
+because it differs from std::list; std::list also uses a links-only sentinel ring.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/globalincs/linklist.hh:24: error: The claim that offset-zero layout makes sentinel()'s reinterpret_cast<T *> safe is false under the C++17 object model.  A list_t<T> object is present at the head; no T object exists there.  On an empty insertion/append, head->next->prev or head->prev->next accesses list_t<T> storage through a glvalue rooted in the unrelated T type.  Common-address layout and identical initial fields do not begin T's lifetime or permit that alias.  This is undefined behavior, not merely a documented or confined implementation detail, and an optimizer may exploit the non-aliasing of T and list_t<T>.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/globalincs/linklist.hh:46: note: Rejecting polymorphic T catches one way links can move away from offset zero, but it does not establish the legality of treating a list_t<T> object as T.  The sizeof and offsetof assertions validate observed representation only; representation equality is not object identity or alias permission.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/globalincs/linklist.hh:55: warning: offsetof(T, next) is only conditionally supported when T is not standard-layout.  The usual node shape here inherits data-bearing list_links_t<T> and adds payload, so many instantiations are non-standard-layout in C++17.  Suppressing GCC's diagnostic records compiler acceptance, not a portable language guarantee.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/globalincs/linklist.hh:77: error: This is a concrete UB execution point for insertion into an empty list: head->next is the fabricated T* sentinel, and ->prev accesses a T that does not exist.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/globalincs/linklist.hh:99: error: This is the corresponding concrete UB execution point for append into an empty list.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/docs/itches.md:67: note: The already-recorded Variant B is the sound repair direction: store links-space pointers in the ring, keep the sentinel and traversal comparisons in links space, and convert only genuine node links back to T.  That preserves the thin sentinel and visible mechanism without impersonating a T.  It costs call-site/accessor churn, so it is surgery and should get its own groom/verification sequence.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/globalincs/linklist.hh:103: warning: Mutators have no local contract checks.  list_remove(nullptr), removing an unlinked/already-removed node, double insertion, or reinitializing a nonempty head corrupts or crashes by design.  That may be acceptable for this 1998 fixed-pool engine, but focused tests should pin the intended primitive sequences: empty, singleton, front/back insertion, middle insertion, removal from each position, and remove-while-iterating.  Existing math and POF integration tests are not a direct linklist oracle.
+
+Conclusion: keep the sentinel-ring architecture and the typed function-template
+surface.  Do not accept the current T* disguise as standards-correct C++17.
+Fixing it is warranted before trusting aggressive optimization/LTO or calling the
+portability work complete; Variant B is preferable to restoring fat sentinels.
