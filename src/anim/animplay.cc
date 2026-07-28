@@ -32,12 +32,11 @@ int Anim_inited = FALSE;
 
 fix t1, t2;
 
-int Anim_ignore_frametime =
-    0; // flag used to ignore frametime... useful when need to avoid saturated frametimes
+int Anim_ignore_frametime = 0; // flag used to ignore frametime... useful when need
+                               // to avoid saturated frametimes
 
-// -------------------------------------------------------------------------------------------------
-// anim_init() will queue all the anim_render_instance[] elements onto the anim_free_list
-//
+// anim_init() will queue all the anim_render_instance[] elements onto the
+// anim_free_list
 void
 anim_init()
 {
@@ -58,7 +57,6 @@ anim_init()
     Anim_inited = TRUE;
 }
 
-// -------------------------------------------------------------------------------------------------
 // anim_render_all() will display the frames for the currently playing anims
 //
 void
@@ -84,10 +82,8 @@ anim_render_all(int screen_id, float frametime)
     }
 }
 
-// -------------------------------------------------------------------------------------------------
-// anim_render_one() will display the frames for the passed animation, it will ignore animations which
-// do not have the same id as the passed screen_id
-//
+// anim_render_one() will display the frames for the passed animation, it will
+// ignore animations which do not have the same id as the passed screen_id
 void
 anim_render_one(int screen_id, anim_instance *ani, float frametime)
 {
@@ -109,9 +105,8 @@ anim_render_one(int screen_id, anim_instance *ani, float frametime)
 
 MONITOR(NumANIPlayed);
 
-// Setup an anim_play_struct for passing into anim_play().  Will fill in default values, which you
-// can then change before calling anim_play().
-//
+// Setup an anim_play_struct for passing into anim_play().  Will fill in default
+// values, which you can then change before calling anim_play().
 void
 anim_play_init(anim_play_struct *aps, anim *a_info, int x, int y)
 {
@@ -130,9 +125,8 @@ anim_play_init(anim_play_struct *aps, anim *a_info, int x, int y)
     aps->ping_pong = 0;
 }
 
-// -------------------------------------------------------------------------------------------------
-// anim_play() will add an anim instance to the anim_render_list.  This will cause the
-// anim to be played at the x,y position specified in the parameter list.
+// anim_play() will add an anim instance to the anim_render_list.  This will cause
+// the anim to be played at the x,y position specified in the parameter list.
 //
 // input:
 //
@@ -223,9 +217,9 @@ anim_play(anim_play_struct *aps)
         instance->xlate_pal = 0;
     }
 
-    // determining the start_at frame is more complicated, since it must be a key-frame.
-    // Futhermore, need to subtract 1 from key-frame number, since frame number is always
-    // incremented the first time anim_show_next_frame() is called
+    // determining the start_at frame is more complicated, since it must be a
+    // key-frame. Futhermore, need to subtract 1 from key-frame number, since frame
+    // number is always incremented the first time anim_show_next_frame() is called
 
     instance->start_at = aps->start_at;
 
@@ -275,7 +269,6 @@ anim_play(anim_play_struct *aps)
     return instance;
 }
 
-// -----------------------------------------------------------------------------
 // anim_show_next_frame()
 //
 // This function is called to blit the next frame of an anim instance to the
@@ -580,12 +573,12 @@ anim_show_next_frame(anim_instance *instance, float frametime)
     t2 = timer_get_fixed_seconds();
     render_time = f2fl(t2 - t1);
 
-    //   nprintf(("Alan","DECOMPRESS: %.3fms  RENDER: %.3fms\n", decompress_time*1000, render_time*1000));
+    //   nprintf(("Alan","DECOMPRESS: %.3fms  RENDER: %.3fms\n",
+    //   decompress_time*1000, render_time*1000));
 
     return 0;
 }
 
-// -----------------------------------------------------------------------------
 // anim_stop_playing()
 //
 // Stop an anim instance that is on the anim_render_list from playing
@@ -601,7 +594,6 @@ anim_stop_playing(anim_instance *instance)
     return 0;
 }
 
-// -----------------------------------------------------------------------------
 // anim_release_render_instance()
 //
 // Free a particular animation instance that is on the anim_render_list.  Do
@@ -630,7 +622,6 @@ anim_release_render_instance(anim_instance *instance)
     list_append(&anim_free_list, instance);
 }
 
-// -----------------------------------------------------------------------------
 // anim_release_all_instances()
 //
 // Free all anim instances that are on the anim_render_list.
@@ -659,7 +650,6 @@ anim_release_all_instances(int screen_id)
     }
 }
 
-// -----------------------------------------------------------------------------
 // anim_read_header()
 //
 // Read the header of a .ani file.  Below is the format of a .ani header
@@ -753,7 +743,6 @@ anim_read_header(anim *ptr, CFILE *fp)
     }
 }
 
-// -----------------------------------------------------------------------------
 // anim_load()
 //
 // Load an animation.  This stores the compressed data, which instances
@@ -903,7 +892,6 @@ anim_load(char *real_filename, int file_mapped)
     return ptr;
 }
 
-// ---------------------------------------------------
 // anim_free()
 //
 // Free an animation that was loaded with anim_load().  All instances
@@ -955,7 +943,6 @@ anim_free(anim *ptr)
     return 0;
 }
 
-// ---------------------------------------------------------------------
 // anim_playing()
 //
 // Return if an anim is playing or not.
@@ -970,7 +957,6 @@ anim_playing(anim_instance *ai)
         return 1;
 }
 
-// ---------------------------------------------------------------------
 // anim_level_init()
 //
 // Called at the beginning of a mission to initialize any mission dependent
@@ -980,7 +966,6 @@ void
 anim_level_init()
 { }
 
-// ---------------------------------------------------------------------
 // anim_level_close()
 //
 // Called after the end of a mission to clean up any mission dependent
@@ -992,7 +977,6 @@ anim_level_close()
     anim_release_all_instances();
 }
 
-// ---------------------------------------------------
 // anim_write_frames_out()
 //
 // Write the frames of a .ani file out to disk as .pcx files.
@@ -1042,7 +1026,6 @@ anim_write_frames_out(char *filename)
     return 0;
 }
 
-// ---------------------------------------------------
 // anim_display_info()
 //
 // Display information and statistics about a .ani file.
@@ -1126,7 +1109,8 @@ anim_reverse_direction(anim_instance *ai)
     int temp;
 
     if (!(ai->parent->flags & ANF_ALL_KEYFRAMES)) {
-        // you're not allowed to call anim_reverse_direction(...) unless every frame is a keyframe!!!!
+        // you're not allowed to call anim_reverse_direction(...) unless every frame
+        // is a keyframe!!!!
         // The God of Delta-RLE demands it be thus.
         Int3();
     }
