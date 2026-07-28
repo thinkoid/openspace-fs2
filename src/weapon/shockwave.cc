@@ -38,7 +38,7 @@ static char *Shockwave_filenames[MAX_SHOCKWAVE_TYPES] = {
 shockwave Shockwaves[MAX_SHOCKWAVES];
 shockwave_info Shockwave_info[MAX_SHOCKWAVE_TYPES];
 
-shockwave Shockwave_list;
+list_t< shockwave > Shockwave_list;
 int Shockwave_inited = 0;
 
 // -----------------------------------------------------------
@@ -159,7 +159,7 @@ shockwave_delete(object *objp)
 
     Shockwaves[objp->instance].flags = 0;
     Shockwaves[objp->instance].objnum = -1;
-    list_remove(&Shockwave_list, &Shockwaves[objp->instance]);
+    list_remove(&Shockwaves[objp->instance]);
 }
 
 // ------------------------------------------------------------------------------------
@@ -172,7 +172,7 @@ shockwave_delete_all()
     shockwave *sw, *next;
 
     sw = GET_FIRST(&Shockwave_list);
-    while (sw != &Shockwave_list) {
+    while (sw != END_OF_LIST(&Shockwave_list)) {
         next = sw->next;
         Assert(sw->objnum != -1);
         Objects[sw->objnum].flags |= OF_SHOULD_BE_DEAD;
@@ -422,7 +422,7 @@ shockwave_move_all(float frametime)
     shockwave *sw, *next;
 
     sw = GET_FIRST(&Shockwave_list);
-    while (sw != &Shockwave_list) {
+    while (sw != END_OF_LIST(&Shockwave_list)) {
         next = sw->next;
         Assert(sw->objnum != -1);
         shockwave_move(&Objects[sw->objnum], frametime);
@@ -440,7 +440,7 @@ shockwave_render_all()
     shockwave *sw, *next;
 
     sw = GET_FIRST(&Shockwave_list);
-    while (sw != &Shockwave_list) {
+    while (sw != END_OF_LIST(&Shockwave_list)) {
         next = sw->next;
         Assert(sw->objnum != -1);
         shockwave_render(&Objects[sw->objnum]);

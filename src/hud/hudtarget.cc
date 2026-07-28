@@ -66,7 +66,7 @@ float Max_front_seperation[GR_NUM_RESOLUTIONS] = { 10.0f, 16.0f };
 // This means the variables are not player-specific
 static int Target_in_reticle = 0;
 
-extern object obj_used_list; // dummy node in linked list of active objects
+extern list_t< object > obj_used_list; // linked list of active objects
 extern char *Cargo_names[];
 
 // shader is used to shade the target box
@@ -78,7 +78,7 @@ float Target_triangle_height[GR_NUM_RESOLUTIONS] = { 7.0f, 11.0f };
 
 // stuff for hotkey targeting lists
 htarget_list htarget_items[MAX_HOTKEY_TARGET_ITEMS];
-htarget_list htarget_free_list;
+list_t< htarget_list > htarget_free_list;
 
 // coordinates and widths used to render the HUD afterburner energy gauge
 int Aburn_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
@@ -102,9 +102,8 @@ int Wenergy_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
 // use dot product result, not distance
 #define RL_USE_DOT (1 << 1)
 
-typedef struct _reticle_list
+typedef struct _reticle_list : list_links_t< _reticle_list >
 {
-    _reticle_list *next, *prev;
     object *objp;
     float dist, dot;
     int flags;
@@ -112,8 +111,8 @@ typedef struct _reticle_list
 
 #define RESET_TARGET_IN_RETICLE 750
 int Reticle_save_timestamp;
-reticle_list Reticle_cur_list;
-reticle_list Reticle_save_list;
+list_t< reticle_list > Reticle_cur_list;
+list_t< reticle_list > Reticle_save_list;
 #define MAX_RETICLE_TARGETS 50
 reticle_list Reticle_list[MAX_RETICLE_TARGETS];
 
@@ -390,7 +389,7 @@ advance_subsys(ship_subsys *cur, int next_flag)
         return GET_NEXT(cur);
     }
     else {
-        return GET_LAST(cur);
+        return GET_PREV(cur);
     }
 }
 
@@ -420,7 +419,7 @@ hud_maybe_set_sorted_turret_subsys(ship *shipp)
 // -----------------------------------------------------------------------
 // clear out the linked list of targets in the reticle
 void
-hud_reticle_clear_list(reticle_list *rlist)
+hud_reticle_clear_list(list_t< reticle_list > *rlist)
 {
     reticle_list *cur;
     for (cur = GET_FIRST(rlist); cur != END_OF_LIST(rlist); cur = GET_NEXT(cur)) {
@@ -459,7 +458,7 @@ hud_check_reticle_list()
     while (rl != END_OF_LIST(&Reticle_cur_list)) {
         temp = GET_NEXT(rl);
         if (rl->objp->flags & OF_SHOULD_BE_DEAD) {
-            list_remove(&Reticle_cur_list, rl);
+            list_remove(rl);
             rl->flags = 0;
         }
         rl = temp;
@@ -625,11 +624,11 @@ hud_reticle_pick_target()
         reticle_list *rl, *next;
 
         rl = GET_FIRST(&Reticle_cur_list);
-        while (rl != &Reticle_cur_list) {
+        while (rl != END_OF_LIST(&Reticle_cur_list)) {
             next = rl->next;
             if ((rl->objp->type == OBJ_DEBRIS) ||
                 (rl->objp->type == OBJ_ASTEROID)) {
-                list_remove(&Reticle_cur_list, rl);
+                list_remove(rl);
                 rl->flags = 0;
             }
             rl = next;
@@ -689,7 +688,8 @@ hud_reticle_pick_target()
 void
 hud_target_hotkey_add_remove(int k, object *ctarget, int how_to_add)
 {
-    htarget_list *hitem, *plist;
+    htarget_list *hitem;
+    list_t< htarget_list > *plist;
 
     if (k < 0 || k > 7) {
         nprintf(("Warning",
@@ -738,7 +738,7 @@ hud_target_hotkey_add_remove(int k, object *ctarget, int how_to_add)
         nprintf(("network", "Hotkey: Adding %s\n",
                  Ships[ctarget->instance].ship_name));
         hitem = GET_FIRST(&htarget_free_list);
-        list_remove(&htarget_free_list, hitem);
+        list_remove(hitem);
         list_append(plist, hitem);
         hitem->objp = ctarget;
         hitem->how_added = how_to_add;
@@ -746,7 +746,7 @@ hud_target_hotkey_add_remove(int k, object *ctarget, int how_to_add)
     else {
         nprintf(("network", "Hotkey: Removing %s\n",
                  Ships[ctarget->instance].ship_name));
-        list_remove(plist, hitem);
+        list_remove(hitem);
         list_append(&htarget_free_list, hitem);
         hitem->objp = NULL; // for safety
     }
@@ -756,13 +756,14 @@ hud_target_hotkey_add_remove(int k, object *ctarget, int how_to_add)
 void
 hud_target_hotkey_clear(int k)
 {
-    htarget_list *hitem, *plist, *temp;
+    htarget_list *hitem, *temp;
+    list_t< htarget_list > *plist;
 
     plist = &(Players[Player_num].keyed_targets[k]);
     hitem = GET_FIRST(plist);
     while (hitem != END_OF_LIST(plist)) {
         temp = GET_NEXT(hitem);
-        list_remove(plist, hitem);
+        list_remove(hitem);
         list_append(&htarget_free_list, hitem);
         hitem->objp = NULL;
         hitem = temp;
@@ -779,7 +780,8 @@ void
 hud_target_hotkey_select(int k)
 {
     int visible_count = 0;
-    htarget_list *hitem, *plist, *target, *next_target, *first_target;
+    htarget_list *hitem, *target, *next_target, *first_target;
+    list_t< htarget_list > *plist;
     int target_objnum;
 
     plist = &(Players[Player_num].keyed_targets[k]);
@@ -1071,7 +1073,7 @@ hud_target_subobject_common(int next_flag)
     start2 = advance_subsys(start, next_flag);
 
     for (A = start2; A != start; A = advance_subsys(A, next_flag)) {
-        if (A == &target_shipp->subsys_list) {
+        if (A == END_OF_LIST(&target_shipp->subsys_list)) {
             continue;
         }
 
@@ -1102,7 +1104,7 @@ advance_fb(object *objp, int next_flag)
     if (next_flag)
         return GET_NEXT(objp);
     else
-        return GET_LAST(objp);
+        return GET_PREV(objp);
 }
 
 // Target the previous subobject on the currently selected ship.
@@ -1134,7 +1136,7 @@ hud_target_common(int team, int next_flag)
     int is_ship, target_found = FALSE;
 
     if (Player_ai->target_objnum == -1)
-        start = &obj_used_list;
+        start = END_OF_LIST(&obj_used_list);
     else
         start = &Objects[Player_ai->target_objnum];
 
@@ -1143,7 +1145,7 @@ hud_target_common(int team, int next_flag)
     for (A = start2; A != start; A = advance_fb(A, next_flag)) {
         is_ship = 0;
 
-        if (A == &obj_used_list) {
+        if (A == END_OF_LIST(&obj_used_list)) {
             continue;
         }
 
@@ -1229,7 +1231,7 @@ advance_missile_obj(missile_obj *mo, int next_flag)
         return GET_NEXT(mo);
     }
 
-    return GET_LAST(mo);
+    return GET_PREV(mo);
 }
 
 ship_obj *
@@ -1239,7 +1241,7 @@ advance_ship(ship_obj *so, int next_flag)
         return GET_NEXT(so);
     }
 
-    return GET_LAST(so);
+    return GET_PREV(so);
 }
 
 ship_obj *get_ship_obj_ptr_from_index(int index);
@@ -1268,7 +1270,7 @@ hud_target_missile(object *source_obj, int next_flag)
     Assert(Ships[source_obj->instance].ai_index != -1);
     aip = &Ai_info[Ships[source_obj->instance].ai_index];
 
-    end = &Missile_obj_list;
+    end = END_OF_LIST(&Missile_obj_list);
     if (aip->target_objnum != -1) {
         target_objp = &Objects[aip->target_objnum];
         if (target_objp->type == OBJ_WEAPON &&
@@ -1282,7 +1284,7 @@ hud_target_missile(object *source_obj, int next_flag)
     start = advance_missile_obj(end, next_flag);
 
     for (mo = start; mo != end; mo = advance_missile_obj(mo, next_flag)) {
-        if (mo == &Missile_obj_list) {
+        if (mo == END_OF_LIST(&Missile_obj_list)) {
             continue;
         }
 
@@ -1338,7 +1340,7 @@ hud_target_missile(object *source_obj, int next_flag)
             object *ship_obj = &Objects[so->objnum];
 
             // don't look at header
-            if (so == &Ship_obj_list) {
+            if (so == END_OF_LIST(&Ship_obj_list)) {
                 continue;
             }
 
@@ -1410,7 +1412,7 @@ hud_target_uninspected_cargo(int next_flag)
     int target_found = 0;
 
     if (Player_ai->target_objnum == -1) {
-        start = &obj_used_list;
+        start = END_OF_LIST(&obj_used_list);
     }
     else {
         start = &Objects[Player_ai->target_objnum];
@@ -1419,7 +1421,7 @@ hud_target_uninspected_cargo(int next_flag)
     start2 = advance_fb(start, next_flag);
 
     for (A = start2; A != start; A = advance_fb(A, next_flag)) {
-        if (A == &obj_used_list) {
+        if (A == END_OF_LIST(&obj_used_list)) {
             continue;
         }
 
@@ -1785,7 +1787,7 @@ hud_target_closest_locked_missile(object *locked_obj)
 
     nearest_dist = 10000.0f;
 
-    for (mo = GET_NEXT(&Missile_obj_list); mo != END_OF_LIST(&Missile_obj_list);
+    for (mo = GET_FIRST(&Missile_obj_list); mo != END_OF_LIST(&Missile_obj_list);
          mo = GET_NEXT(mo)) {
         Assert(mo->objnum >= 0 && mo->objnum < MAX_OBJECTS);
         A = &Objects[mo->objnum];
@@ -2089,7 +2091,7 @@ hud_target_closest(int team, int attacked_objnum, int play_fail_snd, int filter,
                    int get_closest_turret_attacking_player)
 {
     object *A;
-    object *nearest_obj = &obj_used_list;
+    object *nearest_obj = END_OF_LIST(&obj_used_list);
     ship *shipp;
     ship_obj *so;
     int check_nearest_turret = FALSE;
@@ -2987,7 +2989,7 @@ hud_show_homing_missiles()
     gr_set_color_fast(&HUD_color_homing_indicator);
     nearest_dist = Homing_beep.max_cycle_dist;
 
-    for (mo = GET_NEXT(&Missile_obj_list); mo != END_OF_LIST(&Missile_obj_list);
+    for (mo = GET_FIRST(&Missile_obj_list); mo != END_OF_LIST(&Missile_obj_list);
          mo = GET_NEXT(mo)) {
         A = &Objects[mo->objnum];
         Assert((A->instance >= 0) && (A->instance < MAX_WEAPONS));
@@ -3223,7 +3225,8 @@ void
 hud_prune_hotkeys()
 {
     int i;
-    htarget_list *hitem, *plist;
+    htarget_list *hitem;
+    list_t< htarget_list > *plist;
     object *objp;
     ship *sp;
 
@@ -3260,7 +3263,7 @@ hud_prune_hotkeys()
 
                 htarget_list *temp;
                 temp = GET_NEXT(hitem);
-                list_remove(plist, hitem);
+                list_remove(hitem);
                 list_append(&htarget_free_list, hitem);
                 hitem->objp = NULL;
                 hitem = temp;
@@ -3281,7 +3284,8 @@ int HUD_drew_selection_bracket_on_target;
 void
 hud_show_selection_set()
 {
-    htarget_list *hitem, *plist;
+    htarget_list *hitem;
+    list_t< htarget_list > *plist;
     object *targetp;
     int set, count;
     vertex target_point; // temp vertex used to find screen position for 3-D object;
@@ -3522,7 +3526,7 @@ hud_show_targeting_gauges(float frametime, int in_cockpit)
     Players[Player_num].lead_indicator_active = 0;
 
     // check to see if there is even a current target
-    if (targetp == &obj_used_list) {
+    if (targetp == END_OF_LIST(&obj_used_list)) {
         return;
     }
 
@@ -3653,8 +3657,8 @@ hud_show_hostile_triangle()
     object *A;
     float min_distance = 1e20f;
     float new_distance = 0.0f;
-    object *hostile_obj = &obj_used_list;
-    object *nearest_obj = &obj_used_list;
+    object *hostile_obj = END_OF_LIST(&obj_used_list);
+    object *nearest_obj = END_OF_LIST(&obj_used_list);
     ai_info *aip;
     ship_obj *so;
     ship *sp;
@@ -3742,7 +3746,7 @@ hud_show_hostile_triangle()
         }
     }
 
-    if (nearest_obj == &obj_used_list) {
+    if (nearest_obj == END_OF_LIST(&obj_used_list)) {
         return;
     }
 
@@ -4161,7 +4165,8 @@ hud_target_change_check()
         // if we have a hotkey set active, see if new target is in set.  If not in
         // set, deselect the current hotkey set.
         if (Player->current_hotkey_set != -1) {
-            htarget_list *hitem, *plist;
+            htarget_list *hitem;
+            list_t< htarget_list > *plist;
 
             plist = &(Player->keyed_targets[Player->current_hotkey_set]);
             for (hitem = GET_FIRST(plist); hitem != END_OF_LIST(plist);
@@ -5335,7 +5340,7 @@ int
 hud_target_closest_repair_ship(int goal_objnum)
 {
     object *A;
-    object *nearest_obj = &obj_used_list;
+    object *nearest_obj = END_OF_LIST(&obj_used_list);
     ship *shipp;
     ship_obj *so;
     float min_distance = 1e20f;
@@ -5378,7 +5383,7 @@ hud_target_closest_repair_ship(int goal_objnum)
         }
     }
 
-    if (nearest_obj != &obj_used_list) {
+    if (nearest_obj != END_OF_LIST(&obj_used_list)) {
         set_target_objnum(Player_ai, OBJ_INDEX(nearest_obj));
         hud_restore_subsystem_target(&Ships[nearest_obj->instance]);
         rval = 1;

@@ -4016,8 +4016,9 @@ modify_model_path_points(object *objp)
     path_num = pnp->path_num;
     Assert((path_num >= 0) && (path_num < pm->n_paths));
 
-    Assert(pnp->path_index !=
-           -1); //   If this is -1, that means we never found the model path points
+    Assert(
+        pnp->path_index !=
+        -1); //   If this is -1, that means we never found the model path points
 
     dir = 1;
     if (aip->ai_flags & AIF_USE_EXIT_PATH) {
@@ -5289,7 +5290,8 @@ evade_ship()
 
             psrandval = (float)(((Missiontime >> 14) & 0x0f) -
                                 8); // Value between -8 and 7
-            psrandval = psrandval / 16.0f; //   Value between -1/2 and 1/2 (approx)
+            psrandval = psrandval /
+                        16.0f; //   Value between -1/2 and 1/2 (approx)
 
             // If not close to behind, turn towards his right or left vector, whichever won't cross his path.
             if (vm_vec_dot(&vec_from_enemy, &En_objp->orient.rvec) > psrandval) {
@@ -5894,7 +5896,7 @@ compute_incoming_payload(object *target_objp)
     missile_obj *mo;
     float payload = 0.0f;
 
-    for (mo = GET_NEXT(&Missile_obj_list); mo != END_OF_LIST(&Missile_obj_list);
+    for (mo = GET_FIRST(&Missile_obj_list); mo != END_OF_LIST(&Missile_obj_list);
          mo = GET_NEXT(mo)) {
         object *objp;
 
@@ -8563,8 +8565,7 @@ ai_chase()
                 aip->submode_start_time = Missiontime;
                 break;
             case 1:
-                aip->submode_start_time =
-                    Missiontime; // Stay in super attack mode
+                aip->submode_start_time = Missiontime; // Stay in super attack mode
                 break;
             case 2:
             case 3:
@@ -9519,7 +9520,7 @@ ai_guard_find_nearby_bomb(object *guarding_objp, object *guarded_objp)
     weapon *wp;
     weapon_info *wip;
 
-    for (mo = GET_NEXT(&Missile_obj_list); mo != END_OF_LIST(&Missile_obj_list);
+    for (mo = GET_FIRST(&Missile_obj_list); mo != END_OF_LIST(&Missile_obj_list);
          mo = GET_NEXT(mo)) {
         Assert(mo->objnum >= 0 && mo->objnum < MAX_OBJECTS);
         bomb_objp = &Objects[mo->objnum];
@@ -11162,7 +11163,7 @@ aifft_find_turret_subsys(object *objp, ship_subsys *ssp, object *enemy_objp,
         }
     }
 
-    Assert(best_subsysp != &eshipp->subsys_list);
+    Assert(best_subsysp != END_OF_LIST(&eshipp->subsys_list));
 
     *dot_out = best_dot;
     return best_subsysp;
@@ -13988,7 +13989,7 @@ ai_find_shockwave_weapon(object *objp, ai_info *aip)
     float nearest_dist = 999999.9f;
     int nearest_index = -1;
 
-    for (mo = GET_NEXT(&Missile_obj_list); mo != END_OF_LIST(&Missile_obj_list);
+    for (mo = GET_FIRST(&Missile_obj_list); mo != END_OF_LIST(&Missile_obj_list);
          mo = GET_NEXT(mo)) {
         object *A;
         weapon *wp;
@@ -14055,7 +14056,7 @@ ai_find_shockwave_ship(object *objp, ai_info *aip)
     float nearest_dist = 999999.9f;
     int nearest_index = -1;
 
-    for (so = GET_NEXT(&Ship_obj_list); so != END_OF_LIST(&Ship_obj_list);
+    for (so = GET_FIRST(&Ship_obj_list); so != END_OF_LIST(&Ship_obj_list);
          so = GET_NEXT(so)) {
         object *A;
         ship *shipp;

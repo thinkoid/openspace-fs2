@@ -21,8 +21,8 @@
 static color Color_xparent;
 
 anim *first_anim = NULL;
-anim_instance anim_free_list;
-anim_instance anim_render_list;
+list_t< anim_instance > anim_free_list;
+list_t< anim_instance > anim_render_list;
 
 #define MAX_ANIM_INSTANCES 25
 anim_instance anim_render_instance[MAX_ANIM_INSTANCES];
@@ -33,7 +33,7 @@ int Anim_inited = FALSE;
 fix t1, t2;
 
 int Anim_ignore_frametime = 0; // flag used to ignore frametime... useful when need
-                               // to avoid saturated frametimes
+// to avoid saturated frametimes
 
 // anim_init() will queue all the anim_render_instance[] elements onto the
 // anim_free_list
@@ -174,10 +174,11 @@ anim_play(anim_play_struct *aps)
 
     // Find next free anim instance slot on queue
     instance = GET_FIRST(&anim_free_list);
-    Assert(instance != &anim_free_list); // shouldn't have the dummy element
+    Assert(instance !=
+           END_OF_LIST(&anim_free_list)); // shouldn't have the dummy element
 
     // remove instance from the free list
-    list_remove(&anim_free_list, instance);
+    list_remove(instance);
 
     // insert instance onto the end of anim_render_list
     list_append(&anim_render_list, instance);
@@ -616,7 +617,7 @@ anim_release_render_instance(anim_instance *instance)
     }
 
     // remove instance from anim_render_list
-    list_remove(&anim_render_list, instance);
+    list_remove(instance);
 
     // insert instance into the anim_free_list
     list_append(&anim_free_list, instance);

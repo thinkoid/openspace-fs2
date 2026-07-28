@@ -633,3 +633,19 @@ parameter and the caller-less `list_merge`. Full design, cost census, and
 verification gate in the entry. Born of the 2026-07-28 linklist review, which
 otherwise *affirmed* the sentinel-ring design (std::list is the same ring
 with a thin sentinel).
+
+## linklist list_t<T> retrofit — LANDED (2026-07-28), 37 files
+
+The itch list's founding entry, scratched the day it was written (design
+record + outcome deltas in `docs/itches.md`). The fat sentinels are gone:
+heads are `list_t<T>` (16 bytes), nodes inherit `list_links_t<T>`, the
+macros are function templates with the same names and call shape,
+`list_remove` lost its dead head parameter (~40 sites), caller-less
+`list_merge` died. `sizeof(ship)` 1744 → 1352. Type checking flushed out
+retail quirks the preprocessor had been swallowing: 7× `GET_NEXT(&head)`
+meaning GET_FIRST, `&obj_used_list` stored as a "no homing object" sentinel
+value (now `END_OF_LIST(&obj_used_list)`), `GET_LAST`-on-element in the
+subsys/target advance helpers, and muzzleflash.cc's pooled-list machinery
+revealed as Volition-commented dead code (left verbatim). Verified: full
+build warning-set identical to pre-surgery, math + pof-oracle tests green.
+Campaign playtest pending.

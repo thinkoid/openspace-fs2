@@ -1,8 +1,8 @@
 /*
  * Copyright (C) Volition, Inc. 1999.  All rights reserved.
  *
- * All source code herein is the property of Volition, Inc. You may not sell 
- * or otherwise commercially exploit the source or things you created based on the 
+ * All source code herein is the property of Volition, Inc. You may not sell
+ * or otherwise commercially exploit the source or things you created based on the
  * source.
  *
 */
@@ -10,64 +10,154 @@
 #ifndef _LINKLIST_H
 #define _LINKLIST_H
 
-// Initializes a list of zero elements
-#define list_init(head)                                                          \
-    do {                                                                         \
-        (head)->next = (head);                                                   \
-        (head)->prev = (head);                                                   \
-    } while (0)
+#include <cstddef>
+#include <type_traits>
+
+// Intrusive circular doubly-linked list with a thin sentinel.
+//
+// Nodes carry their own links by inheriting list_links_t<T>; a head is a
+// list_t<T> -- the two links and nothing else.  The ring runs through the
+// sentinel: head->next is the first node, head->prev the last, and empty is
+// the sentinel self-looped.  Every mutator is branch-free, and removal
+// needs only the element.
+//
+// The links are typed T*, so the sentinel wears a T* uniform (sentinel()).
+// The cast is safe because the links sit at offset 0 of head and node alike
+// (list_links_t is the first base, nothing virtual), and only next/prev are
+// ever touched through a sentinel pointer -- never node payload.  Walking
+// past END_OF_LIST() therefore runs off a 16-byte object, which a sanitizer
+// can catch; the old fat sentinel (a full node as head) made that bug
+// silently readable.
+
+// Deliberately trivial (no constructors, no member initializers): the
+// engine memsets nodes and the structs that embed heads, then list_init()s
+// every head before use -- retail's contract, kept.  A head is not valid
+// until list_init() runs.
+template< class T >
+struct list_links_t
+{
+    T *next;
+    T *prev;
+};
+
+template< class T >
+struct list_t : list_links_t< T >
+{
+    static_assert(!std::is_polymorphic_v< T >,
+                  "a vtable would displace the links from offset 0");
+
+    T *sentinel()
+    {
+        static_assert(sizeof(list_t) == 2 * sizeof(void *),
+                      "the sentinel is the links and nothing else");
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+        static_assert(offsetof(T, next) == 0,
+                      "list_links_t must be the first base, ahead of everything");
+#pragma GCC diagnostic pop
+        return reinterpret_cast< T * >(this);
+    }
+};
+
+// Reinitializes a list to zero elements
+template< class T >
+inline void
+list_init(list_t< T > *head)
+{
+    head->next = head->prev = head->sentinel();
+}
 
 // Inserts element onto the front of the list
-#define list_insert(head, elem)                                                  \
-    do {                                                                         \
-        (elem)->next = (head)->next;                                             \
-        (head)->next->prev = (elem);                                             \
-        (head)->next = (elem);                                                   \
-        (elem)->prev = (head);                                                   \
-    } while (0)
+template< class T >
+inline void
+list_insert(list_t< T > *head, T *elem)
+{
+    elem->next = head->next;
+    elem->prev = head->sentinel();
+    head->next->prev = elem;
+    head->next = elem;
+}
 
 // Inserts new_elem before elem
-#define list_insert_before(elem, new_elem)                                       \
-    do {                                                                         \
-        (elem)->prev->next = (new_elem);                                         \
-        (new_elem)->prev = (elem)->prev;                                         \
-        (elem)->prev = (new_elem);                                               \
-        (new_elem)->next = (elem);                                               \
-    } while (0)
+template< class T >
+inline void
+list_insert_before(T *elem, T *new_elem)
+{
+    new_elem->prev = elem->prev;
+    new_elem->next = elem;
+    elem->prev->next = new_elem;
+    elem->prev = new_elem;
+}
 
 // Appends an element on to the tail of the list
-#define list_append(head, elem)                                                  \
-    do {                                                                         \
-        (elem)->prev = (head)->prev;                                             \
-        (elem)->next = (head);                                                   \
-        (head)->prev->next = (elem);                                             \
-        (head)->prev = (elem);                                                   \
-    } while (0)
+template< class T >
+inline void
+list_append(list_t< T > *head, T *elem)
+{
+    elem->prev = head->prev;
+    elem->next = head->sentinel();
+    head->prev->next = elem;
+    head->prev = elem;
+}
 
-// Adds list b onto the end of list a
-#define list_merge(a, b)                                                         \
-    do {                                                                         \
-        (a)->prev->next = (b)->next;                                             \
-        (b)->next->prev = (a)->prev;                                             \
-        (a)->prev = (b)->prev;                                                   \
-        (b)->prev->next = (a);                                                   \
-    } while (0)
+// Removes an element from the list it's in
+template< class T >
+inline void
+list_remove(T *elem)
+{
+    elem->prev->next = elem->next;
+    elem->next->prev = elem->prev;
+    elem->next = nullptr;
+    elem->prev = nullptr;
+}
 
-// Removes an element from listit's in
-#define list_remove(head, elem)                                                  \
-    do {                                                                         \
-        (elem)->prev->next = (elem)->next;                                       \
-        (elem)->next->prev = (elem)->prev;                                       \
-        (elem)->next = NULL;                                                     \
-        (elem)->prev = NULL;                                                     \
-    } while (0)
+template< class T >
+inline T *
+GET_FIRST(list_t< T > *head)
+{
+    return head->next;
+}
 
-#define GET_FIRST(head) ((head)->next)
-#define GET_LAST(head) ((head)->prev)
-#define GET_NEXT(elem) ((elem)->next)
-#define GET_PREV(elem) ((elem)->prev)
-#define END_OF_LIST(head) (head)
-#define NOT_EMPTY(head) ((head)->next != (head))
-#define EMPTY(head) ((head)->next == (head))
+template< class T >
+inline T *
+GET_LAST(list_t< T > *head)
+{
+    return head->prev;
+}
+
+template< class T >
+inline T *
+GET_NEXT(T *elem)
+{
+    return elem->next;
+}
+
+template< class T >
+inline T *
+GET_PREV(T *elem)
+{
+    return elem->prev;
+}
+
+template< class T >
+inline T *
+END_OF_LIST(list_t< T > *head)
+{
+    return head->sentinel();
+}
+
+template< class T >
+inline bool
+NOT_EMPTY(list_t< T > *head)
+{
+    return head->next != head->sentinel();
+}
+
+template< class T >
+inline bool
+EMPTY(list_t< T > *head)
+{
+    return head->next == head->sentinel();
+}
 
 #endif

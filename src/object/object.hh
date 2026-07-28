@@ -10,6 +10,7 @@
 #ifndef _OBJECT_H
 #define _OBJECT_H
 
+#include "globalincs/linklist.hh"
 #include <globalincs/pstypes.hh>
 #include <math/vecmat.hh>
 #include <physics/physics.hh>
@@ -187,9 +188,8 @@ extern char *Object_type_names[MAX_OBJECT_TYPES];
 // max # of object sounds per object
 #define MAX_OBJECT_SOUNDS 4
 
-typedef struct object
+typedef struct object : list_links_t< object >
 {
-    struct object *next, *prev; // for linked lists of objects
     int signature; // Every object ever has a unique signature...
     char type; // what type of object this is... robot, weapon, hostage, powerup, fireball
     int parent; // This object's parent.
@@ -236,9 +236,9 @@ extern int num_objects;
 extern object Objects[];
 extern int Highest_object_index; //highest objnum
 extern int Highest_ever_object_index;
-extern object obj_free_list;
-extern object obj_used_list;
-extern object obj_create_list;
+extern list_t< object > obj_free_list;
+extern list_t< object > obj_used_list;
+extern list_t< object > obj_create_list;
 
 extern int render_total;
 extern int render_order[MAX_OBJECTS];

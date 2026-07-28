@@ -187,14 +187,13 @@ int Wing_icon_coords[GR_NUM_RESOLUTIONS][MAX_WSS_SLOTS][2] = { { { 124, 345 },
 // Linked List of icons to show on ship selection list
 //////////////////////////////////////////////////////
 #define SS_ACTIVE_ITEM_USED (1 << 0)
-typedef struct ss_active_item
+typedef struct ss_active_item : list_links_t< ss_active_item >
 {
-    ss_active_item *prev, *next;
     int ship_class;
     int flags;
 } ss_active_item;
 
-static ss_active_item SS_active_head;
+static list_t< ss_active_item > SS_active_head;
 static ss_active_item SS_active_items[MAX_WSS_SLOTS];
 
 static int SS_active_list_start;
@@ -231,7 +230,7 @@ struct ss_buttons
     int hotspot;
     int scrollable;
     UI_BUTTON
-        button; // because we have a class inside this struct, we need the constructor below..
+    button; // because we have a class inside this struct, we need the constructor below..
 
     ss_buttons(char *name, int x1, int y1, int xt1, int yt1, int h, int s)
         : filename(name)
@@ -474,7 +473,7 @@ active_list_remove(int ship_class)
     while (sai != END_OF_LIST(&SS_active_head)) {
         temp = GET_NEXT(sai);
         if (sai->ship_class == ship_class) {
-            list_remove(&SS_active_head, sai);
+            list_remove(sai);
             sai->flags = 0;
         }
         sai = temp;
@@ -2060,7 +2059,7 @@ create_wings()
             case WING_SLOT_EMPTY:
                 // delete ship that is not going to be used by the wing
                 if (wb->is_late) {
-                    list_remove(&ship_arrival_list, &ship_arrivals[ws->sa_index]);
+                    list_remove(&ship_arrivals[ws->sa_index]);
                     wp->wave_count--;
                     Assert(wp->wave_count >= 0);
                 }

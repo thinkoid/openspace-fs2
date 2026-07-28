@@ -60,7 +60,7 @@ typedef struct ssm_firing_info
 } ssm_firing_info;
 
 // the strike itself
-typedef struct ssm_strike
+typedef struct ssm_strike : list_links_t< ssm_strike >
 {
     int fireballs[MAX_SSM_COUNT]; // warpin effect fireballs
     int done_flags[MAX_SSM_COUNT]; // when we've fired off the individual missiles
@@ -68,13 +68,12 @@ typedef struct ssm_strike
     // this is the info that controls how the strike behaves (just like for beam weapons)
     ssm_firing_info sinfo;
 
-    ssm_strike *next, *prev; // for list
 } ssm_strike;
 
 // list of active/free strikes
 ssm_strike Ssm_strikes[MAX_SSM_STRIKES];
-ssm_strike Ssm_free_list;
-ssm_strike Ssm_used_list;
+list_t< ssm_strike > Ssm_free_list;
+list_t< ssm_strike > Ssm_used_list;
 int Num_ssm_strikes = 0;
 
 // game init
@@ -188,10 +187,11 @@ ssm_create(vector *target, vector *start, int ssm_index)
 
     // Find next available trail
     ssm = GET_FIRST(&Ssm_free_list);
-    Assert(ssm != &Ssm_free_list); // shouldn't have the dummy element
+    Assert(ssm !=
+           END_OF_LIST(&Ssm_free_list)); // shouldn't have the dummy element
 
     // remove trailp from the free list
-    list_remove(&Ssm_free_list, ssm);
+    list_remove(ssm);
 
     // insert trailp onto the end of used list
     list_append(&Ssm_used_list, ssm);
@@ -229,7 +229,7 @@ void
 ssm_delete(ssm_strike *ssm)
 {
     // remove objp from the used list
-    list_remove(&Ssm_used_list, ssm);
+    list_remove(ssm);
 
     // add objp to the end of the free
     list_append(&Ssm_free_list, ssm);

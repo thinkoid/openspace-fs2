@@ -10,6 +10,7 @@
 #ifndef __SHOCKWAVE_H__
 #define __SHOCKWAVE_H__
 
+#include "globalincs/linklist.hh"
 #include <cfile/cfile.hh>
 #include <object/object.hh>
 
@@ -30,9 +31,8 @@ typedef struct shockwave_info
     int fps;
 } shockwave_info;
 
-typedef struct shockwave
+typedef struct shockwave : list_links_t< shockwave >
 {
-    shockwave *next, *prev;
     int flags;
     int objnum; // index into Objects[] for shockwave
     int num_objs_hit;

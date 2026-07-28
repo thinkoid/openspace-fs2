@@ -10,6 +10,7 @@
 #ifndef _SHIP_H
 #define _SHIP_H
 
+#include "globalincs/linklist.hh"
 #include <parse/parselo.hh> // for defintions of token lengths -- maybe move this elsewhere later
 #include <model/model.hh>
 #include <graphics/2d.hh> // for color def
@@ -146,10 +147,8 @@ typedef struct
 // structure definition for a linked list of subsystems for a ship.  Each subsystem has a pointer
 // to the static data for the subsystem.  The obj_subsystem data is defined and read in the model
 // code.  Other dynamic data (such as current_hits) should remain in this structure.
-typedef struct ship_subsys
+typedef struct ship_subsys : list_links_t< ship_subsys >
 {
-    struct ship_subsys *next,
-        *prev; // Index of next and previous objects in list.
     model_subsystem *
         system_info; // pointer to static data for this subsystem -- see model.h for definition
     float current_hits; // current number of hits this subsystem has left.
@@ -398,7 +397,7 @@ typedef struct ship
     // of a particular subsystem, like engines).  The subsys_info struct is information for particular
     // types of subsystems.  (i.e. the list might contain 3 engines.  There will be one subsys_info entry
     // describing the state of all engines combined) -- MWA 4/1/97
-    ship_subsys subsys_list; //  linked list of subsystems for this ship.
+    list_t< ship_subsys > subsys_list; //  linked list of subsystems for this ship.
     ship_subsys *last_targeted_subobject
         [MAX_PLAYERS]; // Last subobject that has been targeted.  NULL if none;(player specific)
     ship_subsys_info
@@ -772,12 +771,11 @@ extern ship Ships[MAX_SHIPS];
 extern ship *Player_ship;
 
 // Data structure to track the active missiles
-typedef struct ship_obj
+typedef struct ship_obj : list_links_t< ship_obj >
 {
-    ship_obj *next, *prev;
     int flags, objnum;
 } ship_obj;
-extern ship_obj Ship_obj_list;
+extern list_t< ship_obj > Ship_obj_list;
 
 typedef struct engine_wash_info
 {

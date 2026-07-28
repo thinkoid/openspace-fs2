@@ -69,7 +69,8 @@ weapon_info Weapon_info[MAX_WEAPON_TYPES];
 #define MAX_MISSILE_OBJS MAX_WEAPONS
 missile_obj
     Missile_objs[MAX_MISSILE_OBJS]; // array used to store missile object indexes
-missile_obj Missile_obj_list; // head of linked list of missile_obj structs
+list_t< missile_obj >
+    Missile_obj_list; // head of linked list of missile_obj structs
 
 // WEAPON EXPLOSION INFO
 #define MAX_weapon_expl_lod 4
@@ -254,7 +255,7 @@ void
 missle_obj_list_remove(int index)
 {
     Assert(index >= 0 && index < MAX_MISSILE_OBJS);
-    list_remove(&Missile_obj_list, &Missile_objs[index]);
+    list_remove(&Missile_objs[index]);
     Missile_objs[index].flags = 0;
 }
 
@@ -1424,7 +1425,7 @@ find_homing_object(object *weapon_objp, int num)
 
     best_dist = 99999.9f;
 
-    wp->homing_object = &obj_used_list;
+    wp->homing_object = END_OF_LIST(&obj_used_list);
 
     //   Scan all objects, find a weapon to home on.
     for (objp = GET_FIRST(&obj_used_list); objp != END_OF_LIST(&obj_used_list);
@@ -1613,7 +1614,7 @@ weapon_home(object *obj, int num, float frame_time)
     hobjp = Weapons[num].homing_object;
 
     //   If not 1/2 second gone by, don't home yet.
-    if ((hobjp == &obj_used_list) ||
+    if ((hobjp == END_OF_LIST(&obj_used_list)) ||
         (f2fl(Missiontime - wp->creation_time) < 0.25f)) {
         //  If this is a heat seeking homing missile and 1/2 second has elapsed since firing
         //  and we don't have a target (else we wouldn't be inside the IF), find a new target.
@@ -1649,7 +1650,7 @@ weapon_home(object *obj, int num, float frame_time)
     if (wip->wi_flags & WIF_HOMING_ASPECT) {
         if (wp->target_sig > 0) {
             if (wp->homing_object->signature != wp->target_sig) {
-                wp->homing_object = &obj_used_list;
+                wp->homing_object = END_OF_LIST(&obj_used_list);
                 return;
             }
         }
@@ -1705,7 +1706,7 @@ weapon_home(object *obj, int num, float frame_time)
 
     //   See if this weapon is the nearest homing object to the object it is homing on.
     //   If so, update some fields in the target object's ai_info.
-    if (hobjp != &obj_used_list) {
+    if (hobjp != END_OF_LIST(&obj_used_list)) {
         float dist;
 
         dist = vm_vec_dist_quick(&obj->pos, &hobjp->pos);
@@ -1724,7 +1725,7 @@ weapon_home(object *obj, int num, float frame_time)
     }
 
     //   If the object it is homing on is still valid, home some more!
-    if (hobjp != &obj_used_list) {
+    if (hobjp != END_OF_LIST(&obj_used_list)) {
         float old_dot, vel;
         vector vec_to_goal;
         vector target_pos; // position of what the homing missile is seeking
@@ -2237,7 +2238,7 @@ weapon_set_tracking_info(int weapon_objnum, int parent_objnum, int target_objnum
                     weapon_maybe_play_warning(wp);
                 }
                 else
-                    wp->homing_object = &obj_used_list;
+                    wp->homing_object = END_OF_LIST(&obj_used_list);
 
                 wp->homing_subsys = target_subsys;
             }
@@ -2338,7 +2339,8 @@ weapon_create(vector *pos, matrix *orient, int weapon_id, int parent_objnum,
     wp->lifeleft = wip->lifetime;
 
     wp->objnum = objnum;
-    wp->homing_object = &obj_used_list; //   Assume not homing on anything.
+    wp->homing_object = END_OF_LIST(
+        &obj_used_list); //   Assume not homing on anything.
     wp->homing_subsys = NULL;
     wp->creation_time = Missiontime;
     wp->group_id = group_id;

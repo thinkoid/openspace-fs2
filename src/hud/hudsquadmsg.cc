@@ -2334,7 +2334,8 @@ hud_squadmsg_shortcut(int command)
 int
 hud_squadmsg_hotkey_select(int k)
 {
-    htarget_list *hitem, *plist;
+    htarget_list *hitem;
+    list_t< htarget_list > *plist;
     int send_message;
     object *objp;
 

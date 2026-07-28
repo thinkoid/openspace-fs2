@@ -97,8 +97,8 @@ int Mission_alt_type_count = 0;
 // the ship arrival list will contain a list of ships that are yet to arrive.  This
 // list could also include ships that are part of wings!
 
-p_object ship_arrivals[MAX_SHIP_ARRIVALS],
-    ship_arrival_list; // for linked list of ships to arrive later
+p_object ship_arrivals[MAX_SHIP_ARRIVALS];
+list_t< p_object > ship_arrival_list; // for linked list of ships to arrive later
 int num_ship_arrivals;
 
 // list for arriving support ship
@@ -2196,8 +2196,7 @@ parse_wing_create_ships(wing *wingp, int num_to_create)
                 if (Game_mode & GM_NORMAL) {
                     if (wingp->num_waves ==
                         wingp->current_wave) { // only remove ship if one wave in wing
-                        list_remove(&ship_arrival_list,
-                                    objp); // remove objp from the list
+                        list_remove(objp); // remove objp from the list
                         if (objp->ai_goals != -1) {
                             free_sexp2(
                                 objp->ai_goals); // free up sexp nodes for reuse
@@ -3683,7 +3682,7 @@ mission_parse_do_initial_docks()
                 objnum = parse_create_object(pobjp);
                 Assert(objnum != -1);
 
-                list_remove(&ship_arrival_list, pobjp);
+                list_remove(pobjp);
 
                 // p1 is the parse object's docking point.
                 // p2 is the existing objects docking point.
@@ -4181,7 +4180,7 @@ mission_eval_arrivals()
 
             objnum = mission_did_ship_arrive(objp);
             if (objnum != -1) {
-                list_remove(&ship_arrival_list, objp);
+                list_remove(objp);
                 MONITOR_INC(NumShipArrivals, 1);
             }
         }

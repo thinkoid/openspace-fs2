@@ -65,7 +65,7 @@
 #define BF_SHRINK (1 << 1)
 
 // beam struct (the actual weapon/object)
-typedef struct beam
+typedef struct beam : list_links_t< beam >
 {
     // low-level data
     int objnum; // our own objnum
@@ -77,7 +77,6 @@ typedef struct beam
     ship_subsys *target_subsys; // targeted subsys
     int target_sig; // target sig
     ship_subsys *subsys; // subsys its being fired from
-    beam *next, *prev; // link list stuff
     vector targeting_laser_offset;
     int framecount; // how many frames the beam has been active
     int flags; // see BF_* defines
@@ -118,8 +117,8 @@ typedef struct beam
 } beam;
 
 beam Beams[MAX_BEAMS]; // all beams
-beam Beam_free_list; // free beams
-beam Beam_used_list; // used beams
+list_t< beam > Beam_free_list; // free beams
+list_t< beam > Beam_used_list; // used beams
 int Beam_count = 0; // how many beams are in use
 
 // octant indices. These are "good" pairs of octants to use for beam target
@@ -401,13 +400,14 @@ beam_fire(beam_fire_info *fire_info)
 
     // get a free beam
     new_item = GET_FIRST(&Beam_free_list);
-    Assert(new_item != &Beam_free_list); // shouldn't have the dummy element
-    if (new_item == &Beam_free_list) {
+    Assert(new_item !=
+           END_OF_LIST(&Beam_free_list)); // shouldn't have the dummy element
+    if (new_item == END_OF_LIST(&Beam_free_list)) {
         return -1;
     }
 
     // remove from the free list
-    list_remove(&Beam_free_list, new_item);
+    list_remove(new_item);
 
     // insert onto the end of used list
     list_append(&Beam_used_list, new_item);
@@ -549,10 +549,11 @@ beam_fire_targeting(beam_fire_info *fire_info)
 
     // get a free beam
     new_item = GET_FIRST(&Beam_free_list);
-    Assert(new_item != &Beam_free_list); // shouldn't have the dummy element
+    Assert(new_item !=
+           END_OF_LIST(&Beam_free_list)); // shouldn't have the dummy element
 
     // remove from the free list
-    list_remove(&Beam_free_list, new_item);
+    list_remove(new_item);
 
     // insert onto the end of used list
     list_append(&Beam_used_list, new_item);
@@ -1666,7 +1667,7 @@ void
 beam_delete(beam *b)
 {
     // remove from active list and put on free list
-    list_remove(&Beam_used_list, b);
+    list_remove(b);
     list_append(&Beam_free_list, b);
 
     // delete our associated object

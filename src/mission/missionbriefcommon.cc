@@ -204,9 +204,8 @@ static int Cam_target_reached;
 static int Cam_movement_done;
 
 // moving icons
-typedef struct icon_move_info
+typedef struct icon_move_info : list_links_t< icon_move_info >
 {
-    icon_move_info *next, *prev;
     int used;
     int id;
     vector start;
@@ -225,7 +224,7 @@ typedef struct icon_move_info
 
 #define MAX_MOVE_ICONS 10
 icon_move_info Icon_movers[MAX_MOVE_ICONS];
-icon_move_info Icon_move_list; // head of linked list
+list_t< icon_move_info > Icon_move_list; // head of linked list
 
 // fading out icons
 typedef struct fade_icon
@@ -877,7 +876,7 @@ brief_render_icon(int stage_num, int icon_num, float frametime, int selected,
 
     mi = GET_FIRST(&Icon_move_list);
     if (mi)
-        while (mi != &Icon_move_list) {
+        while (mi != END_OF_LIST(&Icon_move_list)) {
             next = mi->next;
             if ((mi->id != 0) && (mi->id == bi->id)) {
                 if (!mi->reached_dest) {

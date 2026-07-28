@@ -210,7 +210,7 @@ struct brief_buttons
     int hotspot;
     int repeat;
     UI_BUTTON
-        button; // because we have a class inside this struct, we need the constructor below..
+    button; // because we have a class inside this struct, we need the constructor below..
 
     brief_buttons(char *name, int x1, int y1, int xt1, int yt1, int h, int r = 0)
         : filename(name)
@@ -1206,7 +1206,7 @@ brief_get_closeup_ship_modelnum(brief_icon *ci)
     // find the model number for the ship to display
     for (objp = GET_FIRST(&obj_used_list); objp != END_OF_LIST(&obj_used_list);
          objp = GET_NEXT(objp)) {
-        if (objp == &obj_used_list || objp->type != OBJ_SHIP) {
+        if (objp == END_OF_LIST(&obj_used_list) || objp->type != OBJ_SHIP) {
             continue;
         }
 

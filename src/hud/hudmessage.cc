@@ -126,7 +126,7 @@ struct scrollback_buttons
     int xt, yt;
     int hotspot;
     UI_BUTTON
-        button; // because we have a class inside this struct, we need the constructor below..
+    button; // because we have a class inside this struct, we need the constructor below..
 
     scrollback_buttons(char *name, int x1, int y1, int x2, int y2, int h)
         : filename(name)
@@ -166,8 +166,8 @@ int HUD_msg_inited = FALSE;
 #define MAX_MSG_SCROLLBACK_LINES 100
 line_node Msg_scrollback_lines[MAX_MSG_SCROLLBACK_LINES];
 
-line_node Msg_scrollback_free_list;
-line_node Msg_scrollback_used_list;
+list_t< line_node > Msg_scrollback_free_list;
+list_t< line_node > Msg_scrollback_used_list;
 
 #define MAX_HUD_FT 1
 
@@ -696,12 +696,12 @@ hud_add_line_to_scrollback(char *text, int source, int t, int x, int y,
 
     if (EMPTY(&Msg_scrollback_free_list)) {
         new_line = GET_FIRST(&Msg_scrollback_used_list);
-        list_remove(&Msg_scrollback_used_list, new_line);
+        list_remove(new_line);
         free(new_line->text);
     }
     else {
         new_line = GET_FIRST(&Msg_scrollback_free_list);
-        list_remove(&Msg_scrollback_free_list, new_line);
+        list_remove(new_line);
     }
 
     new_line->x = x;

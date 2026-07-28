@@ -5,7 +5,31 @@ groom discipline feeds ("write it down instead of scratching it"). Each entry
 carries enough design to start cold. Chronological log stays in notes.md;
 this file is only the itches.
 
-## linklist: thin the sentinel — `links_t<T>` retrofit (2026-07-28)
+## linklist: thin the sentinel — `links_t<T>` retrofit (2026-07-28) — SCRATCHED same day
+
+**Outcome (2026-07-28, 37 files).** Landed as designed, with three deltas
+found during surgery:
+
+- The self-looping `list_t` constructor was dropped: retail memsets nodes
+  *and* the structs embedding heads (`Players`, `ship`), then `list_init`s
+  every head — a non-trivial type fights that idiom (`-Wclass-memaccess`
+  ×7). Both types are deliberately trivial; `list_init`-before-use stays
+  the contract, exactly retail's. The layout static_asserts live inside
+  `sentinel()`, so every node type is checked at instantiation.
+- Retail sloppinesses the macros tolerated, now caught by types: seven
+  `GET_NEXT(&head)` calls that meant `GET_FIRST` (aicode, hudtarget,
+  ship); `&obj_used_list` stored as a *value* meaning "no homing object"
+  (weapons/hudtarget, 11 assignments + ~20 comparisons — now spelled
+  `END_OF_LIST(&obj_used_list)`); and `advance_subsys`'s `GET_LAST` on an
+  element (= `GET_PREV`, four sites).
+- muzzleflash.cc's entire pooled-list implementation turned out to be
+  commented out by Volition — dead code left verbatim.
+
+Measured: `sizeof(ship)` 1744 → 1352 (`Ships[]` −78 KB); every head 16
+bytes. Build warning-set identical to pre-surgery; math + POF oracle green.
+Campaign playtest pending.
+
+### The entry as written (design record)
 
 **The itch.** `globalincs/linklist.hh` is a circular doubly-linked list with
 a *fat* sentinel: every list head is a full node struct whose payload is

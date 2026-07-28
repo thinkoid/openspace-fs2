@@ -32,7 +32,7 @@
 // limit the number of hull debris chunks that can exist.
 #define MAX_HULL_PIECES 10
 int Num_hull_pieces; // number of hull pieces in existance
-debris
+list_t< debris >
     Hull_debris_list; // head of linked list for hull debris chunks, for quick search
 
 debris Debris[MAX_DEBRIS_PIECES];
@@ -214,7 +214,7 @@ debris_clear_expired_flag(debris *db)
         db->flags &= ~DEBRIS_EXPIRE;
         if (db->is_hull) {
             Num_hull_pieces--;
-            list_remove(Hull_debris_list, db);
+            list_remove(db);
             Assert(Num_hull_pieces >= 0);
         }
     }

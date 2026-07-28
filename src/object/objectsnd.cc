@@ -18,9 +18,8 @@
 #include <render/3d.hh>
 
 // Persistant sounds for objects (pointer to obj_snd is in object struct)
-typedef struct _obj_snd
+typedef struct _obj_snd : list_links_t< _obj_snd >
 {
-    _obj_snd *next, *prev;
     int objnum; // object index of object that contains this sound
     int id; // Index into Snds[] array
     int instance; // handle of currently playing sound (a ds3d handle if USES_DS3D flag set)
@@ -44,7 +43,8 @@ static int Num_obj_sounds_playing;
 
 #define OBJSND_CHANGE_FREQUENCY_THRESHOLD 10
 
-static obj_snd obj_snd_list; // head of linked list of object sound structs
+static list_t< obj_snd >
+    obj_snd_list; // head of linked list of object sound structs
 static int Doppler_enabled = TRUE;
 
 #define MAX_OBJ_SNDS 256
@@ -786,7 +786,7 @@ obj_snd_delete(int objnum, int sndnum)
         obj_snd_stop(objp, -1);
 
         // remove objp from the obj_snd_list
-        list_remove(&obj_snd_list, osp);
+        list_remove(osp);
         osp->objnum = -1;
         osp->flags = 0;
         osp = NULL;

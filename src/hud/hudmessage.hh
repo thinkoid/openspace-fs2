@@ -10,6 +10,8 @@
 #ifndef _HUDMESSAGE_H
 #define _HUDMESSAGE_H
 
+#include "globalincs/linklist.hh"
+
 // maximum number of HUD messages that can be stored
 #define SCROLL_BUFFER_LINES 128
 // time in milliseconds between scrolling a message
@@ -43,10 +45,8 @@ typedef struct
     int x;
 } HUD_message_data;
 
-typedef struct line_node
+typedef struct line_node : list_links_t< line_node >
 {
-    line_node *next;
-    line_node *prev;
     int time; // timestamp when message was added
     int source; // who/what the source of the message was (for color coding)
     int x;
@@ -55,7 +55,7 @@ typedef struct line_node
     char *text;
 } line_node;
 
-extern line_node Msg_scrollback_used_list;
+extern list_t< line_node > Msg_scrollback_used_list;
 
 typedef struct Hud_display_info
 {

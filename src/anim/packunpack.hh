@@ -10,6 +10,7 @@
 #ifndef __PACKUNPACK_H__
 #define __PACKUNPACK_H__
 
+#include "globalincs/linklist.hh"
 #include <globalincs/pstypes.hh>
 
 struct CFILE;
@@ -77,9 +78,8 @@ typedef struct anim
 #define ANIM_DIRECT_FORWARD 0
 #define ANIM_DIRECT_REVERSE 1
 
-typedef struct anim_instance
+typedef struct anim_instance : list_links_t< anim_instance >
 {
-    anim_instance *next, *prev;
     int x, y; // coordinates anim is played at (top left corner of anim)
     vector *world_pos; // world (x,y,z) position of explosion
     float radius; // radius of image, needed for scaling

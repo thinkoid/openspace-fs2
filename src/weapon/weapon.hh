@@ -15,6 +15,7 @@
 
 // define to compile corkscrew missiles in
 
+#include "globalincs/linklist.hh"
 #include <object/object.hh>
 #include <parse/parselo.hh>
 #include <ship/ship.hh> /* needed for ship_subsys* */
@@ -118,9 +119,8 @@
 // (needed since we don't want to play multiple lock sounds)
 #define WF_LOCK_WARNING_PLAYED (1 << 0)
 #define WF_ALREADY_APPLIED_STATS                                                 \
-    (1                                                                           \
-     << 1) // for use in ship_apply_local and ship_apply_global damage functions
-        // so that we don't record multiple hits (stats) for one impact
+    (1 << 1) // for use in ship_apply_local and ship_apply_global damage functions
+// so that we don't record multiple hits (stats) for one impact
 // flyby sound has been played for this weapon
 #define WF_PLAYED_FLYBY_SOUND (1 << 2)
 // consider for flyby
@@ -317,12 +317,11 @@ typedef struct weapon_info
 } weapon_info;
 
 // Data structure to track the active missiles
-typedef struct missile_obj
+typedef struct missile_obj : list_links_t< missile_obj >
 {
-    missile_obj *next, *prev;
     int flags, objnum;
 } missile_obj;
-extern missile_obj Missile_obj_list;
+extern list_t< missile_obj > Missile_obj_list;
 
 extern weapon_info Weapon_info[MAX_WEAPON_TYPES];
 
