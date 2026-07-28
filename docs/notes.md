@@ -621,3 +621,15 @@ Morning housekeeping, three commits: `41d0cd1c9` docs adoption (fixmine/fs2-inve
 User compared GL vs software screenshots of the training mission: the afterburner and weapon-energy gauges (and the weapons panel) rendered as grey/black/wrong-green bands under the software rasterizer. Root cause chain: `bm_page_in_aabitmap()` set `used_flags = 0` — the dead-subsystem sweep (5b2148062) collapsed retail's `if (D3D_enabled) BMP_AABITMAP else 0` to the WRONG (Glide-era) branch — so `bm_page_in_stop()` unpacked every HUD aabitmap ANI as a regular bitmap (pixels palette-translated to game-palette indices); `bm_lock`'s reload test never compares flags (and its pal_changed test exempts aabitmap locks), so the HUD's aabitmap locks returned the translated data forever; `gr8_aabitmap_ex` fed indices 74..254 into the 16x256 alphacolor table — reads past it into neighboring Alphacolors slots = the deterministic banding. Hardware escaped by accident: 16bpp tcache locks forced a bitdepth reload (the GL log's "Reloading ... from bitdepth 8 to 16" vs software's "Reloading ... to remap palette" was the tell). Fix: `used_flags = BMP_AABITMAP;` — the other `bm_page_in_*` variants' 0 is CORRECT for software (tmapper/bitblt lock plain textures with 0). **User-verified in a test flight: artefacts gone.**
 NOTE vs the 2026-07-18 VERDICT above: the *gradient banding* analysis stands (authentic 8bpp quantization); today's grey/black corruption was a distinct, real bug on top of it — the earlier "bands of green and dark... probably authentic; verify later" flag was this.
 Optional hardening left on the table: an aabitmap-mismatch reload condition in `bm_lock` (compare requested flags vs the stamped `used_flags`) would make the cache self-healing against any flag-mismatched lock order.
+
+## Itch list founded — docs/itches.md (2026-07-28)
+
+Standing redesign queue now lives in `docs/itches.md` (the groom discipline's
+"write it down instead of scratching it" gets a home). Founding entry: the
+linklist `links_t<T>` retrofit — thin the fat sentinel (416 dead bytes per
+`object` head; `ship.subsys_list` = 23% of `Ships[]`) to a 16-byte templated
+head, kill the sentinel/node type confusion, drop `list_remove`'s dead head
+parameter and the caller-less `list_merge`. Full design, cost census, and
+verification gate in the entry. Born of the 2026-07-28 linklist review, which
+otherwise *affirmed* the sentinel-ring design (std::list is the same ring
+with a thin sentinel).
