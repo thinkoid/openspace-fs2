@@ -146,7 +146,6 @@ player *Medals_player;
 
 static bitmap *Medals_mask;
 int Medals_mask_w, Medals_mask_h;
-static int Medal_palette; // Medal palette bitmap
 static int Medals_bitmap_mask; // the mask for the medal case
 static int Medals_bitmap; // the medal case itself
 static int Medal_bitmaps[NUM_MEDALS]; // bitmaps for the individual medals

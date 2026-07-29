@@ -140,9 +140,6 @@ static anim *Background_anim; // Ids for the anim data that is loaded
 // value for which Team_data entry to use
 int Common_team;
 
-// Ids for the instance of the anim that is playing
-static anim_instance *Background_anim_instance;
-
 int Wing_slot_empty_bitmap;
 int Wing_slot_disabled_bitmap;
 

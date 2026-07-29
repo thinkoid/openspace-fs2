@@ -47,7 +47,6 @@ void maybe_create_new_grid(grid *gridp, vector *pos, matrix *orient,
 grid *create_grid(grid *gridp, vector *forward, vector *right, vector *center,
                   int nrows, int ncols, float square_size);
 grid *create_default_grid(void);
-void render_grid(grid *gridp);
 void modify_grid(grid *gridp);
 void rpd_line(vector *v0, vector *v1);
 void grid_render_elevation_line(vector *pos, grid *gridp);

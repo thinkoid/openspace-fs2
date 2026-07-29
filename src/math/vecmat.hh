@@ -472,8 +472,9 @@ void vm_forward_interpolate(vector *goal_fvec, matrix *orient, vector *rotvel_in
 void vm_find_bounding_sphere(vector *pnts, int num_pnts, vector *center,
                              float *radius);
 
-// Version of atan2() that is safe for optimized builds
-float atan2_safe(float x, float y);
+// Version of atan2() that is safe for optimized builds.  NOT equivalent to
+// atan2f -- the quadrant handling differs; do not swap for libm.
+float atan2_safe(float y, float x);
 
 // Translates from world coordinates to body coordinates
 vector *vm_rotate_vec_to_body(vector *body_vec, vector *world_vec,

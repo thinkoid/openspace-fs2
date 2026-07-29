@@ -548,7 +548,10 @@ debris_create(object *source_obj, int model_num, int submodel_num, vector *pos,
 
     if (db->is_hull) {
         // Only make 1/2 of the pieces have arcs
-        if (myrand() < RAND_MAX * 2 / 3) {
+        // (retail wrote RAND_MAX * 2 / 3, sized for MSVC's 15-bit RAND_MAX;
+        // glibc's INT_MAX overflows the product and the test never passed,
+        // leaving hull debris arc-less on Linux)
+        if (myrand() < RAND_MAX / 3 * 2) {
             db->arc_frequency = 1000;
         }
         else {

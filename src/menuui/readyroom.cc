@@ -175,7 +175,6 @@ static int Campaign_names_inited = 0;
 static int Campaign_mission_names_inited = 0;
 static int Num_standalone_missions;
 static int Num_campaign_missions;
-static int Num_player_missions;
 static int Scroll_offset;
 static int Selected_line;
 static int Num_lines;
@@ -1491,12 +1490,6 @@ UI_XSTR Cr_text[GR_NUM_RESOLUTIONS][CR_NUM_TEXT] = {
           &Cr_buttons[1][CR_COMMIT_BUTTON].button },
     }
 };
-
-static struct
-{
-    char *text;
-    int len;
-} campaign_desc_lines[MAX_DESC_LINES];
 
 static int Num_desc_lines;
 static int Desc_scroll_offset;

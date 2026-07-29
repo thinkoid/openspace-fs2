@@ -739,3 +739,32 @@ remains: FILTER_NAME_LENGTH, load_filter_info (empty stub + its one call),
 Log_debug_output_to_file (set by the debug-console `log' toggle, read by
 nobody — the toggle lied). Verified: clean rebuild, normalized warning set
 byte-identical; tests green; headless boot renders.
+
+## Fruit-sweep sections A+C applied — bug fixes and zero-risk deletions (2026-07-29)
+
+From the 2026-07-29 low-hanging-fruit survey (full census in the rolling
+notes.txt).  Section A, the port-divergence fixes: debris.cc hull-arc
+probability un-overflowed (RAND_MAX*2/3 was sized for MSVC's 15-bit
+RAND_MAX; on glibc it overflowed and hull debris never arced -- retail
+arcs 2/3 of pieces); missionmessage.cc's three sprintf-append-to-self UB
+sites respelled sprintf(p+strlen(p),...); atan2_safe's header declaration
+un-swapped to match the (y,x) definition + a do-not-swap-for-libm warning.
+Section C, the deletions: sw_error.hh + sw_guid.hh (orphaned by the
+sw_force.hh deletion -- includer-cascade); the stale CVS-era src/Makefile
+(21 Network/multi_*.o ghosts); the dead inverse-sqrt LUT apparatus in
+floating.cc + the shadowed fl_isqrt extern + 4 dead macros (fl_is_nan
+used MSVC-only _isnan); asqrt(); the never-activated fhash module
+(localization/fhash.{cc,hh}, whose init memset also overflowed its
+pointer array 4x -- a live retail buffer overflow, now moot) + parselo's
+two dead fhash branches; vm_strdup/vm_free_all/VM_MALLOC/VM_FREE; 40
+verified phantom declarations across 16 headers (declared, defined
+nowhere; 3 candidates found live and kept); 31 unused file-scope statics;
+9 set-but-never-read locals (incl. hudtarget's vestigial
+nearest_turret_subsys auto-target-turret remnant and vecmat's tv plane
+residual).  Retail bugs deliberately NOT fixed (catalogue, section B of
+the survey): keycontrol.cc:1970 match-target precedence, the !x&FLAG
+assert family, rand_alt's impotent reseed.  Verified: warning-set diff
+accounts for every removal with zero additions (4756 -> 4697); tests
+green; headless boot renders.  Census bonus: gcc's
+-Wunused-but-set-variable warnings carry a trailing `=' in the bracket
+tag -- category greps must allow it.

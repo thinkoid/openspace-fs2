@@ -281,7 +281,6 @@ gr_detect_cpu(int *cpu, int *mmx, int *amd3d, int *katmai)
 int
 gr_init(int res, int mode, int depth, int fred_x, int fred_y)
 {
-    int first_time = 0;
     int max_w, max_h;
 
     gr_detect_cpu(&Gr_cpu, &Gr_mmx, &Gr_amd3d, &Gr_katmai);
@@ -301,9 +300,6 @@ gr_init(int res, int mode, int depth, int fred_x, int fred_y)
         else {
             gr_soft_cleanup();
         }
-    }
-    else {
-        first_time = 1;
     }
 
     // Retail (HARDWARE_ONLY) forced Glide here when a non-hardware mode was

@@ -22,7 +22,6 @@
 #include <ctype.h>
 #include <parse/encrypt.hh>
 #include <localization/localize.hh>
-#include <localization/fhash.hh>
 
 #define ERROR_LENGTH 64
 #define RS_MAX_TRIES 5
@@ -784,11 +783,6 @@ stuff_string(char *pstr, int type, char *terminators, int len)
     // now we want to do any final localization
     lcl_ext_localize(read_str, pstr, final_len, &tag_id);
 
-    // if the hash localized text hash table is active and we have a valid external string - hash it
-    if (fhash_active() && (tag_id > -2)) {
-        fhash_add_str(pstr, tag_id);
-    }
-
     diag_printf("Stuffed string = [%.30s]\n", pstr);
 }
 
@@ -810,11 +804,6 @@ stuff_string_line(char *pstr, int len)
 
     // now we want to do any final localization
     lcl_ext_localize(read_str, pstr, final_len, &tag_id);
-
-    // if the hash localized text hash table is active and we have a valid external string - hash it
-    if (fhash_active() && (tag_id > -2)) {
-        fhash_add_str(pstr, tag_id);
-    }
 
     diag_printf("Stuffed string = [%.30s]\n", pstr);
 }

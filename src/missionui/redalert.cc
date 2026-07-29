@@ -73,13 +73,6 @@ int Ra_flash_font[GR_NUM_RESOLUTIONS] = { FONT2, FONT2 };
 
 int Ra_flash_y[GR_NUM_RESOLUTIONS] = { 140, 200 };
 
-static int Ra_flash_coords[GR_NUM_RESOLUTIONS][2] = { {
-                                                          61, 108 // GR_640
-                                                      },
-                                                      {
-                                                          61, 108 // GR_1024
-                                                      } };
-
 #define NUM_BUTTONS 2
 
 #define RA_REPLAY_MISSION 0

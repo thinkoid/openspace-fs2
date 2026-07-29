@@ -128,7 +128,6 @@ cutscene_mark_viewable(char *filename)
 
 static int Num_files;
 static int Cutscene_list[MAX_CUTSCENES];
-static int Stats_scroll_offset;
 static int Selected_line = 0; // line that is currently selected for binding
 static int Scroll_offset;
 static int Background_bitmap;

@@ -23,8 +23,6 @@
 
 extern void timer_init();
 extern void timer_close();
-extern void timer_set_rate(int count_val);
-extern void timer_set_function(void *function);
 
 // These functions return the time since the timer was initialized in
 // some various units. The total length of reading time varies for each
@@ -39,9 +37,6 @@ extern fix
 timer_get_approx_seconds(); // Returns time since program started... accurate to 1/120th of a second
 extern int timer_get_milliseconds(); //
 extern int timer_get_microseconds();
-
-// Use to access the BIOS ticker... ie...   i = TICKER
-void timer_delay(fix seconds);
 
 //               T I M E S T A M P   F U N C T I O N S
 

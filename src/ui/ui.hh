@@ -740,9 +740,6 @@ extern tooltip_group Tooltip_groups[MAX_TOOLTIP_GROUPS];
 extern tooltip Tooltips[MAX_TOOLTIPS];
 */
 
-int ui_getfilelist(int MaxNum, char **list, char *filespec);
-void ui_sort_filenames(int n, char **list);
-
 /*
 class UI_SLIDER : public UI_GADGET
 {

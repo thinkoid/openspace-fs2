@@ -110,15 +110,6 @@ static int Hud_mission_log_time2_coords[GR_NUM_RESOLUTIONS][2] = {
 //#define HUD_MSG_MAX_PIXEL_W 439   // maximum number of pixels wide message display area is
 //#define HUD_MSG_MAX_PIXEL_W 619   // maximum number of pixels wide message display area is
 
-static int Hud_mission_log_status_coords[GR_NUM_RESOLUTIONS][2] = {
-    {
-        170, 339 // GR_640
-    },
-    {
-        361, 542 // GR_1024
-    }
-};
-
 struct scrollback_buttons
 {
     char *filename;
@@ -184,7 +175,6 @@ static int Num_obj_lines;
 static int Scroll_offset;
 static int Scroll_max;
 static int Scrollback_mode = SCROLLBACK_MODE_OBJECTIVES;
-static int Selected_line;
 // static int Status_bitmap;
 static int Background_bitmap;
 static UI_WINDOW Ui_window;
@@ -192,11 +182,6 @@ static UI_WINDOW Ui_window;
 static char *Hud_mission_log_fname[GR_NUM_RESOLUTIONS] = {
     "MissionLog", // GR_640
     "2_MissionLog" // GR_1024
-};
-
-static char *Hud_mission_log_status_fname[GR_NUM_RESOLUTIONS] = {
-    "MLStatus", // GR_640
-    "MLStatus" // GR_1024
 };
 
 static char *Hud_mission_log_mask_fname[GR_NUM_RESOLUTIONS] = {

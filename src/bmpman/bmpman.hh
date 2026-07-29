@@ -94,16 +94,10 @@ extern void bm_get_filename(int bitmapnum, char *filename);
 // resyncs all the bitmap palette
 extern void bm_update();
 
-// call to load all data for all bitmaps that have been requested to be loaded
-extern void bm_load_all();
 extern void bm_unload_all();
 
 // call to get the palette for a bitmap
 extern void bm_get_palette(int n, ubyte *pal, char *name);
-
-// Hacked function to get a pixel from a bitmap.
-// Only works good in 8bpp mode.
-void bm_get_pixel(int bitmap, float u, float v, ubyte *r, ubyte *g, ubyte *b);
 
 // Returns number of bytes of bitmaps locked this frame
 // ntotal = number of bytes of bitmaps locked this frame

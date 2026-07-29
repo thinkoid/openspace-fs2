@@ -573,11 +573,6 @@ extern int Mission_all_attack; //   !0 means all teams attack all teams.
 extern int Total_goal_ship_names;
 extern char Goal_ship_names[MAX_GOAL_SHIP_NAMES][NAME_LENGTH];
 
-extern void update_ai_info_for_hit(int hitter_obj, int hit_obj);
-extern void ai_frame_all(void);
-
-extern int find_guard_obj(void);
-
 extern ai_info Ai_info[];
 extern ai_info *Player_ai;
 

@@ -212,8 +212,6 @@ unsigned long cf_add_chksum_long(unsigned long seed, char *buffer, int size);
 // convenient for misc checksumming purposes ------------------------------------------
 
 // High-level functions
-int
-cfexist(char *filename); // Returns true if file exists on disk (1) or in hog (2).
 
 // rename a file, utilizing the extension to determine where file is.
 // successfully renamed the file

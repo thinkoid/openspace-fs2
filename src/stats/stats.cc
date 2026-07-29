@@ -23,16 +23,6 @@
 #define MISSION_STATS_START_Y 80
 #define ALLTIME_STATS_START_Y 270
 
-static int Mission_stats_start_y[GR_NUM_RESOLUTIONS] = {
-    80, // GR_640
-    80 // GR_1024
-};
-
-static int Alltime_stats_start_y[GR_NUM_RESOLUTIONS] = {
-    270, // GR_640
-    270 // GR_1024
-};
-
 // static UI_WINDOW Player_stats_window;
 
 player *Active_player;

@@ -24,7 +24,6 @@ extern int Num_recent_missions;
 // Game_current_mission_filename
 
 int mission_load();
-void mission_init();
 
 // Functions for mission load menu
 void mission_load_menu_init();

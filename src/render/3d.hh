@@ -90,12 +90,6 @@ void g3_done_instance();
 //get current field of view.  Fills in angle for x & y
 void g3_get_FOV(float *fov_x, float *fov_y);
 
-//get zoom.  For a given window size, return the zoom which will achieve
-//the given FOV along the given axis.
-float g3_get_zoom(char axis, float fov, int window_width, int window_height);
-
-//returns the normalized, unscaled view vectors
-void g3_get_view_vectors(vector *forward, vector *up, vector *right);
 
 //returns true if a plane is facing the viewer. takes the unrotated surface
 //normal of the plane, and a point on it.  The normal need not be normalized

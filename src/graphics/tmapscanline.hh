@@ -67,24 +67,14 @@ typedef struct tmapper_data
 
 extern tmapper_data Tmap;
 
-extern void tmapscan_generic();
-extern void tmapscan_generic8();
-//extern void tmapscan_pnn();
-extern void tmapscan_pln();
-extern void tmapscan_lln();
-extern void tmapscan_flat();
 extern void tmapscan_nebula8();
-extern void tmapscan_flat_z();
 
 extern void tmapscan_flat8();
 extern void tmapscan_lln8();
 extern void tmapscan_lnt8();
 extern void tmapscan_lnn8();
 extern void tmapscan_lnt8();
-extern void tmapscan_lln8_tiled();
-extern void tmapscan_llt8_tiled();
 extern void tmapscan_pln8();
-extern void tmapscan_plt8();
 
 extern void tmapscan_lnaa8();
 

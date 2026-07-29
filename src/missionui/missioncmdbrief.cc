@@ -133,7 +133,6 @@ static anim_instance *Cur_anim_instance = NULL;
 static int Last_anim_frame_num;
 
 static int Cmd_brief_last_voice;
-static int Palette_bmp = -1;
 static ubyte Palette[768];
 static char Palette_name[128];
 

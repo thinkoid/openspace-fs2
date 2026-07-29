@@ -591,17 +591,7 @@ int vm_init(int min_heap_size);
 // Allocates some RAM.
 void *vm_malloc(int size);
 
-//
-char *vm_strdup(const char *ptr);
-
 // Frees some RAM.
 void vm_free(void *ptr);
-
-// Frees all RAM.
-void vm_free_all();
-
-// Easy to use macros
-#define VM_MALLOC(size) vm_malloc(size)
-#define VM_FREE(ptr) vm_free(ptr)
 
 #endif // PS_TYPES_H

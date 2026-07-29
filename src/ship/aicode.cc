@@ -3967,7 +3967,6 @@ get_base_path_info(int path_cur, int goal_objnum, model_path **pmp,
     ship_info *sip =
         &Ship_info[Ships[Objects[goal_objnum].instance].ship_info_index];
     polymodel *pm = model_get(sip->modelnum);
-    static int debug_last_index = -1;
     *pmpv = NULL;
     *pmp = NULL;
 

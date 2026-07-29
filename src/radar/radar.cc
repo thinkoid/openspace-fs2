@@ -624,7 +624,6 @@ radar_draw_blips_sorted(int distort)
     draw_radar_blips(RCOL_TAGGED, 0, distort);
 }
 
-static int test_time = 1;
 void
 radar_draw_range()
 {

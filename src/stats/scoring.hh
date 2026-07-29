@@ -137,9 +137,6 @@ void scoring_level_close(int accepted = 1);
 void scoring_backout_accept(scoring_struct *score);
 void scoring_do_accept(scoring_struct *score);
 
-// function to give a medal to a player if he earned it
-void scoring_check_medal(scoring_struct *sc);
-
 void scoring_add_damage(object *ship_obj, object *other_obj, float damage);
 void scoring_eval_kill(object *ship_obj);
 void scoring_eval_assists(ship *sp, int killer_sig);

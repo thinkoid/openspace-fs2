@@ -114,16 +114,6 @@ vm_project_point_onto_plane(vector *new_point, vector *point,
     vm_vec_scale_add2(new_point, plane_normal, -dist);
 }
 
-// Take abs(x), then sqrt.  Could insert warning message if desired.
-float
-asqrt(float x)
-{
-    if (x < 0.0f)
-        return fl_sqrt(-x);
-    else
-        return fl_sqrt(x);
-}
-
 void
 vm_set_identity(matrix *m)
 {
@@ -1370,7 +1360,7 @@ vm_vec_dot_to_point(vector *dir, vector *p1, vector *p2)
 void
 compute_point_on_plane(vector *q, plane *planep, vector *p)
 {
-    float k, tv;
+    float k;
     vector normal;
 
     normal.x = planep->A;
@@ -1380,8 +1370,6 @@ compute_point_on_plane(vector *q, plane *planep, vector *p)
     k = (planep->D + vm_vec_dot(&normal, p)) / vm_vec_dot(&normal, &normal);
 
     vm_vec_scale_add(q, p, &normal, -k);
-
-    tv = planep->A * q->x + planep->B * q->y + planep->C * q->z + planep->D;
 }
 
 // Generate a fairly random vector that's fairly near normalized.

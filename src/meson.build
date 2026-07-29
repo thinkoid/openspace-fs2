@@ -195,7 +195,6 @@ foundation_src = files(
     'sound/ds.cc',
     'sound/ds3d.cc',
     'sound/sound.cc',
-    'localization/fhash.cc',
     'localization/localize.cc',
     'parse/encrypt.cc',
     'parse/parselo.cc',

@@ -100,20 +100,6 @@ static int Closeup_coords[GR_NUM_RESOLUTIONS][4] = {
     }
 };
 
-static int Closeup_img_h[GR_NUM_RESOLUTIONS] = { {
-                                                     150 // GR_640
-                                                 },
-                                                 {
-                                                     150 // GR_1024
-                                                 } };
-
-static int Closeup_text_h[GR_NUM_RESOLUTIONS][4] = { {
-                                                         63 // GR_640
-                                                     },
-                                                     {
-                                                         63 // GR_1024
-                                                     } };
-
 static int Brief_infobox_coords[GR_NUM_RESOLUTIONS][2] = { { // GR_640
                                                              0, 391 },
                                                            { // GR_1024

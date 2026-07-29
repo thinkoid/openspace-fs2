@@ -740,9 +740,6 @@ brief_init_map()
 
 #pragma optimize("", off)
 
-// render fade-out anim frame
-static int Fade_frame_count[128]; // for debug
-
 void
 brief_render_fade_outs(float frametime)
 {

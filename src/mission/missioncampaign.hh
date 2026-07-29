@@ -176,9 +176,6 @@ extern void mission_campaign_mission_over(void);
 // frees all memory at game close time
 extern void mission_campaign_close(void);
 
-// read in a campaign file.  Used by Fred.
-int mission_campaign_load_fred(char *filename, char *name_verify = NULL);
-
 // used by Fred to get a mission's list of goals.
 void read_mission_goal_list(int num);
 

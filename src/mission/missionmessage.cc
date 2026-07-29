@@ -865,7 +865,7 @@ message_play_anim(message_q *q)
             else {
                 rand_index = (Missiontime % MAX_WINGMAN_HEADS);
             }
-            sprintf(ani_name, "%s%c", ani_name, 'a' + rand_index);
+            sprintf(ani_name + strlen(ani_name), "%c", 'a' + rand_index);
             subhead_selected = TRUE;
         }
         else if ((persona_index >= 0) &&
@@ -873,13 +873,13 @@ message_play_anim(message_q *q)
                   (PERSONA_FLAG_COMMAND | PERSONA_FLAG_LARGE))) {
             // get a random head -- it's one of two.
             rand_index = (Missiontime % MAX_COMMAND_HEADS);
-            sprintf(ani_name, "%s%c", ani_name, 'a' + rand_index);
+            sprintf(ani_name + strlen(ani_name), "%c", 'a' + rand_index);
             subhead_selected = TRUE;
         }
         if (!subhead_selected) {
             // choose between a and b
             rand_index = (Missiontime % MAX_WINGMAN_HEADS);
-            sprintf(ani_name, "%s%c", ani_name, 'a' + rand_index);
+            sprintf(ani_name + strlen(ani_name), "%c", 'a' + rand_index);
             mprintf((
                 "message '%s' with invalid head.  Fix by assigning persona to the message.\n",
                 m->name));

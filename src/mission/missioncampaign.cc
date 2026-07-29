@@ -64,7 +64,6 @@ int Granted_ships[MAX_SHIP_TYPES];
 int Granted_weapons[MAX_WEAPON_TYPES];
 
 // variables to control the UI stuff for loading campaigns
-LOCAL int Campaign_ui_active = 0;
 LOCAL UI_WINDOW Campaign_window;
 LOCAL UI_LISTBOX Campaign_listbox;
 LOCAL UI_BUTTON Campaign_okb, Campaign_cancelb;

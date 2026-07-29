@@ -56,7 +56,6 @@ typedef struct alphacolor_old
 } alphacolor_old;
 
 extern alphacolor *Current_alphacolor;
-void gr_init_alphacolors();
 
 extern char Gr_current_palette_name[128];
 
@@ -83,11 +82,6 @@ extern color_gun *Gr_current_red, *Gr_current_green, *Gr_current_blue,
     *Gr_current_alpha;
 
 // Translate the 768 byte 'src' palette into
-// the current screen format's palette.
-// The size of the dst array is assumed to be gr_screen.bpp
-// bytes per element.
-void gr_xlat_palette(void *dst, bitmap *bmp);
-
 // CPU identification variables
 extern int Gr_cpu; // What type of CPU.  5=Pentium, 6=Ppro/PII
 extern int Gr_mmx; // MMX capabilities?  0=No, 1=Yes

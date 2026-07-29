@@ -1560,12 +1560,6 @@ validate_mission_goals(int objnum, ai_info *aip)
     }
 }
 
-//XSTR:OFF
-static char *Goal_text[5] = {
-    "EVENT_SHIP", "EVENT_WING", "PLAYER_SHIP", "PLAYER_WING", "DYNAMIC",
-};
-//XSTR:ON
-
 extern char *Mode_text[MAX_AI_BEHAVIORS];
 
 // code to process ai "orders".  Orders include those determined from the mission file and those

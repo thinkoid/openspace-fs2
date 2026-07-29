@@ -3513,8 +3513,6 @@ fix Last_time =
 fix Last_delta_time =
     0; // While game is paused, this keeps track of how much elapsed in the frame before paused.
 static int timer_paused = 0;
-static int stop_count, start_count;
-static int time_stopped, time_started;
 int saved_timestamp_ticker = -1;
 
 void

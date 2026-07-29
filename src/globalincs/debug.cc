@@ -134,18 +134,8 @@ vm_malloc(int size)
     return malloc(size);
 }
 
-char *
-vm_strdup(const char *ptr)
-{
-    return strdup(ptr);
-}
-
 void
 vm_free(void *ptr)
 {
     free(ptr);
 }
-
-void
-vm_free_all()
-{ }

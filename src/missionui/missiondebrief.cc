@@ -254,7 +254,6 @@ static int Award_active;
 static int Text_offset;
 static int Num_text_lines = 0;
 static int Num_debrief_lines = 0;
-static int Num_normal_debrief_lines = 0;
 static int Text_type[MAX_TOTAL_DEBRIEF_LINES];
 static char *Text[MAX_TOTAL_DEBRIEF_LINES];
 
