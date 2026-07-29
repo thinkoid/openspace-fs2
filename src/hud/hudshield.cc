@@ -540,9 +540,6 @@ hud_shield_show_mini(object *objp, int x_force, int y_force, int x_hull_offset,
     int sx, sy, i;
     ship *sp;
     ship_info *sip;
-    shield_hit_info *shi;
-
-    shi = &Shield_hit_data[SHIELD_HIT_TARGET];
 
     if (objp->type != OBJ_SHIP) {
         return;

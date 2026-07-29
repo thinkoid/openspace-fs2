@@ -987,11 +987,9 @@ shipfx_warpout_frame(object *objp, float frametime)
 
     // Find the closest point on line from center of wormhole
     vector pos;
-    float dist;
 
     fvi_ray_plane(&pos, &objp->pos, &shipp->warp_effect_fvec,
                   &shipp->warp_effect_pos, &shipp->warp_effect_fvec, 0.0f);
-    dist = vm_vec_dist(&pos, &objp->pos);
 
     //   mprintf(( "Warp pos = %.1f, rad=%.1f, center dist = %.1f\n", warp_pos, objp->radius, dist ));
 
@@ -2657,7 +2655,7 @@ shipfx_do_shockwave_stuff(ship *shipp, shockwave_create_info *sci)
     vector temp, dir, shockwave_pos;
     vector head = vmd_zero_vector;
     vector tail = vmd_zero_vector;
-    float len, step, cur;
+    float step, cur;
     int idx;
 
     // sanity checks
@@ -2708,7 +2706,6 @@ shipfx_do_shockwave_stuff(ship *shipp, shockwave_create_info *sci)
 
     // now create as many shockwaves as needed
     vm_vec_sub(&dir, &head, &tail);
-    len = vm_vec_mag(&dir);
     step = 1.0f / ((float)sip->shockwave_count + 1.0f);
     cur = step;
     for (idx = 0; idx < sip->shockwave_count; idx++) {

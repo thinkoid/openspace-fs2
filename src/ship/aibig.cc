@@ -145,8 +145,6 @@ ai_bpap(object *objp, vector *attacker_objp_pos, vector *attacker_objp_fvec,
             if (num_tries > octp->nverts)
                 num_tries = octp->nverts;
 
-            int best_index = -1;
-
             for (i = 0; i < num_tries; i++) {
                 int index;
                 float dist, dot;
@@ -164,7 +162,6 @@ ai_bpap(object *objp, vector *attacker_objp_pos, vector *attacker_objp_fvec,
 
                 if (dot > fov) {
                     if (dist < nearest_dist) {
-                        best_index = index;
                         nearest_dist = dist;
                         best_point = result_point;
                         *local_attack_point = rel_point;
@@ -790,19 +787,6 @@ ai_big_maybe_fire_weapons(float dist_to_enemy, float dot_to_enemy,
                 if (dist_to_enemy < wip->max_speed * wip->lifetime)
                     ai_fire_primary_weapon(Pl_objp);
 
-                int priority1, priority2;
-
-                priority1 = -1;
-                priority2 = -1;
-
-                //   Maybe favor selecting a bomb.
-                //   Note, if you're firing a bomb, if it's aspect seeking, the firing conditions can be looser.
-                if (Ship_info[Ships[En_objp->instance].ship_info_index].flags &
-                    (SIF_BIG_SHIP | SIF_HUGE_SHIP))
-                    if (En_objp->phys_info.speed * dist_to_enemy <
-                        5000.0f) // Don't select a bomb if enemy moving fast relative to distance
-                        priority1 = WIF_BOMB;
-
                 if (!(En_objp->flags & OF_PROTECTED)) {
                     //ai_select_secondary_weapon(Pl_objp, tswp, priority1, priority2); // Note, need to select to get weapon speed and lifetime
 
@@ -888,14 +872,11 @@ ai_big_chase()
     ship_info *sip = &Ship_info[Ships[Pl_objp->instance].ship_info_index];
     ship *shipp = &Ships[Pl_objp->instance];
     ai_info *aip = &Ai_info[shipp->ai_index];
-    int enemy_ship_type;
     vector predicted_enemy_pos;
 
     Assert(aip->mode == AIM_CHASE);
 
     maybe_cheat_fire_synaptic(Pl_objp, aip);
-
-    enemy_ship_type = Ship_info[Ships[En_objp->instance].ship_info_index].flags;
 
     ai_set_positions(Pl_objp, En_objp, aip, &player_pos, &enemy_pos);
 
@@ -1329,10 +1310,9 @@ ai_big_strafe_maybe_retreat(float dist, vector *target_pos)
             aip->submode = AIS_STRAFE_RETREAT1;
             aip->submode_start_time = Missiontime;
 
-            float box_dist;
             int is_inside;
             vector goal_point;
-            box_dist = get_world_closest_box_point_with_delta(
+            get_world_closest_box_point_with_delta(
                 &goal_point, En_objp, &Pl_objp->pos, &is_inside,
                 STRAFE_RETREAT_BOX_DIST);
 
@@ -1360,7 +1340,6 @@ ai_big_strafe_attack()
     vector target_pos;
     vector rand_vec;
     float target_dist, target_dot, accel, t;
-    object *target_objp;
 
     aip = &Ai_info[Ships[Pl_objp->instance].ai_index];
 
@@ -1371,8 +1350,6 @@ ai_big_strafe_attack()
     ai_big_attack_get_data(&target_pos, &target_dist, &target_dot);
     if (ai_big_strafe_maybe_retreat(target_dist, &target_pos))
         return;
-
-    target_objp = &Objects[aip->target_objnum];
 
     if (aip->ai_flags & AIF_KAMIKAZE) {
         if (target_dist < 1200.0f) {

@@ -402,7 +402,7 @@ grx_tmapper(int nverts, vertex **verts, uint flags)
     if (flags & TMAP_FLAG_TEXTURED) {
         Tmap.bp = bm_lock(gr_screen.current_bitmap, 8, 0);
 
-        int was_tiled = 0, can_tile = 0;
+        int can_tile = 0;
         if (flags & TMAP_FLAG_TILED) {
             if ((Tmap.bp->w == 16) && (Tmap.bp->h == 16))
                 can_tile = 1;
@@ -416,7 +416,6 @@ grx_tmapper(int nverts, vertex **verts, uint flags)
                 can_tile = 1;
 
             if (!can_tile) {
-                was_tiled = 1;
                 flags &= (~TMAP_FLAG_TILED);
             }
         }

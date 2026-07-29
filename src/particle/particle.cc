@@ -149,7 +149,6 @@ int next_message = -1;
 void
 particle_create(particle_info *pinfo)
 {
-    int particle_num;
     particle *p;
 
 #ifndef NDEBUG
@@ -220,9 +219,6 @@ KillAnother:
         }
         //mprintf(( "Num_particles high water mark = %i\n", Num_particles_hwm));
     }
-
-    // get objnum
-    particle_num = p - Particles;
 
     // Init the particle data
     p->pos = pinfo->pos;
@@ -372,9 +368,6 @@ particle_render_all()
 
     MONITOR_INC(NumParticlesRend, Num_particles);
 
-    int n = 0;
-    int nclipped = 0;
-
     p = Particles;
 
     int i;
@@ -382,8 +375,6 @@ particle_render_all()
         if (p->type == -1) {
             continue;
         }
-
-        n++;
 
         // pct complete for the particle
         pct_complete = p->age / p->max_life;
@@ -410,7 +401,6 @@ particle_render_all()
 
             flags = g3_rotate_vertex(&pos, &temp);
             if (flags) {
-                nclipped++;
                 continue;
             }
 
@@ -422,7 +412,6 @@ particle_render_all()
         if (rotate) {
             flags = g3_rotate_vertex(&pos, &p->pos);
             if (flags) {
-                nclipped++;
                 continue;
             }
         }

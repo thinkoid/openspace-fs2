@@ -854,7 +854,6 @@ lcl_ext_lookup(char *out, int id)
 int
 lcl_ext_lookup_sub(char *text, char *out, int id)
 {
-    char *front; // front of the line
     char *p; // current ptr
     int len = strlen(text);
     int count;
@@ -862,7 +861,6 @@ lcl_ext_lookup_sub(char *text, char *out, int id)
     char *tok;
     int found_new_string_id = 0;
 
-    front = text;
     p = text;
     count = 0;
     while (count < len) {

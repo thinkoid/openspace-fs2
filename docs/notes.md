@@ -1011,3 +1011,45 @@ Eight no-effect statements, four of them dropped intent:
   wave; [[maybe_unused]] (x7 test targets = the 7 unused-function).
 
 Gate: 15 removed / 0 added, tests green, boot renders 73 frames.
+
+## Survey E4+E5: unused-but-set bulk + overloaded-virtual -- 257 -> 15 (2026-07-29)
+
+E4 (155 sites, four parallel per-file passes, every site read in context):
+124 variables deleted outright (pure aliases, dead counters, values whose
+only consumer is commented-out code -- each verified), 12 kept their
+side-effectful call as a bare statement (vm_vec_normalized_dir out-params,
+ai_path steering, model_rotate_gun, obj_create, stuff_* parse advancement,
+g3_rotate_vertex), 5 cascade deletions of variables the sweep orphaned
+(wp_next, time, weaponp, debrisp, beam shipp).
+
+E5: all 102 overloaded-virtual were ONE line -- UI_GADGET::hide(int)
+shadowed by no-arg hide() in UI_SLIDER2/UI_SCROLLBAR/UI_SLIDER.  Fixed
+with a forwarding override per class: "void hide(int n) override
+{ UI_GADGET::hide(n); }".  (First attempt used using-declarations --
+ambiguous against the base default argument; the override form keeps
+no-arg hide() resolution unchanged.)  Virtual dispatch through UI_GADGET*
+now reaches the derived classes' intent, identically-behaving.
+
+THE FLAG LIST -- 15 warnings deliberately left, each a decision:
+- collideshipship.cc:1135 vol_scale: computed 1.0/0.7 shield-sound volume
+  never passed to snd_play_3d (which has a vol_scale=1.0f param).  Near-
+  certain forgotten argument; fixing changes audible behavior.
+- playercontrol.cc:360 ignore_pitch: set when bank-when-pressed consumes
+  the heading axis; the pitch-axis read below looks like it forgot the
+  guard.  Gameplay-affecting if fixed.
+- freespace.cc:793-794 old_r/old_g/old_b: static flash-color saves with
+  no delta comparison; retail has the same dead pattern twice.
+- controlsconfig.cc:436 shift/alt, cutscenes.cc:282 full_name,
+  readyroom.cc:1186 z, shipfx.cc:1925 debris_count,
+  missiongoals goal_changed (deleted; consumer commented):
+  all feed commented-out blocks -- their fate rides on the
+  commented-code policy decision (D leftover stock).
+- objcollide.cc:385 avg_time_to_next_check (live under #ifdef PAIR_STATS),
+  palman.cc:619 gi (live under #ifdef RGB_LIGHTING): config-dependent.
+- sexp_reader.cc:232 savep: parse position saved/nudged for an error path
+  that no longer exists.
+- tgautils.cc:537 xo/yo: TGA origin bits decoded then ignored -- an
+  unwired image flip, same in retail.
+
+Gate: 257 -> 15 fully accounted (240 removed: 138 unused-but-set + 102
+overloaded-virtual; 0 added), tests green, boot renders 74 frames.

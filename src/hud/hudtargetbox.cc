@@ -638,13 +638,10 @@ hud_render_target_asteroid(object *target_objp)
     matrix camera_orient = IDENTITY_MATRIX;
     asteroid *asteroidp;
     vector orient_vec, up_vector;
-    int target_team;
     float time_to_impact, factor;
     int subtype;
 
     asteroidp = &Asteroids[target_objp->instance];
-
-    target_team = obj_team(target_objp);
 
     subtype = asteroidp->asteroid_subtype;
 
@@ -1239,13 +1236,12 @@ hud_render_target_debris(object *target_objp)
     matrix camera_orient = IDENTITY_MATRIX;
     debris *debrisp;
     vector orient_vec, up_vector;
-    int target_team, base_index;
+    int base_index;
     float factor;
 
     debrisp = &Debris[target_objp->instance];
 
     //target_sip = &Ship_info[debrisp->ship_info_index];
-    target_team = obj_team(target_objp);
 
     if (Detail.targetview_model) {
         // take the forward orientation to be the vector from the player to the current target
@@ -1313,12 +1309,9 @@ hud_render_target_weapon(object *target_objp)
     weapon_info *target_wip = NULL;
     weapon *wp = NULL;
     object *viewer_obj, *viewed_obj;
-    int target_team, is_homing, is_player_missile, missile_view, viewed_model_num,
-        w, h;
+    int is_homing, is_player_missile, missile_view, viewed_model_num, w, h;
     float factor;
     char outstr[100]; // temp buffer
-
-    target_team = obj_team(target_objp);
 
     wp = &Weapons[target_objp->instance];
     target_wip = &Weapon_info[wp->weapon_info_index];
@@ -1510,8 +1503,6 @@ hud_show_target_data(float frametime)
     int w, h; // width and height of string about to print
     object *target_objp;
     ship *shipp = NULL;
-    debris *debrisp = NULL;
-    ship_info *sip = NULL;
     int is_ship = 0;
 
     hud_set_gauge_color(HUD_TARGET_MONITOR);
@@ -1521,21 +1512,16 @@ hud_show_target_data(float frametime)
     switch (Objects[Player_ai->target_objnum].type) {
     case OBJ_SHIP:
         shipp = &Ships[target_objp->instance];
-        sip = &Ship_info[shipp->ship_info_index];
         is_ship = 1;
         break;
 
     case OBJ_DEBRIS:
-        debrisp = &Debris[target_objp->instance];
-        sip = &Ship_info[debrisp->ship_info_index];
         break;
 
     case OBJ_WEAPON:
-        sip = NULL;
         break;
 
     case OBJ_ASTEROID:
-        sip = NULL;
         break;
 
     case OBJ_JUMP_NODE:

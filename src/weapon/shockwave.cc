@@ -76,7 +76,6 @@ shockwave_create(int parent_objnum, vector *pos, shockwave_create_info *sci,
 {
     int i, objnum, real_parent;
     shockwave *sw;
-    shockwave_info *si;
     matrix orient;
 
     for (i = 0; i < MAX_SHOCKWAVES; i++) {
@@ -116,7 +115,6 @@ shockwave_create(int parent_objnum, vector *pos, shockwave_create_info *sci,
 
     sw->rot_angle = sci->rot_angle;
 
-    si = &Shockwave_info[sw->shockwave_info_index];
     //   sw->total_time = i2fl(si->num_frames) / si->fps;   // in seconds
     sw->total_time = sw->outer_radius / sw->speed;
 
@@ -325,14 +323,12 @@ void
 shockwave_render(object *objp)
 {
     shockwave *sw;
-    shockwave_info *si;
     vertex p;
 
     Assert(objp->type == OBJ_SHOCKWAVE);
     Assert(objp->instance >= 0 && objp->instance < MAX_SHOCKWAVES);
 
     sw = &Shockwaves[objp->instance];
-    si = &Shockwave_info[sw->shockwave_info_index];
 
     if ((sw->delay_stamp != -1) && !timestamp_elapsed(sw->delay_stamp)) {
         return;

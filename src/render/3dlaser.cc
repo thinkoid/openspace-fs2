@@ -31,7 +31,6 @@ g3_draw_laser(vector *headp, float head_width, vector *tailp, float tail_width,
     float headx, heady, headr, tailx, taily, tailr;
     vertex pt1, pt2;
     float depth;
-    int head_on = 0;
 
     Assert(G3_count == 1);
 
@@ -104,7 +103,6 @@ g3_draw_laser(vector *headp, float head_width, vector *tailp, float tail_width,
         }
 
         w = len_2d;
-        head_on = 1;
     }
     else {
         a = atan2_safe(taily - heady, tailx - headx);
@@ -113,7 +111,6 @@ g3_draw_laser(vector *headp, float head_width, vector *tailp, float tail_width,
 
         h1 = headr;
         h2 = tailr;
-        head_on = 0;
     }
 
     mx = (tailx + headx) / 2.0f;
@@ -141,10 +138,8 @@ g3_draw_laser(vector *headp, float head_width, vector *tailp, float tail_width,
     vertex v[4];
     vertex *vertlist[4] = { &v[3], &v[2], &v[1], &v[0] };
 
-    float sw;
     if (depth < 0.0f)
         depth = 0.0f;
-    sw = 1.0f / depth;
 
     v[0].sx = (-w / 2.0f) * ca + (-h1 / 2.0f) * sa + mx;
     v[0].sy = (-w / 2.0f) * sa - (-h1 / 2.0f) * ca + my;
@@ -197,7 +192,6 @@ g3_draw_laser_rgb(vector *headp, float head_width, vector *tailp,
     float headx, heady, headr, tailx, taily, tailr;
     vertex pt1, pt2;
     float depth;
-    int head_on = 0;
 
     Assert(G3_count == 1);
 
@@ -270,7 +264,6 @@ g3_draw_laser_rgb(vector *headp, float head_width, vector *tailp,
         }
 
         w = len_2d;
-        head_on = 1;
     }
     else {
         a = atan2_safe(taily - heady, tailx - headx);
@@ -279,7 +272,6 @@ g3_draw_laser_rgb(vector *headp, float head_width, vector *tailp,
 
         h1 = headr;
         h2 = tailr;
-        head_on = 0;
     }
 
     mx = (tailx + headx) / 2.0f;
@@ -307,10 +299,8 @@ g3_draw_laser_rgb(vector *headp, float head_width, vector *tailp,
     vertex v[4];
     vertex *vertlist[4] = { &v[3], &v[2], &v[1], &v[0] };
 
-    float sw;
     if (depth < 0.0f)
         depth = 0.0f;
-    sw = 1.0f / depth;
 
     v[0].sx = (-w / 2.0f) * ca + (-h1 / 2.0f) * sa + mx;
     v[0].sy = (-w / 2.0f) * sa - (-h1 / 2.0f) * ca + my;

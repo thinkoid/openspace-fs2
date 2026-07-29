@@ -588,11 +588,10 @@ translate_msg_token(char *str)
 void
 message_translate_tokens(char *buf, char *text)
 {
-    char temp[40], *toke1, *toke2, *orig_buf;
+    char temp[40], *toke1, *toke2;
     const char *ptr;
     int r;
 
-    orig_buf = buf;
     *buf = 0;
     toke1 = strchr(text, '$');
     toke2 = strchr(text, '#');

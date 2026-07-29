@@ -282,7 +282,7 @@ anim_show_next_frame(anim_instance *instance, float frametime)
 {
     int bitmap_id, bitmap_flags = 0, new_frame_num, frame_diff = 0, i,
                    n_frames = 0, frame_save;
-    float percent_through, decompress_time, render_time, time;
+    float percent_through, time;
     vertex image_vertex;
     int aabitmap = 0;
     int bpp = 16;
@@ -523,8 +523,6 @@ anim_show_next_frame(anim_instance *instance, float frametime)
         instance->loop_count++;
     }
 
-    decompress_time = f2fl(t2 - t1);
-
     t1 = timer_get_fixed_seconds();
     if (frame_diff == 0 && instance->last_bitmap != -1) {
         bitmap_id = instance->last_bitmap;
@@ -571,7 +569,6 @@ anim_show_next_frame(anim_instance *instance, float frametime)
     }
 
     t2 = timer_get_fixed_seconds();
-    render_time = f2fl(t2 - t1);
 
     //   nprintf(("Alan","DECOMPRESS: %.3fms  RENDER: %.3fms\n",
     //   decompress_time*1000, render_time*1000));

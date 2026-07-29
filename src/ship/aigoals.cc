@@ -1034,7 +1034,6 @@ int
 ai_mission_goal_achievable(int objnum, ai_goal *aigp)
 {
     int status;
-    char *ai_shipname;
     int return_val;
     object *objp;
     ai_info *aip;
@@ -1079,7 +1078,6 @@ ai_mission_goal_achievable(int objnum, ai_goal *aigp)
 
     objp = &Objects[objnum];
     Assert(objp->instance != -1);
-    ai_shipname = Ships[objp->instance].ship_name;
     aip = &Ai_info[Ships[objp->instance].ai_index];
 
     return_val = AI_GOAL_SATISFIED;
@@ -1749,13 +1747,9 @@ ai_process_mission_orders(int objnum, ai_info *aip)
         ai_attack_object(objp, NULL, current_goal->priority, NULL);
         break;
 
-    case AI_GOAL_WARP: {
-        int index;
-
-        index = current_goal->wp_index;
+    case AI_GOAL_WARP:
         ai_set_mode_warp_out(objp, aip);
         break;
-    }
 
     case AI_GOAL_EVADE_SHIP:
         shipnum = ship_name_lookup(current_goal->ship_name);

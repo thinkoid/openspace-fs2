@@ -104,11 +104,9 @@ gr8_uline(int x1, int y1, int x2, int y2)
 void
 gr8_line(int x1, int y1, int x2, int y2)
 {
-    int clipped = 0, swapped = 0;
-
     INT_CLIPLINE(x1, y1, x2, y2, gr_screen.clip_left, gr_screen.clip_top,
-                 gr_screen.clip_right, gr_screen.clip_bottom, return, clipped = 1,
-                 swapped = 1);
+                 gr_screen.clip_right, gr_screen.clip_bottom, return, (void)0,
+                 (void)0);
 
     gr8_uline(x1, y1, x2, y2);
 }

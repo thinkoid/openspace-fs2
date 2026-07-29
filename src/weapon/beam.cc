@@ -2165,8 +2165,6 @@ int
 beam_collide_ship(obj_pair *pair)
 {
     beam *b;
-    ship *shipp;
-    ship_info *sip;
     mc_info test_collide;
     int model_num;
     float widest;
@@ -2223,9 +2221,6 @@ beam_collide_ship(obj_pair *pair)
     if ((pair->b->type != OBJ_SHIP) || (pair->b->instance < 0)) {
         return 1;
     }
-    shipp = &Ships[pair->b->instance];
-    sip = &Ship_info[shipp->ship_info_index];
-
     // get the widest portion of the beam
     widest = beam_get_widest(b);
 
@@ -2609,7 +2604,6 @@ beam_handle_collisions(beam *b)
     int idx, s_idx;
     beam_collision r_coll[MAX_FRAME_COLLISIONS];
     int r_coll_count = 0;
-    beam_weapon_info *bwi;
     weapon_info *wi;
     float widest;
 
@@ -2624,7 +2618,6 @@ beam_handle_collisions(beam *b)
         Int3();
         return;
     }
-    bwi = &Weapon_info[b->weapon_info_index].b_info;
     wi = &Weapon_info[b->weapon_info_index];
 
     // get the widest part of the beam
@@ -3143,7 +3136,7 @@ void
 beam_test_new(int whee)
 {
     int s1, s2, s3;
-    object *orion, *fenris, *herc2, *herc3, *herc6, *alpha;
+    object *fenris, *alpha;
     ship_subsys *orion_turret, *fenris_turret, *fenris_radar, *orion_radar,
         *lookup;
     beam_fire_info f;
@@ -3153,19 +3146,15 @@ beam_test_new(int whee)
     // lookup some stuff
     s1 = ship_name_lookup("GTD Orion 1");
     Assert(s1 >= 0);
-    orion = &Objects[Ships[s1].objnum];
     s2 = ship_name_lookup("GTC Fenris 2");
     Assert(s2 >= 0);
     fenris = &Objects[Ships[s2].objnum];
     s3 = ship_name_lookup("GTF Hercules 2");
     Assert(s3 >= 0);
-    herc2 = &Objects[Ships[s3].objnum];
     s3 = ship_name_lookup("GTF Hercules 3");
     Assert(s3 >= 0);
-    herc3 = &Objects[Ships[s3].objnum];
     s3 = ship_name_lookup("GTF Hercules 6");
     Assert(s3 >= 0);
-    herc6 = &Objects[Ships[s3].objnum];
     s3 = ship_name_lookup("Alpha 1");
     Assert(s3 >= 0);
     alpha = &Objects[Ships[s3].objnum];

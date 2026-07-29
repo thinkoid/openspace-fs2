@@ -2785,7 +2785,7 @@ ss_synch_interface()
 int
 ss_swap_slot_slot(int from_slot, int to_slot, int *sound)
 {
-    int i, tmp, fwnum, fsnum, twnum, tsnum;
+    int i, tmp;
 
     if (from_slot == to_slot) {
         *sound = SND_ICON_DROP_ON_WING;
@@ -2797,12 +2797,6 @@ ss_swap_slot_slot(int from_slot, int to_slot, int *sound)
         *sound = SND_ICON_DROP;
         return 0;
     }
-
-    fwnum = from_slot / 4;
-    fsnum = from_slot % 4;
-
-    twnum = to_slot / 4;
-    tsnum = to_slot % 4;
 
     // swap ship class
     tmp = Wss_slots[from_slot].ship_class;
@@ -2828,7 +2822,7 @@ ss_swap_slot_slot(int from_slot, int to_slot, int *sound)
 int
 ss_dump_to_list(int from_slot, int to_list, int *sound)
 {
-    int i, fwnum, fsnum;
+    int i;
     wss_unit *slot;
 
     slot = &Wss_slots[from_slot];
@@ -2838,9 +2832,6 @@ ss_dump_to_list(int from_slot, int to_list, int *sound)
         *sound = SND_ICON_DROP;
         return 0;
     }
-
-    fwnum = from_slot / 4;
-    fsnum = from_slot % 4;
 
     // put ship back in list
     Ss_pool[to_list]++; // return to list

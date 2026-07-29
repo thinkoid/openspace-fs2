@@ -543,8 +543,7 @@ void
 parse_player_info2(mission *pm)
 {
     char str[NAME_LENGTH];
-    int nt, i, total, list[MAX_SHIP_TYPES * 2], list2[MAX_WEAPON_TYPES * 2],
-        num_starting_wings;
+    int nt, i, total, list[MAX_SHIP_TYPES * 2], list2[MAX_WEAPON_TYPES * 2];
     team_data *ptr;
     char starting_wings[MAX_PLAYER_WINGS][NAME_LENGTH];
 
@@ -579,10 +578,8 @@ parse_player_info2(mission *pm)
         }
         ptr->number_choices = num_ship_choices;
 
-        num_starting_wings = 0;
         if (optional_string("+Starting Wings:"))
-            num_starting_wings = stuff_string_list(starting_wings,
-                                                   MAX_PLAYER_WINGS);
+            stuff_string_list(starting_wings, MAX_PLAYER_WINGS);
 
         ptr->default_ship = -1;
         if (optional_string("+Default_ship:")) {
@@ -2336,11 +2333,10 @@ parse_wing(mission *pm)
     // into the sexpression array of each goal (max 10).  When a ship in this wing is created, each
     // goal in the wings goal array is given to the ship.
     if (wing_goals != -1) {
-        int sexp, index;
+        int sexp;
 
         // this will assign the goals to the wings as well as to any ships in the wing that have been
         // already created.
-        index = 0;
         for (sexp = CDR(wing_goals); sexp != -1; sexp = CDR(sexp))
             ai_add_wing_goal_sexp(sexp, AIG_TYPE_EVENT_WING,
                                   wingnum); // used by Fred
@@ -3026,8 +3022,7 @@ parse_variables()
         return;
     }
     else {
-        int num_variables;
-        num_variables = stuff_sexp_variable_list();
+        stuff_sexp_variable_list();
     }
 }
 

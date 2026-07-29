@@ -1079,8 +1079,6 @@ brief_start_highlight_anims(int stage_num)
 void
 brief_render_map(int stage_num, float frametime)
 {
-    brief_stage *bs;
-
     gr_set_clip(bscreen.map_x1 + 1, bscreen.map_y1 + 1,
                 bscreen.map_x2 - bscreen.map_x1 - 1,
                 bscreen.map_y2 - bscreen.map_y1 - 2);
@@ -1094,7 +1092,6 @@ brief_render_map(int stage_num, float frametime)
     }
 
     Assert(Briefing);
-    bs = &Briefing->stages[stage_num];
 
     g3_start_frame(0);
     g3_set_view_matrix(&Current_cam_pos, &Current_cam_orient, 0.5f);
@@ -1342,7 +1339,6 @@ brief_render_elements(vector *pos, grid *gridp)
 {
     vector gpos; //  Location of point on grid.
     //   vector   tpos;
-    float dxz;
     plane tplane;
     vector *gv;
 
@@ -1355,8 +1351,6 @@ brief_render_elements(vector *pos, grid *gridp)
     tplane.D = gridp->planeD;
 
     compute_point_on_plane(&gpos, &tplane, pos);
-
-    dxz = vm_vec_dist(pos, &gpos) / 8.0f;
 
     gv = &gridp->gmatrix.uvec;
     if (gv->x * pos->x + gv->y * pos->y + gv->z * pos->z < -gridp->planeD)

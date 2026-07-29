@@ -416,7 +416,6 @@ key_peekkey()
 int
 key_getch()
 {
-    int dummy = 0;
     int in;
 
     if (!key_inited)
@@ -424,8 +423,6 @@ key_getch()
 
     while (!key_checkch()) {
         os_poll();
-
-        dummy++;
     }
     in = key_inkey();
 

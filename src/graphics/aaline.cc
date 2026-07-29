@@ -649,7 +649,6 @@ gr8_aaline(vertex *v1, vertex *v2)
     aa2.y = v2->sy;
 
     {
-        int clipped = 0, swapped = 0;
         float a1, b1, a2, b2;
         a1 = (float)gr_screen.clip_left;
         b1 = (float)gr_screen.clip_top;
@@ -657,7 +656,7 @@ gr8_aaline(vertex *v1, vertex *v2)
         b2 = (float)gr_screen.clip_bottom;
 
         FL_CLIPLINE(aa1.x, aa1.y, aa2.x, aa2.y, a1, b1, a2, b2, return,
-                    clipped = 1, swapped = 1);
+                    (void)0, (void)0);
     }
 
     aaline_setup(&aa1, &aa2);

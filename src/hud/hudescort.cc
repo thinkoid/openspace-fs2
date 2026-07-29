@@ -435,12 +435,8 @@ hud_escort_show_icon(int index, object *objp)
     int screen_integrity, offset;
     char buf[255];
     ship *sp;
-    ship_info *sip;
-    shield_hit_info *shi;
 
     sp = &Ships[objp->instance];
-    sip = &Ship_info[sp->ship_info_index];
-    shi = &Escort_ships[index].hit_info;
 
     // determine if its "friendly" or not
     if (Player_ship != NULL) {

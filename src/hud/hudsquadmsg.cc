@@ -377,7 +377,6 @@ hud_squadmsg_end()
 int
 hud_squadmsg_count_fighters()
 {
-    int count;
     int team;
     object *objp;
     ship *shipp;
@@ -390,7 +389,6 @@ hud_squadmsg_count_fighters()
         team = opposing_team_mask(Player_ship->team);
 #endif
 
-    count = 0;
     for (objp = GET_FIRST(&obj_used_list); objp != END_OF_LIST(&obj_used_list);
          objp = GET_NEXT(objp)) {
         if (objp->type != OBJ_SHIP)

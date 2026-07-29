@@ -1352,10 +1352,6 @@ collide_ship_ship(obj_pair *pair)
             do_kamikaze_crash(A, B);
 
             if (ship_ship_hit_info.impulse > 0) {
-                float q;
-
-                q = vm_vec_dist_quick(&A->pos, &B->pos) / (A->radius + B->radius);
-
 #ifndef NDEBUG
 //          //nprintf(("AI", "Frame %i: %s and %s, dam=%7.2f.  dist/rad=%5.2f. Zeroing.\n", Framecount, Ships[A->instance].ship_name, Ships[B->instance].ship_name, damage, q));
 //          if (damage > 5.0f) {

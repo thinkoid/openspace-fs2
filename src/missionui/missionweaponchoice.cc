@@ -1250,13 +1250,11 @@ void
 wl_get_ship_weapons(int ship_index, int *wep, int *wep_count)
 {
     int i;
-    wing *wp;
     ship_weapon *swp;
 
     Assert(ship_index >= 0);
 
     Assert(Ships[ship_index].wingnum >= 0);
-    wp = &Wings[Ships[ship_index].wingnum];
     swp = &Ships[ship_index].weapons;
 
     for (i = 0; i < swp->num_primary_banks; i++) {
@@ -2858,10 +2856,8 @@ wl_update_parse_object_weapons(p_object *pobjp, wss_unit *slot)
 {
     int i, j, sidx, pilot_index, max_count;
     subsys_status *ss;
-    ship_info *sip;
 
     Assert(slot->ship_class >= 0);
-    sip = &Ship_info[slot->ship_class];
 
     pilot_index = wl_get_pilot_subsys_index(pobjp);
 

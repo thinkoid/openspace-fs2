@@ -2210,10 +2210,8 @@ void
 ship_destroyed(int num)
 {
     ship *shipp;
-    object *objp;
 
     shipp = &Ships[num];
-    objp = &Objects[shipp->objnum];
 
     // add the information to the exited ship list
     ship_add_exited_ship(shipp, SEF_DESTROYED);
@@ -2263,10 +2261,8 @@ void
 ship_vanished(int num)
 {
     ship *sp;
-    object *objp;
 
     sp = &Ships[num];
-    objp = &Objects[sp->objnum];
 
     // add the information to the exited ship list
     ship_add_exited_ship(sp, SEF_DEPARTED);
@@ -4491,7 +4487,6 @@ ship_fire_primary(object *obj, int stream_weapons, int force)
     int n = obj->instance;
     ship *shipp;
     ship_weapon *swp;
-    ship_info *sip;
     ai_info *aip;
     int weapon, i, j, weapon_objnum;
     int bank_to_fire, num_fired = 0;
@@ -4523,7 +4518,6 @@ ship_fire_primary(object *obj, int stream_weapons, int force)
     if ((shipp->ai_index < 0) || (shipp->ai_index >= MAX_AI_INFO)) {
         return 0;
     }
-    sip = &Ship_info[shipp->ship_info_index];
     aip = &Ai_info[shipp->ai_index];
 
     if (swp->num_primary_banks <= 0) {
@@ -4993,7 +4987,6 @@ ship_fire_secondary(object *obj, int allow_swarm)
     int n, weapon, j, bank, num_fired;
     ship *shipp;
     ship_weapon *swp;
-    ship_info *sip;
     weapon_info *wip;
     ai_info *aip;
     polymodel *po;
@@ -5022,7 +5015,6 @@ ship_fire_secondary(object *obj, int allow_swarm)
 
     shipp = &Ships[n];
     swp = &shipp->weapons;
-    sip = &Ship_info[shipp->ship_info_index];
     aip = &Ai_info[shipp->ai_index];
 
     // if no secondary weapons are present on ship, return
@@ -5647,10 +5639,8 @@ get_subsystem_pos(vector *pos, object *objp, ship_subsys *subsysp)
     matrix m;
     model_subsystem *psub;
     vector pnt;
-    ship *shipp;
 
     Assert(objp->type == OBJ_SHIP);
-    shipp = &Ships[objp->instance];
 
     Assert(subsysp != NULL);
 
@@ -6372,7 +6362,7 @@ ship_find_repair_ship(object *requester_obj)
 {
     object *objp;
     ship *requester_ship;
-    int num_support_ships, num_available_support_ships;
+    int num_support_ships;
     float min_dist = 99999.0f;
     object *nearest_support_ship = NULL;
     int support_ships[MAX_SUPPORT_SHIPS_PER_TEAM];
@@ -6386,7 +6376,6 @@ ship_find_repair_ship(object *requester_obj)
         return NULL;
 
     num_support_ships = 0;
-    num_available_support_ships = 0;
 
     requester_ship = &Ships[requester_obj->instance];
     for (objp = GET_FIRST(&obj_used_list); objp != END_OF_LIST(&obj_used_list);
@@ -6415,7 +6404,6 @@ ship_find_repair_ship(object *requester_obj)
             support_ships[num_support_ships] = objp - Objects;
 
             if (!(Ai_info[shipp->ai_index].ai_flags & AIF_REPAIRING)) {
-                num_available_support_ships++;
                 if (dist < min_dist) {
                     min_dist = dist;
                     nearest_support_ship = objp;
@@ -8811,7 +8799,6 @@ void
 ship_update_artillery_lock()
 {
     ai_info *aip = NULL;
-    weapon_info *tlaser = NULL;
     mc_info *cinfo = NULL;
     int c_objnum;
     vector temp, local_hit;
@@ -8876,9 +8863,6 @@ ship_update_artillery_lock()
                  .b_info.beam_type != BEAM_TYPE_C)) {
             continue;
         }
-        tlaser = &Weapon_info[shipp->weapons.primary_bank_weapons
-                                  [shipp->weapons.current_primary_bank]];
-
         // get collision info
         if (!beam_get_collision(shipp->targeting_laser_objnum, 0, &c_objnum,
                                 &cinfo)) {

@@ -2098,13 +2098,11 @@ weapon_process_post(object *obj, float frame_time)
                 float dot;
                 vector tvec;
                 ai_info *parent_aip;
-                float lead_scale = 0.0f;
 
                 parent_aip = NULL;
                 if (obj->parent != Player_obj - Objects) {
                     parent_aip =
                         &Ai_info[Ships[Objects[obj->parent].instance].ai_index];
-                    lead_scale = parent_aip->lead_scale;
                 }
 
                 vm_vec_normalized_dir(&tvec, &v0, &Objects[wp->target_num].pos);
@@ -2810,12 +2808,10 @@ void
 weapon_do_area_effect(object *wobjp, vector *pos, object *other_obj)
 {
     weapon_info *wip;
-    weapon *wp;
     object *objp;
     float damage, blast;
 
     wip = &Weapon_info[Weapons[wobjp->instance].weapon_info_index];
-    wp = &Weapons[wobjp->instance];
     Assert(wip->inner_radius != 0);
 
     // only blast ships and asteroids
@@ -2887,7 +2883,6 @@ weapon_hit(object *weapon_obj, object *other_obj, vector *hitpos)
 
     int num = weapon_obj->instance;
     int weapon_type = Weapons[num].weapon_info_index;
-    object *weapon_parent_objp;
     weapon_info *wip;
 
     Assert((weapon_type >= 0) && (weapon_type < MAX_WEAPONS));
@@ -2895,7 +2890,6 @@ weapon_hit(object *weapon_obj, object *other_obj, vector *hitpos)
         return;
     }
     wip = &Weapon_info[weapon_type];
-    weapon_parent_objp = &Objects[weapon_obj->parent];
 
     weapon_hit_do_sound(other_obj, wip, hitpos);
 
@@ -3367,7 +3361,6 @@ weapon_get_damage_scale(weapon_info *wip, object *wep, object *target)
 
     // if the hit object was a ship
     if (target->type == OBJ_SHIP) {
-        ship *shipp;
         ship_info *sip;
 
         // get some info on the ship
@@ -3375,7 +3368,6 @@ weapon_get_damage_scale(weapon_info *wip, object *wep, object *target)
         if ((target->instance < 0) || (target->instance >= MAX_SHIPS)) {
             return total_scale;
         }
-        shipp = &Ships[target->instance];
         sip = &Ship_info[Ships[target->instance].ship_info_index];
 
         // get hull pct of the ship currently

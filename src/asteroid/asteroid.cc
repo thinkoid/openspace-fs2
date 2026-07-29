@@ -897,11 +897,6 @@ void
 asteroid_process_pre(object *objp, float frame_time)
 {
     if (Asteroids_enabled) {
-        vector *v, *vv;
-
-        v = &objp->phys_info.vel;
-        vv = &objp->phys_info.desired_vel;
-
         //nprintf(("AI", "Frm %i: Obj #%2i: Hull: %5.1f Vel: %5.1f %5.1f %5.1f Des: %5.1f %5.1f %5.1f\n", Framecount, objp-Objects, objp->hull_strength, v->x, v->y, v->z, vv->x, vv->y, vv->z));
 
         //  Make vel chase desired_vel
@@ -1204,10 +1199,8 @@ asteroid_render(object *obj)
 {
     if (Asteroids_enabled) {
         int num;
-        polymodel *pm;
         asteroid *asp;
 
-        pm = NULL;
         num = obj->instance;
 
         Assert((num >= 0) && (num < MAX_ASTEROIDS));

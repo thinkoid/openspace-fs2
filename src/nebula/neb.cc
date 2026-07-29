@@ -819,12 +819,6 @@ neb2_render_player()
     vector eye_pos;
     matrix eye_orient;
 
-#ifndef NDEBUG
-    float this_area;
-    float frame_area = max_area;
-    float total_area = 0.0f;
-#endif
-
     // if the mission is not a fullneb mission, skip
     if (!(The_mission.flags & MISSION_FLAG_FULLNEB)) {
         return;
@@ -966,11 +960,9 @@ neb2_render_player()
                               alpha + Neb2_cubes[idx1][idx2][idx3].flash);
 
 #ifndef NDEBUG
-                this_area = g3_draw_rotated_bitmap_area(
+                g3_draw_rotated_bitmap_area(
                     &p, fl_radian(Neb2_cubes[idx1][idx2][idx3].rot), Nd->prad,
                     TMAP_FLAG_TEXTURED, max_area);
-                total_area += this_area;
-                frame_area -= this_area;
                 frame_rendered++;
 #else
                 g3_draw_rotated_bitmap(

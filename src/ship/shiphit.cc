@@ -1356,7 +1356,6 @@ ship_hit_kill(object *ship_obj, object *other_obj, float percent_killed,
     ship *sp;
     char *killer_ship_name;
     int killer_damage_percent = 0;
-    object *killer_objp = NULL;
 
     sp = &Ships[ship_obj->instance];
     show_dead_message(ship_obj, other_obj);
@@ -1399,8 +1398,6 @@ ship_hit_kill(object *ship_obj, object *other_obj, float percent_killed,
                 (objp->type == OBJ_SHIP) ||
                 (objp->type == OBJ_GHOST)); // I suppose that this should be true
             killer_ship_name = Ships[objp->instance].ship_name;
-
-            killer_objp = objp;
         }
         else {
             int ei;

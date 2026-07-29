@@ -778,14 +778,12 @@ gr_opengl_string(int sx, int sy, const char *s)
 void
 gr_opengl_line(int x1, int y1, int x2, int y2)
 {
-    int clipped = 0, swapped = 0;
-
     gr_opengl_set_state(TEXTURE_SOURCE_NONE, ALPHA_BLEND_ALPHA_BLEND_ALPHA,
                         ZBUFFER_TYPE_NONE);
 
     INT_CLIPLINE(x1, y1, x2, y2, gr_screen.clip_left, gr_screen.clip_top,
-                 gr_screen.clip_right, gr_screen.clip_bottom, return, clipped = 1,
-                 swapped = 1);
+                 gr_screen.clip_right, gr_screen.clip_bottom, return, (void)0,
+                 (void)0);
 
     float sx1, sy1;
     float sx2, sy2;
@@ -845,7 +843,7 @@ gr_opengl_aaline(vertex *v1, vertex *v2)
 void
 gr_opengl_gradient(int x1, int y1, int x2, int y2)
 {
-    int clipped = 0, swapped = 0;
+    int swapped = 0;
 
     if (!gr_screen.current_color.is_alphacolor) {
         gr_line(x1, y1, x2, y2);
@@ -853,7 +851,7 @@ gr_opengl_gradient(int x1, int y1, int x2, int y2)
     }
 
     INT_CLIPLINE(x1, y1, x2, y2, gr_screen.clip_left, gr_screen.clip_top,
-                 gr_screen.clip_right, gr_screen.clip_bottom, return, clipped = 1,
+                 gr_screen.clip_right, gr_screen.clip_bottom, return, (void)0,
                  swapped = 1);
 
     gr_opengl_set_state(TEXTURE_SOURCE_NONE, ALPHA_BLEND_ALPHA_BLEND_ALPHA,

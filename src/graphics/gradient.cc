@@ -23,7 +23,7 @@ gr8_gradient(int x1, int y1, int x2, int y2)
 #ifndef HARDWARE_ONLY
     int i;
     int xstep, ystep;
-    int clipped = 0, swapped = 0;
+    int swapped = 0;
     ubyte *xlat_table;
 
     int l = 0, dl = 0;
@@ -34,7 +34,7 @@ gr8_gradient(int x1, int y1, int x2, int y2)
     }
 
     INT_CLIPLINE(x1, y1, x2, y2, gr_screen.clip_left, gr_screen.clip_top,
-                 gr_screen.clip_right, gr_screen.clip_bottom, return, clipped = 1,
+                 gr_screen.clip_right, gr_screen.clip_bottom, return, (void)0,
                  swapped = 1);
 
     int dy = y2 - y1;

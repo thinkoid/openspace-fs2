@@ -349,11 +349,11 @@ hud_lock_on_subsys_ok()
 void
 hud_lock_check_if_target_in_lock_cone(vector *lock_world_pos)
 {
-    float dist, dot;
+    float dot;
     vector vec_to_target;
 
-    dist = vm_vec_normalized_dir(&vec_to_target, lock_world_pos,
-                                 &Player_obj->pos);
+    vm_vec_normalized_dir(&vec_to_target, lock_world_pos,
+                          &Player_obj->pos);
     dot = vm_vec_dot(&Player_obj->orient.fvec, &vec_to_target);
 
     if (dot > 0.85) {

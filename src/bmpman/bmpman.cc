@@ -1472,7 +1472,6 @@ void
 bm_unlock(int handle)
 {
     bitmap_entry *be;
-    bitmap *bmp;
 
     int bitmapnum = handle % MAX_BITMAPS;
     Assert(bm_bitmaps[bitmapnum].handle == handle); // INVALID BITMAP HANDLE
@@ -1482,7 +1481,6 @@ bm_unlock(int handle)
         bm_init();
 
     be = &bm_bitmaps[bitmapnum];
-    bmp = &be->bm;
 
     be->ref_count--;
     Assert(be->ref_count >=

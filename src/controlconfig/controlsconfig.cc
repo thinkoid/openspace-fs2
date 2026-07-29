@@ -433,7 +433,7 @@ control_config_valid_action(int n)
 void
 control_config_conflict_check()
 {
-    int i, j, a, b, c, shift = -1, alt = -1;
+    int i, j, a, b, shift = -1, alt = -1;
 
     for (i = 0; i < CCFG_MAX; i++) {
         Conflicts[i].key = Conflicts[i].joy = -1;
@@ -458,7 +458,6 @@ control_config_conflict_check()
             for (j = i + 1; j < CCFG_MAX; j++) {
                 if (control_config_valid_action(j)) {
                     if (Control_config[i].key_id >= 0) {
-                        c = 0;
                         a = Control_config[i].key_id;
                         b = Control_config[j].key_id;
                         if (a == b) {
@@ -527,13 +526,12 @@ control_config_conflict_check()
 void
 control_config_list_prepare()
 {
-    int j, k, y, z;
+    int j, y, z;
     int font_height = gr_get_font_height();
 
     Num_cc_lines = y = z = 0;
     while (z < CCFG_MAX) {
         if ((Control_config[z].tab == Tab) && control_config_valid_action(z)) {
-            k = Control_config[z].key_id;
             j = Control_config[z].joy_id;
             Cc_lines[Num_cc_lines].label = XSTR(Control_config[z].text,
                                                 CONTROL_CONFIG_XSTR + z);
@@ -717,7 +715,7 @@ control_config_bind_axis(int i, int axis)
 int
 control_config_remove_binding()
 {
-    int z, j, k;
+    int z;
     config_item_undo *ptr;
 
     if (Selected_line < 0) {
@@ -747,7 +745,6 @@ control_config_remove_binding()
         return -1;
     }
 
-    j = k = -1;
     ptr = get_undo_block(1);
     ptr->index[0] = z;
     ptr->list[0] = Control_config[z];
@@ -1457,8 +1454,8 @@ control_config_close()
 void
 control_config_do_frame(float frametime)
 {
-    char buf[256], *str, *jptr;
-    int i, j, k, w, x, y, z, len, line, conflict;
+    char buf[256], *str;
+    int i, j, k, w, x, y, z, line, conflict;
     int font_height = gr_get_font_height();
     int select_tease_line =
         -1; // line mouse is down on, but won't be selected until button released
@@ -2036,7 +2033,6 @@ control_config_do_frame(float frametime)
             k = Control_config[z].key_id;
             j = Control_config[z].joy_id;
             x = Control_list_key_x[gr_screen.res];
-            jptr = NULL;
             *buf = 0;
 
             if ((k < 0) && (j < 0)) {
@@ -2062,7 +2058,6 @@ control_config_do_frame(float frametime)
 
                     gr_printf(x, y, buf);
 
-                    len = strlen(buf);
                     Cc_lines[line].kx =
                         x - Control_list_coords[gr_screen.res][CONTROL_X_COORD];
                     gr_get_string_size(&w, NULL, buf);
