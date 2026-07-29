@@ -28,6 +28,10 @@
 #include <freespace2/freespace.hh>
 #include <globalincs/alphacolors.hh>
 
+#include <algorithm>
+#include <string>
+#include <unordered_set>
+
 #define MAX_MISSIONS 1024
 
 int Mission_list_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
@@ -67,7 +71,6 @@ int Campaign_list_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
 #define CUTSCENES_BUTTON 9
 #define CREDITS_BUTTON 10
 
-#define CAMPAIGN_MISSION_HASH_SIZE 307
 
 struct sim_room_buttons
 {
@@ -191,14 +194,21 @@ static UI_WINDOW Ui_window;
 static UI_BUTTON
     List_buttons[LIST_BUTTONS_MAX]; // buttons for each line of text in list
 
-typedef struct hash_node
-{
-    hash_node *next;
-    char *filename;
-} hash_node;
-
-static hash_node *Campaign_mission_hash_table[CAMPAIGN_MISSION_HASH_SIZE];
+// case-insensitive set of the current campaign's mission filenames, used to
+// filter them out of the standalone-mission list (retail: a hand-rolled
+// 307-bucket chained hash whose nodes aliased Campaign_missions[]; the set
+// owns its keys, so there is no lifetime coupling)
+static std::unordered_set< std::string > Campaign_mission_filenames;
 static int Hash_table_inited = 0;
+
+static std::string
+filename_key(const char *filename)
+{
+    std::string key(filename);
+    std::transform(key.begin(), key.end(), key.begin(),
+                   [](unsigned char c) { return char(tolower(c)); });
+    return key;
+}
 
 // special icons (1.04 + stuff)
 #define NUM_MISSION_ICONS 1
@@ -222,138 +232,30 @@ void sim_room_unload_mission_icons();
 void sim_room_blit_icons(int line_index, int y_start,
                          fs_builtin_mission *fb = NULL, int is_md = 0);
 
-// Finds a hash value for mission filename
-//
-// returns hash value
-int
-hash_filename(char *filename)
-{
-    unsigned long long hash_val = 0;
-    char *ptr = filename;
-
-    // Dont hash .fsm extension, convert all to upper case
-    for (int i = 0; i < ((int)strlen(filename) - 4); i++) {
-        hash_val = (hash_val << 4) + toupper(*ptr++);
-    }
-
-    return int(hash_val % CAMPAIGN_MISSION_HASH_SIZE);
-}
-
-// insert filename into Campaign_mission_hash_table
-//
-// returns 1 if successful, 0 if could not allocate memory
-int
-hash_insert(char *filename)
-{
-    int hash_val = hash_filename(filename);
-    hash_node *cur_node;
-
-    // Check if table empty
-    if (Campaign_mission_hash_table[hash_val] == NULL) {
-        Campaign_mission_hash_table[hash_val] = new hash_node;
-
-        cur_node = Campaign_mission_hash_table[hash_val];
-
-        if (cur_node == NULL) {
-            // Unable to allocate memory
-            return 0;
-        }
-    }
-    else {
-        // Walk down list to first empty node
-        cur_node = Campaign_mission_hash_table[hash_val];
-        while (cur_node->next != NULL) {
-            cur_node = cur_node->next;
-        }
-
-        // Create new node
-        cur_node->next = new hash_node;
-
-        if (cur_node->next == NULL) {
-            // unable to allocate memory
-            return 0;
-        }
-        else {
-            cur_node = cur_node->next;
-        }
-    }
-
-    // Initialize data
-    cur_node->next = NULL;
-    cur_node->filename = filename;
-
-    // Return successs
-    return 1;
-}
-
-// Checks if a filename already exitst in the hash table
+// Checks if a filename is one of the current campaign's missions
 //
 // returns 1 if found (collision), 0 if no collision
 int
 campaign_mission_hash_collision(char *filename)
 {
-    int hash_val = hash_filename(filename);
-    hash_node *cur_node = Campaign_mission_hash_table[hash_val];
-
-    if (cur_node == NULL) {
-        return 0;
-    }
-
-    do {
-        if (!stricmp(filename, cur_node->filename)) {
-            return 1;
-        }
-
-        cur_node = cur_node->next;
-    } while (cur_node != NULL);
-
-    // Ran out of stuff to check
-    return 0;
+    return Campaign_mission_filenames.count(filename_key(filename)) != 0;
 }
 
-// builds hash table of campaign mission filenames
-//
-// returns 1 if successful, 0 if not successful
-int
+// builds the set of campaign mission filenames
+void
 build_campaign_mission_filename_hash_table()
 {
-    int rval;
-    // Go through all campaign missions
+    Campaign_mission_filenames.clear();
     for (int i = 0; i < Num_campaign_missions; i++) {
-        rval = hash_insert(Campaign_missions[i]);
-        if (rval == 0) {
-            return 0;
-        }
+        Campaign_mission_filenames.insert(filename_key(Campaign_missions[i]));
     }
-
-    // successful
-    return 1;
 }
 
-// deletes hash table nodes
-//
+// releases the set between visits
 void
 campaign_mission_hash_table_delete()
 {
-    hash_node *cur_node;
-
-    for (int i = 0; i < CAMPAIGN_MISSION_HASH_SIZE; i++) {
-        // Look for entries into array
-        if (Campaign_mission_hash_table[i] != NULL) {
-            cur_node = Campaign_mission_hash_table[i];
-
-            // Walk down the list deleting self
-            while (cur_node->next != NULL) {
-                hash_node *temp = cur_node->next;
-                delete cur_node;
-                cur_node = temp;
-            }
-
-            // Delete last node
-            delete cur_node;
-            Campaign_mission_hash_table[i] = NULL;
-        }
-    }
+    Campaign_mission_filenames.clear();
 }
 
 // add a line of sim_room smuck to end of list
@@ -1087,10 +989,8 @@ sim_room_init()
     Num_campaigns = cf_get_file_list(MAX_CAMPAIGNS, Campaign_file_names,
                                      CF_TYPE_MISSIONS, wild_card, CF_SORT_NAME);
 
-    Hash_table_inited = 0;
-    if (build_campaign_mission_filename_hash_table()) {
-        Hash_table_inited = 1;
-    }
+    build_campaign_mission_filename_hash_table();
+    Hash_table_inited = 1;
 
     // HACK
     GR_MAYBE_CLEAR_RES(Background_bitmap);
