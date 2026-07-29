@@ -929,9 +929,9 @@ cfread_vector(vector *vec, CFILE *file, int ver, vector *deflt)
         return;
     }
 
-    vec->x = cfread_float(file, ver, deflt ? deflt->x : NULL);
-    vec->y = cfread_float(file, ver, deflt ? deflt->y : NULL);
-    vec->z = cfread_float(file, ver, deflt ? deflt->z : NULL);
+    vec->x = cfread_float(file, ver, deflt ? deflt->x : 0.0f);
+    vec->y = cfread_float(file, ver, deflt ? deflt->y : 0.0f);
+    vec->z = cfread_float(file, ver, deflt ? deflt->z : 0.0f);
 }
 
 void
@@ -946,9 +946,9 @@ cfread_angles(angles *ang, CFILE *file, int ver, angles *deflt)
         return;
     }
 
-    ang->p = cfread_float(file, ver, deflt ? deflt->p : NULL);
-    ang->b = cfread_float(file, ver, deflt ? deflt->b : NULL);
-    ang->h = cfread_float(file, ver, deflt ? deflt->h : NULL);
+    ang->p = cfread_float(file, ver, deflt ? deflt->p : 0.0f);
+    ang->b = cfread_float(file, ver, deflt ? deflt->b : 0.0f);
+    ang->h = cfread_float(file, ver, deflt ? deflt->h : 0.0f);
 }
 
 char

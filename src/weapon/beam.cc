@@ -392,9 +392,11 @@ beam_fire(beam_fire_info *fire_info)
     Assert((fire_info->shooter->type == OBJ_SHIP) &&
            (fire_info->shooter->instance >= 0) &&
            (fire_info->shooter->instance < MAX_SHIPS));
+    // retail wrote "< 0 && >= MAX" -- a contradiction, so the range never
+    // rejected; the Assert above spells the intent
     if ((fire_info->shooter->type != OBJ_SHIP) ||
-        (fire_info->shooter->instance < 0) &&
-            (fire_info->shooter->instance >= MAX_SHIPS)) {
+        (fire_info->shooter->instance < 0) ||
+        (fire_info->shooter->instance >= MAX_SHIPS)) {
         return -1;
     }
     firing_ship = &Ships[fire_info->shooter->instance];
@@ -540,9 +542,11 @@ beam_fire_targeting(beam_fire_info *fire_info)
     Assert((fire_info->shooter->type == OBJ_SHIP) &&
            (fire_info->shooter->instance >= 0) &&
            (fire_info->shooter->instance < MAX_SHIPS));
+    // retail wrote "< 0 && >= MAX" -- a contradiction, so the range never
+    // rejected; the Assert above spells the intent
     if ((fire_info->shooter->type != OBJ_SHIP) ||
-        (fire_info->shooter->instance < 0) &&
-            (fire_info->shooter->instance >= MAX_SHIPS)) {
+        (fire_info->shooter->instance < 0) ||
+        (fire_info->shooter->instance >= MAX_SHIPS)) {
         return -1;
     }
     firing_ship = &Ships[fire_info->shooter->instance];
@@ -571,7 +575,7 @@ beam_fire_targeting(beam_fire_info *fire_info)
     new_item->warmdown_stamp = -1;
     new_item->weapon_info_index = fire_info->beam_info_index;
     new_item->objp = fire_info->shooter;
-    new_item->sig = NULL;
+    new_item->sig = 0;
     new_item->subsys = NULL;
     new_item->life_left = 0;
     new_item->life_total = 0;
@@ -579,7 +583,7 @@ beam_fire_targeting(beam_fire_info *fire_info)
     new_item->f_collision_count = 0;
     new_item->target = NULL;
     new_item->target_subsys = NULL;
-    new_item->target_sig = NULL;
+    new_item->target_sig = 0;
     new_item->beam_sound_loop = -1;
     new_item->type = BEAM_TYPE_C;
     new_item->targeting_laser_offset = fire_info->targeting_laser_offset;

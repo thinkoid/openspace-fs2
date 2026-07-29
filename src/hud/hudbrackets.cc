@@ -17,6 +17,7 @@
 #include <freespace2/freespace.hh>
 #include <bmpman/bmpman.hh>
 #include <globalincs/linklist.hh>
+#include <mission/missionparse.hh>
 #include <weapon/emp.hh>
 
 // how much the bounding brackets get faded
@@ -478,7 +479,6 @@ hud_bracket_num_ships_attacking(int objnum)
             aip = &Ai_info[Ships[objp->instance].ai_index];
 
             // don't count instructor
-            int is_training_mission();
             if (is_training_mission() &&
                 stricmp(Ships[objp->instance].ship_name, "Instructor") == 0) {
                 break;

@@ -464,8 +464,8 @@ control_config_conflict_check()
                         if (a == b) {
                             Conflicts[i].key = j;
                             Conflicts[j].key = i;
-                            Conflicts_tabs[Control_config[i].tab] = 1;
-                            Conflicts_tabs[Control_config[j].tab] = 1;
+                            Conflicts_tabs[(int)Control_config[i].tab] = 1;
+                            Conflicts_tabs[(int)Control_config[j].tab] = 1;
                         }
 
                         /*          if ((a >= 0) && (a & KEY_SHIFTED) && (shift >= 0)) {
@@ -501,8 +501,8 @@ control_config_conflict_check()
                         (Control_config[i].joy_id == Control_config[j].joy_id)) {
                         Conflicts[i].joy = j;
                         Conflicts[j].joy = i;
-                        Conflicts_tabs[Control_config[i].tab] = 1;
-                        Conflicts_tabs[Control_config[j].tab] = 1;
+                        Conflicts_tabs[(int)Control_config[i].tab] = 1;
+                        Conflicts_tabs[(int)Control_config[j].tab] = 1;
                     }
                 }
             }

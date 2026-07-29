@@ -370,6 +370,7 @@ extern p_object *Arriving_support_ship;
 extern char Neb2_texture_name[MAX_FILENAME_LEN];
 
 int parse_main(char *mission_name, int flags = 0);
+int is_training_mission();
 int mission_parse_ship_arrived(char *shipname);
 p_object *mission_parse_get_arrival_ship(char *name);
 int parse_create_object(p_object *objp);

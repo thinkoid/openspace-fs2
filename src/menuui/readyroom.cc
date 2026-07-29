@@ -1305,7 +1305,9 @@ sim_room_do_frame(float frametime)
         gr_force_fit_string(buf, 255, list_w1);
         gr_printf(list_x1, Mission_list_coords[gr_screen.res][1], buf);
 
-        if (Campaign.filename) {
+        // retail tested the array's address (always true) and drew a bare
+        // extension when no campaign was loaded
+        if (Campaign.filename[0]) {
             sprintf(buf, NOX("%s%s"), Campaign.filename, FS_CAMPAIGN_FILE_EXT);
             gr_force_fit_string(buf, 255, list_w2);
             gr_printf(list_x2, Mission_list_coords[gr_screen.res][1], buf);

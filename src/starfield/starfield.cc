@@ -791,12 +791,12 @@ void
 subspace_render()
 {
     if (Subspace_model_inner == -1) {
-        Subspace_model_inner = model_load("subspace_small.pof", NULL, NULL);
+        Subspace_model_inner = model_load("subspace_small.pof", 0, NULL);
         Assert(Subspace_model_inner > -1);
     }
 
     if (Subspace_model_outer == -1) {
-        Subspace_model_outer = model_load("subspace_big.pof", NULL, NULL);
+        Subspace_model_outer = model_load("subspace_big.pof", 0, NULL);
         Assert(Subspace_model_outer > -1);
     }
 
@@ -1134,9 +1134,9 @@ stars_page_in()
     // Initialize the subspace stuff
 
     if (Game_subspace_effect) {
-        Subspace_model_inner = model_load("subspace_small.pof", NULL, NULL);
+        Subspace_model_inner = model_load("subspace_small.pof", 0, NULL);
         Assert(Subspace_model_inner > -1);
-        Subspace_model_outer = model_load("subspace_big.pof", NULL, NULL);
+        Subspace_model_outer = model_load("subspace_big.pof", 0, NULL);
         Assert(Subspace_model_outer > -1);
 
         polymodel *pm;

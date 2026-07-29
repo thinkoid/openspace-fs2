@@ -1045,7 +1045,7 @@ mcp_1(object *player_objp, object *planet_objp)
 int
 is_planet(object *objp)
 {
-    return (strnicmp(Ships[objp->instance].ship_name, NOX("planet"), 6) == NULL);
+    return (strnicmp(Ships[objp->instance].ship_name, NOX("planet"), 6) == 0);
 }
 
 // If exactly one of these is a planet and the other is a player ship, do something special.
@@ -1471,10 +1471,10 @@ collide_ship_ship(obj_pair *pair)
         sif_b_flags = Ship_info[Ships[B->instance].ship_info_index].flags;
 
         // if ship is huge and warping in or out
-        if ((Ships[A->instance].flags & SF_ARRIVING_STAGE_1) &&
-                (sif_a_flags & (SIF_HUGE_SHIP)) ||
-            (Ships[B->instance].flags & SF_ARRIVING_STAGE_1) &&
-                (sif_b_flags & (SIF_HUGE_SHIP))) {
+        if (((Ships[A->instance].flags & SF_ARRIVING_STAGE_1) &&
+             (sif_a_flags & (SIF_HUGE_SHIP))) ||
+            ((Ships[B->instance].flags & SF_ARRIVING_STAGE_1) &&
+             (sif_b_flags & (SIF_HUGE_SHIP)))) {
             pair->next_check_time = timestamp(0); // check next time
             return 0;
         }

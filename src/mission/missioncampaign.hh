@@ -39,7 +39,8 @@
 #define CAMPAIGN_MOVIE_PRE_MISSION 1
 #define CMAPAIGN_MOVIE_POST_MISSION 2
 
-#define CAMPAIGN_SINGLE_PLAYER_SIG 0xddddeeee
+// int-typed: read back with cfread_int and compared as int
+#define CAMPAIGN_SINGLE_PLAYER_SIG int(0xddddeeee)
 #define CAMPAIGN_MULTI_PLAYER_SIG 0xeeeeffff
 
 // defines for possibly persistent information

@@ -334,9 +334,9 @@ UI_LISTBOX::process(int focus)
 
                     current_text = get_string(i);
                     for (j = 0; j < key_buffer_count; j++)
-                        if ((current_text[j] != ascii_table[key_buffer[j]]) &&
+                        if ((current_text[j] != ascii_table[(int)key_buffer[j]]) &&
                             (current_text[j] !=
-                             shifted_ascii_table[key_buffer[j]]))
+                             shifted_ascii_table[(int)key_buffer[j]]))
                             break;
 
                     if (j == key_buffer_count) {

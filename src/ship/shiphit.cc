@@ -1355,7 +1355,7 @@ ship_hit_kill(object *ship_obj, object *other_obj, float percent_killed,
 {
     ship *sp;
     char *killer_ship_name;
-    int killer_damage_percent = NULL;
+    int killer_damage_percent = 0;
     object *killer_objp = NULL;
 
     sp = &Ships[ship_obj->instance];

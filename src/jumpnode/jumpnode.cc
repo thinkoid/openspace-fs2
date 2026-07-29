@@ -72,7 +72,7 @@ jumpnode_create(vector *pos)
     Assert(Num_jump_nodes < MAX_JUMP_NODES);
 
     Jump_nodes[Num_jump_nodes].modelnum = model_load(NOX("subspacenode.pof"),
-                                                     NULL, NULL);
+                                                     0, NULL);
     if (Jump_nodes[Num_jump_nodes].modelnum < 0) {
         Int3();
         return -1;

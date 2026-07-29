@@ -378,7 +378,7 @@ fireball_set_framenum(int num)
     // valid lod?
     fl = NULL;
     if ((fb->lod >= 0) && (fb->lod < fd->lod_count)) {
-        fl = &Fireball_info[Fireballs[num].fireball_info_index].lod[fb->lod];
+        fl = &Fireball_info[Fireballs[num].fireball_info_index].lod[(int)fb->lod];
     }
     if (fl == NULL) {
         // argh

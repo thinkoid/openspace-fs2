@@ -332,7 +332,11 @@ popup_process_keys(popup_info *pi, int k, int flags)
     } // end switch
 
     masked_k = k & ~KEY_CTRLED; // take out CTRL modifier only
-    if ((PF_ALLOW_DEAD_KEYS) && (Game_mode & GM_IN_MISSION)) {
+    // retail tested the bare macro (always true), so EVERY in-mission popup
+    // processed the dead-key set; no caller ever passes the flag, so the
+    // intended test makes this block dead (fs2open reached the same verdict
+    // and deleted both)
+    if ((flags & PF_ALLOW_DEAD_KEYS) && (Game_mode & GM_IN_MISSION)) {
         process_set_of_keys(masked_k, Dead_key_set_size, Dead_key_set);
         button_info_do(
             &Player->bi); // call functions based on status of button_info bit vectors

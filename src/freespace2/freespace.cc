@@ -2381,6 +2381,9 @@ say_view_target()
          ((Last_view_target != NULL) && (Last_view_target != view_target)))) {
         if (view_target != Player_obj) {
             char *view_target_name = NULL;
+            // outlives the switch: view_target_name may alias it (retail
+            // declared it inside the OBJ_JUMP_NODE case and read it dangling)
+            char jump_node_name[128];
             switch (Objects[Player_ai->target_objnum].type) {
             case OBJ_SHIP:
                 view_target_name =
@@ -2393,13 +2396,11 @@ say_view_target()
                         .name;
                 Viewer_mode &= ~VM_OTHER_SHIP;
                 break;
-            case OBJ_JUMP_NODE: {
-                char jump_node_name[128];
+            case OBJ_JUMP_NODE:
                 strcpy(jump_node_name, XSTR("jump node", 184));
                 view_target_name = jump_node_name;
                 Viewer_mode &= ~VM_OTHER_SHIP;
                 break;
-            }
 
             default:
                 Int3();
@@ -5850,7 +5851,7 @@ Do_model_timings_test()
 
     // Load them all
     for (i = 0; i < Num_ship_types; i++) {
-        Ship_info[i].modelnum = model_load(Ship_info[i].pof_file, NULL, NULL);
+        Ship_info[i].modelnum = model_load(Ship_info[i].pof_file, 0, NULL);
 
         model_used[Ship_info[i].modelnum % MAX_POLYGON_MODELS]++;
         model_id[Ship_info[i].modelnum % MAX_POLYGON_MODELS] =

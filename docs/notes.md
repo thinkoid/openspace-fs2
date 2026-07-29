@@ -925,3 +925,42 @@ Warnings 419 -> 370, all four categories extinct, zero additions.
 
 Gate: build clean, tests green, boot renders 74 frames (exercises
 PLR_FILE_ID + PAL_ID reads).
+
+## Survey E2: per-site verifications -- warnings 370 -> 308 (2026-07-29)
+
+62 warnings across 12 categories, every site read in context.  The finds:
+
+- beam.cc x2 (beam_fire/beam_fire_targeting): the range guard spelled
+  "instance < 0 && instance >= MAX_SHIPS" -- a contradiction, always
+  false, so the range check never rejected anything.  The Assert directly
+  above spells the intent; respelled to ||.
+- popup.cc: "if ((PF_ALLOW_DEAD_KEYS) && ...)" tested the bare macro --
+  always true, so EVERY in-mission popup processed the dead-key set.
+  Respelled to (flags & PF_ALLOW_DEAD_KEYS); no caller passes it, so the
+  block is now dead -- fs2open reached the same verdict ("unused even in
+  retail") and deleted flag and block.
+- freespace.cc view-target HUD: jump_node_name was declared inside the
+  OBJ_JUMP_NODE case and read (dangling) after the switch.  Hoisted.
+- medals.cc: sprintf(base, "%s%c", base, ...) self-overlap UB -- same
+  class as the missionmessage find; now appends via base + strlen(base).
+  (This one statement carried both the restrict AND a format-overflow
+  warning -- 61 sites, 62 warnings.)
+- ship.cc show_ship_subsys_count(): dead debug statistic (Ship_subsys_hwm
+  never read) containing a real bug -- Ships[objp->type] where instance
+  was meant.  Deleted function, global, and call.
+- keycontrol.cc: "k & ~KEY_SHIFTED + KEY_ALTED" masks with ~0x1000+0x2000
+  == 0xFFF -- accidentally right for every k the switch admits.
+  Respelled to k & ~(KEY_SHIFTED + KEY_ALTED).
+- readyroom/missiondebrief/sound: array-address checks (always true)
+  respelled to name[0] intent; the readyroom one drew a bare ".fc2"
+  extension when no campaign was loaded.
+- Inert mechanics: 13 char-subscript (int) casts (a 14th died with
+  show_ship_subsys_count), parens documenting shipped precedence
+  (aicode x3, collideshipship), braces pinning else bindings (aicode x3,
+  window.cc), int-typed campaign file magics (0xbeefcafe & co, fixing 4
+  sign-compares), NULL->0/0.0f family (model_load x9, cfread defaults x6,
+  beam sigs, shiphit, bmpman ptr_u, strnicmp==NULL), is_training_mission
+  declared in missionparse.hh instead of function-local in hudbrackets.
+
+Gate: delta fully accounted (62 removed, 0 added), tests green, boot
+renders 73 frames.

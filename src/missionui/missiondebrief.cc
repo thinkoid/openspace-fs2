@@ -623,9 +623,9 @@ debrief_choose_promotion_voice()
 
     // search thru all official campaigns for our current campaign
     if ((Campaign.missions[Campaign.current_mission].name) &&
-        (Campaign.filename)) {
+        (Campaign.filename[0])) {
         for (i = 0; i < NUM_VOLITION_CAMPAIGNS; i++) {
-            if ((Campaign.filename != NULL) &&
+            if ((Campaign.filename[0]) &&
                 !stricmp(Campaign.filename,
                          Volition_campaigns[i].campaign_name)) {
                 // now search thru the mission filenames,
@@ -667,10 +667,10 @@ debrief_choose_badge_voice()
     }
 
     if ((Campaign.missions[Campaign.current_mission].name) &&
-        (Campaign.filename)) {
+        (Campaign.filename[0])) {
         // search thru all official campaigns for our current campaign
         for (i = 0; i < NUM_VOLITION_CAMPAIGNS; i++) {
-            if ((Campaign.filename != NULL) &&
+            if ((Campaign.filename[0]) &&
                 !stricmp(Campaign.filename,
                          Volition_campaigns[i].campaign_name)) {
                 // now search thru the mission filenames,

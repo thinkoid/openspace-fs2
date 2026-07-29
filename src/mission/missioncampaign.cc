@@ -75,12 +75,13 @@ campaign Campaign;
 #define CAMPAIGN_FILE_VERSION 12
 //#define CAMPAIGN_FILE_COMPATIBLE_VERSION      CAMPAIGN_INITIAL_RELEASE_FILE_VERSION
 #define CAMPAIGN_FILE_COMPATIBLE_VERSION CAMPAIGN_FILE_VERSION
-#define CAMPAIGN_FILE_ID 0xbeefcafe
+// int-typed: compared against cfread_int results
+#define CAMPAIGN_FILE_ID int(0xbeefcafe)
 
 // variables with deal with the campaign stats save file
 #define CAMPAIGN_STATS_FILE_VERSION 1
 #define CAMPAIGN_STATS_FILE_COMPATIBLE_VERSION 1
-#define CAMPAIGN_STATS_FILE_ID 0xabbadaad
+#define CAMPAIGN_STATS_FILE_ID int(0xabbadaad)
 
 // mission_campaign_get_name returns a string (which is malloced in this routine) of the name
 // of the given freespace campaign file.  In the type field, we return if the campaign is a single

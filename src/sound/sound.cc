@@ -291,7 +291,7 @@ snd_load(game_snd *gs, int allow_hardware_load)
     sound *snd;
     WAVEFORMATEX *header = NULL;
 
-    if (gs->filename == NULL || gs->filename[0] == 0)
+    if (gs->filename[0] == 0)
         return -1;
 
     for (n = 0; n < MAX_SOUNDS; n++) {

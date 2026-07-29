@@ -2846,7 +2846,7 @@ engine_wash_ship_process(ship *shipp)
                 }
             }
 
-            engine_wash_info *ewp = &Engine_wash_info[bank->wash_info_index];
+            engine_wash_info *ewp = &Engine_wash_info[(int)bank->wash_info_index];
             half_angle = ewp->angle;
             radius_mult = ewp->radius_mult;
 

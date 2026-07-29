@@ -1277,7 +1277,7 @@ brief_setup_closeup(brief_icon *bi)
 
     if (Closeup_icon->modelnum == -1) {
         if (sip == NULL) {
-            Closeup_icon->modelnum = model_load(pof_filename, NULL, NULL);
+            Closeup_icon->modelnum = model_load(pof_filename, 0, NULL);
         }
         else {
             Closeup_icon->modelnum = model_load(sip->pof_file, sip->n_subsystems,
@@ -1493,7 +1493,7 @@ brief_do_frame(float frametime)
 
                 ship_info *sip = &Ship_info[Closeup_icon->ship_class];
                 if (sip->modelnum < 0)
-                    sip->modelnum = model_load(sip->pof_file, NULL, NULL);
+                    sip->modelnum = model_load(sip->pof_file, 0, NULL);
 
                 mprintf(("Shiptype = %d (%s)\n", Closeup_icon->ship_class,
                          sip->name));
@@ -1510,7 +1510,7 @@ brief_do_frame(float frametime)
 
                 ship_info *sip = &Ship_info[Closeup_icon->ship_class];
                 if (sip->modelnum < 0)
-                    sip->modelnum = model_load(sip->pof_file, NULL, NULL);
+                    sip->modelnum = model_load(sip->pof_file, 0, NULL);
 
                 mprintf(("Shiptype = %d (%s)\n", Closeup_icon->ship_class,
                          sip->name));

@@ -1356,12 +1356,12 @@ bm_lock(int handle, ubyte bpp, ubyte flags)
     }
     int rle_changed = 0;
     int fake_xparent_changed = 0;
-    if ((bmp->data == NULL) || (bpp != bmp->bpp) || pal_changed || rle_changed ||
+    if ((bmp->data == 0) || (bpp != bmp->bpp) || pal_changed || rle_changed ||
         fake_xparent_changed) {
         Assert(be->ref_count == 1);
 
         if (be->type != BM_TYPE_USER) {
-            if (bmp->data == NULL) {
+            if (bmp->data == 0) {
                 nprintf(
                     ("BmpMan", "Loading %s for the first time.\n", be->filename));
             }

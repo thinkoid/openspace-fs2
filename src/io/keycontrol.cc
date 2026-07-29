@@ -1161,7 +1161,11 @@ ppsk_hotkeys(int k)
     case KEY_F10 + KEY_SHIFTED + KEY_ALTED:
     case KEY_F11 + KEY_SHIFTED + KEY_ALTED:
     case KEY_F12 + KEY_SHIFTED + KEY_ALTED:
-        hotkey_set = mission_hotkey_get_set_num(k & ~KEY_SHIFTED + KEY_ALTED);
+        // retail wrote "k & ~KEY_SHIFTED + KEY_ALTED", which masks with
+        // ~0x1000 + 0x2000 == 0xFFF -- the same answer for every k this
+        // switch admits, by accident
+        hotkey_set = mission_hotkey_get_set_num(
+            k & ~(KEY_SHIFTED + KEY_ALTED));
         hud_target_hotkey_clear(hotkey_set);
         break;
 

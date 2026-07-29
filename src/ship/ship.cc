@@ -3947,28 +3947,6 @@ ship_make_create_time_unique(ship *shipp)
     }
 }
 
-int Ship_subsys_hwm = 0;
-
-void
-show_ship_subsys_count()
-{
-    object *objp;
-    int count = 0;
-
-    for (objp = GET_FIRST(&obj_used_list); objp != END_OF_LIST(&obj_used_list);
-         objp = GET_NEXT(objp)) {
-        if (objp->type == OBJ_SHIP) {
-            count += Ship_info[Ships[objp->type].ship_info_index].n_subsystems;
-        }
-    }
-
-    //nprintf(("AI", "Num subsystems, high water mark = %i, %i\n", count, Ship_subsys_hwm));
-
-    if (count > Ship_subsys_hwm) {
-        Ship_subsys_hwm = count;
-    }
-}
-
 // Returns object index of ship.
 // -1 means failed.
 int
@@ -4035,15 +4013,13 @@ ship_create(matrix *orient, vector *pos, int ship_type)
         }
 
         // mow load it for me with no subsystems
-        sip->modelnum_hud = model_load(sip->pof_file_hud, NULL, NULL);
+        sip->modelnum_hud = model_load(sip->pof_file_hud, 0, NULL);
     }
 
     polymodel *pm;
     pm = model_get(shipp->modelnum);
 
     ship_copy_subsystem_fixup(sip);
-
-    show_ship_subsys_count();
 
     if (sip->num_detail_levels < pm->n_detail_levels) {
         Warning(LOCATION, "For ship '%s', detail level\nmismatch (POF needs %d)",
@@ -4855,14 +4831,15 @@ ship_process_targeting_lasers()
             // fire a targeting laser
             fire_info.accuracy = 0.0f;
             fire_info.beam_info_index =
-                shipp->weapons.primary_bank_weapons[shipp->targeting_laser_bank];
+                shipp->weapons
+                    .primary_bank_weapons[(int)shipp->targeting_laser_bank];
             fire_info.beam_info_override = NULL;
             fire_info.shooter = &Objects[shipp->objnum];
             fire_info.target = NULL;
             fire_info.target_subsys = NULL;
             fire_info.turret = NULL;
             fire_info.targeting_laser_offset =
-                m->gun_banks[shipp->targeting_laser_bank].pnt[0];
+                m->gun_banks[(int)shipp->targeting_laser_bank].pnt[0];
             shipp->targeting_laser_objnum = beam_fire_targeting(&fire_info);
 
             // hmm, why didn't it fire?
