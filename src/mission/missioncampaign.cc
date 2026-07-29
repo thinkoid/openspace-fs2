@@ -683,7 +683,7 @@ campaign_savefile_save(char *pname)
 void
 mission_campaign_savefile_delete(char *cfilename, int is_multi)
 {
-    char filename[_MAX_FNAME], base[_MAX_FNAME];
+    char filename[2 * _MAX_FNAME], base[_MAX_FNAME];
 
     _splitpath(cfilename, NULL, NULL, base, NULL);
 
@@ -744,7 +744,7 @@ mission_campaign_delete_all_savefiles(char *pilot_name, int is_multi)
 void
 mission_campaign_savefile_load(char *cfilename)
 {
-    char filename[_MAX_FNAME], base[_MAX_FNAME];
+    char filename[2 * _MAX_FNAME], base[_MAX_FNAME];
     int id, version, i, num, j, num_stats_blocks;
     int type_sig;
     CFILE *fp;

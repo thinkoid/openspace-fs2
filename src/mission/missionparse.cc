@@ -2065,8 +2065,9 @@ parse_wing_create_ships(wing *wingp, int num_to_create)
             // this wing
             wingp->total_arrived_count++;
             if (wingp->num_waves > 1) {
-                sprintf(objp->name, NOX("%s %d"), wingp->name,
-                        wingp->total_arrived_count);
+                // bounded: name is NAME_LENGTH and so is wingp->name
+                sprintf(objp->name, NOX("%.*s %d"), NAME_LENGTH - 6,
+                        wingp->name, wingp->total_arrived_count);
             }
 
             objnum = parse_create_object(objp);
@@ -3148,7 +3149,8 @@ post_process_mission()
             // entering this if statement will result in program termination!!!!!
             // print out an error based on the return value from check_sexp_syntax()
             if (result) {
-                char sexp_str[8192], text[8192];
+                // text carries sexp_str plus the error framing
+                char sexp_str[8192], text[8192 + 512];
 
                 convert_sexp_to_string(i, sexp_str, SEXP_ERROR_CHECK_MODE);
                 sprintf(text,

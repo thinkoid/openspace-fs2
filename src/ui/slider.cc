@@ -189,7 +189,7 @@ UI_DOT_SLIDER::create(UI_WINDOW *wnd, int _x, int _y, const char *bm, int id,
 
     num_pos = _num_pos;
 
-    sprintf(filename, "%s%0.2d", bm, hotspot);
+    sprintf(filename, "%s%.2d", bm, hotspot);
     first_frame = bm_load_animation(filename, &total_frames);
     if (first_frame < 0) {
         Error(LOCATION, "Could not load %s.ani\n", filename);
@@ -213,7 +213,7 @@ UI_DOT_SLIDER::create(UI_WINDOW *wnd, int _x, int _y, const char *bm, int id,
 
     if (has_end_buttons) {
         // Second button is the up (increase) button
-        sprintf(filename, "%s%0.2d", bm, id + 2);
+        sprintf(filename, "%s%.2d", bm, id + 2);
         up_button.create(wnd, "", _x + 216, _y, 22, 24, 1, 1);
         up_button.set_parent(this);
         up_button.set_highlight_action(common_play_highlight_sound);
@@ -221,7 +221,7 @@ UI_DOT_SLIDER::create(UI_WINDOW *wnd, int _x, int _y, const char *bm, int id,
         up_button.link_hotspot(id + 2);
 
         // Third button is the down (decrease) button
-        sprintf(filename, "%s%0.2d", bm, id);
+        sprintf(filename, "%s%.2d", bm, id);
         down_button.create(wnd, "", _x, _y, 22, 24, 1, 1);
         down_button.set_parent(this);
         down_button.set_highlight_action(common_play_highlight_sound);

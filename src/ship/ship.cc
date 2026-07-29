@@ -4050,7 +4050,9 @@ ship_create(matrix *orient, vector *pos, int ship_type)
     shipp->ai_index = ai_get_slot(n);
     Assert(shipp->ai_index >= 0);
 
-    sprintf(shipp->ship_name, NOX("%s %d"), Ship_info[ship_type].name, n);
+    // bounded: ship_name is NAME_LENGTH and so is the class name
+    sprintf(shipp->ship_name, NOX("%.*s %d"), NAME_LENGTH - 6,
+            Ship_info[ship_type].name, n);
     ship_set_default_weapons(
         shipp,
         sip); //  Moved up here because ship_set requires that weapon info be valid.  MK, 4/28/98

@@ -179,8 +179,9 @@ parse_weapon_expl_tbl()
                 break;
             }
 
-            sprintf(Weapon_expl_info[Num_weapon_expl].lod[idx].filename, "%s_%d",
-                    base_filename, idx);
+            // bounded: filename is MAX_FILENAME_LEN, the table name may not be
+            sprintf(Weapon_expl_info[Num_weapon_expl].lod[idx].filename,
+                    "%.*s_%d", MAX_FILENAME_LEN - 4, base_filename, idx);
         }
 
         Num_weapon_expl++;

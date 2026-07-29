@@ -813,7 +813,9 @@ bm_load_animation(const char *real_filename, int *nframes, int *fps,
             sprintf(bm_bitmaps[n + i].filename, "%s", filename);
         }
         else {
-            sprintf(bm_bitmaps[n + i].filename, "%s[%d]", filename, i);
+            // bounded: the [frame] suffix must fit MAX_FILENAME_LEN
+            sprintf(bm_bitmaps[n + i].filename, "%.*s[%d]",
+                    MAX_FILENAME_LEN - 7, filename, i);
         }
     }
 

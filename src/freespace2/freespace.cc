@@ -3017,7 +3017,7 @@ game_flip_page_and_time_it()
     t2 = timer_get_fixed_seconds();
     d = t2 - t1;
     t = (gr_screen.max_w * gr_screen.max_h * gr_screen.bytes_per_pixel) / 1024;
-    sprintf(transfer_text, NOX("%d MB/s"), fixmuldiv(t, 65, d));
+    sprintf(transfer_text, NOX("%d MB/s"), (int)fixmuldiv(t, 65, d));
 }
 
 void

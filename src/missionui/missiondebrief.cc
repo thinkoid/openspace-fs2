@@ -616,7 +616,7 @@ debrief_choose_promotion_voice()
     int i, j;
 
     if (Campaign.current_mission < 0) {
-        sprintf(Promotion_stage.voice, NOX("9_%s"),
+        sprintf(Promotion_stage.voice, NOX("9_%.29s"),
                 Ranks[Promoted].promotion_voice_base);
         return;
     }
@@ -637,7 +637,7 @@ debrief_choose_promotion_voice()
                             Debrief_promotion_voice_mapping[i][j].mission_file)) {
                         // found it!  set the persona and bail
                         sprintf(
-                            Promotion_stage.voice, NOX("%d_%s"),
+                            Promotion_stage.voice, NOX("%d_%.27s"),
                             Debrief_promotion_voice_mapping[i][j].persona_index,
                             Ranks[Promoted].promotion_voice_base);
                         return;
@@ -648,7 +648,7 @@ debrief_choose_promotion_voice()
     }
 
     // default to petrarch
-    sprintf(Promotion_stage.voice, NOX("9_%s"),
+    sprintf(Promotion_stage.voice, NOX("9_%.29s"),
             Ranks[Promoted].promotion_voice_base);
 }
 
@@ -662,7 +662,7 @@ debrief_choose_badge_voice()
 
     if (Campaign.current_mission < 0) {
         // default to petrarch
-        sprintf(Badge_stage.voice, NOX("9_%s"),
+        sprintf(Badge_stage.voice, NOX("9_%.29s"),
                 Badge_info[Player->stats.m_badge_earned].voice_base);
     }
 
@@ -682,7 +682,7 @@ debrief_choose_badge_voice()
                             Debrief_promotion_voice_mapping[i][j].mission_file)) {
                         // found it!  set the persona and bail
                         sprintf(
-                            Badge_stage.voice, NOX("%d_%s"),
+                            Badge_stage.voice, NOX("%d_%.27s"),
                             Debrief_promotion_voice_mapping[i][j].persona_index,
                             Badge_info[Player->stats.m_badge_earned].voice_base);
                         return;
@@ -693,7 +693,7 @@ debrief_choose_badge_voice()
     }
 
     // default to petrarch
-    sprintf(Badge_stage.voice, NOX("9_%s"),
+    sprintf(Badge_stage.voice, NOX("9_%.29s"),
             Badge_info[Player->stats.m_badge_earned].voice_base);
 }
 
@@ -723,7 +723,7 @@ debrief_award_init()
             else {
                 ver = 0;
             }
-            sprintf(buf, NOX("%s%0.2d"),
+            sprintf(buf, NOX("%s%.2d"),
                     Debrief_award_filename[gr_screen.res][DB_AWARD_WINGS], ver);
             Wings_bitmap = bm_load(buf);
         }
@@ -733,7 +733,7 @@ debrief_award_init()
                 Debrief_award_filename[gr_screen.res][DB_AWARD_SOC]);
         }
         else {
-            sprintf(buf, NOX("%s%0.2d"),
+            sprintf(buf, NOX("%s%.2d"),
                     Debrief_award_filename[gr_screen.res][DB_AWARD_MEDAL],
                     Player->stats.m_medal_earned);
             Medal_bitmap = bm_load(buf);
@@ -745,7 +745,7 @@ debrief_award_init()
     // handle promotions
     if (Player->stats.m_promotion_earned != -1) {
         Promoted = Player->stats.m_promotion_earned;
-        sprintf(buf, NOX("%s%0.2d"),
+        sprintf(buf, NOX("%s%.2d"),
                 Debrief_award_filename[gr_screen.res][DB_AWARD_RANK],
                 Promoted + 1);
         Rank_bitmap = bm_load(buf);
@@ -763,7 +763,7 @@ debrief_award_init()
     // only grant badge if earned and allowed.  (no_promotion really means no promotion and no badges)
     if (Player->stats.m_badge_earned != -1) {
         i = Player->stats.m_badge_earned;
-        sprintf(buf, NOX("%s%0.2d"),
+        sprintf(buf, NOX("%s%.2d"),
                 Debrief_award_filename[gr_screen.res][DB_AWARD_BADGE], i + 1);
         Badge_bitmap = bm_load(buf);
 

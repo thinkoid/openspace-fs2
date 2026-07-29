@@ -132,13 +132,13 @@ gr_char_centered(int x, int y, char chr)
 void
 gr_print_timestamp(int x, int y, int timestamp)
 {
-    char h[2], m[3], s[3];
+    char h[4], m[4], s[4];
     int w, c;
 
     // format the time information into strings
-    sprintf(h, "%0.1d", (timestamp / 3600000) % 10);
-    sprintf(m, "%0.2d", (timestamp / 60000) % 60);
-    sprintf(s, "%0.2d", (timestamp / 1000) % 60);
+    sprintf(h, "%.1d", (timestamp / 3600000) % 10);
+    sprintf(m, "%.2d", (timestamp / 60000) % 60);
+    sprintf(s, "%.2d", (timestamp / 1000) % 60);
 
     gr_get_string_size(&w, NULL, "0");
     gr_get_string_size(&c, NULL, ":");

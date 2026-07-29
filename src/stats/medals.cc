@@ -401,7 +401,7 @@ void
 blit_label(char *label, int *coords, int num)
 {
     int x, y, sw;
-    char text[256];
+    char text[300];
 
     gr_set_color_fast(&Color_bright);
 
@@ -574,7 +574,7 @@ init_medal_bitmaps()
         Medal_bitmaps[idx] = -1;
         if (Player_score->medals[idx] > 0) {
             int num_medals;
-            char filename[NAME_LENGTH], base[NAME_LENGTH];
+            char filename[NAME_LENGTH + 4], base[NAME_LENGTH];
 
             // possibly load a different filename that is specified by the bitmap filename
             // for this medal.  if the player has > 1 of these types of medals, then determien
@@ -610,7 +610,7 @@ init_medal_bitmaps()
 
     // load up rank insignia
     if (gr_screen.res == GR_1024) {
-        char filename[NAME_LENGTH];
+        char filename[NAME_LENGTH + 4];
         sprintf(filename, "2_%s", Ranks[Player_score->rank].bitmap);
         Rank_bm = bm_load(filename);
     }

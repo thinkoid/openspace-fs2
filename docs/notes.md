@@ -964,3 +964,28 @@ PLR_FILE_ID + PAL_ID reads).
 
 Gate: delta fully accounted (62 removed, 0 added), tests green, boot
 renders 73 frames.
+
+## Survey E3: the format family extinct -- warnings 308 -> 272 (2026-07-29)
+
+All 36 remaining format=/format-overflow sites (medals' restrict fix in E2
+had already taken the 37th).  Nothing here was a live bug on retail data --
+every overflow needs a table/mission name longer than retail ever ships --
+but each was a latent memory-corruption on modded data:
+
+- '0'-flag-with-precision family (font, credits, slider, missiondebrief,
+  14 sites): %0.2d -> %.2d, byte-identical output per the C standard.
+- Struct-field sprintf targets got precision bounds ("%.*s_%d" with
+  MAX_FILENAME_LEN/NAME_LENGTH arithmetic): fireball/weapon expl LOD
+  filenames, bmpman [frame] suffixes, wing-wave ship-name bashing
+  (missionparse), ship_create names, debrief promotion/badge voice files.
+  Identical output for every retail-length name; truncation instead of
+  corruption beyond.
+- Local buffers sized to their actual worst case: campaign savefile names
+  (callsign + base + ext > _MAX_FNAME), medals blit_label text, medals
+  hi-res "2_" filenames, sexp error text (8192 + framing).
+- font.cc gr_print_timestamp: h[2]/m[3]/s[3] exact-fit buffers widened.
+- freespace.cc show_framerate: %d fed a fix (long) -- cast to int.
+
+Gate: 36 removed / 0 added, tests green, boot renders 73 frames.
+Remaining 272: unused-but-set 155 (E4), overloaded-virtual 102 (E5),
+unused-value 8 + unused-function 7 (swept next).

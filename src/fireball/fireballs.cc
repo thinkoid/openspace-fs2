@@ -176,8 +176,9 @@ fireball_parse_tbl()
                 break;
             }
 
-            sprintf(Fireball_info[ntypes].lod[idx].filename, "%s_%d",
-                    base_filename, idx);
+            // bounded: filename is MAX_FILENAME_LEN, the table name may not be
+            sprintf(Fireball_info[ntypes].lod[idx].filename, "%.*s_%d",
+                    MAX_FILENAME_LEN - 4, base_filename, idx);
         }
 
         ntypes++;
