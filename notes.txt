@@ -33,7 +33,9 @@ A. BUGS AND PORT DIVERGENCES (fix-mine material)
 /home/lnicoara/build/mine.d/fs2.d/fs2/src/math/floating.hh:16: note: extern float fl_isqrt(float) is shadowed by the macro at :27 defined after it -- the extern is unreachable dead API.  One-line deletion.
 
 ========================================================================
-B. RETAIL BUGS -- CATALOGUE, DECIDE BEFORE FIXING (shipped behavior)
+B. RETAIL BUGS -- RESOLVED 2026-07-29 (all !x & FLAG sites respelled;
+   keycontrol was the one live fix, the other four inert; rand_alt left
+   as-is, srand_alt = zero-caller deletion candidate)
 ========================================================================
 
 /home/lnicoara/build/mine.d/fs2.d/fs2/src/io/keycontrol.cc:1970: note: if (!Player->flags & PLAYER_FLAGS_MATCH_TARGET) -- precedence bug: reads (!flags)&MATCH, which is ~always false, so auto match-target-speed is (almost) never activated by this path.  RETAIL SHIPPED THIS.  Gameplay-affecting; catalogue first, fix only by decision.

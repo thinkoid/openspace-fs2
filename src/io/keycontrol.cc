@@ -1948,7 +1948,10 @@ button_function(int n)
         if (Players[Player_num].flags & PLAYER_FLAGS_AUTO_MATCH_SPEED) {
             snd_play(&Snds[SND_SHIELD_XFER_OK], 1.0f);
             //          HUD_sourced_printf(HUD_SOURCE_HIDDEN, XSTR( "Auto match target speed activated", -1));
-            if (!Player->flags & PLAYER_FLAGS_MATCH_TARGET) {
+            // retail spelled this !flags & FLAG; the precedence slip made
+            // the test always false, so toggling auto-match on never
+            // engaged matching until the next target switch
+            if (!(Player->flags & PLAYER_FLAGS_MATCH_TARGET)) {
                 player_match_target_speed();
             }
         }

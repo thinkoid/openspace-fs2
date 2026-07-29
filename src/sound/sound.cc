@@ -230,7 +230,9 @@ snd_spew_debug_info()
 
     // count up game, interface and message sounds
     for (int idx = 0; idx < MAX_SOUNDS; idx++) {
-        if (!Sounds[idx].flags & SND_F_USED) {
+        // retail spelled this !flags & FLAG; exact by accident (USED is
+        // bit 0 and the only flag)
+        if (!(Sounds[idx].flags & SND_F_USED)) {
             continue;
         }
 

@@ -1803,8 +1803,10 @@ parse_object(mission *pm, int flag, p_object *objp)
                 debris *db;
 
                 db = &Debris[i];
-                if (!db->flags &
-                    DEBRIS_USED) // not used, move onto the next one.
+                // not used, move onto the next one (retail spelled this
+                // !flags & FLAG; exact by accident today, but one flag
+                // set without USED would turn it live)
+                if (!(db->flags & DEBRIS_USED))
                     continue;
                 if (db->source_objnum !=
                     real_objnum) // not from this ship, move to next one

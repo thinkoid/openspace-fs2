@@ -758,8 +758,10 @@ mission_goal_status_change(int goal_num, int new_status)
         if (type != BONUS_GOAL) {
             if (Game_mode & GM_NORMAL) {
                 hud_add_objective_messsage(type, new_status);
-                if (!Mission_goals[goal_num].flags &
-                    MGF_NO_MUSIC) { // maybe play event music
+                // maybe play event music (retail spelled this
+                // !flags & FLAG; exact by accident, NO_MUSIC is bit 0
+                // and the only flag)
+                if (!(Mission_goals[goal_num].flags & MGF_NO_MUSIC)) {
                     event_music_primary_goal_failed();
                 }
                 //HUD_sourced_printf(HUD_SOURCE_FAILED, "%s goal failed at time %6.1f!", Goal_type_text(type), f2fl(Missiontime) );

@@ -128,7 +128,9 @@ asteroid_obj_list_add(int objnum)
     index = cur_asteroid - Asteroids;
 
     Assert(index >= 0 && index < MAX_ASTEROID_OBJS);
-    Assert(!Asteroid_objs[index].flags & ASTEROID_OBJ_USED);
+    // retail spelled this !flags & FLAG; exact by accident (USED is bit 0
+    // and the only flag)
+    Assert(!(Asteroid_objs[index].flags & ASTEROID_OBJ_USED));
 
     Asteroid_objs[index].flags = 0;
     Asteroid_objs[index].objnum = objnum;

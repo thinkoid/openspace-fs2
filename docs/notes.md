@@ -873,3 +873,32 @@ tests green, headless boot renders 75 frames.  The 424 that remain are
 the pre-existing tail (multichar 24, unknown-pragmas 22, conversion-null
 19, char-subscripts, parentheses, unused-value/function, sign-compare,
 register, ...) -- survey section E.
+
+## Survey B resolved: the !x & FLAG family respelled (2026-07-29)
+
+The precedence-slip census (`if (!x & FLAG)` reading `(!x) & FLAG`) came
+to six sites; analysis against the flag values turned up that all five
+flags involved are bit 0, so the buggy form degrades to "flags word
+entirely zero" -- which decides each verdict:
+
+- keycontrol.cc TOGGLE_AUTO_MATCH_TARGET_SPEED: the ONE live bug.  The
+  test sits inside the branch that just set AUTO_MATCH_SPEED (bit 3), so
+  flags is provably nonzero and the condition always false -- the
+  player_match_target_speed() call under it was dead code on every
+  platform since 1999.  Toggling auto-match on never engaged matching
+  until the next target switch.  FIXED (fs2open precedent; the code
+  documents the intent).
+- asteroid.cc Assert, sound.cc Sound_spew counter, missiongoals.cc
+  goal-failed music: exact by accident -- in each case the bit-0 flag is
+  the only flag, so flags==0 <=> bit clear.  Respelled inert.
+- missionparse.cc debris sweep: DEBRIS_EXPIRE (1<<1) exists, but
+  debris.cc zeroes the whole word on init and delete, so reachable
+  states are {0, USED, USED|EXPIRE} and the buggy test was exact.  One
+  future flag away from going live.  Respelled inert.
+- staticrand.cc rand_alt: static int x = Rnd_seed initializes on first
+  call, so srand_alt can never reseed afterward -- but srand_alt has
+  ZERO callers and rand_alt exactly one (aicode rearm-retry jitter,
+  fine with a fixed seed).  Landmine, not a fault; left as-is.
+  srand_alt is a C-pile deletion candidate for the next sweep.
+
+Gate: build clean, tests green, headless boot renders 73 frames.
