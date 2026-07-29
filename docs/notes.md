@@ -1053,3 +1053,16 @@ THE FLAG LIST -- 15 warnings deliberately left, each a decision:
 
 Gate: 257 -> 15 fully accounted (240 removed: 138 unused-but-set + 102
 overloaded-virtual; 0 added), tests green, boot renders 74 frames.
+
+## Survey E COMPLETE (2026-07-29)
+
+E6: readyroom's 307-bucket hand-rolled hash -> std::unordered_set (128
+lines gone, lifetime coupling to Campaign_missions[] gone);
+cf_sort_filenames' twice-written Shell sort -> one std::stable_sort index
+permutation (objectsort.cc's twin untouched by decision).
+
+FINAL STATE: warnings 4756 (survey start) -> 15, every survivor a
+catalogued decision (see the E4+E5 flag list above).  The survey (A-F)
+is closed.  Parked stock: cf_get_file_list copy-paste dedup, commented-
+code policy (~2000 lines), D-leftovers (observer, EAX chain, MP button
+handlers), objectsort modernization (rejected: draw-order risk).
