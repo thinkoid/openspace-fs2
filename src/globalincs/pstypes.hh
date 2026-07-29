@@ -94,6 +94,16 @@ typedef unsigned char ubyte;
 typedef unsigned short ushort;
 typedef unsigned int uint;
 
+// 4-byte file/chunk magics are read from disk as a little-endian int and
+// compared against these constants; spell the id as the byte sequence that
+// appears in the file (retail spelled them as reversed multichar literals,
+// whose type is int -- returning int keeps the comparisons' signedness)
+constexpr int fourcc(const char (&s)[5])
+{
+    return int(uint(ubyte(s[0])) | uint(ubyte(s[1])) << 8 |
+               uint(ubyte(s[2])) << 16 | uint(ubyte(s[3])) << 24);
+}
+
 // HARDWARE_ONLY undefined: this build IS the software renderer
 
 //Stucture to store clipping codes in a word

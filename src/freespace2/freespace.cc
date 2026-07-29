@@ -5246,7 +5246,7 @@ main(int argc, char *argv[])
 // movie_play( NOX("intro.mve"), 0 );
 
 // debug version, movie will only play with -showmovies
-#else if !defined(NDEBUG)
+#else // retail wrote "#else if !defined(NDEBUG)"; the trailing tokens were ignored
 
         // no soup for you!
         // movie_play( NOX("intro.mve"), 0);

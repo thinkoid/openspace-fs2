@@ -280,7 +280,7 @@ palette_find(int r, int g, int b)
 // version 19 - fixed bug where only colors divisible by 4 got used.
 // version 20 - added flag to only use lower 128 colors for palette.
 // VPAL (Volition Palette)
-#define PAL_ID 'LAPV'
+#define PAL_ID fourcc("VPAL")
 #define PAL_VERSION 20
 #define PAL_LAST_COMPATIBLE_VERSION 20
 

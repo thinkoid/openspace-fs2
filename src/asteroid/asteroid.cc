@@ -914,8 +914,6 @@ asteroid_process_pre(object *objp, float frame_time)
     }
 }
 
-#pragma warning(push)
-#pragma warning(disable : 4701)
 int
 asteroid_check_collision(object *pasteroid, object *other_obj, vector *hitpos,
                          collision_info_struct *asteroid_hit_info)
@@ -1200,7 +1198,6 @@ asteroid_check_collision(object *pasteroid, object *other_obj, vector *hitpos,
         return 0;
     }
 }
-#pragma warning(pop)
 
 void
 asteroid_render(object *obj)

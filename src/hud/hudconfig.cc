@@ -155,7 +155,6 @@ int HC_select_all = 0;
 // Module Globals
 //////////////////////////////////////////////////////////////////////////////
 
-#pragma warning(disable : 4710)
 
 const char *Hud_config_fname[GR_NUM_RESOLUTIONS] = { "HUDConfig", "2_HUDConfig" };
 
@@ -322,7 +321,6 @@ struct HC_gauge_region HC_gauge_regions[GR_NUM_RESOLUTIONS][NUM_HUD_GAUGES] = {
     }
 };
 
-#pragma warning(default : 4710)
 
 int HC_gauge_description_coords[GR_NUM_RESOLUTIONS][3] = { { // GR_640
                                                              35, 397, 197 },
@@ -438,7 +436,6 @@ HC_gauge_descriptions(int n)
 #define HCB_RESET 18
 #define HCB_ACCEPT 19
 
-#pragma warning(disable : 4710)
 
 ui_button_info HC_buttons[GR_NUM_RESOLUTIONS][NUM_HUD_BUTTONS] = {
     {

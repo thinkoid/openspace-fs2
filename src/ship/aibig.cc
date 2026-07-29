@@ -39,8 +39,6 @@
 #include <ship/shiphit.hh>
 #include <mission/missionparse.hh>
 
-#pragma optimize("", off)
-#pragma auto_inline(off)
 
 // how often an AI fighter/bomber should scan for enemy fighter/bombers
 // if sitting still and pounding on a big ship.  If enemy fighters are

@@ -397,7 +397,7 @@ read_model_file(polymodel *pm, const char *filename, int n_subsystems,
 
     id = cfread_int(fp);
 
-    if (id != 'OPSP')
+    if (id != fourcc("PSPO"))
         Error(LOCATION, "Bad ID in model file <%s>", filename);
 
     // Version is major*100+minor

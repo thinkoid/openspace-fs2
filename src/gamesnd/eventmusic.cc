@@ -24,7 +24,6 @@
 #include <mission/missiongoals.hh>
 #include <localization/localize.hh>
 
-#pragma optimize("", off)
 
 #define DEFAULT_MASTER_EVENT_MUSIC_VOLUME 0.5f
 
@@ -1478,4 +1477,3 @@ event_music_hostile_ship_destroyed()
     Battle_over_timestamp = timestamp(BATTLE_CHECK_INTERVAL);
 }
 
-#pragma optimize("", on)

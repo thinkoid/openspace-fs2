@@ -902,3 +902,26 @@ entirely zero" -- which decides each verdict:
   srand_alt is a C-pile deletion candidate for the next sweep.
 
 Gate: build clean, tests green, headless boot renders 73 frames.
+
+## Survey E1: mechanical tail -- pragmas, register, multichar, endif (2026-07-29)
+
+Warnings 419 -> 370, all four categories extinct, zero additions.
+
+- 22 MSVC pragmas deleted (warning push/pop/disable, optimize, auto_inline)
+  across 9 files.  Curio: aicode.cc/aibig.cc set optimize("",off) and never
+  restore it -- retail's AI compiled at -O0 on MSVC.
+- pcxutils.cc: 2 C++17-deprecated register specifiers dropped.
+- freespace.cc: "#else if !defined(NDEBUG)" respelled plain #else (the
+  trailing tokens were always ignored; the intended condition is the exact
+  complement of the #if, so behavior identical).
+- multichar magics: new constexpr fourcc() in pstypes.hh builds the
+  little-endian int from the ON-DISK byte order, so ids now read as the
+  file bytes (fourcc("HDR2")) instead of reversed multichar ('2RDH').
+  Swapped: 17 modelsinc.hh chunk ids, pofparse.cc 'OPSP' -> "PSPO",
+  palman PAL_ID -> "VPAL", managepilot PLR_FILE_ID -> "FSPF".  fourcc
+  returns int (multichar's type) to keep comparison signedness.  Proven
+  by a 22-identity static_assert battery vs the multichar originals AND
+  the pof-oracle byte-identical gate.
+
+Gate: build clean, tests green, boot renders 74 frames (exercises
+PLR_FILE_ID + PAL_ID reads).

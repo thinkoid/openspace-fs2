@@ -700,7 +700,6 @@ brief_init_map()
     Num_fade_icons = 0;
 }
 
-#pragma optimize("", off)
 
 void
 brief_render_fade_outs(float frametime)
@@ -1012,7 +1011,6 @@ brief_render_icon(int stage_num, int icon_num, float frametime, int selected,
     } // end if vertex is projected
 }
 
-#pragma optimize("", on)
 
 // -------------------------------------------------------------------------------------
 // brief_render_icons()

@@ -187,7 +187,6 @@ static int Hotkey_ship_x[GR_NUM_RESOLUTIONS] = {
 
 // pragma pair put into place because of compiler warnings about being unable to inline
 // the constructor function of the hotkey_buttons set.
-#pragma warning(disable : 4710)
 
 struct hotkey_buttons
 {
@@ -228,7 +227,6 @@ static hotkey_buttons Buttons[GR_NUM_RESOLUTIONS][NUM_BUTTONS] = {
       hotkey_buttons("2_HKB_09", 920, 692, 9) }
     //XSTR:ON
 };
-#pragma warning(default : 4710)
 
 #define HOTKEY_NUM_TEXT 6
 static UI_XSTR Hotkey_text[GR_NUM_RESOLUTIONS][HOTKEY_NUM_TEXT] = {

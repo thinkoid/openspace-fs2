@@ -54,8 +54,6 @@
 #include <ship/awacs.hh>
 #include <math/fvi.hh>
 
-#pragma optimize("", off)
-#pragma auto_inline(off)
 
 #define UNINITIALIZED_VALUE -99999.9f
 

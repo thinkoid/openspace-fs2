@@ -941,8 +941,6 @@ model_get_rotating_submodel_axis(vector *model_axis, vector *world_axis,
 }
 
 // Does stepped rotation of a submodel
-#pragma warning(push)
-#pragma warning(disable : 4701)
 void
 submodel_stepped_rotate(model_subsystem *psub, submodel_instance_info *sii)
 {
@@ -1049,7 +1047,6 @@ submodel_stepped_rotate(model_subsystem *psub, submodel_instance_info *sii)
         sii->cur_turn_rate = 0.0f;
     }
 }
-#pragma warning(pop)
 
 // Rotates the angle of a submodel.  Use this so the right unlocked axis
 // gets stuffed.

@@ -50,7 +50,7 @@
 // version 140 : ships table reordered. clear out old pilot files
 // search for PLAYER INIT for new pilot initialization stuff. I _think_ its in the right spot for now
 // unique signiture to identify a .PLR file (FreeSpace Player File)  // FPSF appears as FSPF in file.
-#define PLR_FILE_ID 'FPSF'
+#define PLR_FILE_ID fourcc("FSPF")
 
 // Current content of a .PLR file
 //
