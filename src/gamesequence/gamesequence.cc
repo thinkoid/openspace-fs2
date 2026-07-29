@@ -40,7 +40,7 @@ static int state_in_event_processer = 0;
 
 // Text of state, corresponding to #define values for GS_STATE_*
 //XSTR:OFF
-char *GS_event_text[] = {
+const char *GS_event_text[] = {
     "GS_EVENT_MAIN_MENU",
     "GS_EVENT_START_GAME",
     "GS_EVENT_ENTER_GAME",
@@ -120,7 +120,7 @@ char *GS_event_text[] = {
 
 // Text of state, corresponding to #define values for GS_STATE_*
 //XSTR:OFF
-char *GS_state_text[] = {
+const char *GS_state_text[] = {
     "NOT A VALID STATE",
     "GS_STATE_MAIN_MENU", // 1
     "GS_STATE_GAME_PLAY",

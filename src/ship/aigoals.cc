@@ -1547,7 +1547,7 @@ validate_mission_goals(int objnum, ai_info *aip)
     }
 }
 
-extern char *Mode_text[MAX_AI_BEHAVIORS];
+extern const char *Mode_text[MAX_AI_BEHAVIORS];
 
 // code to process ai "orders".  Orders include those determined from the mission file and those
 // given by the player to a ship that is under his control.  This function gets called for every

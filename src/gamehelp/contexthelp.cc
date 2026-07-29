@@ -74,7 +74,7 @@ typedef struct
 } help_overlay;
 
 // new help.tbl file way
-char *help_overlay_section_names[MAX_HELP_OVERLAYS] = {
+const char *help_overlay_section_names[MAX_HELP_OVERLAYS] = {
     "$ship", // ship_help
     "$weapon", // weapon_help
     "$briefing", // briefing

@@ -115,14 +115,14 @@ int cfile_init(char *exe_dir, char *cdrom_dir = NULL);
 void cfile_refresh();
 
 // add an extension to a filename if it doesn't already have it
-char *cf_add_ext(char *filename, char *ext);
+char *cf_add_ext(const char *filename, const char *ext);
 
 // return CF_TYPE (directory location type) of a CFILE you called cfopen() successfully on.
 int cf_get_dir_type(CFILE *cfile);
 
 // Opens the file.  If no path is given, use the extension to look into the
 // default path.  If mode is NULL, delete the file.
-CFILE *cfopen(char *filename, char *mode, int type = CFILE_NORMAL,
+CFILE *cfopen(const char *filename, const char *mode, int type = CFILE_NORMAL,
               int dir_type = CF_TYPE_ANY, bool localize = false);
 
 // Flush the open file buffer

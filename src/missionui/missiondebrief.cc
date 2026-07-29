@@ -105,11 +105,11 @@ int Debrief_award_text_width[GR_NUM_RESOLUTIONS][2] = { { // GR_640
                                                         { // GR_1024
                                                           196, 312 } };
 
-char *Debrief_single_name[GR_NUM_RESOLUTIONS] = {
+const char *Debrief_single_name[GR_NUM_RESOLUTIONS] = {
     "DebriefSingle", // GR_640
     "2_DebriefSingle" // GR_1024
 };
-char *Debrief_mask_name[GR_NUM_RESOLUTIONS] = {
+const char *Debrief_mask_name[GR_NUM_RESOLUTIONS] = {
     "Debrief-m", // GR_640
     "2_Debrief-m" // GR_1024
 };

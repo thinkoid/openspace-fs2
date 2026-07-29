@@ -43,7 +43,7 @@ int Debris_inited = 0;
 int Debris_model = -1;
 int Debris_vaporize_model = -1;
 int Debris_num_submodels = 0;
-char *Debris_texture_files[MAX_SPECIES_NAMES] = {
+const char *Debris_texture_files[MAX_SPECIES_NAMES] = {
     NOX("debris01a"), // Terran
     NOX("debris01b"), // Species B
     NOX("debris01c"), // Shivan

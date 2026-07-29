@@ -905,7 +905,7 @@ typedef struct ship_counts
     int killed;
 } ship_counts;
 
-extern char *Ship_type_names[MAX_SHIP_TYPE_COUNTS];
+extern const char *Ship_type_names[MAX_SHIP_TYPE_COUNTS];
 extern int Ship_type_flags[MAX_SHIP_TYPE_COUNTS]; // SIF_* flags for each ship type
 extern ship_counts Ship_counts[MAX_SHIP_TYPE_COUNTS];
 
@@ -968,7 +968,7 @@ extern int wing_has_conflicting_teams(int wing_index);
 // next function takes optional second parameter which says to ignore the current count of ships
 // in the wing -- used to tell is the wing exists or not, not whether it exists and has ships currently
 // present.
-extern int wing_name_lookup(char *name, int ignore_count = 0);
+extern int wing_name_lookup(const char *name, int ignore_count = 0);
 
 extern int Player_ship_class;
 

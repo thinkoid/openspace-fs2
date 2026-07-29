@@ -42,7 +42,7 @@
 
 int Popup_max_display[GR_NUM_RESOLUTIONS] = { 11, 19 };
 
-char *Popup_slider_name[GR_NUM_RESOLUTIONS] = { "slider", "2_slider" };
+const char *Popup_slider_name[GR_NUM_RESOLUTIONS] = { "slider", "2_slider" };
 
 int Popup_slider_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
                                                      121, 109, 15, 105 },

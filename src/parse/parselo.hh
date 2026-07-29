@@ -18,7 +18,7 @@
 extern char Mission_text[MISSION_TEXT_SIZE];
 extern char Mission_text_raw[MISSION_TEXT_SIZE];
 extern char *Mp;
-extern char *token_found;
+extern const char *token_found;
 extern int fred_parse_flag;
 extern int Token_found_flag;
 extern jmp_buf parse_abort;
@@ -80,16 +80,16 @@ extern void diag_printf(char *format, ...);
 extern void error_display(int error_level, char *format, ...);
 
 // skip
-extern int skip_to_string(char *pstr, char *end = NULL);
+extern int skip_to_string(const char *pstr, const char *end = NULL);
 extern int skip_to_start_of_strings(char *pstr1, char *pstr2);
 extern void advance_to_eoln(char *terminators);
 extern void skip_token();
 
 // required
-extern int required_string(char *pstr);
-extern int optional_string(char *pstr);
-extern int required_string_either(char *str1, char *str2);
-extern int required_string_3(char *str1, char *str2, char *str3);
+extern int required_string(const char *pstr);
+extern int optional_string(const char *pstr);
+extern int required_string_either(const char *str1, const char *str2);
+extern int required_string_3(const char *str1, const char *str2, const char *str3);
 
 // stuff
 extern void copy_to_eoln(char *outstr, char *more_terminators, char *instr,
@@ -112,11 +112,12 @@ extern int stuff_int_list(int *ilp, int max_ints, int lookup_type);
 extern int stuff_vector_list(vector *vlp, int max_vecs);
 extern void stuff_vector(vector *vp);
 extern void stuff_matrix(matrix *mp);
-extern int string_lookup(char *str1, char *strlist[], int max,
+extern int string_lookup(char *str1, const char *const strlist[], int max,
                          char *description = NULL, int say_errors = 0);
-extern void find_and_stuff(char *id, int *addr, int f_type, char *strlist[],
+extern void find_and_stuff(char *id, int *addr, int f_type,
+                    const char *const strlist[],
                            int max, char *description);
-extern int match_and_stuff(int f_type, char *strlist[], int max,
+extern int match_and_stuff(int f_type, const char *const strlist[], int max,
                            char *description);
 extern void find_and_stuff_or_add(char *id, int *addr, int f_type,
                                   char *strlist[], int *total, int max,

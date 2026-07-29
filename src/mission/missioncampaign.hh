@@ -53,7 +53,7 @@
 
 #define CAMPAIGN_LOOP_MISSION_UNINITIALIZED -2
 
-extern char *campaign_types[MAX_CAMPAIGN_TYPES];
+extern const char *campaign_types[MAX_CAMPAIGN_TYPES];
 
 // structure for a campaign definition.  It contains the mission names and other interesting
 // information about a campaign and the mission strucuture within.

@@ -797,3 +797,31 @@ in our debug build the first time a jump-node object was deleted in-game.
 Verified: clean rebuild, warning set accounted (4691 -> 4676; -12
 write-strings from deleted FRED code, +0 new); tests green; headless
 boot renders.
+
+## Survey F underway: const-correctness sweep, 4676 -> 1808 warnings (2026-07-29)
+
+Three tranches of the -Wwrite-strings wall, hub-first instead of
+site-by-site: (1) the controlconfig cluster (six Scan_code/Joy_button
+tables, config_item.text, translate_key/textify_scancode) and the
+gr_printf/gr_string/gf_string dispatch -- const-ing those two graphics
+sinks alone removed ~1000 literal-site warnings tree-wide; (2) a scripted
+pass const-ing all 69 literal string tables + 40 externs, then a
+compile-chase that surfaced the real distinction: LITERAL tables const
+cleanly, but RUNTIME-OWNER tables (Campaign_names, Cargo_names,
+Ship_class_names, Pilot_image_names, Ai_class_names, Weapon_names --
+strdup'd/filled at parse time, some freed) must stay char*; hubs const'd
+along the way: bm_load family, UI_WINDOW::set_mask_bmap/
+set_foreground_bmap, UI_GADGET::set_bmaps + bm_filename, the slider
+creates, parselo needles (required_string/optional_string/skip_to_string
+/required_string_either/_3) + strlist APIs as const char *const[]
+(accepts both char** and const char**), token_found, hud_anim_init,
+nebula_init, wing_name_lookup, cf_add_ext; (3) struct-field hubs:
+sexp_oper.text (the 133-warning Operators[] table), UI_XSTR.xstr (every
+menu screen's template tables; the window's strdup'd copies keep
+ownership -- one commented (void*) cast at the free site), cfopen +
+cf_create_default_path_string.  Verified at each tranche: zero errors,
+clean rebuild, tests green; headless boot renders after the batch.
+REMAINING: ~1500 write-strings (top: optionsmenu 196, hudconfig 157,
+controlsconfig 82, missiondebrief 65, barracks 63 -- mostly ui_button_info
+/ per-screen fname tables and Error/Warning format params) + the ~300
+non-write-strings tail.  Same recipe continues.

@@ -1494,7 +1494,7 @@ hud_show_damage_popup()
 
 // init the members of the hud_anim struct to default values
 void
-hud_anim_init(hud_anim *ha, int sx, int sy, char *filename)
+hud_anim_init(hud_anim *ha, int sx, int sy, const char *filename)
 {
     ha->first_frame = -1;
     ha->num_frames = 0;

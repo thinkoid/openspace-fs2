@@ -129,12 +129,12 @@ int Closeup_region[GR_NUM_RESOLUTIONS][4] = {
       337, 253, 345, 252 },
 };
 
-char *Closeup_background_filename[GR_NUM_RESOLUTIONS] = {
+const char *Closeup_background_filename[GR_NUM_RESOLUTIONS] = {
     NOX("BriefPop"), // GR_640
     NOX("2_BriefPop") // GR_1024
 };
 
-char *Closeup_button_filename[GR_NUM_RESOLUTIONS] = {
+const char *Closeup_button_filename[GR_NUM_RESOLUTIONS] = {
     NOX("BPB_00"), // GR_640
     NOX("2_BPB_00"), // GR_1024
 };

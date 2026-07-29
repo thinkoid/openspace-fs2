@@ -157,9 +157,9 @@ int HC_select_all = 0;
 
 #pragma warning(disable : 4710)
 
-char *Hud_config_fname[GR_NUM_RESOLUTIONS] = { "HUDConfig", "2_HUDConfig" };
+const char *Hud_config_fname[GR_NUM_RESOLUTIONS] = { "HUDConfig", "2_HUDConfig" };
 
-char *Hud_config_mask_fname[GR_NUM_RESOLUTIONS] = { "HUDConfig-m",
+const char *Hud_config_mask_fname[GR_NUM_RESOLUTIONS] = { "HUDConfig-m",
                                                     "2_HUDConfig-m" };
 
 struct HC_gauge_region
@@ -670,7 +670,7 @@ int HC_slider_coords[GR_NUM_RESOLUTIONS][NUM_HC_SLIDERS][4] = {
 };
 #define HCS_CONV(__v) (255 - (__v))
 
-char *HC_slider_fname[GR_NUM_RESOLUTIONS] = { "slider", "2_slider" };
+const char *HC_slider_fname[GR_NUM_RESOLUTIONS] = { "slider", "2_slider" };
 
 // sync sliders
 void

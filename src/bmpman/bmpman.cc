@@ -490,7 +490,7 @@ bm_load_sub(char *real_filename, char *ext, int *handle)
 // number.  Function doesn't acutally load the data, only
 // width, height, and possibly flags.
 int
-bm_load(char *real_filename)
+bm_load(const char *real_filename)
 {
     int i, n, first_slot = MAX_BITMAPS;
     int w, h, bpp;
@@ -617,7 +617,7 @@ bm_load(char *real_filename)
 // this is useful because in some cases we need to have a bitmap which is locked in screen format
 // _and_ texture format, such as pilot pics and squad logos
 int
-bm_load_duplicate(char *filename)
+bm_load_duplicate(const char *filename)
 {
     int ret;
 
@@ -704,7 +704,7 @@ find_block_of(int n)
 // returns:    bitmap number of first frame in the animation
 //
 int
-bm_load_animation(char *real_filename, int *nframes, int *fps,
+bm_load_animation(const char *real_filename, int *nframes, int *fps,
                   int can_drop_frames)
 {
     int i, n;

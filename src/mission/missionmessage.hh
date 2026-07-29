@@ -60,7 +60,7 @@ extern message_extra Message_waves[MAX_MESSAGE_WAVES];
 // this number in this define should match the number of elements in the next array
 #define MAX_BUILTIN_MESSAGE_TYPES 41
 
-extern char *Builtin_message_types[MAX_BUILTIN_MESSAGE_TYPES];
+extern const char *Builtin_message_types[MAX_BUILTIN_MESSAGE_TYPES];
 
 #define MESSAGE_ARRIVE_ENEMY 0
 #define MESSAGE_ATTACK_TARGET 1

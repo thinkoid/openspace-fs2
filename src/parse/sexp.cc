@@ -1028,7 +1028,7 @@ sexp_ai_goal_link Sexp_ai_goal_links[] = {
     { AI_GOAL_PLAY_DEAD, OP_AI_PLAY_DEAD },
 };
 
-char *HUD_gauge_text[NUM_HUD_GAUGES] = { "LEAD_INDICATOR",
+const char *HUD_gauge_text[NUM_HUD_GAUGES] = { "LEAD_INDICATOR",
                                          "ORIENTATION_TEE",
                                          "HOSTILE_TRIANGLE",
                                          "TARGET_TRIANGLE",

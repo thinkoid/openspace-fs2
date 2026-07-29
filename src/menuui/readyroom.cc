@@ -122,12 +122,12 @@ static sim_room_buttons Buttons[GR_NUM_RESOLUTIONS][NUM_BUTTONS] = {
     //XSTR:ON
 };
 
-char *Sim_filename[GR_NUM_RESOLUTIONS] = { "LoadMission", "2_LoadMission" };
-char *Sim_mask_filename[GR_NUM_RESOLUTIONS] = { "LoadMission-m",
+const char *Sim_filename[GR_NUM_RESOLUTIONS] = { "LoadMission", "2_LoadMission" };
+const char *Sim_mask_filename[GR_NUM_RESOLUTIONS] = { "LoadMission-m",
                                                 "2_LoadMission-m" };
 
-char *Campaign_filename[GR_NUM_RESOLUTIONS] = { "Campaign", "2_Campaign" };
-char *Campaign_mask_filename[GR_NUM_RESOLUTIONS] = { "Campaign-m",
+const char *Campaign_filename[GR_NUM_RESOLUTIONS] = { "Campaign", "2_Campaign" };
+const char *Campaign_mask_filename[GR_NUM_RESOLUTIONS] = { "Campaign-m",
                                                      "2_Campaign-m" };
 
 // misc text. ("Mission" and "Filename"
@@ -215,7 +215,7 @@ static int Sim_volition_icon_x[GR_NUM_RESOLUTIONS] = { 38, 49 };
 // special icons themselves
 int Mission_icon_bitmaps[NUM_MISSION_ICONS];
 //XSTR:OFF
-char *Mission_icon_bitmap_filenames[NUM_MISSION_ICONS] = { "icon-volition" };
+const char *Mission_icon_bitmap_filenames[NUM_MISSION_ICONS] = { "icon-volition" };
 //XSTR:ON
 void sim_room_load_mission_icons();
 void sim_room_unload_mission_icons();

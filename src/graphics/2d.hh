@@ -36,7 +36,7 @@ gr_bitmap(x,y)
 gr_bitmap_ex(x,y,w,h,sx,sy)
 gr_rect(x,y,w,h)
 gr_shade(x,y,w,h)
-gr_string(x,y,char * text)
+gr_string(x,y,const char * text)
 gr_line(x1,y1,x2,y2)
 
  
@@ -193,7 +193,7 @@ typedef struct screen
 
     void (*gf_rect)(int x, int y, int w, int h);
     void (*gf_shade)(int x, int y, int w, int h);
-    void (*gf_string)(int x, int y, char *text);
+    void (*gf_string)(int x, int y, const char *text);
 
     // Draw a gradient line... x1,y1 is bright, x2,y2 is transparent.
     void (*gf_gradient)(int x1, int y1, int x2, int y2);
@@ -353,7 +353,7 @@ int gr_init_font(char *typeface);
 // Does formatted printing.  This calls gr_string after formatting,
 // so if you don't need to format the string, then call gr_string
 // directly.
-extern void _cdecl gr_printf(int x, int y, char *format, ...);
+extern void _cdecl gr_printf(int x, int y, const char *format, ...);
 
 // Returns the size of the string in pixels in w and h
 extern void gr_get_string_size(int *w, int *h, char *text, int len = 9999);

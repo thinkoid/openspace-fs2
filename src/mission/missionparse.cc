@@ -126,23 +126,23 @@ int Num_parse_names;
 
 //XSTR:OFF
 
-char *Nebula_filenames[NUM_NEBULAS] = { "Nebula01", "Nebula02", "Nebula03" };
+const char *Nebula_filenames[NUM_NEBULAS] = { "Nebula01", "Nebula02", "Nebula03" };
 
-char *Neb2_filenames[NUM_NEBULAS] = { "Nebfull01", "Nebfull02", "Nebfull03" };
+const char *Neb2_filenames[NUM_NEBULAS] = { "Nebfull01", "Nebfull02", "Nebfull03" };
 
 // Note: Nebula_colors[] and Nebula_palette_filenames are linked via index numbers
-char *Nebula_colors[NUM_NEBULA_COLORS] = {
+const char *Nebula_colors[NUM_NEBULA_COLORS] = {
     "Red",   "Blue",      "Gold",   "Purple",     "Maroon",
     "Green", "Grey blue", "Violet", "Grey Green",
 };
 
-char *Iff_names[MAX_IFF] = {
+const char *Iff_names[MAX_IFF] = {
     { "IFF 1" },
     { "IFF 2" },
     { "IFF 3" },
 };
 
-char *Ai_behavior_names[MAX_AI_BEHAVIORS] = {
+const char *Ai_behavior_names[MAX_AI_BEHAVIORS] = {
     { "Chase" },      { "Evade" },      { "Get behind" },   { "Stay Near" },
     { "Still" },      { "Guard" },      { "Avoid" },        { "Waypoints" },
     { "Dock" },       { "None" },       { "Big Ship" },     { "Path" },
@@ -156,7 +156,7 @@ char Cargo_names_buf[MAX_CARGO][NAME_LENGTH];
 
 char *Ship_class_names[MAX_SHIP_TYPES]; // to be filled in from Ship_info array
 
-char *Icon_names[MAX_BRIEF_ICONS] = { { "Fighter" },
+const char *Icon_names[MAX_BRIEF_ICONS] = { { "Fighter" },
                                       { "Fighter Wing" },
                                       { "Cargo" },
                                       { "Cargo Wing" },
@@ -197,72 +197,72 @@ char *Icon_names[MAX_BRIEF_ICONS] = { { "Fighter" },
 int Team_names_index_xlate[MAX_TEAM_NAMES_INDEX + 1] = { -1, 0,  1,  -1, 2,
                                                          -1, -1, -1, 3 };
 
-char *Team_names[MAX_TEAM_NAMES] = {
+const char *Team_names[MAX_TEAM_NAMES] = {
     { "Hostile" },
     { "Friendly" },
     { "Neutral" },
     { "Unknown" },
 };
 
-char *Status_desc_names[MAX_STATUS_NAMES] = {
+const char *Status_desc_names[MAX_STATUS_NAMES] = {
     { "Shields Critical" },
     { "Engines Damaged" },
     { "Fully Operational" },
 };
 
-char *Status_type_names[MAX_STATUS_NAMES] = {
+const char *Status_type_names[MAX_STATUS_NAMES] = {
     { "Damaged" },
     { "Disabled" },
     { "Corroded" },
 };
 
-char *Status_target_names[MAX_STATUS_NAMES] = {
+const char *Status_target_names[MAX_STATUS_NAMES] = {
     { "Weapons" },
     { "Engines" },
     { "Cable TV" },
 };
 
 // definitions for arrival locations for ships/wings
-char *Arrival_location_names[MAX_ARRIVAL_NAMES] = {
+const char *Arrival_location_names[MAX_ARRIVAL_NAMES] = {
     { "Hyperspace" },
     { "Near Ship" },
     { "In front of ship" },
     { "Docking Bay" },
 };
 
-char *Special_arrival_anchor_names[MAX_SPECIAL_ARRIVAL_ANCHORS] = {
+const char *Special_arrival_anchor_names[MAX_SPECIAL_ARRIVAL_ANCHORS] = {
     "<any friendly>",        "<any enemy>",          "<any neutral>",
     "<any friendly player>", "<any hostile player>", "<any neutral player>",
 };
 
-char *Departure_location_names[MAX_ARRIVAL_NAMES] = {
+const char *Departure_location_names[MAX_ARRIVAL_NAMES] = {
     { "Hyperspace" },
     { "Docking Bay" },
 };
 
-char *Goal_type_names[MAX_GOAL_TYPE_NAMES] = {
+const char *Goal_type_names[MAX_GOAL_TYPE_NAMES] = {
     { "Primary" },
     { "Secondary" },
     { "Bonus" },
 };
 
-char *Species_names[MAX_SPECIES_NAMES] = {
+const char *Species_names[MAX_SPECIES_NAMES] = {
     { "Terran" },
     { "Vasudan" },
     { "Shivan" },
 };
 
-char *Reinforcement_type_names[] = {
+const char *Reinforcement_type_names[] = {
     "Attack/Protect",
     "Repair/Rearm",
 };
 
-char *Old_game_types[OLD_MAX_GAME_TYPES] = { "Single Player Only",
+const char *Old_game_types[OLD_MAX_GAME_TYPES] = { "Single Player Only",
                                              "Multiplayer Only",
                                              "Single/Multi Player",
                                              "Training mission" };
 
-char *Parse_object_flags[MAX_PARSE_OBJECT_FLAGS] = { "cargo-known",
+const char *Parse_object_flags[MAX_PARSE_OBJECT_FLAGS] = { "cargo-known",
                                                      "ignore-count",
                                                      "protect-ship",
                                                      "reinforcement",
@@ -283,7 +283,7 @@ char *Parse_object_flags[MAX_PARSE_OBJECT_FLAGS] = { "cargo-known",
                                                      "guardian",
                                                      "special-warp" };
 
-char *Starting_wing_names[MAX_STARTING_WINGS + 1] = { "Alpha", "Beta", "Gamma",
+const char *Starting_wing_names[MAX_STARTING_WINGS + 1] = { "Alpha", "Beta", "Gamma",
                                                       "Zeta" };
 
 //XSTR:ON

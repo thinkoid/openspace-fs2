@@ -31,12 +31,12 @@ extern int bm_texture_ram;
 // It returns a negative number if it couldn't load
 // the bitmap.   On success, it returns the bitmap
 // number.
-int bm_load(char *filename);
+int bm_load(const char *filename);
 
 // special load function. basically allows you to load a bitmap which already exists (by filename).
 // this is useful because in some cases we need to have a bitmap which is locked in screen format
 // _and_ texture format, such as pilot pics and squad logos
-int bm_load_duplicate(char *filename);
+int bm_load_duplicate(const char *filename);
 
 // Creates a bitmap that exists in RAM somewhere, instead
 // of coming from a disk file.  You pass in a pointer to a
@@ -62,7 +62,7 @@ void bm_release(int n);
 // It returns a negative number if it couldn't load
 // the bitmap.   On success, it returns the bitmap
 // number of the first frame and nframes is set.
-extern int bm_load_animation(char *filename, int *nframes, int *fps = NULL,
+extern int bm_load_animation(const char *filename, int *nframes, int *fps = NULL,
                              int can_drop_frames = 0);
 
 // This locks down a bitmap and returns a pointer to a bitmap

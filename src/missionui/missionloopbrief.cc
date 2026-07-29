@@ -24,12 +24,12 @@
 // MISSION LOOP BRIEF DEFINES/VARS
 //
 
-char *Loop_brief_fname[GR_NUM_RESOLUTIONS] = {
+const char *Loop_brief_fname[GR_NUM_RESOLUTIONS] = {
     "LoopBrief", // GR_640
     "2_LoopBrief", // GR_1024
 };
 
-char *Loop_brief_mask[GR_NUM_RESOLUTIONS] = {
+const char *Loop_brief_mask[GR_NUM_RESOLUTIONS] = {
     "LoopBrief-m", // GR_640
     "2_Loopbrief-m", // GR_1024
 };

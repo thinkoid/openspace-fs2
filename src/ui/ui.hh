@@ -83,7 +83,7 @@ class UI_GADGET
     friend UI_DOT_SLIDER_NEW;
 
 protected:
-    char *bm_filename;
+    const char *bm_filename;
     int kind;
     int hotkey;
     int x, y, w, h;
@@ -160,7 +160,7 @@ public:
     // this keeps the loading code from trying to load bitmaps which don't exist
     // and taking an unnecessary disk hit.
     int set_bmaps(
-        char *ani_filename, int nframes = 3,
+        const char *ani_filename, int nframes = 3,
         int start_frame = 1); // extracts MAX_BMAPS_PER_GADGET from .ani file
 
     void reset(); // zero out m_flags
@@ -175,7 +175,7 @@ public:
 #define UI_XSTR_COLOR_PINK 1
 typedef struct UI_XSTR
 {
-    char *xstr; // base string
+    const char *xstr; // base string (window copies own theirs via strdup)
     int xstr_id; // xstring id
     int x, y; // coords of the string
     int clr; // color to use
@@ -495,7 +495,7 @@ private:
 public:
     // create the slider
     void create(UI_WINDOW *wnd, int _x, int _y, int _w, int _h, int _numberItems,
-                char *_bitmapSliderControl, void (*_upCallback)(),
+                const char *_bitmapSliderControl, void (*_upCallback)(),
                 void (*_downCallback)(), void (*_captureCallback)());
 
     // range management
@@ -537,7 +537,7 @@ class UI_DOT_SLIDER : public UI_GADGET
 public:
     int pos; // 0 thru 10
 
-    void create(UI_WINDOW *wnd, int _x, int _y, char *bm, int id,
+    void create(UI_WINDOW *wnd, int _x, int _y, const char *bm, int id,
                 int end_buttons = 1, int num_pos = 10);
     virtual void draw();
     virtual void process(int focus = 0);
@@ -557,9 +557,9 @@ class UI_DOT_SLIDER_NEW : public UI_GADGET
 public:
     int pos; // 0 thru 10
 
-    void create(UI_WINDOW *wnd, int _x, int _y, int num_pos, char *bm_slider,
-                int slider_mask, char *bm_left = NULL, int left_mask = -1,
-                int left_x = -1, int left_y = -1, char *bm_right = NULL,
+    void create(UI_WINDOW *wnd, int _x, int _y, int num_pos, const char *bm_slider,
+                int slider_mask, const char *bm_left = NULL, int left_mask = -1,
+                int left_x = -1, int left_y = -1, const char *bm_right = NULL,
                 int right_mask = -1, int right_x = -1, int right_y = -1,
                 int dot_width = 19);
     virtual void draw();
@@ -673,9 +673,9 @@ protected:
 public:
     UI_WINDOW(); // constructor
     ~UI_WINDOW(); // destructor
-    void set_mask_bmap(char *fname);
-    void set_mask_bmap(int bmap, char *name);
-    void set_foreground_bmap(char *fname);
+    void set_mask_bmap(const char *fname);
+    void set_mask_bmap(int bmap, const char *name);
+    void set_foreground_bmap(const char *fname);
     void create(int x, int y, int w, int h, int flags);
     int process(int key_in = -1, int process_mouse = 1);
     void draw();

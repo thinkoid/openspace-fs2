@@ -88,7 +88,7 @@
 
 //XSTR:OFF
 
-char *Mode_text[MAX_AI_BEHAVIORS] = {
+const char *Mode_text[MAX_AI_BEHAVIORS] = {
     "CHASE",    "EVADE",     "GET_BEHIND", "CHASE_LONG", "SQUIGGLE",
     "GUARD",    "AVOID",     "WAYPOINTS",  "DOCK",       "NONE",
     "BIGSHIP",  "PATH",      "BE_REARMED", "SAFETY",     "EV_WEAPON",
@@ -97,13 +97,13 @@ char *Mode_text[MAX_AI_BEHAVIORS] = {
 };
 
 // Submode text is only valid for CHASE mode.
-char *Submode_text[] = { "undefined", "CONT_TURN", "ATTACK   ", "E_SQUIG  ",
+const char *Submode_text[] = { "undefined", "CONT_TURN", "ATTACK   ", "E_SQUIG  ",
                          "E_BRAKE  ", "EVADE    ", "SUP_ATTAK", "AVOID    ",
                          "BEHIND   ", "GET_AWAY ", "E_WEAPON ", "FLY_AWAY ",
                          "ATK_4EVER", "STLTH_FND", "STLTH_SWP", "BIG_APPR",
                          "BIG_CIRC",  "BIG_PARL" };
 
-char *Strafe_submode_text[5] = { "ATTACK", "AVOID", "RETREAT1", "RETREAT2",
+const char *Strafe_submode_text[5] = { "ATTACK", "AVOID", "RETREAT1", "RETREAT2",
                                  "POSITION" };
 //XSTR:ON
 

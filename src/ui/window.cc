@@ -71,7 +71,7 @@ UI_WINDOW::~UI_WINDOW() { }
 // for all the different controls.
 //
 void
-UI_WINDOW::set_mask_bmap(char *fname)
+UI_WINDOW::set_mask_bmap(const char *fname)
 {
     int bmap;
 
@@ -86,7 +86,7 @@ UI_WINDOW::set_mask_bmap(char *fname)
 }
 
 void
-UI_WINDOW::set_mask_bmap(int bmap, char *name)
+UI_WINDOW::set_mask_bmap(int bmap, const char *name)
 {
     // int i;
 
@@ -127,7 +127,7 @@ UI_WINDOW::set_mask_bmap(int bmap, char *name)
 // a background.
 //
 void
-UI_WINDOW::set_foreground_bmap(char *fname)
+UI_WINDOW::set_foreground_bmap(const char *fname)
 {
     // load in the background bitmap
     foreground_bmap_id = bm_load(fname);
@@ -213,7 +213,8 @@ UI_WINDOW::destroy()
         // free up this struct
         if (xstrs[idx] != NULL) {
             if (xstrs[idx]->xstr != NULL) {
-                free(xstrs[idx]->xstr);
+                // the window's copies own their strings (strdup in add_XSTR)
+                free((void *)xstrs[idx]->xstr);
             }
             free(xstrs[idx]);
             xstrs[idx] = NULL;

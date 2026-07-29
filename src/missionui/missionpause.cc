@@ -27,7 +27,7 @@
 //
 
 // pause bitmap name
-char *Pause_bmp_name[GR_NUM_RESOLUTIONS] = { "PleaseWait", "2_PleaseWait" };
+const char *Pause_bmp_name[GR_NUM_RESOLUTIONS] = { "PleaseWait", "2_PleaseWait" };
 
 // pause bitmap display stuff
 int Please_wait_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640

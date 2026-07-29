@@ -17,7 +17,7 @@
 // the callback is called when the scrollbar has been released
 void
 UI_SLIDER2::create(UI_WINDOW *wnd, int _x, int _y, int _w, int _h,
-                   int _numberItems, char *_bitmapSliderControl,
+                   int _numberItems, const char *_bitmapSliderControl,
                    void (*_upCallback)(), void (*_downCallback)(),
                    void (*_captureCallback)())
 {

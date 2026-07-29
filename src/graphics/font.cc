@@ -100,7 +100,7 @@ get_char_width(ubyte c1, ubyte c2, int *width, int *spacing)
 }
 
 int
-get_centered_x(char *s)
+get_centered_x(const char *s)
 {
     int w, w2, s2;
 
@@ -240,7 +240,7 @@ void gr8_char(int x,int y,int letter)
 }
 
 
-void gr8_string( int sx, int sy, char *s )
+void gr8_string( int sx, int sy, const char *s )
 {
    int width, spacing, letter;
    int x, y;
@@ -287,7 +287,7 @@ void gr8_string( int sx, int sy, char *s )
 */
 
 void
-gr8_string(int sx, int sy, char *s)
+gr8_string(int sx, int sy, const char *s)
 {
     int row, width, spacing, letter;
     int x, y;
@@ -412,7 +412,7 @@ gr8_string(int sx, int sy, char *s)
 char grx_printf_text[2048];
 
 void _cdecl
-gr_printf(int x, int y, char *format, ...)
+gr_printf(int x, int y, const char *format, ...)
 {
     va_list args;
 

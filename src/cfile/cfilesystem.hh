@@ -35,6 +35,7 @@ extern cf_pathtype Pathtypes[CF_MAX_PATH_TYPES];
 //          filename  - optional, if set, tacks the filename onto end of path.
 // Output:  path      - Fully qualified pathname.
 void cf_create_default_path_string(char *path, int pathtype,
-                                   char *filename = NULL, bool localize = false);
+                                   const char *filename = NULL,
+                                   bool localize = false);
 
 #endif //_CFILESYSTEM_H

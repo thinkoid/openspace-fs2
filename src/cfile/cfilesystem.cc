@@ -1041,7 +1041,7 @@ cf_get_file_list_preallocated(int max, char arr[][MAX_FILENAME_LEN], char **list
 //          filename  - optional, if set, tacks the filename onto end of path.
 // Output:  path      - Fully qualified pathname.
 void
-cf_create_default_path_string(char *path, int pathtype, char *filename,
+cf_create_default_path_string(char *path, int pathtype, const char *filename,
                               bool localize)
 {
     if (filename && strpbrk(filename, "/\\:")) {

@@ -21,9 +21,9 @@
 #include <globalincs/alphacolors.hh>
 #include <localization/localize.hh>
 
-char *Cutscene_bitmap_name[GR_NUM_RESOLUTIONS] = { "ViewFootage",
+const char *Cutscene_bitmap_name[GR_NUM_RESOLUTIONS] = { "ViewFootage",
                                                    "2_ViewFootage" };
-char *Cutscene_mask_name[GR_NUM_RESOLUTIONS] = { "ViewFootage-m",
+const char *Cutscene_mask_name[GR_NUM_RESOLUTIONS] = { "ViewFootage-m",
                                                  "2_ViewFootage-m" };
 
 int Num_cutscenes;

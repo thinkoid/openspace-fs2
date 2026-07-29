@@ -64,9 +64,9 @@ static char Red_alert_precursor_mission[MAX_FILENAME_LEN];
 // Red Alert Interface
 /////////////////////////////////////////////////////////////////////////////
 
-char *Red_alert_fname[GR_NUM_RESOLUTIONS] = { "RedAlert", "2_RedAlert" };
+const char *Red_alert_fname[GR_NUM_RESOLUTIONS] = { "RedAlert", "2_RedAlert" };
 
-char *Red_alert_mask[GR_NUM_RESOLUTIONS] = { "RedAlert-m", "2_RedAlert-m" };
+const char *Red_alert_mask[GR_NUM_RESOLUTIONS] = { "RedAlert-m", "2_RedAlert-m" };
 
 // font to use for "incoming transmission"
 int Ra_flash_font[GR_NUM_RESOLUTIONS] = { FONT2, FONT2 };

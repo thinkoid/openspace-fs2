@@ -33,7 +33,7 @@
 // names read in for builtin message radio bits to see what message to play.  These are
 // generic names, meaning that there will be the same message type for a number of different
 // personas
-char *Builtin_message_types[MAX_BUILTIN_MESSAGE_TYPES] = {
+const char *Builtin_message_types[MAX_BUILTIN_MESSAGE_TYPES] = {
     //XSTR:OFF
     "Arrive Enemy",
     "Attack Target",
@@ -160,7 +160,7 @@ int MessageQ_num; // keeps track of number of entries on the queue.
 int Num_personas;
 Persona Personas[MAX_PERSONAS];
 
-char *Persona_type_names[MAX_PERSONA_TYPES] = {
+const char *Persona_type_names[MAX_PERSONA_TYPES] = {
     //XSTR:OFF
     "wingman",
     "support",
@@ -1536,7 +1536,8 @@ message_send_builtin_to_player(int type, ship *shipp, int priority, int timing,
     // persona if we can't find the right message for the given persona
     do {
         for (i = 0; i < Num_builtin_messages; i++) {
-            char *name, *who_from;
+            const char *name;
+            char *who_from;
 
             name = Builtin_message_types[type];
 

@@ -87,7 +87,7 @@ float Pattern_num_measures[MAX_SOUNDTRACKS][MAX_PATTERNS];
 // stores the number of bytes per measure (data from music.tbl)
 int Pattern_bytes_per_measure[MAX_SOUNDTRACKS][MAX_PATTERNS];
 
-char *Pattern_names[MAX_PATTERNS] = {
+const char *Pattern_names[MAX_PATTERNS] = {
     //XSTR:OFF
     "NRML_1", // Normal Song 1
     "AARV_1", // Allied Arrival 1
@@ -104,7 +104,7 @@ char *Pattern_names[MAX_PATTERNS] = {
     //XSTR:ON
 };
 
-char *Pattern_description[MAX_PATTERNS] = {
+const char *Pattern_description[MAX_PATTERNS] = {
     //XSTR:OFF
     "normal 1",
     "friendly arrival 1",

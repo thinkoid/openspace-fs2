@@ -145,7 +145,7 @@ load_nebula_sub(char *filename)
 }
 
 void
-nebula_init(char *filename, int pitch, int bank, int heading)
+nebula_init(const char *filename, int pitch, int bank, int heading)
 {
     angles a;
 
@@ -156,7 +156,7 @@ nebula_init(char *filename, int pitch, int bank, int heading)
 }
 
 void
-nebula_init(char *filename, angles *pbh)
+nebula_init(const char *filename, angles *pbh)
 {
     if (Nebula_loaded) {
         nebula_close();

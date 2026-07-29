@@ -77,11 +77,11 @@
 
 // background filename for species
 // note weapon filename is now same as ship filename
-char *Tech_background_filename[GR_NUM_RESOLUTIONS] = { "TechShipData",
+const char *Tech_background_filename[GR_NUM_RESOLUTIONS] = { "TechShipData",
                                                        "2_TechShipData" };
-char *Tech_mask_filename[GR_NUM_RESOLUTIONS] = { "TechShipData-M",
+const char *Tech_mask_filename[GR_NUM_RESOLUTIONS] = { "TechShipData-M",
                                                  "2_TechShipData-M" };
-char *Tech_slider_filename[GR_NUM_RESOLUTIONS] = { "slider", "2_slider" };
+const char *Tech_slider_filename[GR_NUM_RESOLUTIONS] = { "slider", "2_slider" };
 
 int Tech_list_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
                                                   27, 98, 161, 234 },

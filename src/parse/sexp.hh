@@ -546,7 +546,7 @@ typedef struct sexp_ai_goal_link
 
 typedef struct sexp_oper
 {
-    char *text;
+    const char *text;
     int value;
     int min, max;
 } sexp_oper;

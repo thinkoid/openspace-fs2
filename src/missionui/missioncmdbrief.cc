@@ -26,9 +26,9 @@
 #include <globalincs/alphacolors.hh>
 #include <anim/animplay.hh>
 
-char *Cmd_brief_fname[GR_NUM_RESOLUTIONS] = { "CommandBrief", "2_CommandBrief" };
+const char *Cmd_brief_fname[GR_NUM_RESOLUTIONS] = { "CommandBrief", "2_CommandBrief" };
 
-char *Cmd_brief_mask[GR_NUM_RESOLUTIONS] = { "CommandBrief-m",
+const char *Cmd_brief_mask[GR_NUM_RESOLUTIONS] = { "CommandBrief-m",
                                              "2_Commandbrief-m" };
 
 // lookups for coordinates

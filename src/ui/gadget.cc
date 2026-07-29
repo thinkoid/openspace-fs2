@@ -62,7 +62,7 @@ UI_GADGET::link_hotspot(int num)
 // this keeps the loading code from trying to load bitmaps which don't exist
 // and taking an unnecessary disk hit.
 int
-UI_GADGET::set_bmaps(char *ani_fname, int nframes, int start_frame)
+UI_GADGET::set_bmaps(const char *ani_fname, int nframes, int start_frame)
 {
     int first_frame, i;
     char full_name[MAX_FILENAME_LEN] = "";

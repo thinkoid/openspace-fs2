@@ -185,7 +185,7 @@ config_item Control_config[CCFG_MAX + 1] = {
     { -1, -1, -1, "" }
 };
 
-char *Scan_code_text_german[] = {
+const char *Scan_code_text_german[] = {
     "",
     "Esc",
     "1",
@@ -452,7 +452,7 @@ char *Scan_code_text_german[] = {
     "",
 };
 
-char *Joy_button_text_german[] = {
+const char *Joy_button_text_german[] = {
     "Knopf 1",  "Knopf 2",  "Knopf 3",    "Knopf 4",   "Knopf 5",   "Knopf 6",
     "Knopf 7",  "Knopf 8",  "Knopf 9",    "Knopf 10",  "Knopf 11",  "Knopf 12",
     "Knopf 13", "Knopf 14", "Knopf 15",   "Knopf 16",  "Knopf 17",  "Knopf 18",
@@ -461,7 +461,7 @@ char *Joy_button_text_german[] = {
     "Knopf 31", "Knopf 32", "Hut Hinten", "Hut Vorne", "Hut Links", "Hut Rechts"
 };
 
-char *Scan_code_text_french[] = {
+const char *Scan_code_text_french[] = {
     "",
     "\x90"
     "chap",
@@ -735,7 +735,7 @@ char *Scan_code_text_french[] = {
     "",
 };
 
-char *Joy_button_text_french[] = {
+const char *Joy_button_text_french[] = {
     "Bouton 1",           "Bouton 2",      "Bouton 3",       "Bouton 4",
     "Bouton 5",           "Bouton 6",      "Bouton 7",       "Bouton 8",
     "Bouton 9",           "Bouton 10",     "Bouton 11",      "Bouton 12",
@@ -748,7 +748,7 @@ char *Joy_button_text_french[] = {
 };
 
 // This is the text that is displayed on the screen for the keys a player selects
-char *Scan_code_text_english[] = {
+const char *Scan_code_text_english[] = {
     "",
     "Esc",
     "1",
@@ -1014,7 +1014,7 @@ char *Scan_code_text_english[] = {
     "",
 };
 
-char *Joy_button_text_english[] = {
+const char *Joy_button_text_english[] = {
     "Button 1",  "Button 2",  "Button 3",  "Button 4",    "Button 5",
     "Button 6",  "Button 7",  "Button 8",  "Button 9",    "Button 10",
     "Button 11", "Button 12", "Button 13", "Button 14",   "Button 15",
@@ -1025,8 +1025,8 @@ char *Joy_button_text_english[] = {
     "Hat Right"
 };
 
-char **Scan_code_text = Scan_code_text_english;
-char **Joy_button_text = Joy_button_text_english;
+const char **Scan_code_text = Scan_code_text_english;
+const char **Joy_button_text = Joy_button_text_english;
 
 void
 set_modifier_status()
@@ -1134,7 +1134,7 @@ translate_key_to_index(char *key)
 // Both are 'key' and the return value are descriptive strings that can be displayed
 // directly to the user.  If 'key' isn't a real key or not normally bound to anything,
 // or there is no key current bound to the function, NULL is returned.
-char *
+const char *
 translate_key(char *key)
 {
     int index = -1, code = -1;
@@ -1154,7 +1154,7 @@ translate_key(char *key)
     return textify_scancode(code);
 }
 
-char *
+const char *
 textify_scancode(int code)
 {
     static char text[40];

@@ -37,7 +37,7 @@ jmp_buf parse_abort;
 char Mission_text[MISSION_TEXT_SIZE];
 char Mission_text_raw[MISSION_TEXT_SIZE];
 char *Mp;
-char *token_found;
+const char *token_found;
 
 // Return true if this character is white space, else false.
 int
@@ -286,7 +286,7 @@ advance_to_next_white()
 // 0 if string wasn't found (and hit end of file), or -1 if not found, but end of checking
 // block was reached.
 int
-skip_to_string(char *pstr, char *end)
+skip_to_string(const char *pstr, const char *end)
 {
     int len, len2 = 0;
 
@@ -342,7 +342,7 @@ skip_to_start_of_strings(char *pstr1, char *pstr2)
 // If unable to find the required string after RS_MAX_TRIES tries, then
 // abort using longjmp to parse_abort.
 int
-required_string(char *pstr)
+required_string(const char *pstr)
 {
     int count = 0;
 
@@ -396,7 +396,7 @@ check_for_string_raw(char *pstr)
 // If found, return 1, else return 0.
 // If found, point past string, else don't update pointer.
 int
-optional_string(char *pstr)
+optional_string(const char *pstr)
 {
     ignore_white_space();
 
@@ -412,7 +412,7 @@ optional_string(char *pstr)
 // Does not update Mp if token found.  If not found, advances, trying to
 // find the string.  Doesn't advance past the found string.
 int
-required_string_either(char *str1, char *str2)
+required_string_either(const char *str1, const char *str2)
 {
     int count = 0;
 
@@ -456,7 +456,7 @@ required_string_either(char *str1, char *str2)
 // Does not update Mp if token found.  If not found, advances, trying to
 // find the string.  Doesn't advance past the found string.
 int
-required_string_3(char *str1, char *str2, char *str3)
+required_string_3(const char *str1, const char *str2, const char *str3)
 {
     int count = 0;
 
@@ -1490,7 +1490,7 @@ stuff_matrix(matrix *mp)
 // *strlist is the list of strings to search.
 // max is the number of entries in *strlist to scan.
 int
-string_lookup(char *str1, char *strlist[], int max, char *description,
+string_lookup(char *str1, const char *const strlist[], int max, char *description,
               int say_errors)
 {
     int i;
@@ -1512,7 +1512,7 @@ string_lookup(char *str1, char *strlist[], int max, char *description,
 // follows it at *addr.  *strlist[] contains the strings it should try to
 // match.
 void
-find_and_stuff(char *id, int *addr, int f_type, char *strlist[], int max,
+find_and_stuff(char *id, int *addr, int f_type, const char *const strlist[], int max,
                char *description)
 {
     char token[128];
@@ -1526,7 +1526,7 @@ find_and_stuff(char *id, int *addr, int f_type, char *strlist[], int max,
 // Find the string in the list of strings *strlist[].
 // Returns the index of the match, -1 if none.
 int
-match_and_stuff(int f_type, char *strlist[], int max, char *description)
+match_and_stuff(int f_type, const char *const strlist[], int max, char *description)
 {
     char token[128];
 

@@ -73,10 +73,10 @@ int Choose_list_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
                                                   { // GR_1024
                                                     183, 186, 640, 139 } };
 
-char *Player_select_background_bitmap_name[GR_NUM_RESOLUTIONS] = {
+const char *Player_select_background_bitmap_name[GR_NUM_RESOLUTIONS] = {
     "ChoosePilot", "2_ChoosePilot"
 };
-char *Player_select_background_mask_bitmap[GR_NUM_RESOLUTIONS] = {
+const char *Player_select_background_mask_bitmap[GR_NUM_RESOLUTIONS] = {
     "ChoosePilot-m", "2_ChoosePilot-m"
 };
 // palette for the screen

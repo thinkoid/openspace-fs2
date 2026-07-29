@@ -146,7 +146,7 @@ static int
 
 // structure used to hold ship counts of particular types.  The order in which these appear is crucial
 // since the goal code relies on this placement to find the array index in the Ship_counts array
-char *Ship_type_names[MAX_SHIP_TYPE_COUNTS] = {
+const char *Ship_type_names[MAX_SHIP_TYPE_COUNTS] = {
     //XSTR:OFF
     "no type",    "cargo",         "fighter/bomber",
     "cruiser",    "freighter",     "capital",
@@ -5507,7 +5507,7 @@ get_available_secondary_weapons(object *objp, int *outlist, int *outbanklist)
 
 // Return the object index of the ship with name *name.
 int
-wing_name_lookup(char *name, int ignore_count)
+wing_name_lookup(const char *name, int ignore_count)
 {
     int i, wing_limit;
 

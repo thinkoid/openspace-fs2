@@ -40,7 +40,7 @@
 
 // maximum number of starting wings for the player
 #define MAX_STARTING_WINGS 3
-extern char *Starting_wing_names[MAX_STARTING_WINGS + 1];
+extern const char *Starting_wing_names[MAX_STARTING_WINGS + 1];
 
 // used by Fred to tell ship_index in a wing points to a player
 #define WING_PLAYER_BASE 0x80000
@@ -158,25 +158,25 @@ extern int Mission_alt_type_count;
 #define MAX_SUBSYS_STATUS 250
 
 #define MAX_SPECIAL_ARRIVAL_ANCHORS 6
-extern char *Special_arrival_anchor_names[MAX_SPECIAL_ARRIVAL_ANCHORS];
+extern const char *Special_arrival_anchor_names[MAX_SPECIAL_ARRIVAL_ANCHORS];
 
 extern char *Ship_class_names[MAX_SHIP_TYPES];
-extern char *Iff_names[MAX_IFF];
-extern char *Ai_behavior_names[MAX_AI_BEHAVIORS];
-extern char *Formation_names[MAX_FORMATION_NAMES];
-extern char *Team_names[MAX_TEAM_NAMES];
+extern const char *Iff_names[MAX_IFF];
+extern const char *Ai_behavior_names[MAX_AI_BEHAVIORS];
+extern const char *Formation_names[MAX_FORMATION_NAMES];
+extern const char *Team_names[MAX_TEAM_NAMES];
 extern int Team_names_index_xlate[MAX_TEAM_NAMES_INDEX + 1];
-extern char *Status_desc_names[MAX_STATUS_NAMES];
-extern char *Status_type_names[MAX_STATUS_NAMES];
-extern char *Status_target_names[MAX_STATUS_NAMES];
-extern char *Arrival_location_names[MAX_ARRIVAL_NAMES];
-extern char *Departure_location_names[MAX_ARRIVAL_NAMES];
-extern char *Goal_type_names[MAX_GOAL_TYPE_NAMES];
-extern char *Species_names[MAX_SPECIES_NAMES];
-extern char *Reinforcement_type_names[];
-extern char *Object_flags[];
-extern char *Parse_object_flags[];
-extern char *Icon_names[];
+extern const char *Status_desc_names[MAX_STATUS_NAMES];
+extern const char *Status_type_names[MAX_STATUS_NAMES];
+extern const char *Status_target_names[MAX_STATUS_NAMES];
+extern const char *Arrival_location_names[MAX_ARRIVAL_NAMES];
+extern const char *Departure_location_names[MAX_ARRIVAL_NAMES];
+extern const char *Goal_type_names[MAX_GOAL_TYPE_NAMES];
+extern const char *Species_names[MAX_SPECIES_NAMES];
+extern const char *Reinforcement_type_names[];
+extern const char *Object_flags[];
+extern const char *Parse_object_flags[];
+extern const char *Icon_names[];
 
 extern char *Cargo_names[MAX_CARGO];
 extern char Cargo_names_buf[MAX_CARGO][NAME_LENGTH];
@@ -363,8 +363,8 @@ extern p_object Player_start_pobject;
 extern int Mission_palette; // index of palette file to use for mission
 extern int
     Nebula_index; // index into Nebula_filenames[] of nebula to use in mission.
-extern char *Nebula_filenames[NUM_NEBULAS];
-extern char *Nebula_colors[NUM_NEBULA_COLORS];
+extern const char *Nebula_filenames[NUM_NEBULAS];
+extern const char *Nebula_colors[NUM_NEBULA_COLORS];
 extern p_object *Arriving_support_ship;
 
 extern char Neb2_texture_name[MAX_FILENAME_LEN];

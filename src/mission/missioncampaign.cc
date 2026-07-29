@@ -51,7 +51,7 @@ char *Campaign_names[MAX_CAMPAIGNS];
 char *Campaign_file_names[MAX_CAMPAIGNS];
 int Num_campaigns;
 
-char *campaign_types[MAX_CAMPAIGN_TYPES] = {
+const char *campaign_types[MAX_CAMPAIGN_TYPES] = {
     //XSTR:OFF
     "single", "multi coop", "multi teams"
     //XSTR:ON

@@ -330,7 +330,7 @@ cfile_flush_dir(int dir_type)
 //    ext = extension to add.  Must start with the period
 //    Returns: new filename or filepath with extension.
 char *
-cf_add_ext(char *filename, char *ext)
+cf_add_ext(const char *filename, const char *ext)
 {
     int flen, elen;
     static char path[MAX_PATH_LEN];
@@ -501,7 +501,7 @@ extern int game_cd_changed();
 //
 
 CFILE *
-cfopen(char *file_path, char *mode, int type, int dir_type, bool localize)
+cfopen(const char *file_path, const char *mode, int type, int dir_type, bool localize)
 {
     char longname[_MAX_PATH];
 

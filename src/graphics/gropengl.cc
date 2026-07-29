@@ -688,7 +688,7 @@ gr_opengl_aabitmap(int x, int y)
 }
 
 void
-gr_opengl_string(int sx, int sy, char *s)
+gr_opengl_string(int sx, int sy, const char *s)
 {
     int width, spacing, letter;
     int x, y;
