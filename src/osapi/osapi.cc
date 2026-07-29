@@ -56,7 +56,8 @@ extern void mouse_mark_motion(int x, int y);
 // If app_name is NULL or ommited, then TITLE is used
 // for the app name, which is where registry keys are stored.
 void
-os_init(char *wclass, char *title, char *app_name, char *version_string)
+os_init(const char *wclass, const char *title, const char *app_name,
+        const char *version_string)
 {
     os_init_registry_stuff(Osreg_company_name, title, version_string);
 
@@ -77,7 +78,7 @@ os_init(char *wclass, char *title, char *app_name, char *version_string)
 
 // set the main window title
 void
-os_set_title(char *title)
+os_set_title(const char *title)
 {
     strcpy(szWinTitle, title);
     if (sdl_window) {

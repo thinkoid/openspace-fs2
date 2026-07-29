@@ -101,7 +101,7 @@ int Popup_input_text_y_offset[GR_NUM_RESOLUTIONS] = { 30, 30 };
 
 typedef struct popup_background
 {
-    char *filename; // filename for background
+    const char *filename; // filename for background
     int coords[2]; // coords to draw background at
 } popup_background;
 
@@ -178,7 +178,7 @@ static popup_background Popup_background[GR_NUM_RESOLUTIONS][4] = {
 #define BUTTON_GENERIC_FIRST 2
 #define BUTTON_GENERIC_SECOND 3
 #define BUTTON_GENERIC_THIRD 4
-static char *Popup_button_filenames[GR_NUM_RESOLUTIONS][2][5] = {
+static const char *Popup_button_filenames[GR_NUM_RESOLUTIONS][2][5] = {
     {
         // GR_640
         { "Pop_00", // negative
@@ -383,10 +383,10 @@ popup_split_lines(popup_info *pi, int flags)
 }
 
 // figure out what filename to use for the button icon
-char *
+const char *
 popup_get_button_filename(popup_info *pi, int i, int flags)
 {
-    char *fname = NULL;
+    const char *fname = NULL;
     int is_tiny = 0;
 
     // check for special button texts and if found, use specialized buttons for them.
@@ -480,7 +480,7 @@ popup_init(popup_info *pi, int flags)
     int i;
     UI_BUTTON *b;
     popup_background *pbg;
-    char *fname;
+    const char *fname;
 
     if (pi->nchoices == 0) {
         pbg = &Popup_background[gr_screen.res][0];

@@ -18,8 +18,8 @@ void cf_free_secondary_filelist();
 typedef struct cf_pathtype
 {
     int index; // To verify that the CF_TYPE define is correctly indexed into this array
-    char *path; // Path relative to Freespace root, has ending backslash.
-    char *extensions; // Extensions used in this pathtype, separated by spaces
+    const char *path; // Path relative to Freespace root, has ending backslash.
+    const char *extensions; // Extensions used in this pathtype, separated by spaces
     int parent_index; // Index of this directory's parent.  Used for creating directories when writing.
 } cf_pathtype;
 

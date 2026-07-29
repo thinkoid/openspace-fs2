@@ -757,7 +757,7 @@ anim_read_header(anim *ptr, CFILE *fp)
 //          NULL                             => failure
 //
 anim *
-anim_load(char *real_filename, int file_mapped)
+anim_load(const char *real_filename, int file_mapped)
 {
     anim *ptr;
     CFILE *fp;

@@ -5573,7 +5573,7 @@ ship_info_base_lookup(int si_index)
 
 // Return the ship index of the ship with name *name.
 int
-ship_name_lookup(char *name, int inc_players)
+ship_name_lookup(const char *name, int inc_players)
 {
     int i;
 
@@ -5598,7 +5598,7 @@ ship_name_lookup(char *name, int inc_players)
 }
 
 int
-ship_type_name_lookup(char *name)
+ship_type_name_lookup(const char *name)
 {
     int idx;
 

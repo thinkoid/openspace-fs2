@@ -29,7 +29,7 @@
 // Module-wide globals
 // -----------------------------------------------------------
 
-static char *Shockwave_filenames[MAX_SHOCKWAVE_TYPES] = {
+static const char *Shockwave_filenames[MAX_SHOCKWAVE_TYPES] = {
     //XSTR:OFF
     "shockwave01"
     //XSTR:ON

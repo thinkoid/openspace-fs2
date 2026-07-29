@@ -121,7 +121,7 @@ TOKEN_CODE scanner_token;
 
 char scanner_token_string[MAX_TOKEN_STRING_LENGTH];
 char scanner_word_string[MAX_TOKEN_STRING_LENGTH];
-char *scanner_bufferp = "";
+const char *scanner_bufferp = "";
 char *scanner_tokenp = scanner_token_string;
 
 CHAR_CODE scanner_char_table[256];

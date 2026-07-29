@@ -62,7 +62,7 @@ int Gp_last_screen;
 
 struct gameplay_help_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y;
     int hotspot;
     int tab;
@@ -70,7 +70,7 @@ struct gameplay_help_buttons
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    gameplay_help_buttons(char *name, int x1, int y1, int h)
+    gameplay_help_buttons(const char *name, int x1, int y1, int h)
         : filename(name)
         , x(x1)
         , y(y1)
@@ -103,9 +103,9 @@ static UI_XSTR Game_help_text[GR_NUM_RESOLUTIONS][GAME_HELP_NUM_TEXT] = {
         &Buttons[gr_screen.res][CONTINUE_BUTTON].button } }
 };
 
-static char *Game_help_filename[GR_NUM_RESOLUTIONS] = { "F1", "2_F1" };
+static const char *Game_help_filename[GR_NUM_RESOLUTIONS] = { "F1", "2_F1" };
 
-static char *Game_help_mask_filename[GR_NUM_RESOLUTIONS] = { "F1-m", "2_F1-m" };
+static const char *Game_help_mask_filename[GR_NUM_RESOLUTIONS] = { "F1-m", "2_F1-m" };
 
 static UI_WINDOW Ui_window;
 static int Background_bitmap;

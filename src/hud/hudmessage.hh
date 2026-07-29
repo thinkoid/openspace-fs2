@@ -86,9 +86,9 @@ void hud_init_msg_window();
 void hud_show_msg_window();
 void hud_show_fixed_text();
 int HUD_get_team_source(int team);
-void HUD_printf(char *format, ...);
+void HUD_printf(const char *format, ...);
 void hud_sourced_print(int source, char *msg);
-void HUD_sourced_printf(int source, char *format,
+void HUD_sourced_printf(int source, const char *format,
                         ...); // send hud message from specified source
 void HUD_ship_sent_printf(int sh, char *format,
                           ...); // send hud message from a specific ship

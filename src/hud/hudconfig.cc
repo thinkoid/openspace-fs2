@@ -164,7 +164,7 @@ const char *Hud_config_mask_fname[GR_NUM_RESOLUTIONS] = { "HUDConfig-m",
 
 struct HC_gauge_region
 {
-    char *filename;
+    const char *filename;
     int x, y;
     int hotspot;
     int use_iff;
@@ -174,7 +174,7 @@ struct HC_gauge_region
     int color;
     UI_BUTTON button;
 
-    HC_gauge_region(char *name, int x1, int y1, int h, int iff, int cp, int b,
+    HC_gauge_region(const char *name, int x1, int y1, int h, int iff, int cp, int b,
                     int nf, int cl)
         : filename(name)
         , x(x1)

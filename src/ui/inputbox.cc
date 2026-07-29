@@ -102,7 +102,7 @@ UI_INPUTBOX::init_cursor()
 
 void
 UI_INPUTBOX::create(UI_WINDOW *wnd, int _x, int _y, int _w, int _text_len,
-                    char *_text, int _flags, int pixel_lim, color *clr)
+                    const char *_text, int _flags, int pixel_lim, color *clr)
 {
     int tw, th;
 
@@ -536,7 +536,7 @@ UI_INPUTBOX::get_text(char *out)
 }
 
 void
-UI_INPUTBOX::set_text(char *in)
+UI_INPUTBOX::set_text(const char *in)
 {
     int in_length;
 

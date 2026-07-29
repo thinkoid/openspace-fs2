@@ -490,7 +490,7 @@ UI_WINDOW::set_ignore_gadgets(int state)
 }
 
 void
-UI_WINDOW::add_XSTR(char *string, int _xstr_id, int _x, int _y, UI_GADGET *_assoc,
+UI_WINDOW::add_XSTR(const char *string, int _xstr_id, int _x, int _y, UI_GADGET *_assoc,
                     int _color_type, int _font_id)
 {
     int idx;

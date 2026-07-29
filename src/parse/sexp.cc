@@ -9596,7 +9596,7 @@ validate_float(char **str)
     return 0;
 }
 
-char *
+const char *
 sexp_error_message(int num)
 {
     switch (num) {

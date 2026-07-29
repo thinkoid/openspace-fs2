@@ -957,8 +957,8 @@ extern int get_subsystem_pos(vector *pos, object *objp, ship_subsys *subsysp);
 extern int ship_info_lookup(char *name);
 extern int ship_info_base_lookup(int si_index);
 extern int ship_name_lookup(
-    char *name, int inc_players = 0); // returns the index into Ship array of name
-extern int ship_type_name_lookup(char *name);
+    const char *name, int inc_players = 0); // returns the index into Ship array of name
+extern int ship_type_name_lookup(const char *name);
 
 extern int wing_lookup(char *name);
 

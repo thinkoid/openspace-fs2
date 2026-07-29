@@ -140,7 +140,7 @@ skip_token()
 // Display a diagnostic message if Verbose is set.
 // (Verbose is set if -v command line switch is present.)
 void
-diag_printf(char *format, ...)
+diag_printf(const char *format, ...)
 {
     char buffer[8192];
     va_list args;
@@ -219,7 +219,7 @@ get_line_num()
 // !0 means it's an error message.
 // Prints line number and other useful information.
 void
-error_display(int error_level, char *format, ...)
+error_display(int error_level, const char *format, ...)
 {
     char buffer[1024];
     char error_text[128];
@@ -249,7 +249,7 @@ error_display(int error_level, char *format, ...)
 
 // Advance Mp to the next eoln character.
 void
-advance_to_eoln(char *more_terminators)
+advance_to_eoln(const char *more_terminators)
 {
     char terminators[128];
 
@@ -493,7 +493,7 @@ required_string_3(const char *str1, const char *str2, const char *str3)
 // Copy characters from instr to outstr until eoln is found, or until max
 // characters have been copied (including terminator).
 void
-copy_to_eoln(char *outstr, char *more_terminators, char *instr, int max)
+copy_to_eoln(char *outstr, const char *more_terminators, char *instr, int max)
 {
     int count = 0;
     char ch;
@@ -595,7 +595,7 @@ stuff_string_white(char *pstr)
 // Supports various FreeSpace primitive types.  If 'len' is supplied, it will override
 // the default string length if using the F_NAME case.
 void
-stuff_string(char *pstr, int type, char *terminators, int len)
+stuff_string(char *pstr, int type, const char *terminators, int len)
 {
     char read_str[2048] = "";
     int read_len = 2048;
@@ -980,7 +980,7 @@ parse_get_line(char *lineout, int max_line_len, char *start, int max_size,
 // When a comment is found, it is removed.  If an entire line
 // consisted of a comment, a blank line is left in the input file.
 void
-read_file_text(char *filename, int mode)
+read_file_text(const char *filename, int mode)
 {
     CFILE *mf;
     char outbuf[BUF_SIZE], *str;
@@ -1490,8 +1490,8 @@ stuff_matrix(matrix *mp)
 // *strlist is the list of strings to search.
 // max is the number of entries in *strlist to scan.
 int
-string_lookup(char *str1, const char *const strlist[], int max, char *description,
-              int say_errors)
+string_lookup(const char *str1, const char *const strlist[], int max,
+              const char *description, int say_errors)
 {
     int i;
 
@@ -1512,8 +1512,9 @@ string_lookup(char *str1, const char *const strlist[], int max, char *descriptio
 // follows it at *addr.  *strlist[] contains the strings it should try to
 // match.
 void
-find_and_stuff(char *id, int *addr, int f_type, const char *const strlist[], int max,
-               char *description)
+find_and_stuff(const char *id, int *addr, int f_type,
+               const char *const strlist[], int max,
+               const char *description)
 {
     char token[128];
 
@@ -1526,7 +1527,7 @@ find_and_stuff(char *id, int *addr, int f_type, const char *const strlist[], int
 // Find the string in the list of strings *strlist[].
 // Returns the index of the match, -1 if none.
 int
-match_and_stuff(int f_type, const char *const strlist[], int max, char *description)
+match_and_stuff(int f_type, const char *const strlist[], int max, const char *description)
 {
     char token[128];
 
@@ -1535,8 +1536,8 @@ match_and_stuff(int f_type, const char *const strlist[], int max, char *descript
 }
 
 void
-find_and_stuff_or_add(char *id, int *addr, int f_type, char *strlist[],
-                      int *total, int max, char *description)
+find_and_stuff_or_add(const char *id, int *addr, int f_type, char *strlist[],
+                      int *total, int max, const char *description)
 {
     char token[128];
 

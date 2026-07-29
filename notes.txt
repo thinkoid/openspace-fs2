@@ -10,12 +10,14 @@ delta fully accounted, 4756 -> 4697).  D's build-config collapse +
 Fred/Pofview fold APPLIED same day too (82 files, -3481/+390; 4697 ->
 4676 accounted); D's remaining stock: observer subsystem, EAX chain, MP
 button handlers, commented-out blocks (policy call), zero-caller clusters
-behind the caution list.  F IN PROGRESS: three hub-first tranches landed
-(64 files), 4676 -> 1808; ~1500 write-strings remain (per-screen UI
-tables + Error/Warning formats), same recipe.  Key learning: literal
-tables const cleanly, runtime-owner tables (Campaign_names, Cargo_names,
-Ship_class_names, Pilot/Ai/Weapon names) must stay char*.  B stays
-catalogue-only by doctrine.  E remains open.
+behind the caution list.  F NEARLY DONE: six hub-first tranches,
+4676 -> 504 total, write-strings 4278 -> 80 (scattered singles, ~30
+files); the ~420 non-write-strings tail is E-material.  Key learnings:
+literal tables const cleanly, runtime-owner tables (Campaign_names,
+Cargo_names, Ship_class_names, Pilot/Ai/Weapon names) must stay char*;
+align continuation lines when const-ing wrapped prototypes or the
+decl/def drift surfaces as link errors.  B stays catalogue-only by
+doctrine.  E remains open.
 
 ========================================================================
 A. BUGS AND PORT DIVERGENCES (fix-mine material)

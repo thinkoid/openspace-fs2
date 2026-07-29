@@ -71,13 +71,13 @@ int Campaign_list_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
 
 struct sim_room_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y, xt, yt;
     int hotspot;
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    sim_room_buttons(char *name, int x1, int y1, int xt1, int yt1, int h)
+    sim_room_buttons(const char *name, int x1, int y1, int xt1, int yt1, int h)
         : filename(name)
         , x(x1)
         , y(y1)

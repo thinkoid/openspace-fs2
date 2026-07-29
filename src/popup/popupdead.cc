@@ -79,7 +79,7 @@ int Popupdead_background_coords[GR_NUM_RESOLUTIONS][2] = { { // GR_640
                                                            { // GR_1024
                                                              205, 581 } };
 
-char *Popupdead_button_filenames[GR_NUM_RESOLUTIONS][POPUPDEAD_NUM_CHOICES_MAX] = {
+const char *Popupdead_button_filenames[GR_NUM_RESOLUTIONS][POPUPDEAD_NUM_CHOICES_MAX] = {
     {
         // GR_640
         "PopD_00", // first choice

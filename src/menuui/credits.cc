@@ -46,10 +46,10 @@
 #define CREDITS_W_COORD 2
 #define CREDITS_H_COORD 3
 
-static char *Credits_bitmap_fname[GR_NUM_RESOLUTIONS] = { "Credits", // GR_640
+static const char *Credits_bitmap_fname[GR_NUM_RESOLUTIONS] = { "Credits", // GR_640
                                                           "2_Credits" };
 
-static char *Credits_bitmap_mask_fname[GR_NUM_RESOLUTIONS] = {
+static const char *Credits_bitmap_mask_fname[GR_NUM_RESOLUTIONS] = {
     "Credits-M", // GR_640
     "2_Credits-M"
 };
@@ -74,13 +74,13 @@ int Credits_text_coords[GR_NUM_RESOLUTIONS][4] = { {
 
 struct credits_screen_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y, xt, yt;
     int hotspot;
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    credits_screen_buttons(char *name, int x1, int y1, int xt1, int yt1, int h)
+    credits_screen_buttons(const char *name, int x1, int y1, int xt1, int yt1, int h)
         : filename(name)
         , x(x1)
         , y(y1)

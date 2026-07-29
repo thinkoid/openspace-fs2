@@ -79,7 +79,7 @@ int Monitoring_coords[GR_NUM_RESOLUTIONS][2] = { { // GR_640
                                                  { // GR_1024
                                                    869, 331 } };
 
-char *Escort_gauge_filenames[GR_NUM_RESOLUTIONS][MAX_ESCORT_SHIPS] = {
+const char *Escort_gauge_filenames[GR_NUM_RESOLUTIONS][MAX_ESCORT_SHIPS] = {
     //XSTR:OFF
     { // GR_640
       "escort1", "escort2", "escort3" },

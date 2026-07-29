@@ -80,12 +80,12 @@ typedef struct asteroid_field
 
 char CheatBuffer[CHEAT_BUFFER_LEN + 1];
 
-char *Cheat_code = NOX("33BE^(8]C01(:=BHt"); // www.freespace2.com
-char *Cheat_code_fish = NOX("bDc9y+$;#AIDRoouM"); // vasudanswuvfishes
-char *Cheat_code_headz = NOX("!;:::@>F7L?@@2:@A"); // humanheadsinside.
-char *Cheat_code_tooled = NOX("sipp-^rM@L!U^usjX"); // tooledworkedowned
-char *Cheat_code_pirate = NOX("MAP4YP[4=-2uC(yJ^"); // arrrrwalktheplank
-char *Cheat_code_skip = NOX("7!ICkSI\"(8n3JesBP"); // skipmemymissionyo
+const char *Cheat_code = NOX("33BE^(8]C01(:=BHt"); // www.freespace2.com
+const char *Cheat_code_fish = NOX("bDc9y+$;#AIDRoouM"); // vasudanswuvfishes
+const char *Cheat_code_headz = NOX("!;:::@>F7L?@@2:@A"); // humanheadsinside.
+const char *Cheat_code_tooled = NOX("sipp-^rM@L!U^usjX"); // tooledworkedowned
+const char *Cheat_code_pirate = NOX("MAP4YP[4=-2uC(yJ^"); // arrrrwalktheplank
+const char *Cheat_code_skip = NOX("7!ICkSI\"(8n3JesBP"); // skipmemymissionyo
 // 666)6=N79+Z45=BE0e
 int Tool_enabled = 0;
 

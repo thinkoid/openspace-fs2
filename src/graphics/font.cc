@@ -170,7 +170,7 @@ gr_get_font_height()
 }
 
 void
-gr_get_string_size(int *w1, int *h1, char *text, int len)
+gr_get_string_size(int *w1, int *h1, const char *text, int len)
 {
     int longest_width;
     int width, spacing;

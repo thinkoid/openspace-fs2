@@ -395,7 +395,7 @@ fs_builtin_mission Game_builtin_mission_list[MAX_BUILTIN_MISSIONS] = {
 // Internal function prototypes
 void game_maybe_draw_mouse(float frametime);
 void init_animating_pointer();
-void load_animating_pointer(char *filename, int dx, int dy);
+void load_animating_pointer(const char *filename, int dx, int dy);
 void unload_animating_pointer();
 void game_do_training_checks();
 void game_shutdown(void);
@@ -410,12 +410,12 @@ void verify_weapons_tbl();
 void display_title_screen();
 
 // loading background filenames
-static char *Game_loading_bground_fname[GR_NUM_RESOLUTIONS] = {
+static const char *Game_loading_bground_fname[GR_NUM_RESOLUTIONS] = {
     "LoadingBG", // GR_640
     "2_LoadingBG" // GR_1024
 };
 
-static char *Game_loading_ani_fname[GR_NUM_RESOLUTIONS] = {
+static const char *Game_loading_ani_fname[GR_NUM_RESOLUTIONS] = {
     "Loading.ani", // GR_640
     "2_Loading.ani" // GR_1024
 };
@@ -1451,7 +1451,7 @@ DCF(gamma, "Sets Gamma factor")
 void
 game_init()
 {
-    char *ptr;
+    const char *ptr;
 
     Game_current_mission_filename[0] = 0;
 
@@ -5388,7 +5388,7 @@ init_animating_pointer()
 // input:   filename => filename of animation file that holds the animation
 //
 void
-load_animating_pointer(char *filename, int dx, int dy)
+load_animating_pointer(const char *filename, int dx, int dy)
 {
     int fps;
     animating_obj *am;

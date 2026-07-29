@@ -138,13 +138,13 @@ struct goal_list
 
 struct goal_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y;
     int hotspot;
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    goal_buttons(char *name, int x1, int y1, int h)
+    goal_buttons(const char *name, int x1, int y1, int h)
         : filename(name)
         , x(x1)
         , y(y1)

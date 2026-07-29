@@ -25,7 +25,7 @@
 #define WINGMAN_STATUS_DOTS 3
 #define WINGMAN_STATUS_NAMES 4
 
-static char *Wingman_status_filenames[GR_NUM_RESOLUTIONS]
+static const char *Wingman_status_filenames[GR_NUM_RESOLUTIONS]
                                      [HUD_WINGMAN_STATUS_NUM_FRAMES] = {
                                          //XSTR:OFF
                                          {

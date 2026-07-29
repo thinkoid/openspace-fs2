@@ -154,7 +154,7 @@ void
 lcl_init(int lang_init)
 {
     char lang_string[128];
-    char *ret;
+    const char *ret;
     int lang, idx;
 
     // initialize encryption

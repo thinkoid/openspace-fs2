@@ -285,7 +285,7 @@ squadmsg_history Squadmsg_history[SQUADMSG_HISTORY_MAX] = { 0 };
 
 static hud_frames Mbox_gauge[NUM_MBOX_FRAMES];
 static int Mbox_frames_loaded = 0;
-static char *Mbox_fnames[GR_NUM_RESOLUTIONS][NUM_MBOX_FRAMES] = {
+static const char *Mbox_fnames[GR_NUM_RESOLUTIONS][NUM_MBOX_FRAMES] = {
     //XSTR:OFF
     {
         // GR_640

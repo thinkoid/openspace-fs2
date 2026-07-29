@@ -126,7 +126,7 @@ int Tech_texture_backup;
 
 struct techroom_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y, xt, yt;
     int hotspot;
     int tab;
@@ -134,7 +134,7 @@ struct techroom_buttons
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    techroom_buttons(char *name, int x1, int y1, int xt1, int yt1, int h, int t,
+    techroom_buttons(const char *name, int x1, int y1, int xt1, int yt1, int h, int t,
                      int f = 0)
         : filename(name)
         , x(x1)
@@ -271,7 +271,7 @@ static UI_SLIDER2 Tech_slider;
 
 //XSTR:OFF
 /*
-static char *Intel_anim_filenames[MAX_INTEL_ENTRIES] = {
+static const char *Intel_anim_filenames[MAX_INTEL_ENTRIES] = {
    "tech_tpilot.ani",
    "tech_vasudan.ani",
    "tech_shivan.ani",

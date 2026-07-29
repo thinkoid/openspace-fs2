@@ -269,10 +269,10 @@ int cfwrite_string(char *buf, CFILE *file);
 // stored in file
 int cfwrite_string_len(char *buf, CFILE *file);
 
-int cf_get_file_list(int max, char **list, int type, char *filter,
+int cf_get_file_list(int max, char **list, int type, const char *filter,
                      int sort = CF_SORT_NONE, file_list_info *info = NULL);
 int cf_get_file_list_preallocated(int max, char arr[][MAX_FILENAME_LEN],
-                                  char **list, int type, char *filter,
+                                  char **list, int type, const char *filter,
                                   int sort = CF_SORT_NONE,
                                   file_list_info *info = NULL);
 void cf_sort_filenames(int n, char **list, int sort, file_list_info *info = NULL);

@@ -124,11 +124,11 @@ UI_XSTR Medals_text[GR_NUM_RESOLUTIONS][MEDALS_NUM_TEXT] = {
     },
 };
 
-static char *Medals_background_filename[GR_NUM_RESOLUTIONS] = {
+static const char *Medals_background_filename[GR_NUM_RESOLUTIONS] = {
     "MedalsDisplayEmpty", "2_MedalsDisplayEmpty"
 };
 
-static char *Medals_mask_filename[GR_NUM_RESOLUTIONS] = { "Medals-m",
+static const char *Medals_mask_filename[GR_NUM_RESOLUTIONS] = { "Medals-m",
                                                           "2_Medals-m" };
 
 static int Medals_callsign_y[GR_NUM_RESOLUTIONS] = { 54, 89 };

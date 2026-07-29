@@ -260,7 +260,7 @@ public:
     int button_hilighted(); // is the mouse over this button?
     void set_button_hilighted(); // force button to be highlighted
     void press_button(); // force button to get pressed
-    void create(UI_WINDOW *wnd, char *_text, int _x, int _y, int _w, int _h,
+    void create(UI_WINDOW *wnd, const char *_text, int _x, int _y, int _w, int _h,
                 int do_repeat = 0, int ignore_focus = 0);
     void set_highlight_action(void (*user_function)(void));
     void set_disabled_action(void (*user_function)(void));
@@ -333,14 +333,15 @@ class UI_INPUTBOX : public UI_GADGET
 public:
     //      int first_time;
 
-    void create(UI_WINDOW *wnd, int _x, int _y, int _w, int _textlen, char *text,
+    void create(UI_WINDOW *wnd, int _x, int _y, int _w, int _textlen,
+                const char *text,
                 int _flags = 0, int pixel_lim = -1, color *clr = NULL);
     void set_valid_chars(char *vchars);
     void set_invalid_chars(char *ichars);
     int changed();
     int pressed();
     void get_text(char *out);
-    void set_text(char *in);
+    void set_text(const char *in);
 };
 
 // Icon flags
@@ -364,7 +365,8 @@ class UI_ICON : public UI_GADGET
     virtual void destroy();
 
 public:
-    void create(UI_WINDOW *wnd, char *_text, int _x, int _y, int _w, int _h);
+    void create(UI_WINDOW *wnd, const char *_text, int _x, int _y, int _w,
+                int _h);
 };
 
 class UI_CHECKBOX : public UI_GADGET
@@ -388,7 +390,7 @@ class UI_CHECKBOX : public UI_GADGET
 public:
     int changed();
     int checked();
-    void create(UI_WINDOW *wnd, char *_text, int _x, int _y, int _state);
+    void create(UI_WINDOW *wnd, const char *_text, int _x, int _y, int _state);
     void set_state(int _state);
 };
 
@@ -414,7 +416,7 @@ class UI_RADIO : public UI_GADGET
 public:
     int changed();
     int checked();
-    void create(UI_WINDOW *wnd, char *_text, int _x, int _y, int _state,
+    void create(UI_WINDOW *wnd, const char *_text, int _x, int _y, int _state,
                 int _group);
 };
 
@@ -691,7 +693,8 @@ public:
     }
     void render_tooltip(char *str);
     void set_ignore_gadgets(int state);
-    void add_XSTR(char *string, int xstr_id, int x, int y, UI_GADGET *assoc,
+    void add_XSTR(const char *string, int xstr_id, int x, int y,
+                  UI_GADGET *assoc,
                   int color_type, int font_id = -1);
     void add_XSTR(UI_XSTR *xstr);
 
@@ -704,13 +707,13 @@ public:
 // 2 extremely useful structs
 typedef struct ui_button_info
 {
-    char *filename;
+    const char *filename;
     int x, y, xt, yt;
     int hotspot;
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    ui_button_info(char *name, int x1, int y1, int xt1, int yt1, int h)
+    ui_button_info(const char *name, int x1, int y1, int xt1, int yt1, int h)
         : filename(name)
         , x(x1)
         , y(y1)

@@ -12,7 +12,7 @@
 #include <globalincs/alphacolors.hh>
 
 void
-UI_RADIO::create(UI_WINDOW *wnd, char *_text, int _x, int _y, int _state,
+UI_RADIO::create(UI_WINDOW *wnd, const char *_text, int _x, int _y, int _state,
                  int _group)
 {
     int _w, _h;

@@ -32,7 +32,7 @@
 
 struct brief_common_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y;
     int xt, yt;
     int hotspot;
@@ -40,7 +40,7 @@ struct brief_common_buttons
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    brief_common_buttons(char *name, int x1, int y1, int xt1, int yt1, int h,
+    brief_common_buttons(const char *name, int x1, int y1, int xt1, int yt1, int h,
                          int r = 0)
         : filename(name)
         , x(x1)
@@ -96,7 +96,7 @@ void common_maybe_clear_focus();
 void ship_select_common_init();
 
 void
-common_set_interface_palette(char *filename = NULL); // set the interface palette
+common_set_interface_palette(const char *filename = NULL); // set the interface palette
 void common_free_interface_palette(); // restore game palette
 
 void load_wing_icons(char *filename);

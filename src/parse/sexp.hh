@@ -622,7 +622,7 @@ extern int verify_vector(char *text);
 extern void skip_white(char **str);
 extern int validate_float(char **str);
 extern int build_sexp_string(int cur_node, int level, int mode);
-extern char *sexp_error_message(int num);
+extern const char *sexp_error_message(int num);
 extern int count_free_sexp_nodes();
 
 // functions to change the attributes of an sexpression tree to persistent or not persistent

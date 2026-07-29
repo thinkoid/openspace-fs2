@@ -221,7 +221,7 @@ char Support_fname[GR_NUM_RESOLUTIONS][MAX_FILENAME_LEN] = { "support1",
 #define NUM_DAMAGE_GAUGES 3
 static hud_frames Damage_gauges[NUM_DAMAGE_GAUGES];
 static int Damage_gauges_loaded = 0;
-char *Damage_gauge_fnames[GR_NUM_RESOLUTIONS][NUM_DAMAGE_GAUGES] = {
+const char *Damage_gauge_fnames[GR_NUM_RESOLUTIONS][NUM_DAMAGE_GAUGES] = {
     //XSTR:OFF
     {
         // GR_640

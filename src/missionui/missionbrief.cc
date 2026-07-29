@@ -105,14 +105,14 @@ static int Brief_infobox_coords[GR_NUM_RESOLUTIONS][2] = { { // GR_640
                                                            { // GR_1024
                                                              0, 627 } };
 
-static char *Brief_infobox_filename[GR_NUM_RESOLUTIONS] = { "InfoBox",
+static const char *Brief_infobox_filename[GR_NUM_RESOLUTIONS] = { "InfoBox",
                                                             "2_Infobox" };
 
-static char *Brief_filename[GR_NUM_RESOLUTIONS] = { "Brief", "2_Brief" };
+static const char *Brief_filename[GR_NUM_RESOLUTIONS] = { "Brief", "2_Brief" };
 
-static char *Brief_mask_filename[GR_NUM_RESOLUTIONS] = { "Brief-m", "2_Brief-m" };
+static const char *Brief_mask_filename[GR_NUM_RESOLUTIONS] = { "Brief-m", "2_Brief-m" };
 
-static char *Brief_win_filename[GR_NUM_RESOLUTIONS] = { "Briefwin",
+static const char *Brief_win_filename[GR_NUM_RESOLUTIONS] = { "Briefwin",
                                                         "2_Briefwin" };
 
 // coordinate inidices
@@ -182,7 +182,7 @@ int Brief_inited = FALSE;
 #define BRIEF_PAUSE_MASK 16
 
 //XSTR:OFF
-static char *Brief_mask_single[GR_NUM_RESOLUTIONS] = {
+static const char *Brief_mask_single[GR_NUM_RESOLUTIONS] = {
     "brief-m", // GR_640
     "2_brief-m" // GR_1024
 };
@@ -190,7 +190,7 @@ static char *Brief_mask_single[GR_NUM_RESOLUTIONS] = {
 
 struct brief_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y;
     int xt, yt;
     int hotspot;
@@ -198,7 +198,7 @@ struct brief_buttons
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    brief_buttons(char *name, int x1, int y1, int xt1, int yt1, int h, int r = 0)
+    brief_buttons(const char *name, int x1, int y1, int xt1, int yt1, int h, int r = 0)
         : filename(name)
         , x(x1)
         , y(y1)

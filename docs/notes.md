@@ -825,3 +825,30 @@ REMAINING: ~1500 write-strings (top: optionsmenu 196, hudconfig 157,
 controlsconfig 82, missiondebrief 65, barracks 63 -- mostly ui_button_info
 / per-screen fname tables and Error/Warning format params) + the ~300
 non-write-strings tail.  Same recipe continues.
+
+## Survey F tranches 4-6: write-strings 1808 -> 504 total, 80 remaining (2026-07-29)
+
+Continued hub-first: the per-screen button-struct clones (17 structs --
+options_buttons, HC_gauge_region, barracks_buttons/bitmaps, wl/ss/brief/
+goal/hotkey/sim_room/scrollback/techroom/credits/gameplay-help buttons,
+op_sliders -- all the same filename-member+ctor idiom, const'd by a
+block-aware script); static and multi-dim literal tables the first regex
+missed (34 more); ui_button_info itself; the os_config_* family (params
+and read_string returns); parselo's second layer (error_display/
+diag_printf formats, find_and_stuff id/description, stuff_string
+terminators, copy/advance_to_eoln, read_file_text); UI_CHECKBOX/RADIO/
+ICON/INPUTBOX creates + add_XSTR (all strdup/copy semantics);
+HUD_printf/HUD_sourced_printf/emp_hud_*; sexp_error_message;
+popup_background + popup_get_button_filename; snazzy_menu_add_region;
+common_set_interface_palette; cf_get_file_list filter + cf_matches_spec;
+ship_name_lookup/ship_type_name_lookup; g3_start_frame_func;
+load_animating_pointer; gamesnd_parse_line; gr_get_string_size;
+Osreg_* singles.  Two decl/def-drift link errors caught by the linker
+(os_config_read_string default param, match_and_stuff continuation
+line) -- the mismatch shows as an undefined reference, not a compile
+error; align continuation lines when const-ing wrapped prototypes.
+Verified: zero errors, tests green, headless boot renders 75 frames.
+Warning totals: 4756 (survey start) -> 504; write-strings 4278 -> 80.
+The 80 are scattered singles (~30 files, 1-9 each); the ~420
+non-write-strings tail (multichar, unknown-pragmas, conversion-null,
+char-subscripts, parentheses) is E-material.

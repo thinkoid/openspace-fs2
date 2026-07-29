@@ -324,7 +324,7 @@ cf_build_root_list(char *cdrom_dir)
 // separated by spaces, return zero if ext is
 // not in the list.
 int
-is_ext_in_list(char *ext_list, char *ext)
+is_ext_in_list(const char *ext_list, const char *ext)
 {
     char tmp_ext[128];
 
@@ -709,9 +709,9 @@ cf_find_file_location(char *filespec, int pathtype, char *pack_filename,
 
 // Returns true if filename matches filespec, else zero if not
 int
-cf_matches_spec(char *filespec, char *filename)
+cf_matches_spec(const char *filespec, const char *filename)
 {
-    char *src_ext, *dst_ext;
+    const char *src_ext, *dst_ext;
 
     src_ext = strchr(filespec, '.');
     if (!src_ext)
@@ -756,7 +756,8 @@ cf_file_already_in_list(int num_files, char **list, char *filename)
 // location, 'filter' only needs to be the filter itself, with no path information.
 // See above descriptions of cf_get_file_list() for more information about how it all works.
 int
-cf_get_file_list(int max, char **list, int pathtype, char *filter, int sort,
+cf_get_file_list(int max, char **list, int pathtype, const char *filter,
+                 int sort,
                  file_list_info *info)
 {
     char *ptr;
@@ -907,7 +908,7 @@ cf_file_already_in_list_preallocated(int num_files, char arr[][MAX_FILENAME_LEN]
 // See above descriptions of cf_get_file_list() for more information about how it all works.
 int
 cf_get_file_list_preallocated(int max, char arr[][MAX_FILENAME_LEN], char **list,
-                              int pathtype, char *filter, int sort,
+                              int pathtype, const char *filter, int sort,
                               file_list_info *info)
 {
     int i, num_files = 0, own_flag = 0;

@@ -181,7 +181,7 @@ snazzy_menu_do(ubyte *data, int mask_w, int mask_h, int num_regions,
 //
 
 void
-snazzy_menu_add_region(MENU_REGION *region, char *text, int mask, int key,
+snazzy_menu_add_region(MENU_REGION *region, const char *text, int mask, int key,
                        int click_sound)
 {
     region->mask = mask;

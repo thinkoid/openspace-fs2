@@ -112,14 +112,14 @@ static int Hud_mission_log_time2_coords[GR_NUM_RESOLUTIONS][2] = {
 
 struct scrollback_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y;
     int xt, yt;
     int hotspot;
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    scrollback_buttons(char *name, int x1, int y1, int x2, int y2, int h)
+    scrollback_buttons(const char *name, int x1, int y1, int x2, int y2, int h)
         : filename(name)
         , x(x1)
         , y(y1)
@@ -179,12 +179,12 @@ static int Scrollback_mode = SCROLLBACK_MODE_OBJECTIVES;
 static int Background_bitmap;
 static UI_WINDOW Ui_window;
 
-static char *Hud_mission_log_fname[GR_NUM_RESOLUTIONS] = {
+static const char *Hud_mission_log_fname[GR_NUM_RESOLUTIONS] = {
     "MissionLog", // GR_640
     "2_MissionLog" // GR_1024
 };
 
-static char *Hud_mission_log_mask_fname[GR_NUM_RESOLUTIONS] = {
+static const char *Hud_mission_log_mask_fname[GR_NUM_RESOLUTIONS] = {
     "MissionLog-m", // GR_640
     "2_MissionLog-m" // GR_1024
 };
@@ -532,7 +532,7 @@ HUD_get_team_source(int team)
 }
 
 void
-HUD_printf(char *format, ...)
+HUD_printf(const char *format, ...)
 {
     va_list args;
     char tmp[HUD_MSG_LENGTH_MAX];
@@ -577,7 +577,7 @@ HUD_ship_sent_printf(int sh, char *format, ...)
 // width.  'source' is used to indicate who send the message, and is used to color code text.
 //
 void
-HUD_sourced_printf(int source, char *format, ...)
+HUD_sourced_printf(int source, const char *format, ...)
 {
     va_list args;
     char tmp[HUD_MSG_LENGTH_MAX];

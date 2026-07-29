@@ -119,7 +119,7 @@ void message_translate_tokens(char *buf, char *text);
 static hud_frames Directive_gauge[NUM_DIRECTIVE_GAUGES];
 static int Directive_frames_loaded = 0;
 
-static char *Directive_fnames[3] = {
+static const char *Directive_fnames[3] = {
     //XSTR:OFF
     "directives1", "directives2", "directives3"
     //XSTR:ON

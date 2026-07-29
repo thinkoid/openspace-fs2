@@ -320,7 +320,7 @@ int Weapon_secondary_reload_x[GR_NUM_RESOLUTIONS] = {
     615, // x location of where to draw the weapon reload time
     998
 };
-char *Weapon_gauge_fnames[GR_NUM_RESOLUTIONS][NUM_WEAPON_GAUGES] = {
+const char *Weapon_gauge_fnames[GR_NUM_RESOLUTIONS][NUM_WEAPON_GAUGES] = {
     //XSTR:OFF
     { // GR_640
       "weapons1", "weapons2", "weapons3", "weapons4", "weapons5" },

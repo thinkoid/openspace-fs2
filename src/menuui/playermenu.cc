@@ -88,13 +88,13 @@ const char *Player_select_background_mask_bitmap[GR_NUM_RESOLUTIONS] = {
 // convenient struct for handling all button controls
 struct barracks_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y, xt, yt;
     int hotspot;
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    barracks_buttons(char *name, int x1, int y1, int xt1, int yt1, int h)
+    barracks_buttons(const char *name, int x1, int y1, int xt1, int yt1, int h)
         : filename(name)
         , x(x1)
         , y(y1)
@@ -192,7 +192,7 @@ static int Player_select_middle_text_y[GR_NUM_RESOLUTIONS] = {
 
 char Player_select_bottom_text[150] = "";
 char Player_select_middle_text[150] = "";
-void player_select_set_bottom_text(char *txt);
+void player_select_set_bottom_text(const char *txt);
 void player_select_set_middle_text(char *txt);
 
 // FORWARD DECLARATIONS
@@ -205,7 +205,7 @@ int player_select_create_new_pilot();
 void player_select_delete_pilot();
 void player_select_display_all_text();
 void player_select_display_copyright();
-void player_select_set_bottom_text(char *txt);
+void player_select_set_bottom_text(const char *txt);
 void player_select_set_controls(int gray);
 void player_select_draw_list();
 void player_select_process_noninput(int k);
@@ -782,7 +782,7 @@ player_select_scroll_list_down()
 int
 player_select_get_last_pilot_info()
 {
-    char *last_player;
+    const char *last_player;
 
     last_player = os_config_read_string(NULL, "LastPlayer", NULL);
 
@@ -1142,7 +1142,7 @@ player_select_pilot_file_filter(char *filename)
 }
 
 void
-player_select_set_bottom_text(char *txt)
+player_select_set_bottom_text(const char *txt)
 {
     if (txt) {
         strncpy(Player_select_bottom_text, txt, 149);

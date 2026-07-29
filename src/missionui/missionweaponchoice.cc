@@ -88,13 +88,13 @@ typedef struct wl_bitmap_group
 UI_WINDOW Weapon_ui_window;
 //UI_BUTTON Weapon_buttons[NUM_WEAPON_BUTTONS];
 
-static char *Wl_mask_single[GR_NUM_RESOLUTIONS] = { "weaponloadout-m",
+static const char *Wl_mask_single[GR_NUM_RESOLUTIONS] = { "weaponloadout-m",
                                                     "2_weaponloadout-m" };
 
-static char *Wl_loadout_select_mask[GR_NUM_RESOLUTIONS] = { "weaponloadout-m",
+static const char *Wl_loadout_select_mask[GR_NUM_RESOLUTIONS] = { "weaponloadout-m",
                                                             "2_weaponloadout-m" };
 
-static char *Weapon_select_background_fname[GR_NUM_RESOLUTIONS] = {
+static const char *Weapon_select_background_fname[GR_NUM_RESOLUTIONS] = {
     "WeaponLoadout", "2_WeaponLoadout"
 };
 
@@ -113,13 +113,13 @@ static int WeaponSelectMaskBitmap; // bitmap id of the weapon select mask bitmap
 // convenient struct for handling all button controls
 struct wl_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y, xt, yt;
     int hotspot;
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    wl_buttons(char *name, int x1, int y1, int xt1, int yt1, int h)
+    wl_buttons(const char *name, int x1, int y1, int xt1, int yt1, int h)
         : filename(name)
         , x(x1)
         , y(y1)

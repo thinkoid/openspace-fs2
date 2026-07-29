@@ -366,7 +366,7 @@ common_music_close()
 // function that sets the current palette to the interface palette.  This function
 // needs to be followed by common_free_interface_palette() to restore the game palette.
 void
-common_set_interface_palette(char *filename)
+common_set_interface_palette(const char *filename)
 {
     static char buf[MAX_FILENAME_LEN + 1] = { 0 };
 

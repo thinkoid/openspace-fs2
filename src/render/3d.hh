@@ -42,7 +42,8 @@
     g3_start_frame_func(zbuffer_flag, __FILE__, __LINE__)
 
 // use the g3_start_frame macro instead of calling this directly.
-extern void g3_start_frame_func(int zbuffer_flag, char *filename, int lineno);
+extern void g3_start_frame_func(int zbuffer_flag, const char *filename,
+                                int lineno);
 
 //set view from x,y,z & p,b,h, zoom.  Must call one of g3_set_view_*()
 void g3_set_view_angles(vector *view_pos, angles *view_orient, float zoom);

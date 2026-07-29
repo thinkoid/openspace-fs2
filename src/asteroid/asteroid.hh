@@ -41,7 +41,7 @@ struct collision_info_struct;
 typedef struct debris_struct
 {
     int index;
-    char *name;
+    const char *name;
 } debris_struct;
 
 // Data structure to track the active asteroids

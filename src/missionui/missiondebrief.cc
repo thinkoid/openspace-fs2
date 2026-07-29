@@ -335,7 +335,7 @@ voice_map Debrief_promotion_voice_mapping
 #define DB_AWARD_RANK 3
 #define DB_AWARD_BADGE 4
 #define DB_AWARD_BG 5
-static char *Debrief_award_filename[GR_NUM_RESOLUTIONS][6] = {
+static const char *Debrief_award_filename[GR_NUM_RESOLUTIONS][6] = {
     { "DebriefWings", "DebriefMedal", "DebriefCrest", "DebriefRank",
       "DebriefBadge", "DebriefAward" },
     { "2_DebriefWings", "2_DebriefMedal", "2_DebriefCrest", "2_DebriefRank",

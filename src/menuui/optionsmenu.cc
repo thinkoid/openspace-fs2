@@ -82,7 +82,7 @@
 
 struct options_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y;
     int hotspot;
     int tab;
@@ -90,7 +90,7 @@ struct options_buttons
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    options_buttons(char *name, int x1, int y1, int h, int t, int f = 0)
+    options_buttons(const char *name, int x1, int y1, int h, int t, int f = 0)
         : filename(name)
         , x(x1)
         , y(y1)
@@ -231,8 +231,8 @@ op_sliders Options_sliders[GR_NUM_RESOLUTIONS][NUM_OPTIONS_SLIDERS] = {
 
 static struct
 {
-    char *filename;
-    char *mask_filename;
+    const char *filename;
+    const char *mask_filename;
     int bitmap;
     int mask;
 
