@@ -584,7 +584,7 @@ extern char *Ai_class_names[];
 extern int Num_ai_classes;
 extern int Ai_firing_enabled;
 
-extern char *Skill_level_names(int skill_level, int translate = 1);
+extern const char *Skill_level_names(int skill_level, int translate = 1);
 extern int Skill_level_max_attackers[NUM_SKILL_LEVELS];
 extern int Ai_goal_signature;
 

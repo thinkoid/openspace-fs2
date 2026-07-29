@@ -288,7 +288,7 @@ void player_stop_cargo_scan_sound();
 void player_maybe_start_cargo_scan_sound();
 
 // will attempt to load an insignia bitmap and set it as active for the player
-void player_set_squad_bitmap(player *p, char *fname);
+void player_set_squad_bitmap(player *p, const char *fname);
 
 // set squadron
 void player_set_squad(player *p, char *squad_name);

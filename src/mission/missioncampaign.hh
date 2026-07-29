@@ -146,7 +146,7 @@ int mission_campaign_load_by_name(char *filename);
 int mission_campaign_load_by_name_csfe(char *filename, char *callsign);
 
 // load up and initialize a new campaign
-int mission_campaign_load(char *filename, int load_savefile = 1);
+int mission_campaign_load(const char *filename, int load_savefile = 1);
 
 // function to save the state of the campaign between missions or to load a campaign save file
 extern int mission_campaign_save(void);
@@ -189,7 +189,7 @@ void campaign_delete_save(char *cfn, char *pname);
 void campaign_savefile_load(char *fname, char *pname);
 
 // get name and type of specified campaign file
-int mission_campaign_get_info(char *filename, char *name, int *type,
+int mission_campaign_get_info(const char *filename, char *name, int *type,
                               int *max_players, char **desc = NULL);
 
 // get a listing of missions in a campaign

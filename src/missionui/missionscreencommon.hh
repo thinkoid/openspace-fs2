@@ -99,7 +99,7 @@ void
 common_set_interface_palette(const char *filename = NULL); // set the interface palette
 void common_free_interface_palette(); // restore game palette
 
-void load_wing_icons(char *filename);
+void load_wing_icons(const char *filename);
 void unload_wing_icons();
 
 void common_flash_button_init();

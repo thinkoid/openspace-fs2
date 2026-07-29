@@ -6156,7 +6156,7 @@ game_do_cd_check(char *volume_name)
 // return: 1   => CD now in drive
 //         0   => Could not find CD, they refuse to put it in the drive
 int
-game_do_cd_check_specific(char *volume_name, int cdnum)
+game_do_cd_check_specific(const char *volume_name, int cdnum)
 {
     // retail looped find_freespace_cd() with a "Please insert CD %d" popup;
     // the game data sits in the filesystem, so the check always succeeds

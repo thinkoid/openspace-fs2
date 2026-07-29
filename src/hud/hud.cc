@@ -94,7 +94,7 @@ int Hud_text_flash_coords[GR_NUM_RESOLUTIONS][2] = { { // GR_640
                                                      { // GR_1024
                                                        -1, 275 } };
 void hud_init_text_flash_gauge();
-void hud_start_text_flash(char *txt, int t);
+void hud_start_text_flash(const char *txt, int t);
 void hud_maybe_show_text_flash_icon();
 
 // redalert downloading new orders text
@@ -1609,7 +1609,7 @@ hud_init_text_flash_gauge()
 { }
 
 void
-hud_start_text_flash(char *txt, int t)
+hud_start_text_flash(const char *txt, int t)
 {
     // bogus
     if (txt == NULL) {

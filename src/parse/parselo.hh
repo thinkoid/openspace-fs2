@@ -95,7 +95,7 @@ extern int required_string_3(const char *str1, const char *str2, const char *str
 extern void copy_to_eoln(char *outstr, const char *more_terminators,
                          char *instr,
                          int max);
-extern void copy_text_until(char *outstr, char *instr, char *endstr,
+extern void copy_text_until(char *outstr, char *instr, const char *endstr,
                             int max_chars);
 extern void stuff_string_white(char *pstr);
 extern void stuff_string(char *pstr, int type, const char *terminators,
@@ -127,8 +127,8 @@ extern void find_and_stuff_or_add(const char *id, int *addr, int f_type,
 extern int get_string(char *str);
 extern void stuff_parenthesized_vector(vector *vp);
 void stuff_boolean(int *i);
-int check_for_string(char *pstr);
-int check_for_string_raw(char *pstr);
+int check_for_string(const char *pstr);
+int check_for_string_raw(const char *pstr);
 
 // general
 extern void init_parse();

@@ -1078,7 +1078,7 @@ translate_key_to_index(char *key)
             key++;
     }
 
-    char *translated_shift;
+    const char *translated_shift;
 
     if (Lcl_gr) {
         translated_shift = "Shift";

@@ -156,7 +156,7 @@ UI_INPUTBOX::create(UI_WINDOW *wnd, int _x, int _y, int _w, int _text_len,
 };
 
 void
-UI_INPUTBOX::set_valid_chars(char *vchars)
+UI_INPUTBOX::set_valid_chars(const char *vchars)
 {
     // free up any existing string
     if (valid_chars != NULL) {

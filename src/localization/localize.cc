@@ -120,7 +120,7 @@ int Lcl_pointer_count = 0;
 //
 
 // associate table file externalization with the specified input file
-void lcl_ext_associate(char *filename);
+void lcl_ext_associate(const char *filename);
 
 // given a valid XSTR() tag piece of text, extract the string portion, return it in out, nonzero on success
 int lcl_ext_get_text(char *xstr, char *out);
@@ -658,7 +658,7 @@ lcl_get_xstr_offset(int index, int res)
 
 // associate table file externalization with the specified input file
 void
-lcl_ext_associate(char *filename)
+lcl_ext_associate(const char *filename)
 {
     // if the filename already exists, free it up
     if (Lcl_ext_filename != NULL) {

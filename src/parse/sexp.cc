@@ -1443,7 +1443,7 @@ identify_operator(char *token)
 }
 
 int
-find_operator(char *token)
+find_operator(const char *token)
 {
     int i;
 

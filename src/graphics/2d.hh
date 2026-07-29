@@ -348,7 +348,7 @@ extern screen gr_screen;
 // it will return the same font number both times.  This font is
 // then set to be the current font, and default font if none is
 // yet specified.
-int gr_init_font(char *typeface);
+int gr_init_font(const char *typeface);
 
 // Does formatted printing.  This calls gr_string after formatting,
 // so if you don't need to format the string, then call gr_string

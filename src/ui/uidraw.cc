@@ -24,7 +24,7 @@ ui_vline(int y1, int y2, int x)
 }
 
 void
-ui_string_centered(int x, int y, char *s)
+ui_string_centered(int x, int y, const char *s)
 {
     int height, width;
 

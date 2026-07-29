@@ -433,7 +433,7 @@ gr_font_close()
 // Returns -1 if couldn't init font, otherwise returns the
 // font id number.
 int
-gr_create_font(char *typeface)
+gr_create_font(const char *typeface)
 {
     CFILE *fp;
     font *fnt;
@@ -586,7 +586,7 @@ gr_font_init()
 // Returns -1 if couldn't init font, otherwise returns the
 // font id number.
 int
-gr_init_font(char *typeface)
+gr_init_font(const char *typeface)
 {
     int Loaded_fontnum;
 

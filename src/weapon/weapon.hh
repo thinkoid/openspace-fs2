@@ -335,7 +335,7 @@ extern char *Weapon_names[MAX_WEAPON_TYPES];
 #define WEAPON_INDEX(wp) (wp - Weapons)
 #define WEAPON_INFO_INDEX(wip) (wip - Weapon_info)
 
-int weapon_info_lookup(char *name);
+int weapon_info_lookup(const char *name);
 void weapon_init(); // called at game startup
 void weapon_level_init(); // called before the start of each level
 void weapon_render(object *obj);

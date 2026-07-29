@@ -1161,7 +1161,7 @@ pilot_load_squad_pic_list()
 
 // will attempt to load an insignia bitmap and set it as active for the player
 void
-player_set_squad_bitmap(player *p, char *fname)
+player_set_squad_bitmap(player *p, const char *fname)
 {
     // sanity check
     if (p == NULL) {

@@ -336,7 +336,7 @@ public:
     void create(UI_WINDOW *wnd, int _x, int _y, int _w, int _textlen,
                 const char *text,
                 int _flags = 0, int pixel_lim = -1, color *clr = NULL);
-    void set_valid_chars(char *vchars);
+    void set_valid_chars(const char *vchars);
     void set_invalid_chars(char *ichars);
     int changed();
     int pressed();

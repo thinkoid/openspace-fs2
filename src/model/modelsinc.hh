@@ -90,7 +90,7 @@ void model_octant_free(polymodel *pm);
 void model_calc_bound_box(vector *box, vector *big_mn, vector *big_mx);
 
 // the POF container reader (pofparse.cpp); fills pm, returns 1 on success
-int read_model_file(polymodel *pm, char *filename, int n_subsystems,
+int read_model_file(polymodel *pm, const char *filename, int n_subsystems,
                     model_subsystem *subsystems);
 
 void interp_clear_instance();

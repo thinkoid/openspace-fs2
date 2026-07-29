@@ -178,7 +178,8 @@ int message_anim_is_playing();
 void message_kill_all(int kill_all);
 
 void message_queue_message(int message_num, int priority, int timing,
-                           char *who_from, int source, int group, int delay,
+                           const char *who_from, int source, int group,
+                           int delay,
                            int builtin_type = -1);
 
 // functions which send messages to player -- called externally

@@ -358,7 +358,7 @@ int Bogus_warning_flag_1903 = 0;
 
 //reads a binary file containing a 3d model
 int
-read_model_file(polymodel *pm, char *filename, int n_subsystems,
+read_model_file(polymodel *pm, const char *filename, int n_subsystems,
                 model_subsystem *subsystems)
 {
     CFILE *fp;

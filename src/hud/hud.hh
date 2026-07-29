@@ -120,7 +120,7 @@ void HUD_reset_clip();
 void HUD_set_clip(int x, int y, int w, int h);
 
 // do flashing text gauge
-void hud_start_text_flash(char *txt, int t);
+void hud_start_text_flash(const char *txt, int t);
 
 // convert a string to use mono spaced numbers
 void hud_num_make_mono(char *num_str);

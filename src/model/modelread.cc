@@ -176,7 +176,7 @@ model_init()
 }
 
 void
-print_family_tree(polymodel *obj, int modelnum, char *ident, int islast)
+print_family_tree(polymodel *obj, int modelnum, const char *ident, int islast)
 {
     char temp[50];
 
@@ -285,7 +285,7 @@ model_load_textures(polymodel *pm)
 
 //returns the number of this model
 int
-model_load(char *filename, int n_subsystems, model_subsystem *subsystems)
+model_load(const char *filename, int n_subsystems, model_subsystem *subsystems)
 {
     int i, num, arc_idx;
 

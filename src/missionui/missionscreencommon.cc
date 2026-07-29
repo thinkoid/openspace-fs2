@@ -907,7 +907,7 @@ common_select_close()
 // load_wing_icons() creates the bitmaps for wing icons
 //
 void
-load_wing_icons(char *filename)
+load_wing_icons(const char *filename)
 {
     int first_frame, num_frames;
 

@@ -1740,7 +1740,7 @@ hud_config_color_save(char *name)
 }
 
 void
-hud_config_color_load(char *name)
+hud_config_color_load(const char *name)
 {
     int idx, rval;
     char str[1024] = "";

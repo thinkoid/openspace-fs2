@@ -86,7 +86,8 @@ campaign Campaign;
 // of the given freespace campaign file.  In the type field, we return if the campaign is a single
 // player or multiplayer campaign.  The type field will only be valid if the name returned is non-NULL
 int
-mission_campaign_get_info(char *filename, char *name, int *type, int *max_players,
+mission_campaign_get_info(const char *filename, char *name, int *type,
+                          int *max_players,
                           char **desc)
 {
     int rval, i;
@@ -209,7 +210,7 @@ mission_campaign_get_mission_list(char *filename, char **list, int max)
 }
 
 void
-mission_campaign_maybe_add(char *filename, int multiplayer)
+mission_campaign_maybe_add(const char *filename, int multiplayer)
 {
     char name[NAME_LENGTH];
     int type, max_players;
@@ -304,7 +305,7 @@ mission_campaign_get_sw_info()
 // this file.  If you change the format of the campaign file, you should be sure these related
 // functions work properly and update them if it breaks them.
 int
-mission_campaign_load(char *filename, int load_savefile)
+mission_campaign_load(const char *filename, int load_savefile)
 {
     int len, rval, i;
     char name[NAME_LENGTH], type[NAME_LENGTH];
@@ -708,7 +709,8 @@ void
 mission_campaign_delete_all_savefiles(char *pilot_name, int is_multi)
 {
     int dir_type, num_files, i;
-    char *names[MAX_CAMPAIGNS], spec[MAX_FILENAME_LEN + 2], *ext;
+    char *names[MAX_CAMPAIGNS], spec[MAX_FILENAME_LEN + 2];
+    const char *ext;
     char filename[1024];
     int (*filter_save)(char *filename);
 

@@ -1065,7 +1065,7 @@ cfwrite_char(char b, CFILE *file)
 }
 
 int
-cfwrite_string(char *buf, CFILE *file)
+cfwrite_string(const char *buf, CFILE *file)
 {
     if ((!buf) || (buf && !buf[0])) {
         return cfwrite_char(0, file);
@@ -1116,7 +1116,7 @@ cfilelength(CFILE *cfile)
 //
 //
 int
-cfwrite(void *buf, int elsize, int nelem, CFILE *cfile)
+cfwrite(const void *buf, int elsize, int nelem, CFILE *cfile)
 {
     Assert(cfile != NULL);
     Assert(buf != NULL);
@@ -1233,7 +1233,7 @@ cfgets(char *buf, int n, CFILE *cfile)
 //            error   ==> EOF
 //
 int
-cfputs(char *str, CFILE *cfile)
+cfputs(const char *str, CFILE *cfile)
 {
     Assert(cfile != NULL);
     Assert(str != NULL);

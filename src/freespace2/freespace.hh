@@ -179,7 +179,7 @@ void game_shudder_apply(int time, float intensity);
 
 // make sure a CD is in the drive before continuing (returns 1 to continue, otherwise 0).
 int game_do_cd_check(char *volume_name = NULL);
-int game_do_cd_check_specific(char *volume_name, int cdnum);
+int game_do_cd_check_specific(const char *volume_name, int cdnum);
 int find_freespace_cd(char *volume_name = NULL);
 int set_cdrom_path(int drive_num);
 int game_do_cd_mission_check(char *filename);

@@ -1436,7 +1436,7 @@ event_music_set_soundtrack(char *name)
 }
 
 int
-event_music_get_spooled_music_index(char *name)
+event_music_get_spooled_music_index(const char *name)
 {
     // find the correct index for the event music
     for (int i = 0; i < Num_music_files; i++) {
@@ -1450,7 +1450,7 @@ event_music_get_spooled_music_index(char *name)
 
 // set a score based on name
 void
-event_music_set_score(int score_index, char *name)
+event_music_set_score(int score_index, const char *name)
 {
     Assert(score_index < NUM_SCORES);
 

@@ -261,7 +261,9 @@ credits_init()
         lcl_ext_close();
     }
     else {
-        Credit_text = NOX("No credits available.\n");
+        // the no-credits fallback aliases a literal; nothing writes through
+        // Credit_text on this path (the writes happen in the malloc branch)
+        Credit_text = (char *)NOX("No credits available.\n");
     }
 
     int ch;

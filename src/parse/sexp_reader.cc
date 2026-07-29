@@ -53,7 +53,7 @@ init_sexp()
 
 // allocates an sexp node.
 int
-alloc_sexp(char *text, int type, int subtype, int first, int rest)
+alloc_sexp(const char *text, int type, int subtype, int first, int rest)
 {
     int i;
 

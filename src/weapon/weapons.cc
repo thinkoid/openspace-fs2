@@ -310,7 +310,7 @@ missile_obj_return_address(int index)
 
 // Return the index of Weapon_info[].name that is *name.
 int
-weapon_info_lookup(char *name)
+weapon_info_lookup(const char *name)
 {
     int i;
 

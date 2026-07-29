@@ -596,7 +596,8 @@ extern int Players_target_timestamp;
 extern int Sexp_clipboard; // used by Fred
 
 extern void init_sexp();
-extern int alloc_sexp(char *text, int type, int subtype, int first, int rest);
+extern int alloc_sexp(const char *text, int type, int subtype, int first,
+                      int rest);
 extern int find_free_sexp();
 extern int free_one_sexp(int num);
 extern int free_sexp(int num);
@@ -607,7 +608,7 @@ extern int find_sexp_list(int num);
 extern int find_parent_operator(int num);
 extern int is_sexp_top_level(int node);
 extern int identify_operator(char *token);
-extern int find_operator(char *token);
+extern int find_operator(const char *token);
 extern int query_sexp_args_count(int index);
 extern int check_sexp_syntax(int index, int return_type = OPR_BOOL,
                              int recursive = 0, int *bindex = NULL, int mode = 0);

@@ -447,7 +447,7 @@ bm_create(int bpp, int w, int h, void *data, int flags)
 //          1 if it already exists, fills in handle
 int Bm_ignore_duplicates = 0;
 int
-bm_load_sub(char *real_filename, char *ext, int *handle)
+bm_load_sub(const char *real_filename, const char *ext, int *handle)
 {
     int i;
     char filename[MAX_FILENAME_LEN] = "";

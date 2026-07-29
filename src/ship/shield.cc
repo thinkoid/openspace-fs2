@@ -107,7 +107,7 @@ shield_hit Shield_hits[MAX_SHIELD_HITS];
 
 typedef struct shield_ani
 {
-    char *filename;
+    const char *filename;
     int first_frame;
     int nframes;
 } shield_ani;

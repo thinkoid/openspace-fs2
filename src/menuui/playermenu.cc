@@ -193,7 +193,7 @@ static int Player_select_middle_text_y[GR_NUM_RESOLUTIONS] = {
 char Player_select_bottom_text[150] = "";
 char Player_select_middle_text[150] = "";
 void player_select_set_bottom_text(const char *txt);
-void player_select_set_middle_text(char *txt);
+void player_select_set_middle_text(const char *txt);
 
 // FORWARD DECLARATIONS
 void player_select_init_player_stuff(int mode); // initialize the pilot list
@@ -1150,7 +1150,7 @@ player_select_set_bottom_text(const char *txt)
 }
 
 void
-player_select_set_middle_text(char *txt)
+player_select_set_middle_text(const char *txt)
 {
     if (txt) {
         strncpy(Player_select_middle_text, txt, 149);

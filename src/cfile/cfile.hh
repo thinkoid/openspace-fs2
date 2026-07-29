@@ -154,7 +154,7 @@ int cfilelength(CFILE *fp);
 int cfread(void *buf, int elsize, int nelem, CFILE *fp);
 
 // cfwrite() writes to the file
-int cfwrite(void *buf, int elsize, int nelem, CFILE *cfile);
+int cfwrite(const void *buf, int elsize, int nelem, CFILE *cfile);
 
 // Reads/writes RLE compressed data.
 int cfread_compressed(void *buf, int elsize, int nelem, CFILE *cfile);
@@ -171,7 +171,7 @@ int cftell(CFILE *fp);
 int cfputc(int c, CFILE *cfile);
 
 // cfputs() writes a string to a file
-int cfputs(char *str, CFILE *cfile);
+int cfputs(const char *str, CFILE *cfile);
 
 // cfgetc() reads a character to a file
 int cfgetc(CFILE *cfile);
@@ -263,7 +263,7 @@ int cfwrite_vector(vector *vec, CFILE *file);
 int cfwrite_angles(angles *ang, CFILE *file);
 
 // writes variable length, null-termined string.
-int cfwrite_string(char *buf, CFILE *file);
+int cfwrite_string(const char *buf, CFILE *file);
 
 // write a fixed length that is null-terminatedm, and has the length
 // stored in file

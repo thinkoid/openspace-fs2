@@ -704,7 +704,8 @@ void
 gr8_flush_frame_dump()
 {
     ubyte *buffer[480];
-    char filename[MAX_PATH_LEN], *movie_path = "";
+    char filename[MAX_PATH_LEN];
+    const char *movie_path = "";
 
     int i;
     for (i = 0; i < Gr8_dump_frame_count; i++) {

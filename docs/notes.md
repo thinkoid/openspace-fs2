@@ -852,3 +852,24 @@ Warning totals: 4756 (survey start) -> 504; write-strings 4278 -> 80.
 The 80 are scattered singles (~30 files, 1-9 each); the ~420
 non-write-strings tail (multichar, unknown-pragmas, conversion-null,
 char-subscripts, parentheses) is E-material.
+
+## Survey F COMPLETE: -Wwrite-strings extinct, 4278 -> 0 (2026-07-29)
+
+The final tranche took the last 80 scattered singles: the remaining
+lookup/parse params (check_for_string, copy_text_until endstr, model_load
+/read_model_file, bm_load_sub, cfputs/cfwrite_string/cfwrite source
+buffers, alloc_sexp/find_operator, event_music score names, gr_init_font/
+gr_create_font, read_menu_tbl menu name, message_log_add_seg,
+message_queue_message who_from chain, Skill_level_names return,
+mission_campaign_load/get_info/maybe_add, game_do_cd_check_specific,
+lcl_ext_associate, set_valid_chars, ui_string_centered,
+stars_set_background_model, hud helpers), the last literal-table struct
+fields (shield_ani, popup_background), and a handful of const locals.
+One deliberate cast survives: credits.cc's no-credits fallback aliases a
+literal into the mutable Credit_text buffer pointer (retail design;
+nothing writes on that path) -- commented at the site.  Every tranche
+gate ran clean; final state: 424 warnings total, ZERO write-strings,
+tests green, headless boot renders 75 frames.  The 424 that remain are
+the pre-existing tail (multichar 24, unknown-pragmas 22, conversion-null
+19, char-subscripts, parentheses, unused-value/function, sign-compare,
+register, ...) -- survey section E.

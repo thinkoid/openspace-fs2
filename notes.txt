@@ -10,9 +10,10 @@ delta fully accounted, 4756 -> 4697).  D's build-config collapse +
 Fred/Pofview fold APPLIED same day too (82 files, -3481/+390; 4697 ->
 4676 accounted); D's remaining stock: observer subsystem, EAX chain, MP
 button handlers, commented-out blocks (policy call), zero-caller clusters
-behind the caution list.  F NEARLY DONE: six hub-first tranches,
-4676 -> 504 total, write-strings 4278 -> 80 (scattered singles, ~30
-files); the ~420 non-write-strings tail is E-material.  Key learnings:
+behind the caution list.  F COMPLETE: write-strings 4278 -> ZERO
+across seven tranches; 424 warnings remain tree-wide, all pre-existing
+tail (multichar/pragmas/conversion-null/char-subscripts/...) = section E.
+One commented (char*) cast survives at credits.cc's no-credits fallback.  Key learnings:
 literal tables const cleanly, runtime-owner tables (Campaign_names,
 Cargo_names, Ship_class_names, Pilot/Ai/Weapon names) must stay char*;
 align continuation lines when const-ing wrapped prototypes or the

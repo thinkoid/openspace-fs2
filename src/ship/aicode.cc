@@ -196,10 +196,10 @@ int AI_watch_object = 0; // Debugging, object to spew debug info for.
 int Num_waypoint_lists = 0;
 int Mission_all_attack = 0; //   !0 means all teams attack all teams.
 
-char *
+const char *
 Skill_level_names(int level, int translate)
 {
-    char *str = NULL;
+    const char *str = NULL;
 
 #if NUM_SKILL_LEVELS != 5
 #error Number of skill levels is wrong!

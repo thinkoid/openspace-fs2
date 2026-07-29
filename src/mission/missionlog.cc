@@ -455,7 +455,7 @@ mission_log_get_time(int type, char *pname, char *sname, fix *time)
 }
 
 void
-message_log_add_seg(int n, int x, int color, char *text, int flags = 0)
+message_log_add_seg(int n, int x, int color, const char *text, int flags = 0)
 {
     log_text_seg *seg, **parent;
 

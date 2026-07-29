@@ -1228,7 +1228,8 @@ all_done:
 
 // queues up a message to display to the player
 void
-message_queue_message(int message_num, int priority, int timing, char *who_from,
+message_queue_message(int message_num, int priority, int timing,
+                      const char *who_from,
                       int source, int group, int delay, int builtin_type)
 {
     int i, m_persona;
@@ -1431,7 +1432,7 @@ message_send_unique_to_player(char *id, void *data, int m_source, int priority,
                               int group, int delay)
 {
     int i, source;
-    char *who_from;
+    const char *who_from;
 
     source = 0;
     who_from = NULL;
@@ -1446,7 +1447,7 @@ message_send_unique_to_player(char *id, void *data, int m_source, int priority,
                 source = HUD_SOURCE_TERRAN_CMD;
             }
             else if (m_source == MESSAGE_SOURCE_SPECIAL) {
-                who_from = (char *)data;
+                who_from = (const char *)data;
                 source = HUD_SOURCE_TERRAN_CMD;
             }
             else if (m_source == MESSAGE_SOURCE_WINGMAN) {
@@ -1537,7 +1538,7 @@ message_send_builtin_to_player(int type, ship *shipp, int priority, int timing,
     do {
         for (i = 0; i < Num_builtin_messages; i++) {
             const char *name;
-            char *who_from;
+            const char *who_from;
 
             name = Builtin_message_types[type];
 

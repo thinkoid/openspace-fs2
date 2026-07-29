@@ -371,7 +371,7 @@ required_string(const char *pstr)
 // It doesn't advance Mp.
 //
 int
-check_for_string(char *pstr)
+check_for_string(const char *pstr)
 {
     ignore_white_space();
 
@@ -383,7 +383,7 @@ check_for_string(char *pstr)
 
 // like check for string, but doesn't skip past any whitespace
 int
-check_for_string_raw(char *pstr)
+check_for_string_raw(const char *pstr)
 {
     if (!strnicmp(pstr, Mp, strlen(pstr))) {
         return 1;
@@ -554,7 +554,7 @@ copy_to_next_white(char *outstr, char *instr, int max)
 // For example, this is used to copy mission notes, scanning until $END NOTES:
 // is found.
 void
-copy_text_until(char *outstr, char *instr, char *endstr, int max_chars)
+copy_text_until(char *outstr, char *instr, const char *endstr, int max_chars)
 {
     char *foundstr;
 

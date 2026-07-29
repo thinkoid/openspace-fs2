@@ -511,7 +511,8 @@ void model_level_post_init();
 void model_free_all();
 
 // Loads a model from disk and returns the model number it loaded into.
-int model_load(char *filename, int n_subsystems, model_subsystem *subsystems);
+int model_load(const char *filename, int n_subsystems,
+               model_subsystem *subsystems);
 
 // notify the model system that a ship has died
 void model_notify_dead_ship(int objnum);
