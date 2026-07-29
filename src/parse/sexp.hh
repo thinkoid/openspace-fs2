@@ -17,15 +17,11 @@
 #define OPERATOR_LENGTH 24
 #define TOKEN_LENGTH 32
 
-#ifdef FS2_DEMO
-#define MAX_SEXP_NODES 1600
-#else
 // Reduced from 2000 to 1200 by MK on 4/1/98.
 //  Most used nodes is 698 in sm1-10a.  Sandeep thinks that's the most complex mission.
 // AL 2-4-98: upped to 1600, btm03 ran out of sexps, since campaign took a bunch
 // DA 12/15 bumped up to 2000 - Dan ran out
 #define MAX_SEXP_NODES 2200
-#endif
 
 #define MAX_SEXP_VARIABLES 100
 
@@ -622,12 +618,10 @@ extern int query_operator_return_type(int op);
 extern int query_operator_argument_type(int op, int argnum);
 extern void update_sexp_references(char *old_name, char *new_name);
 extern void update_sexp_references(char *old_name, char *new_name, int format);
-extern int query_referenced_in_sexp(int mode, char *name, int *node);
 extern int verify_vector(char *text);
 extern void skip_white(char **str);
 extern int validate_float(char **str);
 extern int build_sexp_string(int cur_node, int level, int mode);
-extern int sexp_query_type_match(int opf, int opr);
 extern char *sexp_error_message(int num);
 extern int count_free_sexp_nodes();
 
@@ -645,15 +639,9 @@ void sexp_modify_variable(int);
 void sexp_modify_variable(char *text, int index);
 int get_index_sexp_variable_name(const char *temp_name);
 int sexp_variable_count();
-void sexp_variable_delete(int index);
 void sexp_variable_sort();
-void sexp_fred_modify_variable(const char *text, const char *var_name, int index,
-                               int type);
 int sexp_add_variable(const char *text, const char *var_name, int type,
                       int index = -1);
-int sexp_variable_allocate_block(const char *block_name, int block_type);
 void sexp_variable_condense_block();
-void sexp_variable_block_free(const char *ship_name, int start_index,
-                              int block_type);
 
 #endif

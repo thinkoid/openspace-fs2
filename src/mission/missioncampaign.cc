@@ -334,9 +334,7 @@ mission_campaign_load(char *filename, int load_savefile)
 
         // only initialize the sexpression stuff when Fred isn't running.  It'll screw things up major
         // if it does
-        if (!Fred_running) {
-            init_sexp(); // must initialize the sexpression stuff
-        }
+        init_sexp(); // must initialize the sexpression stuff
 
         read_file_text(filename);
         reset_parse();
@@ -403,18 +401,8 @@ mission_campaign_load(char *filename, int load_savefile)
             cm->formula = -1;
             if (optional_string("+Formula:")) {
                 cm->formula = get_sexp_main();
-                if (!Fred_running) {
-                    Assert(cm->formula != -1);
-                    sexp_mark_persistent(cm->formula);
-                }
-                else {
-                    if (cm->formula == -1) {
-                        // close localization
-                        lcl_ext_close();
-
-                        return CAMPAIGN_ERROR_SEXP_EXHAUSTED;
-                    }
-                }
+                Assert(cm->formula != -1);
+                sexp_mark_persistent(cm->formula);
             }
 
             // Do misison looping stuff
@@ -444,18 +432,8 @@ mission_campaign_load(char *filename, int load_savefile)
             cm->mission_loop_formula = -1;
             if (optional_string("+Formula:")) {
                 cm->mission_loop_formula = get_sexp_main();
-                if (!Fred_running) {
-                    Assert(cm->mission_loop_formula != -1);
-                    sexp_mark_persistent(cm->mission_loop_formula);
-                }
-                else {
-                    if (cm->mission_loop_formula == -1) {
-                        // close localization
-                        lcl_ext_close();
-
-                        return CAMPAIGN_ERROR_SEXP_EXHAUSTED;
-                    }
-                }
+                Assert(cm->mission_loop_formula != -1);
+                sexp_mark_persistent(cm->mission_loop_formula);
             }
 
             if (optional_string("+Level:")) {
@@ -471,15 +449,8 @@ mission_campaign_load(char *filename, int load_savefile)
             else
                 Campaign.realign_required = 1;
 
-            if (Fred_running) {
-                cm->num_goals = -1;
-                cm->num_events = -1;
-                cm->notes = NULL;
-            }
-            else {
-                cm->num_goals = 0;
-                cm->num_events = 0;
-            }
+            cm->num_goals = 0;
+            cm->num_events = 0;
 
             cm->goals = NULL;
             cm->events = NULL;
@@ -497,8 +468,7 @@ mission_campaign_load(char *filename, int load_savefile)
 
     // loading the campaign will get us to the current and next mission that the player must fly
     // plus load all of the old goals that future missions might rely on.
-    if (!Fred_running && load_savefile &&
-        (Campaign.type == CAMPAIGN_TYPE_SINGLE)) {
+    if (load_savefile && (Campaign.type == CAMPAIGN_TYPE_SINGLE)) {
         mission_campaign_savefile_load(Campaign.filename);
     }
 
@@ -1375,11 +1345,9 @@ mission_campaign_close()
             free(Campaign.missions[i].events);
         }
 
-        if (!Fred_running) {
-            sexp_unmark_persistent(
-                Campaign.missions[i]
-                    .formula); // free any sexpression nodes used by campaign.
-        }
+        sexp_unmark_persistent(
+            Campaign.missions[i]
+                .formula); // free any sexpression nodes used by campaign.
 
         Campaign.missions[i].num_goals = 0;
         Campaign.missions[i].num_events = 0;
@@ -1422,116 +1390,6 @@ mission_campaign_get_filenames(char *filename, char dest[][NAME_LENGTH], int *nu
     }
 
     return 0;
-}
-
-// function to read the goals and events from a mission in a campaign file and store that information
-// in the campaign structure for use in the campaign editor, error checking, etc
-void
-read_mission_goal_list(int num)
-{
-    char *filename, notes[NOTES_LENGTH], goals[MAX_GOALS][NAME_LENGTH];
-    char events[MAX_MISSION_EVENTS][NAME_LENGTH];
-    int i, z, r, event_count, count = 0;
-
-    filename = Campaign.missions[num].name;
-    if ((r = setjmp(parse_abort)) > 0) {
-        Warning(LOCATION, "Error reading \"%s\" (code = %d)", filename, r);
-        return;
-    }
-
-    // open localization
-    lcl_ext_open();
-
-    read_file_text(filename);
-    init_parse();
-
-    // first, read the mission notes for this mission.  Used in campaign editor
-    if (skip_to_string("#Mission Info")) {
-        if (skip_to_string("$Notes:")) {
-            stuff_string(notes, F_NOTES, NULL);
-            if (Campaign.missions[num].notes) {
-                free(Campaign.missions[num].notes);
-            }
-
-            Campaign.missions[num].notes = (char *)malloc(strlen(notes) + 1);
-            strcpy(Campaign.missions[num].notes, notes);
-        }
-    }
-
-    event_count = 0;
-    // skip to events section in the mission file.  Events come before goals, so we process them first
-    if (skip_to_string("#Events")) {
-        while (1) {
-            if (skip_to_string("$Formula:", "#Goals") != 1) {
-                break;
-            }
-
-            z = skip_to_string("+Name:", "$Formula:");
-            if (!z) {
-                break;
-            }
-
-            if (z == 1) {
-                stuff_string(events[event_count], F_NAME, NULL);
-            }
-            else {
-                sprintf(events[event_count], NOX("Event #%d"), event_count + 1);
-            }
-
-            event_count++;
-            Assert(event_count < MAX_MISSION_EVENTS);
-        }
-    }
-
-    count = 0;
-    if (skip_to_string("#Goals")) {
-        while (1) {
-            if (skip_to_string("$Type:", "#End") != 1) {
-                break;
-            }
-
-            z = skip_to_string("+Name:", "$Type:");
-            if (!z) {
-                break;
-            }
-
-            if (z == 1) {
-                stuff_string(goals[count], F_NAME, NULL);
-            }
-            else {
-                sprintf(goals[count], NOX("Goal #%d"), count + 1);
-            }
-
-            count++;
-            Assert(count < MAX_GOALS);
-        }
-    }
-
-    Campaign.missions[num].num_goals = count;
-    if (count) {
-        Campaign.missions[num].goals = (mgoal *)malloc(count * sizeof(mgoal));
-        Assert(Campaign.missions[num].goals); // make sure we got the memory
-        memset(Campaign.missions[num].goals, 0, count * sizeof(mgoal));
-
-        for (i = 0; i < count; i++) {
-            strcpy(Campaign.missions[num].goals[i].name, goals[i]);
-        }
-    }
-    // copy the events
-    Campaign.missions[num].num_events = event_count;
-    if (event_count) {
-        Campaign.missions[num].events = (mevent *)malloc(event_count *
-                                                         sizeof(mevent));
-        Assert(Campaign.missions[num].events);
-        memset(Campaign.missions[num].events, 0, event_count * sizeof(mevent));
-
-        for (i = 0; i < event_count; i++) {
-            strcpy(Campaign.missions[num].events[i].name, events[i]);
-        }
-    }
-
-    // close localization
-    lcl_ext_close();
 }
 
 // function to return index into Campaign's list of missions of the mission with the given
@@ -1656,11 +1514,7 @@ mission_campaign_end_do()
         // movie_play_two("endpart1.mve", "endprt2a.mve");        // good ending
     }
 
-#ifdef FS2_DEMO
-    gameseq_post_event(GS_EVENT_END_DEMO);
-#else
     gameseq_post_event(GS_EVENT_MAIN_MENU);
-#endif
 }
 
 void

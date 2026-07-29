@@ -426,13 +426,6 @@ control_config_detect_axis()
 int
 control_config_valid_action(int n)
 {
-#ifdef FS2_DEMO
-    int i;
-
-    for (i = 0; i < INVALID_DEMO_KEYS_MAX; i++)
-        if (n == Invalid_demo_keys[i])
-            return 0;
-#endif
 
     return 1;
 }

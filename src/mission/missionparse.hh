@@ -155,11 +155,7 @@ extern int Mission_alt_type_count;
 #define SPECIES_SHIVAN 2
 #define SPECIES_NONE 3
 
-#ifdef FS2_DEMO
-#define MAX_SUBSYS_STATUS 125
-#else
 #define MAX_SUBSYS_STATUS 250
-#endif
 
 #define MAX_SPECIAL_ARRIVAL_ANCHORS 6
 extern char *Special_arrival_anchor_names[MAX_SPECIAL_ARRIVAL_ANCHORS];
@@ -321,15 +317,10 @@ typedef struct p_object
 
 extern p_object ship_arrival_list; // used by sexpression parser
 
-#ifdef FS2_DEMO
-#define MAX_SHIP_ARRIVALS 45
-#define MAX_WING_ARRIVALS 10
-#else
 // maximum of 90 objects can arrive later
 #define MAX_SHIP_ARRIVALS 90
 // maximum of 20 wings can arrive later
 #define MAX_WING_ARRIVALS 20
-#endif
 
 extern p_object ship_arrivals[MAX_SHIP_ARRIVALS];
 extern int num_ship_arrivals;

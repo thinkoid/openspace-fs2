@@ -19,11 +19,7 @@
  *    CONSTANTS
  */
 
-#ifdef FS2_DEMO
-#define MAX_OBJECTS 300
-#else
 #define MAX_OBJECTS 1000
-#endif
 
 // Number of sections in shield.
 #define MAX_SHIELD_SECTIONS 4

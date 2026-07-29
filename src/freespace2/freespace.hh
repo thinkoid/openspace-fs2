@@ -24,17 +24,6 @@
 #define FS_CAMPAIGN_FILE_EXT NOX(".fc2")
 
 // CDROM volume names
-#ifdef MULTIPLAYER_BETA_BUILD
-#define FS_CDROM_VOLUME_1 NOX("FS2_BETA")
-#define FS_CDROM_VOLUME_2 NOX("FS2_BETA")
-#elif defined(E3_BUILD)
-#define FS_CDROM_VOLUME_1 NOX("FS2_E3DEMO")
-#define FS_CDROM_VOLUME_2 NOX("FS2_E3DEMO")
-#elif defined(OEM_BUILD)
-#define FS_CDROM_VOLUME_1 NOX("FS2_OEM")
-#define FS_CDROM_VOLUME_2 NOX("FS2_OEM")
-#define FS_CDROM_VOLUME_3 NOX("FS2_OEM")
-#else
 #define FS_CDROM_VOLUME_1 NOX("FREESPACE2_1")
 #define FS_CDROM_VOLUME_2 NOX("FREESPACE2_2")
 #define FS_CDROM_VOLUME_3 NOX("FREESPACE2_3")
@@ -43,7 +32,6 @@
 // #define FS_CDROM_VOLUME_1              NOX("FREESPACE_1")
 // #define FS_CDROM_VOLUME_2              NOX("FREESPACE_2")
 // #define FS_CDROM_VOLUME_3              NOX("FREESPACE_3")
-#endif
 
 // frametime/missiontime variables
 extern fix Frametime;

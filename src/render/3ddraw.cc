@@ -1576,9 +1576,6 @@ g3_draw_perspective_bitmap(angles *a, float scale_x, float scale_y, int div_x,
     gr_set_cull(0);
 
     // draw the bitmap
-    if (Fred_running) {
-        tmap_flags &= ~(TMAP_FLAG_CORRECT);
-    }
 
     // render all polys
     for (idx = 0; idx < div_x; idx++) {

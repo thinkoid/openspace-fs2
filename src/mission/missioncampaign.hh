@@ -17,19 +17,8 @@
 #include <stats/scoring.hh>
 
 // name of the builtin campaign.
-#if defined(FS2_DEMO)
-#define BUILTIN_CAMPAIGN "demo"
-#define BUILTIN_CAMPAIGN_NAME "DEMO Campaign"
-#elif defined(OEM_BUILD)
-#define BUILTIN_CAMPAIGN "FreeSpace2OEM"
-#define BUILTIN_CAMPAIGN_NAME "OEM Campaign"
-#elif defined(E3_BUILD)
-#define BUILTIN_CAMPAIGN "E3"
-#define BUILTIN_CAMPAIGN_NAME "E3 Campaign"
-#else
 #define BUILTIN_CAMPAIGN "FreeSpace2"
 #define BUILTIN_CAMPAIGN_NAME "The Main Freespace2 Campaign"
-#endif
 
 // maximum number of missions in a campaign
 #define MAX_CAMPAIGN_MISSIONS 100
@@ -175,9 +164,6 @@ extern void mission_campaign_mission_over(void);
 
 // frees all memory at game close time
 extern void mission_campaign_close(void);
-
-// used by Fred to get a mission's list of goals.
-void read_mission_goal_list(int num);
 
 void mission_campaign_build_list(int multiplayer);
 

@@ -1269,12 +1269,6 @@ gr_opengl_scaler(vertex *va, vertex *vb)
     gr_opengl_tmapper_internal(4, vl, TMAP_FLAG_TEXTURED, 1);
 }
 
-void
-gr_opengl_aascaler(vertex *va, vertex *vb)
-{
-    gr_opengl_scaler(va, vb);
-}
-
 // draw a bitmap as a one-shot textured quad: lock at 16bpp, upload, draw,
 // delete.  Menu screens draw one or two of these per frame, so the immediate
 // upload is fine for now; route through the tcache if it ever shows up hot.
@@ -2809,7 +2803,6 @@ gr_opengl_init()
     gr_screen.gf_aaline = gr_opengl_aaline;
     gr_screen.gf_pixel = gr_opengl_pixel;
     gr_screen.gf_scaler = gr_opengl_scaler;
-    gr_screen.gf_aascaler = gr_opengl_aascaler;
     gr_screen.gf_tmapper = gr_opengl_tmapper;
 
     gr_screen.gf_gradient = gr_opengl_gradient;

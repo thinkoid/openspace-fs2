@@ -494,8 +494,8 @@ parse_mission_info(mission *pm)
         }
     }
     // reassign the player
-    if (!Fred_running && (Player != NULL) &&
-        (strlen(The_mission.squad_name) > 0) && (Game_mode & GM_CAMPAIGN_MODE)) {
+    if ((Player != NULL) && (strlen(The_mission.squad_name) > 0) &&
+        (Game_mode & GM_CAMPAIGN_MODE)) {
         mprintf(("Reassigning player to squadron %s\n", The_mission.squad_name));
         player_set_squad(Player, The_mission.squad_name);
         player_set_squad_bitmap(Player, The_mission.squad_filename);
@@ -818,13 +818,8 @@ parse_briefing(mission *pm)
             Assert(stage_num < MAX_BRIEF_STAGES);
             bs = &bp->stages[stage_num++];
             required_string("$multi_text");
-            if (Fred_running) {
-                stuff_string(bs->new_text, F_MULTITEXT, NULL, MAX_BRIEF_LEN);
-            }
-            else {
-                bs->new_text = stuff_and_malloc_string(F_MULTITEXT, NULL,
-                                                       MAX_BRIEF_LEN);
-            }
+            bs->new_text = stuff_and_malloc_string(F_MULTITEXT, NULL,
+                                                   MAX_BRIEF_LEN);
             required_string("$voice:");
             stuff_string(bs->voice, F_FILESPEC, NULL);
             required_string("$camera_pos:");
@@ -837,15 +832,10 @@ parse_briefing(mission *pm)
             if (optional_string("$num_lines:")) {
                 stuff_int(&bs->num_lines);
 
-                if (Fred_running) {
+                if (bs->num_lines > 0) {
+                    bs->lines = (brief_line *)malloc(sizeof(brief_line) *
+                                                     bs->num_lines);
                     Assert(bs->lines != NULL);
-                }
-                else {
-                    if (bs->num_lines > 0) {
-                        bs->lines = (brief_line *)malloc(sizeof(brief_line) *
-                                                         bs->num_lines);
-                        Assert(bs->lines != NULL);
-                    }
                 }
 
                 for (i = 0; i < bs->num_lines; i++) {
@@ -862,15 +852,10 @@ parse_briefing(mission *pm)
             required_string("$num_icons:");
             stuff_int(&bs->num_icons);
 
-            if (Fred_running) {
-                Assert(bs->lines != NULL);
-            }
-            else {
-                if (bs->num_icons > 0) {
-                    bs->icons = (brief_icon *)malloc(sizeof(brief_icon) *
-                                                     bs->num_icons);
-                    Assert(bs->icons != NULL);
-                }
+            if (bs->num_icons > 0) {
+                bs->icons = (brief_icon *)malloc(sizeof(brief_icon) *
+                                                 bs->num_icons);
+                Assert(bs->icons != NULL);
             }
 
             if (optional_string("$flags:"))
@@ -1028,24 +1013,13 @@ parse_debriefing_new(mission *pm)
             required_string("$Formula:");
             dbs->formula = get_sexp_main();
             required_string("$multi text");
-            if (Fred_running) {
-                stuff_string(dbs->new_text, F_MULTITEXT, NULL, MAX_DEBRIEF_LEN);
-            }
-            else {
-                dbs->new_text = stuff_and_malloc_string(F_MULTITEXT, NULL,
-                                                        MAX_DEBRIEF_LEN);
-            }
+            dbs->new_text = stuff_and_malloc_string(F_MULTITEXT, NULL,
+                                                    MAX_DEBRIEF_LEN);
             required_string("$Voice:");
             stuff_string(dbs->voice, F_FILESPEC, NULL);
             required_string("$Recommendation text:");
-            if (Fred_running) {
-                stuff_string(dbs->new_recommendation_text, F_MULTITEXT, NULL,
-                             MAX_RECOMMENDATION_LEN);
-            }
-            else {
-                dbs->new_recommendation_text = stuff_and_malloc_string(
-                    F_MULTITEXT, NULL, MAX_RECOMMENDATION_LEN);
-            }
+            dbs->new_recommendation_text = stuff_and_malloc_string(
+                F_MULTITEXT, NULL, MAX_RECOMMENDATION_LEN);
         } // end while
 
         Assert(db->num_stages == stage_num);
@@ -1124,9 +1098,7 @@ parse_create_object(p_object *objp)
 
     // if arriving through knossos, adjust objpj->pos to plane of knossos and set flag
     if (objp->flags & P_KNOSSOS_WARP_IN) {
-        if (!Fred_running) {
-            position_ship_for_knossos_warpin(objp, shipnum, objnum);
-        }
+        position_ship_for_knossos_warpin(objp, shipnum, objnum);
     }
 
     Ships[shipnum].group = objp->group;
@@ -1138,9 +1110,7 @@ parse_create_object(p_object *objp)
 
     sip = &Ship_info[Ships[shipnum].ship_info_index];
 
-    if (!Fred_running) {
-        ship_assign_sound(&Ships[shipnum]);
-    }
+    ship_assign_sound(&Ships[shipnum]);
 
     aip = &(Ai_info[Ships[shipnum].ai_index]);
     aip->behavior = objp->behavior;
@@ -1184,19 +1154,6 @@ parse_create_object(p_object *objp)
         // will accept were apparently written out incorrectly with Fred.  This Int3() should
         // trap these instances.
 #ifndef NDEBUG
-        if (Fred_running) {
-            int default_orders, remaining_orders;
-
-            default_orders = ship_get_default_orders_accepted(
-                &Ship_info[Ships[shipnum].ship_info_index]);
-            remaining_orders = objp->orders_accepted & ~default_orders;
-            if (remaining_orders) {
-                Warning(
-                    LOCATION,
-                    "Ship %s has orders which it will accept that are\nnot part of default orders accepted.\n\nPlease reedit this ship and change the orders again\n",
-                    Ships[shipnum].ship_name);
-            }
-        }
 #endif
     }
 
@@ -1228,11 +1185,6 @@ parse_create_object(p_object *objp)
     if (objp->flags & P_KNOSSOS_WARP_IN) {
         Objects[objnum].flags |= OF_SPECIAL_WARP;
     }
-
-    // MWA -- We shouldn't be setting this flag in single player mode -- it gets
-    // set in post process mission.
-    if ((objp->flags & P_OF_PLAYER_START) && Fred_running)
-        Objects[objnum].flags |= OF_PLAYER_SHIP;
 
     if (objp->flags & P_SF_NO_ARRIVAL_MUSIC)
         Ships[shipnum].flags |= SF_NO_ARRIVAL_MUSIC;
@@ -1326,7 +1278,7 @@ parse_create_object(p_object *objp)
             wp = &Ships[shipnum].weapons;
             if (sssp->primary_banks[0] != SUBSYS_STATUS_NO_CHANGE) {
                 for (j = k = 0; j < MAX_PRIMARY_BANKS; j++) {
-                    if ((sssp->primary_banks[j] >= 0) || Fred_running) {
+                    if (sssp->primary_banks[j] >= 0) {
                         wp->primary_bank_weapons[k] = sssp->primary_banks[j];
 
                         // next
@@ -1334,64 +1286,46 @@ parse_create_object(p_object *objp)
                     }
                 }
 
-                if (Fred_running) {
-                    wp->num_primary_banks = sip->num_primary_banks;
-                }
-                else {
-                    wp->num_primary_banks = k;
-                }
+                wp->num_primary_banks = k;
             }
 
             if (sssp->secondary_banks[0] != SUBSYS_STATUS_NO_CHANGE) {
                 for (j = k = 0; j < MAX_SECONDARY_BANKS; j++) {
-                    if ((sssp->secondary_banks[j] >= 0) || Fred_running) {
+                    if (sssp->secondary_banks[j] >= 0) {
                         wp->secondary_bank_weapons[k++] = sssp->secondary_banks[j];
                     }
                 }
 
-                if (Fred_running) {
-                    wp->num_secondary_banks = sip->num_secondary_banks;
-                }
-                else {
-                    wp->num_secondary_banks = k;
-                }
+                wp->num_secondary_banks = k;
             }
 
-            for (j = 0; j < wp->num_secondary_banks; j++)
-                if (Fred_running) {
-                    wp->secondary_bank_ammo[j] = sssp->secondary_ammo[j];
-                }
-                else {
-                    int capacity = fl2i(sssp->secondary_ammo[j] / 100.0f *
-                                            sip->secondary_bank_ammo_capacity[j] +
-                                        0.5f);
-                    wp->secondary_bank_ammo[j] = fl2i(
-                        capacity /
-                            Weapon_info[wp->secondary_bank_weapons[j]].cargo_size +
-                        0.5f);
-                }
+            for (j = 0; j < wp->num_secondary_banks; j++) {
+                int capacity = fl2i(sssp->secondary_ammo[j] / 100.0f *
+                                        sip->secondary_bank_ammo_capacity[j] +
+                                    0.5f);
+                wp->secondary_bank_ammo[j] = fl2i(
+                    capacity /
+                        Weapon_info[wp->secondary_bank_weapons[j]].cargo_size +
+                    0.5f);
+            }
             continue;
         }
 
         ptr = GET_FIRST(&Ships[shipnum].subsys_list);
         while (ptr != END_OF_LIST(&Ships[shipnum].subsys_list)) {
             if (!stricmp(ptr->system_info->subobj_name, sssp->name)) {
-                if (Fred_running)
-                    ptr->current_hits = sssp->percent;
+                float new_hits;
+                new_hits = ptr->system_info->max_hits *
+                           (100.0f - sssp->percent) / 100.f;
+                Ships[shipnum]
+                    .subsys_info[ptr->system_info->type]
+                    .current_hits -= (ptr->system_info->max_hits - new_hits);
+                if ((100.0f - sssp->percent) < 0.5) {
+                    ptr->current_hits = 0.0f;
+                    ptr->submodel_info_1.blown_off = 1;
+                }
                 else {
-                    float new_hits;
-                    new_hits = ptr->system_info->max_hits *
-                               (100.0f - sssp->percent) / 100.f;
-                    Ships[shipnum]
-                        .subsys_info[ptr->system_info->type]
-                        .current_hits -= (ptr->system_info->max_hits - new_hits);
-                    if ((100.0f - sssp->percent) < 0.5) {
-                        ptr->current_hits = 0.0f;
-                        ptr->submodel_info_1.blown_off = 1;
-                    }
-                    else {
-                        ptr->current_hits = new_hits;
-                    }
+                    ptr->current_hits = new_hits;
                 }
 
                 if (sssp->primary_banks[0] != SUBSYS_STATUS_NO_CHANGE)
@@ -1425,61 +1359,53 @@ parse_create_object(p_object *objp)
     // initial hull strength, shields, and velocity are all expressed as a percentage of the max value/
     // so a initial_hull value of 90% means 90% of max.  This way is opposite of how subsystems are dealt
     // with
-    if (Fred_running) {
-        Objects[objnum].phys_info.speed = (float)objp->initial_velocity;
-        // Ships[shipnum].hull_hit_points_taken = (float) objp->initial_hull;
-        Objects[objnum].hull_strength = (float)objp->initial_hull;
-        Objects[objnum].shields[0] = (float)objp->initial_shields;
+    int max_allowed_sparks, num_sparks;
+    polymodel *pm;
+
+    // Ships[shipnum].hull_hit_points_taken = (float)objp->initial_hull * sip->max_hull_hit_points / 100.0f;
+    Objects[objnum].hull_strength = objp->initial_hull *
+                                    sip->initial_hull_strength / 100.0f;
+    for (i = 0; i < MAX_SHIELD_SECTIONS; i++)
+        Objects[objnum].shields[i] = (float)(objp->initial_shields *
+                                             sip->shields / 100.0f) /
+                                     MAX_SHIELD_SECTIONS;
+
+    // initial velocities now do not apply to ships which warp in after mission starts
+    if (!(Game_mode & GM_IN_MISSION)) {
+        Objects[objnum].phys_info.speed = (float)objp->initial_velocity *
+                                          sip->max_speed / 100.0f;
+        Objects[objnum].phys_info.vel.z = Objects[objnum].phys_info.speed;
+        Objects[objnum].phys_info.prev_ramp_vel =
+            Objects[objnum].phys_info.vel;
+        Objects[objnum].phys_info.desired_vel = Objects[objnum].phys_info.vel;
     }
-    else {
-        int max_allowed_sparks, num_sparks, i;
-        polymodel *pm;
 
-        // Ships[shipnum].hull_hit_points_taken = (float)objp->initial_hull * sip->max_hull_hit_points / 100.0f;
-        Objects[objnum].hull_strength = objp->initial_hull *
-                                        sip->initial_hull_strength / 100.0f;
-        for (i = 0; i < MAX_SHIELD_SECTIONS; i++)
-            Objects[objnum].shields[i] = (float)(objp->initial_shields *
-                                                 sip->shields / 100.0f) /
-                                         MAX_SHIELD_SECTIONS;
+    // recalculate damage of subsystems
+    ship_recalc_subsys_strength(&Ships[shipnum]);
 
-        // initial velocities now do not apply to ships which warp in after mission starts
-        if (!(Game_mode & GM_IN_MISSION)) {
-            Objects[objnum].phys_info.speed = (float)objp->initial_velocity *
-                                              sip->max_speed / 100.0f;
-            Objects[objnum].phys_info.vel.z = Objects[objnum].phys_info.speed;
-            Objects[objnum].phys_info.prev_ramp_vel =
-                Objects[objnum].phys_info.vel;
-            Objects[objnum].phys_info.desired_vel = Objects[objnum].phys_info.vel;
-        }
+    // create sparks on a ship whose hull is damaged.  We will create two sparks for every 20%
+    // of hull damage done.  100 means no sparks.  between 80 and 100 do two sparks.  60 and 80 is
+    // four, etc.
+    pm = model_get(sip->modelnum);
+    max_allowed_sparks = get_max_sparks(&Objects[objnum]);
+    num_sparks = (int)((100.0f - objp->initial_hull) / 5.0f);
+    if (num_sparks > max_allowed_sparks) {
+        num_sparks = max_allowed_sparks;
+    }
 
-        // recalculate damage of subsystems
-        ship_recalc_subsys_strength(&Ships[shipnum]);
+    for (i = 0; i < num_sparks; i++) {
+        vector v1, v2;
 
-        // create sparks on a ship whose hull is damaged.  We will create two sparks for every 20%
-        // of hull damage done.  100 means no sparks.  between 80 and 100 do two sparks.  60 and 80 is
-        // four, etc.
-        pm = model_get(sip->modelnum);
-        max_allowed_sparks = get_max_sparks(&Objects[objnum]);
-        num_sparks = (int)((100.0f - objp->initial_hull) / 5.0f);
-        if (num_sparks > max_allowed_sparks) {
-            num_sparks = max_allowed_sparks;
-        }
-
-        for (i = 0; i < num_sparks; i++) {
-            vector v1, v2;
-
-            // DA 10/20/98 - sparks must be chosen on the hull and not any submodel
-            submodel_get_two_random_points(sip->modelnum, pm->detail[0], &v1,
-                                           &v2);
-            ship_hit_sparks_no_rotate(&Objects[objnum], &v1);
-            //       ship_hit_sparks_no_rotate(&Objects[objnum], &v2);
-        }
+        // DA 10/20/98 - sparks must be chosen on the hull and not any submodel
+        submodel_get_two_random_points(sip->modelnum, pm->detail[0], &v1,
+                                       &v2);
+        ship_hit_sparks_no_rotate(&Objects[objnum], &v1);
+        //       ship_hit_sparks_no_rotate(&Objects[objnum], &v2);
     }
 
     // in mission, we add a log entry -- set ship positions for ships not in wings, and then do
     // warpin effect
-    if ((Game_mode & GM_IN_MISSION) && (!Fred_running)) {
+    if (Game_mode & GM_IN_MISSION) {
         mission_log_add_entry(LOG_SHIP_ARRIVE, Ships[shipnum].ship_name, NULL);
 
         // if this ship isn't in a wing, determine it's arrival location
@@ -1548,9 +1474,6 @@ parse_object(mission *pm, int flag, p_object *objp)
             objp->name);
 
         // if fred is running, maybe notify the user that the mission contains MD content
-        if (Fred_running) {
-            Fred_found_unknown_ship_during_parsing = 1;
-        }
 
         objp->ship_class = 0;
     }
@@ -1654,17 +1577,12 @@ parse_object(mission *pm, int flag, p_object *objp)
     else
         delay = 0;
 
-    if (!Fred_running) {
-        objp->arrival_delay =
-            -delay; // use negative numbers to mean we haven't set up a timer yet
-    }
-    else {
-        objp->arrival_delay = delay;
-    }
+    objp->arrival_delay =
+        -delay; // use negative numbers to mean we haven't set up a timer yet
 
     required_string("$Arrival Cue:");
     objp->arrival_cue = get_sexp_main();
-    if (!Fred_running && (objp->arrival_cue >= 0)) {
+    if (objp->arrival_cue >= 0) {
         // eval the arrival cue.  if the cue is true, set up the timestamp for the arrival delay
         Assert(objp->arrival_delay <= 0);
 
@@ -1696,12 +1614,7 @@ parse_object(mission *pm, int flag, p_object *objp)
         delay = 0;
     }
 
-    if (!Fred_running) {
-        objp->departure_delay = -delay;
-    }
-    else {
-        objp->departure_delay = delay;
-    }
+    objp->departure_delay = -delay;
 
     required_string("$Departure Cue:");
     objp->departure_cue = get_sexp_main();
@@ -1854,9 +1767,9 @@ parse_object(mission *pm, int flag, p_object *objp)
     // don't create the object if it is intially docked for either FreeSpcae or Fred.  Fred will
     // create the object later in post_process_mission
     if ((objp->flags & P_SF_INITIALLY_DOCKED) ||
-        (!Fred_running && (!eval_sexp(objp->arrival_cue) ||
-                           !timestamp_elapsed(objp->arrival_delay) ||
-                           (objp->flags & P_SF_REINFORCEMENT)))) {
+        (!eval_sexp(objp->arrival_cue) ||
+         !timestamp_elapsed(objp->arrival_delay) ||
+         (objp->flags & P_SF_REINFORCEMENT))) {
         Assert(destroy_before_mission_time ==
                -1); // we can't add ships getting destroyed to the arrival list!!!
         Assert(num_ship_arrivals < MAX_SHIP_ARRIVALS);
@@ -1879,40 +1792,32 @@ parse_object(mission *pm, int flag, p_object *objp)
             object *objp;
 
             objp = &Objects[real_objnum];
-            if (!Fred_running) {
-                int i;
-                shipfx_blow_up_model(objp, Ships[objp->instance].modelnum, 0, 0,
-                                     &objp->pos);
-                objp->flags |= OF_SHOULD_BE_DEAD;
+            int i;
+            shipfx_blow_up_model(objp, Ships[objp->instance].modelnum, 0, 0,
+                                 &objp->pos);
+            objp->flags |= OF_SHOULD_BE_DEAD;
 
-                // once the ship is exploded, find the debris pieces belonging to this object, mark them
-                // as not to expire, and move them forward in time N seconds
-                for (i = 0; i < MAX_DEBRIS_PIECES; i++) {
-                    debris *db;
+            // once the ship is exploded, find the debris pieces belonging to this object, mark them
+            // as not to expire, and move them forward in time N seconds
+            for (i = 0; i < MAX_DEBRIS_PIECES; i++) {
+                debris *db;
 
-                    db = &Debris[i];
-                    if (!db->flags &
-                        DEBRIS_USED) // not used, move onto the next one.
-                        continue;
-                    if (db->source_objnum !=
-                        real_objnum) // not from this ship, move to next one
-                        continue;
+                db = &Debris[i];
+                if (!db->flags &
+                    DEBRIS_USED) // not used, move onto the next one.
+                    continue;
+                if (db->source_objnum !=
+                    real_objnum) // not from this ship, move to next one
+                    continue;
 
-                    debris_clear_expired_flag(db); // mark as don't expire
-                    db->lifeleft =
-                        -1.0f; // be sure that lifeleft == -1.0 so that it really doesn't expire!
+                debris_clear_expired_flag(db); // mark as don't expire
+                db->lifeleft =
+                    -1.0f; // be sure that lifeleft == -1.0 so that it really doesn't expire!
 
-                    // now move the debris along it's path for N seconds
-                    objp = &Objects[db->objnum];
-                    physics_sim(&objp->pos, &objp->orient, &objp->phys_info,
-                                (float)destroy_before_mission_time);
-                }
-            }
-            else {
-                // be sure to set the variable in the ships structure for the final death time!!!
-                Ships[objp->instance].final_death_time =
-                    destroy_before_mission_time;
-                Ships[objp->instance].flags |= SF_KILL_BEFORE_MISSION;
+                // now move the debris along it's path for N seconds
+                objp = &Objects[db->objnum];
+                physics_sim(&objp->pos, &objp->orient, &objp->phys_info,
+                            (float)destroy_before_mission_time);
             }
         }
     }
@@ -2262,19 +2167,6 @@ parse_wing_create_ships(wing *wingp, int num_to_create)
 #ifndef NDEBUG
         // test code to check to be sure that all ships in the wing are ignoring the same types
         // of orders from the player
-        if (Fred_running) {
-            Assert(wingp->ship_index[0] != -1);
-            int orders = Ships[wingp->ship_index[0]].orders_accepted;
-            for (i = 1; i < wingp->current_count; i++) {
-                if (orders != Ships[wingp->ship_index[i]].orders_accepted) {
-                    Warning(
-                        LOCATION,
-                        "ships in wing %s are ignoring different player orders.  Please find Mark A\nto talk to him about this.",
-                        wingp->name);
-                    break;
-                }
-            }
-        }
 #endif
     }
 
@@ -2338,16 +2230,11 @@ parse_wing(mission *pm)
     else
         delay = 0;
 
-    if (!Fred_running) {
-        wingp->arrival_delay = -delay;
-    }
-    else {
-        wingp->arrival_delay = delay;
-    }
+    wingp->arrival_delay = -delay;
 
     required_string("$Arrival Cue:");
     wingp->arrival_cue = get_sexp_main();
-    if (!Fred_running && (wingp->arrival_cue >= 0)) {
+    if (wingp->arrival_cue >= 0) {
         if (eval_sexp(
                 wingp->arrival_cue)) // evaluate to determine if sexp is always false.
             wingp->arrival_delay = timestamp(-wingp->arrival_delay * 1000);
@@ -2372,11 +2259,8 @@ parse_wing(mission *pm)
     else
         delay = 0;
 
-    if (!Fred_running)
-        wingp->departure_delay =
-            -delay; // use negative numbers to mean that delay timer not yet set
-    else
-        wingp->departure_delay = delay;
+    // use negative numbers to mean that delay timer not yet set
+    wingp->departure_delay = -delay;
 
     required_string("$Departure Cue:");
     wingp->departure_cue = get_sexp_main();
@@ -2458,7 +2342,6 @@ parse_wing(mission *pm)
             ai_add_wing_goal_sexp(sexp, AIG_TYPE_EVENT_WING,
                                   wingnum); // used by Fred
 
-        //if (Fred_running)
         free_sexp2(
             wing_goals); // free up sexp nodes for reused, since they aren't needed anymore.
     }
@@ -2471,53 +2354,43 @@ parse_wing(mission *pm)
         p_object *objp;
 
         ship_name = ship_names[i];
-        if (Fred_running) {
-            num = wingp->ship_index[i] = ship_name_lookup(ship_name, 1);
-            Assert(num != -1);
+        // determine if this ship is a player ship, and deal with it appropriately.
+        if (!strnicmp(ship_name, NOX("Player "), 7)) {
+            Error(
+                LOCATION,
+                "Old mission file -- please convert by loading/saving in Fred -- see Allender/Hoffoss for help.");
+        }
 
-            // hack code -- REMOVE
-            if (Objects[Ships[num].objnum].flags & OF_PLAYER_SHIP)
-                Ships[num].wingnum = wingnum;
+        // assign the wing number to the ship -- if the ship has arrived, doulble check that
+        // there is only one wave of this wing since ships with their own arrival cue cannot be
+        // in a wing with > 1 wave.  Otherwise, find the ship on the ship arrival list and set
+        // their wing number
+        if ((num = ship_name_lookup(ship_name)) != -1) {
+            Int3(); // this is impossible under the new system
         }
         else {
-            // determine if this ship is a player ship, and deal with it appropriately.
-            if (!strnicmp(ship_name, NOX("Player "), 7)) {
-                Error(
-                    LOCATION,
-                    "Old mission file -- please convert by loading/saving in Fred -- see Allender/Hoffoss for help.");
-            }
-
-            // assign the wing number to the ship -- if the ship has arrived, doulble check that
-            // there is only one wave of this wing since ships with their own arrival cue cannot be
-            // in a wing with > 1 wave.  Otherwise, find the ship on the ship arrival list and set
-            // their wing number
-            if ((num = ship_name_lookup(ship_name)) != -1) {
-                Int3(); // this is impossible under the new system
-            }
-            else {
-                objp = GET_FIRST(&ship_arrival_list);
-                while (objp != END_OF_LIST(&ship_arrival_list)) {
-                    if (!strcmp(ship_name, objp->name)) {
-                        Assert(
-                            objp->wingnum ==
-                            -1); // get Allender -- ship appears to be in multiple wings
-                        objp->wingnum = wingnum;
-                        assigned++;
-                    }
-                    objp = GET_NEXT(objp);
+            objp = GET_FIRST(&ship_arrival_list);
+            while (objp != END_OF_LIST(&ship_arrival_list)) {
+                if (!strcmp(ship_name, objp->name)) {
+                    Assert(
+                        objp->wingnum ==
+                        -1); // get Allender -- ship appears to be in multiple wings
+                    objp->wingnum = wingnum;
+                    assigned++;
                 }
+                objp = GET_NEXT(objp);
             }
-
-            if (!assigned || (assigned > 1))
-                Error(
-                    LOCATION,
-                    "Cannot load mission -- wing %s -- ship %s not present in #Objects section (or specified multiple times in wing.\n",
-                    wingp->name, ship_name);
         }
+
+        if (!assigned || (assigned > 1))
+            Error(
+                LOCATION,
+                "Cannot load mission -- wing %s -- ship %s not present in #Objects section (or specified multiple times in wing.\n",
+                wingp->name, ship_name);
     }
 
-    // Fred doesn't create the wing.  otherwise, create the wing if is isn't a reinforcement.
-    if (!Fred_running && !(wingp->flags & WF_REINFORCEMENT))
+    // create the wing if it isn't a reinforcement
+    if (!(wingp->flags & WF_REINFORCEMENT))
         parse_wing_create_ships(wingp, wingp->wave_count);
 }
 
@@ -2905,9 +2778,6 @@ parse_bitmaps(mission *pm)
             stuff_int(&Neb2_poof_flags);
 
             // initialize neb effect. its gross to do this here, but Fred is dumb so I have no choice ... :(
-            if (Fred_running) {
-                neb2_level_init();
-            }
         }
     }
     else {
@@ -3049,7 +2919,6 @@ parse_bitmaps(mission *pm)
 void
 parse_asteroid_fields(mission *pm)
 {
-#ifndef FS2_DEMO
 
     int i, count, subtype;
 
@@ -3145,7 +3014,6 @@ parse_asteroid_fields(mission *pm)
         }
         i++;
     }
-#endif // DEMO
 }
 
 void
@@ -3213,7 +3081,7 @@ void
 post_process_mission()
 {
     int i;
-    int indices[MAX_SHIPS], objnum;
+    int objnum;
     p_object *p_objp;
     ship_weapon *swp;
     ship_obj *so;
@@ -3226,9 +3094,7 @@ post_process_mission()
     // Assign objnum, shipnum, etc. to the player structure
     objnum = Ships[Player_start_shipnum].objnum;
     Player_obj = &Objects[objnum];
-    if (!Fred_running) {
-        Player->objnum = objnum;
-    }
+    Player->objnum = objnum;
 
     Player_obj->flags |=
         OF_PLAYER_SHIP; // make this object a player controlled ship.
@@ -3262,40 +3128,12 @@ post_process_mission()
     Num_arriving_repair_targets = 0;
 
     // convert all ship name indices to ship indices now that mission has been loaded
-    if (Fred_running) {
-        for (i = 0; i < Num_parse_names; i++) {
-            indices[i] = ship_name_lookup(Parse_names[i], 1);
-            if (indices[i] < 0)
-                Warning(
-                    LOCATION,
-                    "Ship name \"%s\" referenced, but this ship doesn't exist",
-                    Parse_names[i]);
-        }
-
-        for (i = 0; i < MAX_SHIPS; i++) {
-            if ((Ships[i].objnum >= 0) && (Ships[i].arrival_anchor >= 0) &&
-                (Ships[i].arrival_anchor < SPECIAL_ARRIVAL_ANCHORS_OFFSET))
-                Ships[i].arrival_anchor = indices[Ships[i].arrival_anchor];
-
-            if ((Ships[i].objnum >= 0) && (Ships[i].departure_anchor >= 0))
-                Ships[i].departure_anchor = indices[Ships[i].departure_anchor];
-        }
-
-        for (i = 0; i < MAX_WINGS; i++) {
-            if (Wings[i].wave_count && (Wings[i].arrival_anchor >= 0) &&
-                (Wings[i].arrival_anchor < SPECIAL_ARRIVAL_ANCHORS_OFFSET))
-                Wings[i].arrival_anchor = indices[Wings[i].arrival_anchor];
-
-            if (Wings[i].wave_count && (Wings[i].departure_anchor >= 0))
-                Wings[i].departure_anchor = indices[Wings[i].departure_anchor];
-        }
-    }
 
     // before doing anything else, we must validate all of the sexpressions that were loaded into the mission.
     // Loop through the Sexp_nodes array and send the top level functions to the check_sexp_syntax parser
 
     for (i = 0; i < MAX_SEXP_NODES; i++) {
-        if (is_sexp_top_level(i) && (!Fred_running || (i != Sexp_clipboard))) {
+        if (is_sexp_top_level(i)) {
             int result, bindex, op;
 
             op = identify_operator(CTEXT(i));
@@ -3316,10 +3154,7 @@ post_process_mission()
                         sexp_error_message(result), sexp_str,
                         Sexp_nodes[bindex].text);
 
-                if (!Fred_running)
-                    Error(LOCATION, text);
-                else
-                    Warning(LOCATION, text);
+                Error(LOCATION, text);
             }
         }
     }
@@ -3522,8 +3357,7 @@ parse_main(char *mission_name, int flags)
         CFILE *ftemp = cfopen(mission_name, "rt", CFILE_NORMAL, CF_TYPE_MISSIONS);
         // fail situation.
         if (!ftemp) {
-            if (!Fred_running)
-                Error(LOCATION, "Couldn't open mission '%s'\n", mission_name);
+            Error(LOCATION, "Couldn't open mission '%s'\n", mission_name);
 
             Current_file_length = -1;
             Current_file_checksum = 0;
@@ -3546,8 +3380,7 @@ parse_main(char *mission_name, int flags)
         lcl_ext_close();
     }
 
-    if (!Fred_running)
-        strcpy(Mission_filename, mission_name);
+    strcpy(Mission_filename, mission_name);
 
     return 0;
 }
@@ -3626,8 +3459,6 @@ mission_parse_set_arrival_locations()
     int i;
     object *objp;
 
-    if (Fred_running)
-        return;
 
     obj_merge_created_list();
     for (objp = GET_FIRST(&obj_used_list); objp != END_OF_LIST(&obj_used_list);

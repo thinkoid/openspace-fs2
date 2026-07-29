@@ -42,19 +42,6 @@ typedef struct alphacolor
     } table;
 } alphacolor;
 
-// for backwards fred aabitmap compatibility
-typedef struct alphacolor_old
-{
-    int used;
-    int r, g, b, alpha;
-    int type; // See AC_TYPE_??? define
-    color *clr;
-    union
-    {
-        ubyte lookup[16][256]; // For 8-bpp rendering modes
-    } table;
-} alphacolor_old;
-
 extern alphacolor *Current_alphacolor;
 
 extern char Gr_current_palette_name[128];

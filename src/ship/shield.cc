@@ -38,7 +38,6 @@
 int New_shield_system = 1;
 int Show_shield_mesh = 0;
 
-#ifndef DEMO // not for FS2_DEMO
 
 // One unit in 3d means this in the shield hit texture map.
 //#define   SHIELD_HIT_SCALE  0.075f         // Scale decreased by MK on 12/18/97, made about 1/4x as large. Note, larger constant means smaller effect
@@ -127,7 +126,6 @@ int Shield_bitmaps_loaded = 0;
 void
 load_shield_hit_bitmap()
 {
-#ifndef DEMO // not for FS2_DEMO
 
     int i;
     // Check if we've already allocated the shield effect bitmaps
@@ -143,7 +141,6 @@ load_shield_hit_bitmap()
             Int3();
     }
 
-#endif
 }
 
 void
@@ -673,8 +670,6 @@ ship_draw_shield(object *objp)
 
     model_num = Ships[objp->instance].modelnum;
 
-    if (Fred_running)
-        return;
 
     pm = model_get(model_num);
 
@@ -818,45 +813,6 @@ void bounce_it()
 }
 */
 
-#else
-
-// stub out shield functions for the demo
-void
-shield_hit_init()
-{ }
-void
-create_shield_explosion_all(object *objp)
-{ }
-void
-shield_frame_init()
-{ }
-void
-add_shield_point(int objnum, int tri_num, vector *hit_pos)
-{ }
-void
-shield_hit_close()
-{ }
-void
-ship_draw_shield(object *objp)
-{ }
-void
-shield_hit_page_in()
-{ }
-void
-render_shields()
-{ }
-float
-apply_damage_to_shield(object *objp, int shield_quadrant, float damage)
-{
-    return damage;
-}
-int
-ship_is_shield_up(object *obj, int quadrant)
-{
-    return 0;
-}
-
-#endif // DEMO
 
 // return quadrant containing hit_pnt.
 // \  1  /.

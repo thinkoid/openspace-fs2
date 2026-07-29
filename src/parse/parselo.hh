@@ -143,8 +143,4 @@ char *split_str_once(char *src, int max_pixel_w);
 int split_str(char *src, int max_pixel_w, int *n_chars, char **p_str,
               int max_lines, char ignore_char = -1);
 
-// fred
-extern int required_string_fred(char *pstr, char *end = NULL);
-extern int required_string_either_fred(char *str1, char *str2);
-extern int optional_string_fred(char *pstr, char *end = NULL, char *end2 = NULL);
 #endif

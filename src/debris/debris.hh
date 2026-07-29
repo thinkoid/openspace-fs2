@@ -48,11 +48,7 @@ typedef struct debris
 // debris can expire (ie hull chunks from small ships)
 #define DEBRIS_EXPIRE (1 << 1)
 
-#ifdef FS2_DEMO
-#define MAX_DEBRIS_PIECES 48
-#else
 #define MAX_DEBRIS_PIECES 64
-#endif
 
 extern debris Debris[MAX_DEBRIS_PIECES];
 

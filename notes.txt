@@ -6,8 +6,12 @@ census (4756 warnings; 4278 are -Wwrite-strings) + two tree sweeps
 value-per-risk within each section.
 
 STATUS: sections A and C APPLIED same day (53 files, -1322 lines; warning
-delta fully accounted, 4756 -> 4697).  B stays catalogue-only by doctrine.
-D, E, F remain open -- D/F are itch-list scale, E is an afternoon each.
+delta fully accounted, 4756 -> 4697).  D's build-config collapse +
+Fred/Pofview fold APPLIED same day too (82 files, -3481/+390; 4697 ->
+4676 accounted); D's remaining stock: observer subsystem, EAX chain, MP
+button handlers, commented-out blocks (policy call), zero-caller clusters
+behind the caution list.  B stays catalogue-only by doctrine.  E and F
+remain open.
 
 ========================================================================
 A. BUGS AND PORT DIVERGENCES (fix-mine material)

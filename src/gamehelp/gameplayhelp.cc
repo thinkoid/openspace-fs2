@@ -390,21 +390,17 @@ gameplay_help_draw_text()
             x_offset, y_offset, XSTR("F2", 137),
             XSTR("options screen (available anywhere in game)", 138));
 
-#ifndef FS2_DEMO
         y_offset += separation;
         gameplay_help_blit_control_line_raw(x_offset, y_offset, XSTR("F3", 139),
                                             XSTR("hotkey assignment", 140));
-#endif
 
         y_offset += separation;
         gameplay_help_blit_control_line_raw(x_offset, y_offset, XSTR("F4", 141),
                                             XSTR("HUD message scroll-back", 142));
 
-#ifndef FS2_DEMO
         y_offset += separation;
         gameplay_help_blit_control_line_raw(
             x_offset, y_offset, XSTR("F5...F12", 143), XSTR("hotkeys", 144));
-#endif
 
         y_offset += separation;
         gameplay_help_blit_control_line_raw(
@@ -582,7 +578,6 @@ gameplay_help_draw_text()
         gameplay_help_blit_control_line(x_offset, y_offset,
                                         STOP_TARGETING_SUBSYSTEM);
 
-#ifndef FS2_DEMO
 
         y_offset += separation;
         gameplay_help_blit_control_line_raw(
@@ -599,7 +594,6 @@ gameplay_help_draw_text()
                                             XSTR("Alt-Shift-F5...F12", 153),
                                             XSTR("Clear that hotkey", 154));
 
-#endif
 
         break;
 
@@ -643,12 +637,10 @@ gameplay_help_draw_text()
         y_offset += separation;
         gameplay_help_blit_control_line(x_offset, y_offset, WARP_MESSAGE);
 
-#ifndef FS2_DEMO
         y_offset += separation;
         gameplay_help_blit_control_line_raw(
             x_offset, y_offset, XSTR("F5...F12", 143),
             XSTR("send specified order to these target(s)", 156));
-#endif
         break;
 
     case GP_HELP_WEAPON_KEYS:

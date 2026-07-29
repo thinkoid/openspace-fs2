@@ -85,9 +85,6 @@ cutscene_init()
 int
 cutscenes_get_cd_num(char *filename)
 {
-#if defined(OEM_BUILD)
-    return 0; // only 1 cd for OEM
-#else
     int i;
 
     for (i = 0; i < Num_cutscenes; i++) {
@@ -97,7 +94,6 @@ cutscenes_get_cd_num(char *filename)
     }
 
     return -1;
-#endif // defined(OEM_BUILD)
 }
 
 // marks a cutscene as viewable
@@ -225,9 +221,7 @@ cutscenes_validate_cd(char *mve_name, int prompt_for_cd)
     int cd_mve_is_on;
     char volume_name[128];
 
-#ifdef RELEASE_REAL
     int num_attempts = 0;
-#endif
 
     while (1) {
         int path_set_ok;
@@ -238,11 +232,7 @@ cutscenes_validate_cd(char *mve_name, int prompt_for_cd)
             break;
         }
 
-#if defined(OEM_BUILD)
-        sprintf(volume_name, NOX("FS2_OEM"));
-#else
         sprintf(volume_name, NOX("FREESPACE2_%c"), '1' + cd_mve_is_on);
-#endif
 
         cd_drive_num = find_freespace_cd(volume_name);
         path_set_ok = set_cdrom_path(cd_drive_num);
@@ -252,7 +242,6 @@ cutscenes_validate_cd(char *mve_name, int prompt_for_cd)
             break;
         }
 
-#ifdef RELEASE_REAL
         if (!prompt_for_cd) {
             cd_present = 0;
             break;
@@ -282,10 +271,6 @@ cutscenes_validate_cd(char *mve_name, int prompt_for_cd)
             cd_present = 0;
             break;
         }
-#else
-        cd_present = 0;
-        break;
-#endif
     }
 
     return cd_present;

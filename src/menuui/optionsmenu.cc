@@ -839,12 +839,8 @@ options_button_pressed(int n)
         break;
 
     case HUD_CONFIG_BUTTON:
-#ifdef FS2_DEMO
-        game_feature_not_in_demo_popup();
-#else
         gamesnd_play_iface(SND_SWITCH_SCREENS);
         gameseq_post_event(GS_EVENT_HUD_CONFIG);
-#endif
         break;
 
     case ACCEPT_BUTTON:

@@ -198,9 +198,6 @@ ets_init_ship(object *obj)
     ship *sp;
 
     // fred should bail here
-    if (Fred_running) {
-        return;
-    }
 
     Assert(obj->type == OBJ_SHIP);
     sp = &Ships[obj->instance];

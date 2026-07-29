@@ -16,13 +16,9 @@
 #include <io/timer.hh>
 #include <weapon/beam.hh>
 
-#ifdef FS2_DEMO
-#define MAX_PAIRS 3000
-#else
 // Reduced from 10,000 to 6,000 by MK on 4/1/98.
 //  Most I saw was 3400 in sm1-06a, the asteriod mission.  No other mission came close.
 #define MAX_PAIRS 8000
-#endif
 
 // the next 3 variables are used for pair statistics
 // also in weapon.cpp there is Weapons_created.

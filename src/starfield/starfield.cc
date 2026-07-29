@@ -198,11 +198,6 @@ stars_init()
                 bm->bitmap = bm_load(bm->filename);
                 Assert(bm->bitmap != -1);
 
-                // if fred is running we should lock the bitmap now
-                if (Fred_running && (bm->bitmap >= 0)) {
-                    bm_lock(bm->bitmap, 8, BMP_TEX_OTHER);
-                    bm_unlock(bm->bitmap);
-                }
             }
         }
         // green xparency bitmap
@@ -215,11 +210,6 @@ stars_init()
                 bm->bitmap = bm_load(bm->filename);
                 Assert(bm->bitmap != -1);
 
-                // if fred is running we should lock as a 0, 255, 0 bitmap now
-                if (Fred_running && (bm->bitmap >= 0)) {
-                    bm_lock(bm->bitmap, 8, BMP_TEX_XPARENT);
-                    bm_unlock(bm->bitmap);
-                }
             }
         }
     }
@@ -256,16 +246,6 @@ stars_init()
                 bm->i = i;
 
                 // if fred is running we should lock the bitmap now
-                if (Fred_running) {
-                    if (bm->bitmap >= 0) {
-                        bm_lock(bm->bitmap, 8, BMP_TEX_OTHER);
-                        bm_unlock(bm->bitmap);
-                    }
-                    if (bm->glow_bitmap >= 0) {
-                        bm_lock(bm->glow_bitmap, 8, BMP_TEX_OTHER);
-                        bm_unlock(bm->glow_bitmap);
-                    }
-                }
             }
         }
     }
@@ -677,39 +657,27 @@ stars_draw_bitmaps(int show_bitmaps)
         }
 
         // set the bitmap
-        if (Fred_running) {
+        if (Starfield_bitmaps[star_index].xparent) {
+            gr_set_bitmap(Starfield_bitmaps[star_index].bitmap);
+            g3_draw_perspective_bitmap(
+                &Starfield_bitmap_instance[idx].ang,
+                Starfield_bitmap_instance[idx].scale_x,
+                Starfield_bitmap_instance[idx].scale_y,
+                Starfield_bitmap_instance[idx].div_x,
+                Starfield_bitmap_instance[idx].div_y,
+                TMAP_FLAG_TEXTURED | TMAP_FLAG_CORRECT | TMAP_FLAG_XPARENT);
+        }
+        else {
             gr_set_bitmap(Starfield_bitmaps[star_index].bitmap,
-                          GR_ALPHABLEND_FILTER, GR_BITBLT_MODE_NORMAL, 0.9999f);
+                          GR_ALPHABLEND_FILTER, GR_BITBLT_MODE_NORMAL,
+                          0.9999f);
             g3_draw_perspective_bitmap(&Starfield_bitmap_instance[idx].ang,
                                        Starfield_bitmap_instance[idx].scale_x,
                                        Starfield_bitmap_instance[idx].scale_y,
                                        Starfield_bitmap_instance[idx].div_x,
                                        Starfield_bitmap_instance[idx].div_y,
-                                       TMAP_FLAG_TEXTURED | TMAP_FLAG_CORRECT);
-        }
-        else {
-            if (Starfield_bitmaps[star_index].xparent) {
-                gr_set_bitmap(Starfield_bitmaps[star_index].bitmap);
-                g3_draw_perspective_bitmap(
-                    &Starfield_bitmap_instance[idx].ang,
-                    Starfield_bitmap_instance[idx].scale_x,
-                    Starfield_bitmap_instance[idx].scale_y,
-                    Starfield_bitmap_instance[idx].div_x,
-                    Starfield_bitmap_instance[idx].div_y,
-                    TMAP_FLAG_TEXTURED | TMAP_FLAG_CORRECT | TMAP_FLAG_XPARENT);
-            }
-            else {
-                gr_set_bitmap(Starfield_bitmaps[star_index].bitmap,
-                              GR_ALPHABLEND_FILTER, GR_BITBLT_MODE_NORMAL,
-                              0.9999f);
-                g3_draw_perspective_bitmap(&Starfield_bitmap_instance[idx].ang,
-                                           Starfield_bitmap_instance[idx].scale_x,
-                                           Starfield_bitmap_instance[idx].scale_y,
-                                           Starfield_bitmap_instance[idx].div_x,
-                                           Starfield_bitmap_instance[idx].div_y,
-                                           TMAP_FLAG_TEXTURED |
-                                               TMAP_FLAG_CORRECT);
-            }
+                                       TMAP_FLAG_TEXTURED |
+                                           TMAP_FLAG_CORRECT);
         }
     }
 }
@@ -1067,7 +1035,7 @@ stars_draw(int show_stars, int show_suns, int show_nebulas, int show_subspace)
     mprintf(("Stars: %d\n", xt2 - xt1));
 #endif
 
-    if ((Game_detail_flags & DETAIL_FLAG_MOTION) && (!Fred_running) &&
+    if ((Game_detail_flags & DETAIL_FLAG_MOTION) &&
         (supernova_active() < 3)) {
         gr_set_color(0, 0, 0);
 

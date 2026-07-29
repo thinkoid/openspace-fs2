@@ -247,6 +247,12 @@ cmd_brief Cmd_briefs[MAX_TEAMS];
 
 // --------------------------------------------------------------------------------------
 // forward declarations
+// the grid the briefing map draws on; owned here since the FRED grid
+// implementation (missiongrid.cc) was removed
+grid Global_grid;
+grid *The_grid;
+int double_fine_gridlines = 0;
+
 // --------------------------------------------------------------------------------------
 void brief_render_elements(vector *pos, grid *gridp);
 void brief_render_icons(int stage_num, float frametime);
@@ -313,51 +319,21 @@ mission_brief_common_init()
     gr_init_alphacolor(&Brief_color_green, 50, 100, 50, 255);
     gr_init_alphacolor(&Brief_color_red, 140, 20, 20, 255);
 
-    if (Fred_running) {
-        // If Fred is running malloc out max space
-        for (i = 0; i < MAX_TEAMS; i++) {
-            for (j = 0; j < MAX_BRIEF_STAGES; j++) {
-                Briefings[i].stages[j].new_text = (char *)malloc(MAX_BRIEF_LEN);
-                Assert(Briefings[i].stages[j].new_text != NULL);
-                Briefings[i].stages[j].icons = (brief_icon *)malloc(
-                    sizeof(brief_icon) * MAX_STAGE_ICONS);
-                Assert(Briefings[i].stages[j].icons != NULL);
-                Briefings[i].stages[j].lines = (brief_line *)malloc(
-                    sizeof(brief_line) * MAX_BRIEF_STAGE_LINES);
-                Assert(Briefings[i].stages[j].lines != NULL);
-                Briefings[i].stages[j].num_icons = 0;
-                Briefings[i].stages[j].num_lines = 0;
-            }
-        }
-
-        for (i = 0; i < MAX_TEAMS; i++) {
-            for (j = 0; j < MAX_DEBRIEF_STAGES; j++) {
-                Debriefings[i].stages[j].new_text = (char *)malloc(
-                    MAX_DEBRIEF_LEN);
-                Assert(Debriefings[i].stages[j].new_text != NULL);
-                Debriefings[i].stages[j].new_recommendation_text = (char *)malloc(
-                    MAX_RECOMMENDATION_LEN);
-                Assert(Debriefings[i].stages[j].new_recommendation_text != NULL);
-            }
+    // If game is running don't malloc anything
+    for (i = 0; i < MAX_TEAMS; i++) {
+        for (j = 0; j < MAX_BRIEF_STAGES; j++) {
+            Briefings[i].stages[j].new_text = NULL;
+            Briefings[i].stages[j].num_icons = 0;
+            Briefings[i].stages[j].icons = NULL;
+            Briefings[i].stages[j].num_lines = 0;
+            Briefings[i].stages[j].lines = NULL;
         }
     }
-    else {
-        // If game is running don't malloc anything
-        for (i = 0; i < MAX_TEAMS; i++) {
-            for (j = 0; j < MAX_BRIEF_STAGES; j++) {
-                Briefings[i].stages[j].new_text = NULL;
-                Briefings[i].stages[j].num_icons = 0;
-                Briefings[i].stages[j].icons = NULL;
-                Briefings[i].stages[j].num_lines = 0;
-                Briefings[i].stages[j].lines = NULL;
-            }
-        }
 
-        for (i = 0; i < MAX_TEAMS; i++) {
-            for (j = 0; j < MAX_DEBRIEF_STAGES; j++) {
-                Debriefings[i].stages[j].new_text = NULL;
-                Debriefings[i].stages[j].new_recommendation_text = NULL;
-            }
+    for (i = 0; i < MAX_TEAMS; i++) {
+        for (j = 0; j < MAX_DEBRIEF_STAGES; j++) {
+            Debriefings[i].stages[j].new_text = NULL;
+            Debriefings[i].stages[j].new_recommendation_text = NULL;
         }
     }
 }
@@ -370,9 +346,6 @@ mission_brief_common_reset()
 {
     int i, j;
 
-    if (Fred_running) {
-        return; // Don't free these under Fred.
-    }
 
     for (i = 0; i < MAX_TEAMS; i++) {
         for (j = 0; j < MAX_BRIEF_STAGES; j++) {
@@ -483,12 +456,6 @@ brief_init_screen()
 void
 brief_init_icons()
 {
-    if (Fred_running) {
-        gr_init_alphacolor(&IFF_colors[IFF_COLOR_HOSTILE][0], 0xff, 0x00, 0x00,
-                           15 * 16);
-        gr_init_alphacolor(&IFF_colors[IFF_COLOR_FRIENDLY][0], 0x00, 0xff, 0x00,
-                           15 * 16);
-    }
 
     // Load in the bitmaps for the icons from icons.tbl
     brief_parse_icon_tbl();
@@ -587,12 +554,7 @@ brief_parse_icon_tbl()
             required_string("$Name:");
             stuff_string(name, F_NAME, NULL);
 
-            if (Fred_running) {
-                load_this_icon = 1;
-            }
-            else {
-                load_this_icon = brief_icon_used_in_briefing(num_icons);
-            }
+            load_this_icon = brief_icon_used_in_briefing(num_icons);
 
             if (load_this_icon) {
                 hf->first_frame = bm_load_animation(name, &hf->num_frames);
@@ -958,22 +920,11 @@ brief_render_icon(int stage_num, int icon_num, float frametime, int selected,
         bc = fl2i(tv.sx);
 
         if ((bx < 0) || (bx > gr_screen.max_w) || (by < 0) ||
-            (by > gr_screen.max_h) && !Fred_running) {
+            (by > gr_screen.max_h)) {
             bi->x = bx;
             bi->y = by;
             return;
         }
-
-        vertex va, vb;
-        va.sx = bxf;
-        va.sy = byf;
-        va.u = 0.0f;
-        va.v = 0.0f;
-
-        vb.sx = bxf + scaled_w - 1;
-        vb.sy = byf + scaled_h - 1;
-        vb.u = 1.0f;
-        vb.v = 1.0f;
 
         // render highlight anim frame
         if ((bi->flags & BI_SHOWHIGHLIGHT) && (bi->flags & BI_HIGHLIGHT)) {
@@ -994,10 +945,8 @@ brief_render_icon(int stage_num, int icon_num, float frametime, int selected,
                 hud_anim_render(ha, frametime, 1, 0, 1);
 
                 if (Brief_stage_highlight_sound_handle < 0) {
-                    if (!Fred_running) {
-                        Brief_stage_highlight_sound_handle = snd_play(
-                            &Snds_iface[SND_ICON_HIGHLIGHT]);
-                    }
+                    Brief_stage_highlight_sound_handle = snd_play(
+                        &Snds_iface[SND_ICON_HIGHLIGHT]);
                 }
             }
         }
@@ -1023,13 +972,8 @@ brief_render_icon(int stage_num, int icon_num, float frametime, int selected,
         if (!(bi->flags & BI_FADEIN)) {
             gr_set_bitmap(icon_bitmap);
 
-            if (Fred_running) {
-                gr_aascaler(&va, &vb);
-            }
-            else {
-                // Don't bother scaling for the game
-                gr_aabitmap(bx, by);
-            }
+            // Don't bother scaling for the game
+            gr_aabitmap(bx, by);
 
             // draw text centered over the icon (make text darker)
             if (bi->type == ICON_FIGHTER_PLAYER ||

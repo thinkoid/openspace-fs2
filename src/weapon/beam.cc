@@ -1717,7 +1717,6 @@ beam_get_model(object *objp)
         }
         return Debris[objp->instance].model_num;
 
-#ifndef FS2_DEMO
     case OBJ_ASTEROID:
         subtype = Asteroids[objp->instance].asteroid_subtype;
         Assert(Asteroids[objp->instance].type >= 0);
@@ -1725,7 +1724,6 @@ beam_get_model(object *objp)
             return -1;
         }
         return Asteroid_info[Asteroids[objp->instance].type].model_num[subtype];
-#endif
 
     default:
         // this shouldn't happen too often

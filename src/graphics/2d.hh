@@ -215,9 +215,6 @@ typedef struct screen
     // Scales current bitmap between va and vb with clipping
     void (*gf_scaler)(vertex *va, vertex *vb);
 
-    // Scales current bitmap between va and vb with clipping, draws an aabitmap
-    void (*gf_aascaler)(vertex *va, vertex *vb);
-
     // Texture maps the current bitmap.  See TMAP_FLAG_?? defines for flag values
     void (*gf_tmapper)(int nv, vertex *verts[], uint flags);
 
@@ -334,8 +331,7 @@ extern int Gr_mmx;
 // 1024 x 768
 #define GR_1024 1
 
-extern int gr_init(int res, int mode, int depth = 16, int fred_x = -1,
-                   int fred_y = -1);
+extern int gr_init(int res, int mode, int depth = 16);
 
 // Call this when your app ends.
 extern void gr_close();
@@ -435,7 +431,6 @@ gr_set_bitmap(int bitmap_num, int alphablend = GR_ALPHABLEND_NONE,
 #define gr_aaline GR_CALL(gr_screen.gf_aaline)
 #define gr_pixel GR_CALL(gr_screen.gf_pixel)
 #define gr_scaler GR_CALL(gr_screen.gf_scaler)
-#define gr_aascaler GR_CALL(gr_screen.gf_aascaler)
 #define gr_tmapper GR_CALL(gr_screen.gf_tmapper)
 
 #define gr_gradient GR_CALL(gr_screen.gf_gradient)

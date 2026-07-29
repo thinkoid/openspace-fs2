@@ -298,12 +298,6 @@ common_buttons_init(UI_WINDOW *ui_window)
             .button.disable();
     }
 
-#ifdef DEMO // allow for FS2_DEMO
-    Common_buttons[Current_screen - 1][gr_screen.res][COMMON_SS_REGION]
-        .button.disable();
-    Common_buttons[Current_screen - 1][gr_screen.res][COMMON_WEAPON_REGION]
-        .button.disable();
-#endif
 }
 
 void
@@ -464,7 +458,6 @@ common_select_init()
     Background_playing = 0;
     Background_anim = NULL;
 
-#ifndef DEMO // not for FS2_DEMO
 
     /*
    if ( current_detail_level() >= (NUM_DEFAULT_DETAIL_LEVELS-2) ) {
@@ -487,7 +480,6 @@ common_select_init()
     // load in the icons for the wing slots
     load_wing_icons(NOX("iconwing01"));
 
-#endif
 
     Current_screen = Next_screen = ON_BRIEFING_SELECT;
 
@@ -770,7 +762,6 @@ common_check_keys(int k)
             break;
         }
 
-#ifndef DEMO // not for FS2_DEMO
         if (Current_screen != ON_WEAPON_SELECT && !Background_playing) {
             if (!wss_slots_all_empty()) {
                 Next_screen = ON_WEAPON_SELECT;
@@ -779,9 +770,6 @@ common_check_keys(int k)
                 common_show_no_ship_error();
             }
         }
-#else
-        gamesnd_play_iface(SND_GENERAL_FAIL);
-#endif
 
         break;
 
@@ -792,13 +780,9 @@ common_check_keys(int k)
             break;
         }
 
-#ifndef DEMO // not for FS2_DEMO
         if (Current_screen != ON_SHIP_SELECT && !Background_playing) {
             Next_screen = ON_SHIP_SELECT;
         }
-#else
-        gamesnd_play_iface(SND_GENERAL_FAIL);
-#endif
 
         break;
 
@@ -809,7 +793,6 @@ common_check_keys(int k)
             break;
         }
 
-#ifndef DEMO // not for FS2_DEMO
         if (!Background_playing) {
             switch (Current_screen) {
             case ON_BRIEFING_SELECT:
@@ -833,9 +816,6 @@ common_check_keys(int k)
                 break;
             } // end switch
         }
-#else
-        gamesnd_play_iface(SND_GENERAL_FAIL);
-#endif
 
         break;
 
@@ -846,7 +826,6 @@ common_check_keys(int k)
             break;
         }
 
-#ifndef DEMO // not for FS2_DEMO
         if (!Background_playing) {
             switch (Current_screen) {
             case ON_BRIEFING_SELECT:
@@ -870,9 +849,6 @@ common_check_keys(int k)
                 break;
             } // end switch
         }
-#else
-        gamesnd_play_iface(SND_GENERAL_FAIL);
-#endif
 
         break;
 

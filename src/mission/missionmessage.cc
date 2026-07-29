@@ -92,13 +92,8 @@ message_extra Message_waves[MAX_MESSAGE_WAVES];
 
 #define MAX_PLAYING_MESSAGES 2
 
-#ifdef FS2_DEMO
-#define MAX_WINGMAN_HEADS 1
-#define MAX_COMMAND_HEADS 1
-#else
 #define MAX_WINGMAN_HEADS 2
 #define MAX_COMMAND_HEADS 3
-#endif
 
 //XSTR:OFF
 #define HEAD_PREFIX_STRING "head-"
@@ -319,38 +314,22 @@ message_parse()
         msgp->persona_index = message_persona_name_lookup(persona_name);
     }
 
-    if (!Fred_running)
-        msgp->avi_info.index = -1;
-    else
-        msgp->avi_info.name = NULL;
+    msgp->avi_info.index = -1;
 
     if (optional_string("+AVI Name:")) {
         char avi_name[MAX_FILENAME_LEN];
 
         stuff_string(avi_name, F_NAME, NULL);
-        if (!Fred_running) {
-            msgp->avi_info.index = add_avi(avi_name);
-        }
-        else {
-            msgp->avi_info.name = strdup(avi_name);
-        }
+        msgp->avi_info.index = add_avi(avi_name);
     }
 
-    if (!Fred_running)
-        msgp->wave_info.index = -1;
-    else
-        msgp->wave_info.name = NULL;
+    msgp->wave_info.index = -1;
 
     if (optional_string("+Wave Name:")) {
         char wave_name[MAX_FILENAME_LEN];
 
         stuff_string(wave_name, F_NAME, NULL);
-        if (!Fred_running) {
-            msgp->wave_info.index = add_wave(wave_name);
-        }
-        else {
-            msgp->wave_info.name = strdup(wave_name);
-        }
+        msgp->wave_info.index = add_wave(wave_name);
     }
 
     Num_messages++;
@@ -1223,9 +1202,7 @@ message_queue_process()
     message_play_wave(q);
 
 // play animation for head
-#ifndef DEMO // do we want this for FS2_DEMO
     message_play_anim(q);
-#endif
 
     // distort the message if comms system is damaged
     message_maybe_distort_text(buf);

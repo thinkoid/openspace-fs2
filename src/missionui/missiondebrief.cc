@@ -822,13 +822,8 @@ debrief_traitor_init()
         required_string("$Formula:");
         stagep->formula = get_sexp_main();
         required_string("$multi text");
-        if (Fred_running) {
-            stuff_string(stagep->new_text, F_MULTITEXT, NULL, MAX_DEBRIEF_LEN);
-        }
-        else {
-            stagep->new_text = stuff_and_malloc_string(F_MULTITEXT, NULL,
-                                                       MAX_DEBRIEF_LEN);
-        }
+        stagep->new_text = stuff_and_malloc_string(F_MULTITEXT, NULL,
+                                                   MAX_DEBRIEF_LEN);
         required_string("$Voice:");
         char traitor_voice_file[NAME_LENGTH];
         stuff_string(traitor_voice_file, F_FILESPEC, NULL);
@@ -843,14 +838,8 @@ debrief_traitor_init()
         strcat(stagep->voice, traitor_voice_file);
 
         required_string("$Recommendation text:");
-        if (Fred_running) {
-            stuff_string(stagep->new_recommendation_text, F_MULTITEXT, NULL,
-                         MAX_RECOMMENDATION_LEN);
-        }
-        else {
-            stagep->new_recommendation_text = stuff_and_malloc_string(
-                F_MULTITEXT, NULL, MAX_RECOMMENDATION_LEN);
-        }
+        stagep->new_recommendation_text = stuff_and_malloc_string(
+            F_MULTITEXT, NULL, MAX_RECOMMENDATION_LEN);
         inited = 1;
 
         // close localization
@@ -995,11 +984,7 @@ debrief_accept(int ok_to_post_start_game_event)
 
             // check if campaign is over
             if (Campaign.next_mission == -1) {
-#if defined(FS2_DEMO) || defined(OEM_BUILD)
-                gameseq_post_event(GS_EVENT_END_DEMO);
-#else
                 gameseq_post_event(GS_EVENT_MAIN_MENU);
-#endif
             }
             else {
                 if (ok_to_post_start_game_event) {

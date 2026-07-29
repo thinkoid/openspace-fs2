@@ -69,12 +69,8 @@ typedef struct wl_bitmap_group
     int num_frames;
 } wl_bitmap_group;
 
-#ifdef FS2_DEMO
-#define WEAPON_ANIM_LOOP_FRAME 1
-#else
 // frame (from 0) to loop weapon anim
 #define WEAPON_ANIM_LOOP_FRAME 52
-#endif
 
 #define WEAPON_ICON_FRAME_NORMAL 0
 #define WEAPON_ICON_FRAME_HOT 1
@@ -904,7 +900,6 @@ wl_load_anim(int weapon_class)
 void
 wl_load_all_anims()
 {
-#ifndef DEMO // not for FS2_DEMO
 
     int i;
 
@@ -927,7 +922,6 @@ wl_load_all_anims()
         }
     }
 
-#endif
 }
 
 // release any anim instances
@@ -978,7 +972,6 @@ wl_unload_all_anims()
 void
 wl_load_all_icons()
 {
-#ifndef DEMO // not for FS2_DEMO
 
     int i, j;
 
@@ -995,7 +988,6 @@ wl_load_all_icons()
         }
     }
 
-#endif
 }
 
 // wl_unload_icons() frees the bitmaps used for weapon icons
@@ -1143,7 +1135,6 @@ wl_maybe_reset_selected_weapon_class()
 void
 wl_start_slot_animation(int n)
 {
-#ifndef DEMO // not for FS2_DEMO
 
     // don't use ani's
     // fallback code in wl_render_overhead_view() will
@@ -1191,7 +1182,6 @@ wl_start_slot_animation(int n)
    aps.skip_frames = 0;
    wl_ship->anim_instance = anim_play(&aps);
 */
-#endif
 }
 
 // Call when Selected_wl_slot needs to be changed

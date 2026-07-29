@@ -832,9 +832,7 @@ void init_tooltips()
       if ((rval = setjmp(parse_abort)) != 0) {
 
       } else {       
-#ifndef DEMO
          parse_tooltips();
-#endif
       }
 
       inited = 1;

@@ -84,9 +84,6 @@ ct_ship_delete(ship *shipp)
 void
 ct_ship_process(ship *shipp)
 {
-#ifdef MULTIPLAYER_BETA_BUILD
-    return;
-#else
     int idx;
     object *objp;
 
@@ -130,7 +127,6 @@ ct_ship_process(ship *shipp)
     else {
         ct_create_contrails(shipp);
     }
-#endif
 }
 
 // ----------------------------------------------------------------------------------------------
@@ -164,9 +160,6 @@ ct_has_contrails(ship *shipp)
 void
 ct_update_contrails(ship *shipp)
 {
-#ifdef MULTIPLAYER_BETA_BUILD
-    return;
-#else
     vector v1;
     matrix m;
     int idx;
@@ -206,16 +199,12 @@ ct_update_contrails(ship *shipp)
             }
         }
     }
-#endif
 }
 
 // create new contrails
 void
 ct_create_contrails(ship *shipp)
 {
-#ifdef MULTIPLAYER_BETA_BUILD
-    return;
-#else
     vector v1;
     int idx;
     matrix m;
@@ -246,5 +235,4 @@ ct_create_contrails(ship *shipp)
         trail_add_segment(shipp->trail_num[idx], &v1);
         trail_add_segment(shipp->trail_num[idx], &v1);
     }
-#endif
 }

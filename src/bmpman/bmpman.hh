@@ -12,12 +12,8 @@
 
 #include <globalincs/pstypes.hh>
 
-#ifdef FS2_DEMO
-#define MAX_BITMAPS 3500
-#else
 // How many bitmaps the game can handle
 #define MAX_BITMAPS 3500
-#endif
 
 // 16 bit pixel formats
 // 1555 LFB writes

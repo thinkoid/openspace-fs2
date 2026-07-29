@@ -279,7 +279,7 @@ gr_detect_cpu(int *cpu, int *mmx, int *amd3d, int *katmai)
 // --------------------------------------------------------------------------
 
 int
-gr_init(int res, int mode, int depth, int fred_x, int fred_y)
+gr_init(int res, int mode, int depth)
 {
     int max_w, max_h;
 
@@ -309,26 +309,21 @@ gr_init(int res, int mode, int depth, int fred_x, int fred_y)
 
     max_w = -1;
     max_h = -1;
-    if (!Fred_running && !Pofview_running) {
-        // set resolution based on the res type
-        switch (res) {
-        case GR_640:
-            max_w = 640;
-            max_h = 480;
-            break;
 
-        case GR_1024:
-            max_w = 1024;
-            max_h = 768;
-            break;
+    // set resolution based on the res type
+    switch (res) {
+    case GR_640:
+        max_w = 640;
+        max_h = 480;
+        break;
 
-        default:
-            Int3();
-        }
-    }
-    else {
-        max_w = fred_x;
-        max_h = fred_y;
+    case GR_1024:
+        max_w = 1024;
+        max_h = 768;
+        break;
+
+    default:
+        Int3();
     }
 
     // Make w a multiple of 8
@@ -353,7 +348,7 @@ gr_init(int res, int mode, int depth, int fred_x, int fred_y)
     // re-rasterizes the 3-D world at the real size for free).  Non-integer
     // or aspect-changing requests fall back to the canvas size.
     gr_screen.window_scale = 1;
-    if (Cmdline_res_w > 0 && !Fred_running && !Pofview_running) {
+    if (Cmdline_res_w > 0) {
         int s = Cmdline_res_w / max_w;
         if (s >= 1 && Cmdline_res_w == max_w * s && Cmdline_res_h == max_h * s) {
             gr_screen.window_scale = s;

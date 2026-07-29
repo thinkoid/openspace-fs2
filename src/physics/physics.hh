@@ -133,9 +133,6 @@ extern void physics_read_flying_controls(matrix *orient, physics_info *pi,
                                          vector *wash_rot = NULL);
 extern void physics_sim(vector *position, matrix *orient, physics_info *pi,
                         float sim_time);
-extern void physics_sim_editor(vector *position, matrix *orient, physics_info *pi,
-                               float sim_time);
-
 extern void physics_sim_vel(vector *position, physics_info *pi, float sim_time,
                             matrix *orient);
 extern void physics_sim_rot(matrix *orient, physics_info *pi, float sim_time);

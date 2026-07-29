@@ -184,7 +184,6 @@ collide_debris_ship(obj_pair *pair)
 int
 collide_asteroid_ship(obj_pair *pair)
 {
-#ifndef FS2_DEMO
 
     if (!Asteroids_enabled)
         return 0;
@@ -363,7 +362,4 @@ collide_asteroid_ship(obj_pair *pair)
         }
         return 0;
     }
-#else
-    return 0; // no asteroids in demo version
-#endif
 }

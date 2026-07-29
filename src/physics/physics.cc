@@ -472,22 +472,6 @@ physics_sim(vector *position, matrix *orient, physics_info *pi, float sim_time)
     }
 }
 
-// -----------------------------------------------------------------------------------------------------------
-// Simulate a physics object for this frame.  Used by the editor.  The difference between
-// this function and physics_sim() is that this one uses a heading change to rotate around
-// the universal Y axis, rather than the local orientation's Y axis.  Banking is also ignored.
-void
-physics_sim_editor(vector *position, matrix *orient, physics_info *pi,
-                   float sim_time)
-{
-    physics_sim_vel(position, pi, sim_time, orient);
-    physics_sim_rot_editor(orient, pi, sim_time);
-    pi->speed = vm_vec_mag_quick(&pi->vel);
-    pi->fspeed = vm_vec_dot(
-        &orient->fvec,
-        &pi->vel); // instead of vector magnitude -- use only forward vector since we are only interested in forward velocity
-}
-
 // function to predict an object's position given the delta time and an objects physics info
 void
 physics_predict_pos(physics_info *pi, float delta_time, vector *predicted_pos)
@@ -1094,8 +1078,6 @@ check_rotvel_limit(physics_info *pi)
     if (0 == pi->flags) // weapon
         return 0;
 
-    if (Fred_running)
-        return 0;
 
     int change_made = 0;
     if (!(pi->flags & PF_DEAD_DAMP)) {

@@ -633,7 +633,6 @@ hud_render_target_jump_node(object *target_objp)
 void
 hud_render_target_asteroid(object *target_objp)
 {
-#ifndef FS2_DEMO
     vector obj_pos = { 0.0f, 0.0f, 0.0f };
     vector camera_eye = { 0.0f, 0.0f, 0.0f };
     matrix camera_orient = IDENTITY_MATRIX;
@@ -719,7 +718,6 @@ hud_render_target_asteroid(object *target_objp)
                        Targetbox_coords[gr_screen.res][TBOX_CLASS][1],
                        EG_TBOX_CLASS, NOX("impact: %.1f sec"), time_to_impact);
     }
-#endif
 }
 
 void

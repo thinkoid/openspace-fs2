@@ -177,12 +177,8 @@ typedef struct weapon
     short flak_index; // flak info index
 } weapon;
 
-#ifdef FS2_DEMO
-#define MAX_WEAPONS 100
-#else
 // upped 5/6/98 from 200 - DB
 #define MAX_WEAPONS 350
-#endif
 
 // info specific to beam weapons
 #define MAX_BEAM_SECTIONS 5

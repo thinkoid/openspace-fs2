@@ -2611,7 +2611,6 @@ get_nearest_turret_objnum(int turret_parent_objnum, ship_subsys *turret_subsys,
         return eeo.nearest_attacker_objnum;
     }
 
-#ifndef FS2_DEMO
     asteroid_obj *ao;
     // Asteroid_obj_list
     for (ao = GET_FIRST(&Asteroid_obj_list);
@@ -2619,7 +2618,6 @@ get_nearest_turret_objnum(int turret_parent_objnum, ship_subsys *turret_subsys,
         objp = &Objects[ao->objnum];
         evaluate_obj_as_target(objp, &eeo);
     }
-#endif
 
     return eeo.nearest_objnum; // lowest priority is the closest enemy objnum
 }

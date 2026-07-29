@@ -491,7 +491,7 @@ obj_delete(int objnum)
         weapon_delete(objp);
         break;
     case OBJ_SHIP:
-        if ((objp == Player_obj) && !Fred_running) {
+        if (objp == Player_obj) {
             objp->type = OBJ_GHOST;
             objp->flags &= ~(OF_SHOULD_BE_DEAD);
 
@@ -523,8 +523,9 @@ obj_delete(int objnum)
     case OBJ_WAYPOINT:
     case OBJ_POINT:
     case OBJ_JUMP_NODE:
-        Assert(Fred_running);
-        break; // requires no action, handled by the Fred code.
+        // editor-managed object types; no cleanup in the game (retail
+        // asserted Fred_running here, compiled out in shipping builds)
+        break;
     case OBJ_DEBRIS:
         debris_delete(objp);
         break;

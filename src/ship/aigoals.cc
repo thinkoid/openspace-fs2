@@ -128,16 +128,14 @@ ai_post_process_mission()
     // (2) if they have an order, they are free to act on it.
     //
     // So basically, we are checking for (1)
-    if (!Fred_running) {
-        for (i = 0; i < 1;
-             i++) { //  MK, 5/9/98: Used to iterate through MAX_PLAYER_WINGS, but this was too many ships forming on player.
-            if (Starting_wings[i] != -1) {
-                wing *wingp;
+    for (i = 0; i < 1;
+         i++) { //  MK, 5/9/98: Used to iterate through MAX_PLAYER_WINGS, but this was too many ships forming on player.
+        if (Starting_wings[i] != -1) {
+            wing *wingp;
 
-                wingp = &Wings[Starting_wings[i]];
+            wingp = &Wings[Starting_wings[i]];
 
-                ai_maybe_add_form_goal(wingp);
-            }
+            ai_maybe_add_form_goal(wingp);
         }
     }
 
@@ -153,7 +151,7 @@ ai_post_process_mission()
     }
     for (objp = GET_FIRST(&obj_create_list);
          objp != END_OF_LIST(&obj_create_list); objp = GET_NEXT(objp)) {
-        if ((objp->type != OBJ_SHIP) || Fred_running)
+        if (objp->type != OBJ_SHIP)
             continue;
         ai_process_mission_orders(OBJ_INDEX(objp),
                                   &Ai_info[Ships[objp->instance].ai_index]);
@@ -174,8 +172,7 @@ ai_query_goal_valid(int ship, int ai_goal)
     accepted = 0;
     switch (Ship_info[Ships[ship].ship_info_index].flags & SIF_ALL_SHIP_TYPES) {
     case SIF_CARGO:
-        if (!Fred_running)
-            Int3(); // get Hoffoss or Allender -- cargo containers shouldn't have a goal!!!
+        Int3(); // get Hoffoss or Allender -- cargo containers shouldn't have a goal!!!
         break;
 
     case SIF_FIGHTER:
@@ -244,14 +241,10 @@ ai_query_goal_valid(int ship, int ai_goal)
         }
         break;
     case SIF_NO_SHIP_TYPE:
-        if (!Fred_running) {
-            Int3(); // HUH?  doesn't make sense
-        }
+        Int3(); // HUH?  doesn't make sense
         break;
     default:
-        if (!Fred_running) {
-            Int3(); // get allender or hoffos -- unknown ship type
-        }
+        Int3(); // get allender or hoffos -- unknown ship type
         break;
     }
 
@@ -434,9 +427,7 @@ ai_get_subsystem_type(char *subsystem)
         return SUBSYSTEM_ACTIVATION;
     }
     else { // If unrecognized type, set to engine so artist can continue working...
-        if (!Fred_running) {
-            //       Int3();                    // illegal subsystem type -- find allender
-        }
+        //       Int3();                    // illegal subsystem type -- find allender
 
         return SUBSYSTEM_UNKNOWN;
     }
@@ -689,14 +680,12 @@ ai_add_wing_goal_player(int type, int mode, int submode, char *shipname,
     wing *wingp = &Wings[wingnum];
 
     // add the ai goal for any ship that is currently arrived in the game.
-    if (!Fred_running) { // only add goals to ships if fred isn't running
-        for (i = 0; i < wingp->current_count; i++) {
-            int num = wingp->ship_index[i];
-            if (num == -1) // ship must have been destroyed or departed
-                continue;
-            ai_add_ship_goal_player(type, mode, submode, shipname,
-                                    &Ai_info[Ships[num].ai_index]);
-        }
+    for (i = 0; i < wingp->current_count; i++) {
+        int num = wingp->ship_index[i];
+        if (num == -1) // ship must have been destroyed or departed
+            continue;
+        ai_add_ship_goal_player(type, mode, submode, shipname,
+                                &Ai_info[Ships[num].ai_index]);
     }
 
     // add the sexpression index into the wing's list of goal sexpressions if
@@ -908,18 +897,16 @@ ai_add_wing_goal_sexp(int sexp, int type, int wingnum)
     wing *wingp = &Wings[wingnum];
 
     // add the ai goal for any ship that is currently arrived in the game (only if fred isn't running
-    if (!Fred_running) {
-        for (i = 0; i < wingp->current_count; i++) {
-            int num = wingp->ship_index[i];
-            if (num == -1) // ship must have been destroyed or departed
-                continue;
-            ai_add_ship_goal_sexp(sexp, type, &Ai_info[Ships[num].ai_index]);
-        }
+    for (i = 0; i < wingp->current_count; i++) {
+        int num = wingp->ship_index[i];
+        if (num == -1) // ship must have been destroyed or departed
+            continue;
+        ai_add_ship_goal_sexp(sexp, type, &Ai_info[Ships[num].ai_index]);
     }
 
     // add the sexpression index into the wing's list of goal sexpressions if
     // there are more waves to come
-    if ((wingp->num_waves - wingp->current_wave > 0) || Fred_running) {
+    if (wingp->num_waves - wingp->current_wave > 0) {
         int gindex;
 
         gindex = ai_goal_find_empty_slot(wingp->ai_goals);

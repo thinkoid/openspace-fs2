@@ -241,8 +241,7 @@ get_sexp_main()
     Mp++;
     start_node = get_sexp(token);
     // only need to check syntax if we have a operator
-    if (/*Sexp_nodes[start_node].subtype != SEXP_ATOM_OPERATOR  ||*/ Fred_running ||
-        (start_node == -1))
+    if (start_node == -1)
         return start_node;
 
     ch = *Mp;

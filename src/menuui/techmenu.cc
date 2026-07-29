@@ -318,25 +318,11 @@ techroom_select_new_entry()
     if (Tab == SHIPS_DATA_TAB) {
         ship_info *sip = &Ship_info[Cur_entry_index];
 
-#ifdef MULTIPLAYER_BETA_BUILD
-        // don't load supercaps in the beta
-        if ((sip->flags & SIF_SUPERCAP) || (sip->flags & SIF_DRYDOCK)) {
-            Techroom_ship_modelnum = -1;
-        }
-        else {
-            Techroom_ship_modelnum = model_load(sip->pof_file, sip->n_subsystems,
-                                                &sip->subsystems[0]);
-        }
-
-        // page in ship textures properly (takes care of nondimming pixels)
-        model_page_in_textures(Techroom_ship_modelnum, Cur_entry_index);
-#else
         Techroom_ship_modelnum = model_load(sip->pof_file, sip->n_subsystems,
                                             &sip->subsystems[0]);
 
         // page in ship textures properly (takes care of nondimming pixels)
         model_page_in_textures(Techroom_ship_modelnum, Cur_entry_index);
-#endif
     }
     else {
         Techroom_ship_modelnum = -1;
@@ -549,37 +535,6 @@ techroom_ships_render(float frametime)
                 Tech_ship_display_coords[gr_screen.res][SHIP_H_COORD]);
 
     // render the ship
-#ifdef MULTIPLAYER_BETA_BUILD
-    if ((sip->flags & SIF_SUPERCAP) || (sip->flags & SIF_DRYDOCK)) {
-        gr_set_color_fast(&Color_bright);
-        gr_string(Tech_ship_display_coords[gr_screen.res][SHIP_X_COORD],
-                  Tech_ship_display_coords[gr_screen.res][SHIP_Y_COORD] + 50,
-                  NOX("No soup for you!"));
-    }
-    else {
-        g3_start_frame(1);
-
-        g3_set_view_matrix(&sip->closeup_pos, &vmd_identity_matrix,
-                           sip->closeup_zoom * 1.3f);
-
-        // lighting for techroom
-        light_reset();
-        vector light_dir = vmd_zero_vector;
-        light_dir.y = 1.0f;
-        light_add_directional(&light_dir, 0.85f, 1.0f, 1.0f, 1.0f);
-        // light_filter_reset();
-        light_rotate_all();
-        // lighting for techroom
-
-        model_clear_instance(Techroom_ship_modelnum);
-        model_set_detail_level(0);
-        model_render(Techroom_ship_modelnum, &Techroom_ship_orient,
-                     &vmd_zero_vector,
-                     MR_NO_LIGHTING | MR_LOCK_DETAIL | MR_AUTOCENTER);
-
-        g3_end_frame();
-    }
-#else
     g3_start_frame(1);
 
     g3_set_view_matrix(&sip->closeup_pos, &vmd_identity_matrix,
@@ -600,7 +555,6 @@ techroom_ships_render(float frametime)
                  MR_LOCK_DETAIL | MR_AUTOCENTER);
 
     g3_end_frame();
-#endif
 
     gr_reset_clip();
 }
@@ -1018,31 +972,19 @@ techroom_button_pressed(int num)
         break;
 
     case SIMULATOR_TAB:
-#if !defined(E3_BUILD) && !defined(PD_BUILD)
         gamesnd_play_iface(SND_SWITCH_SCREENS);
         gameseq_post_event(GS_EVENT_SIMULATOR_ROOM);
         return 1;
-#else
-        return 0;
-#endif
 
     case CUTSCENES_TAB:
-#if !defined(E3_BUILD) && !defined(PD_BUILD)
         gamesnd_play_iface(SND_SWITCH_SCREENS);
         gameseq_post_event(GS_EVENT_GOTO_VIEW_CUTSCENES_SCREEN);
         return 1;
-#else
-        return 0;
-#endif
 
     case CREDITS_TAB:
-#if !defined(E3_BUILD) && !defined(PD_BUILD)
         gamesnd_play_iface(SND_SWITCH_SCREENS);
         gameseq_post_event(GS_EVENT_CREDITS);
         return 1;
-#else
-        return 0;
-#endif
 
     case PREV_ENTRY_BUTTON:
         tech_prev_entry();

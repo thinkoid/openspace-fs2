@@ -379,13 +379,7 @@ campaign_room_campaign_filter(char *filename)
     int type, max_players;
     char name[NAME_LENGTH], *desc = NULL;
 
-#ifdef OEM_BUILD
-    // also need to check if this is the builtin campaign
-    if (game_find_builtin_mission(filename) &&
-        mission_campaign_get_info(filename, name, &type, &max_players, &desc)) {
-#else
     if (mission_campaign_get_info(filename, name, &type, &max_players, &desc)) {
-#endif
         if (type == CAMPAIGN_TYPE_SINGLE) {
             Campaign_file_names_temp[Num_campaigns] = strdup(filename);
             Campaign_descs_temp[Num_campaigns++] = desc;
@@ -864,22 +858,6 @@ readyroom_continue_campaign()
 {
     if (mission_campaign_next_mission()) { // is campaign and next mission valid?
 
-#ifdef FS2_DEMO
-        int reset_campaign = 0;
-        reset_campaign = popup(
-            PF_BODY_BIG, 2, POPUP_NO, POPUP_YES,
-            XSTR(
-                "Demo Campaign Is Over.  Would you like to play the campaign again?",
-                111));
-        if (reset_campaign == 1) {
-            mission_campaign_savefile_delete(Campaign.filename);
-            mission_campaign_load(Campaign.filename);
-            mission_campaign_next_mission();
-        }
-        else {
-            return -1;
-        }
-#else
         gamesnd_play_iface(SND_GENERAL_FAIL);
         popup(
             0, 1, POPUP_OK,
@@ -887,7 +865,6 @@ readyroom_continue_campaign()
                 "The campaign is over.  To replay the campaign, either create a new pilot or restart the campaign in the campaign room.",
                 112));
         return -1;
-#endif
     }
 
     // CD CHECK
@@ -936,17 +913,11 @@ sim_room_button_pressed(int n)
         break;
 
     case MISSION_TAB:
-#ifdef OEM_BUILD
-        game_feature_not_in_demo_popup();
-        //        gamesnd_play_iface(SND_GENERAL_FAIL);
-        break;
-#else
         Player->readyroom_listing_mode = MODE_MISSIONS;
         Selected_line = Scroll_offset = 0;
         gamesnd_play_iface(SND_USER_SELECT);
         sim_room_build_listing();
         break;
-#endif
 
     case CAMPAIGN_TAB:
         Player->readyroom_listing_mode = MODE_CAMPAIGNS;
@@ -1512,19 +1483,9 @@ campaign_room_build_listing()
             Campaign_names[i] = NULL;
             if (mission_campaign_get_info(Campaign_file_names[i], name, &type,
                                           &max_players)) {
-#ifdef PD_BUILD
-                if ((game_find_builtin_mission(name) == NULL) &&
-                    !strstr(name, "peterdrake")) {
-                    continue;
-                }
-                else {
-                    Campaign_names[i] = strdup(name);
-                }
-#else
                 if (type == CAMPAIGN_TYPE_SINGLE) {
                     Campaign_names[i] = strdup(name);
                 }
-#endif
             }
         }
 

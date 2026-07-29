@@ -768,3 +768,32 @@ accounts for every removal with zero additions (4756 -> 4697); tests
 green; headless boot renders.  Census bonus: gcc's
 -Wunused-but-set-variable warnings carry a trailing `=' in the bracket
 tag -- category greps must allow it.
+
+## Survey D applied: dead build configs collapsed, Fred/Pofview folded (2026-07-29)
+
+The two big mechanical collapses from the 07-29 survey.  Build configs:
+every FS2_DEMO / OEM_BUILD / E3_BUILD / PD_BUILD / PRESS_TOUR_BUILD /
+MULTIPLAYER_BETA(_BUILD) / FS1-era DEMO conditional resolved (dead
+branches deleted, inverted live guards unwrapped), RELEASE_REAL unwrapped
+and its define retired -- the shipping retail configuration is now the
+only build; GERMAN_BUILD survives as the one localization knob.  Done
+with a scratchpad mini-unifdef (no unifdef on the box, no new dependency)
+scoped to exactly those macros -- #if 0 blocks and NDEBUG guards
+untouched.  Fred_running (assigned once, to 0) and Pofview_running +
+Nebedit_running (same; pofview lives in pcs2 now) folded through ~136
+sites; cascade deletions: missiongrid.cc entirely (grid globals moved to
+missionbriefcommon.cc, their sole consumer), the gf_aascaler dispatch
+(gr8_aascaler 209 lines, gr_opengl_aascaler, the 2d.hh member+macro) and
+the calc_alphacolor*_old chain + alphacolor_old struct, six FRED-only
+sexp.cc functions (~180 lines incl. query_referenced_in_sexp), the three
+parselo *_fred variants, physics_sim_editor, and (fold fallout)
+read_mission_goal_list; gr_init lost its fred_x/fred_y params.  The fold
+script's blind spot -- single-statement if with an else -- produced
+orphan elses that the compiler enumerated and we fixed against the
+pristine originals; a hunk-audit confirmed every deleted line came from a
+dead branch.  One latent debug-crash also died: obj_delete's
+OBJ_WAYPOINT/JUMP_NODE arm asserted Fred_running, i.e. would have fired
+in our debug build the first time a jump-node object was deleted in-game.
+Verified: clean rebuild, warning set accounted (4691 -> 4676; -12
+write-strings from deleted FRED code, +0 new); tests green; headless
+boot renders.

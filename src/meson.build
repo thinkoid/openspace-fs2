@@ -53,7 +53,6 @@ foundation_src = files(
     'mission/missionbriefcommon.cc',
     'mission/missioncampaign.cc',
     'mission/missiongoals.cc',
-    'mission/missiongrid.cc',
     'mission/missionhotkey.cc',
     'mission/missionload.cc',
     'mission/missionlog.cc',

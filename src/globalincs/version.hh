@@ -30,42 +30,18 @@
 //    1.01  Patch for Win95 volume label bug
 //    1.20  German release version
 
-#if defined(FS2_DEMO)
-// Major is 0 for pre-release and 1 for 1.0 release
-#define FS_VERSION_MAJOR 01
-// Increase by 1 for minor revs, 10 for major.
-#define FS_VERSION_MINOR 10
-// Build version
-#define FS_VERSION_BUILD 00
-#elif defined(OEM_BUILD)
-// Major is 0 for pre-release and 1 for 1.0 release
-#define FS_VERSION_MAJOR 01
-// Increase by 1 for minor revs, 10 for major.
-#define FS_VERSION_MINOR 00
-// Build version
-#define FS_VERSION_BUILD 00
-#else
 // Major is 0 for pre-release and 1 for 1.0 release
 #define FS_VERSION_MAJOR 01
 // Increase by 1 for minor revs, 10 for major.
 #define FS_VERSION_MINOR 20
 // Build version
 #define FS_VERSION_BUILD 00
-#endif
 
 #define VERSION_LOC_FNAME "version.nfo"
 #define MOTD_LOC_FNAME "motd.txt"
 
-#ifdef MULTIPLAYER_BETA_BUILD
-#define MOTD_URL "http://www.pxo.net/files/fs2beta/motd.txt"
-#define VERSION_URL "http://www.pxo.net/files/fs2beta/version.nfo"
-#elif defined(FS2_DEMO)
-#define MOTD_URL "http://www.pxo.net/files/fs2demo/motd.txt"
-#define VERSION_URL "http://www.pxo.net/files/fs2demo/version.nfo"
-#else
 #define MOTD_URL "http://www.pxo.net/files/fs2/motd.txt"
 #define VERSION_URL "http://www.pxo.net/files/fs2/version.nfo"
-#endif
 
 #define VERSION_FILE_COMMENT_CHAR ';'
 #define NO_VERSION_IN_REGISTRY -2

@@ -456,16 +456,6 @@ parse_weapon()
 
 // AL 28-3-98: If this is a demo build, we only want to parse weapons that are preceded with
 //             the '@' symbol
-#ifdef DEMO // not needed FS2_DEMO (separate table file)
-    if (wip->name[0] != '@') {
-        // advance to next weapon, and return -1
-
-        if (skip_to_start_of_strings("$Name:", "#End") != 1) {
-            Int3();
-        }
-        return -1;
-    }
-#endif
 
     if (wip->name[0] == '@') {
         char old_name[NAME_LENGTH];
@@ -522,22 +512,18 @@ parse_weapon()
         required_string("@Laser Bitmap:");
         stuff_string(wip->pofbitmap_name, F_NAME, NULL);
         wip->laser_bitmap = -1;
-        if (!Fred_running) {
-            wip->laser_bitmap = bm_load(wip->pofbitmap_name);
-        }
+        wip->laser_bitmap = bm_load(wip->pofbitmap_name);
 
         // optional laser glow
         wip->laser_glow_bitmap = -1;
         if (optional_string("@Laser Glow:")) {
             stuff_string(fname, F_NAME, NULL);
-            if (!Fred_running) {
-                wip->laser_glow_bitmap = bm_load(fname);
+            wip->laser_glow_bitmap = bm_load(fname);
 
-                // might as well lock it down as an aabitmap now
-                if (wip->laser_glow_bitmap >= 0) {
-                    bm_lock(wip->laser_glow_bitmap, 8, BMP_AABITMAP);
-                    bm_unlock(wip->laser_glow_bitmap);
-                }
+            // might as well lock it down as an aabitmap now
+            if (wip->laser_glow_bitmap >= 0) {
+                bm_lock(wip->laser_glow_bitmap, 8, BMP_AABITMAP);
+                bm_unlock(wip->laser_glow_bitmap);
             }
         }
 
@@ -905,11 +891,9 @@ parse_weapon()
         // particle bitmap/ani
         required_string("+PAni:");
         stuff_string(fname, F_NAME, NULL);
-        if (!Fred_running) {
-            int num_frames, fps;
-            wip->b_info.beam_particle_ani = bm_load_animation(fname, &num_frames,
-                                                              &fps, 1);
-        }
+        int num_frames, fps;
+        wip->b_info.beam_particle_ani = bm_load_animation(fname, &num_frames,
+                                                          &fps, 1);
 
         // magic miss #
         required_string("+Miss Factor:");
@@ -933,9 +917,7 @@ parse_weapon()
         // glow bitmap
         required_string("+Muzzleglow:");
         stuff_string(fname, F_NAME, NULL);
-        if (!Fred_running) {
-            wip->b_info.beam_glow_bitmap = bm_load(fname);
-        }
+        wip->b_info.beam_glow_bitmap = bm_load(fname);
 
         // # of shots (only used for type D beams)
         required_string("+Shots:");
@@ -960,12 +942,10 @@ parse_weapon()
             required_string("+Texture:");
             stuff_string(tex_name, F_NAME, NULL);
             i.texture = -1;
-            if (!Fred_running) {
-                i.texture = bm_load(tex_name);
-                if (i.texture >= 0) {
-                    bm_lock(i.texture, 16, BMP_TEX_OTHER);
-                    bm_unlock(i.texture);
-                }
+            i.texture = bm_load(tex_name);
+            if (i.texture >= 0) {
+                bm_lock(i.texture, 16, BMP_TEX_OTHER);
+                bm_unlock(i.texture);
             }
 
             // rgba inner

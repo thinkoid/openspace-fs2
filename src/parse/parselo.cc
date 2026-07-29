@@ -408,79 +408,6 @@ optional_string(char *pstr)
     return 0;
 }
 
-int
-required_string_fred(char *pstr, char *end)
-{
-    char *backup = Mp;
-    ;
-
-    token_found = pstr;
-    if (fred_parse_flag)
-        return 0;
-
-    ignore_white_space();
-    while (*Mp != EOF_CHAR && strnicmp(pstr, Mp, strlen(pstr))) {
-        if ((*Mp == '#') || (end && !strnicmp(end, Mp, strlen(end)))) {
-            Mp = NULL;
-            break;
-        }
-
-        advance_to_eoln(NULL);
-        ignore_white_space();
-    }
-
-    if (!Mp || (*Mp == EOF_CHAR)) {
-        diag_printf("Required string [%s] not found\n", pstr);
-        Mp = backup;
-        Token_found_flag = 0;
-        return 0;
-    }
-
-    Mp += strlen(pstr);
-    diag_printf("Found required string [%s]\n", pstr);
-    Token_found_flag = 1;
-    return 1;
-}
-
-// attempt to find token in buffer.  It might not exist, however, in which case we don't need
-// to do anything.  If it is found, then we advance the pointer to just after the token.  To
-// further complicate things, we should only search to a certain point, since we don't want
-// a token that belongs to another section which might match the token we want.  Thus, we
-// also pass in an ending token, which marks the point we should stop looking at.
-int
-optional_string_fred(char *pstr, char *end, char *end2)
-{
-    char *mp_save = Mp;
-
-    token_found = pstr;
-    if (fred_parse_flag)
-        return 0;
-
-    ignore_white_space();
-    while ((*Mp != EOF_CHAR) && strnicmp(pstr, Mp, strlen(pstr))) {
-        if ((*Mp == '#') || (end && !strnicmp(end, Mp, strlen(end))) ||
-            (end2 && !strnicmp(end2, Mp, strlen(end2)))) {
-            Mp = NULL;
-            break;
-        }
-
-        advance_to_eoln(NULL);
-        ignore_white_space();
-    }
-
-    if (!Mp || (*Mp == EOF_CHAR)) {
-        diag_printf("Optional string [%s] not found\n", pstr);
-        Mp = mp_save;
-        Token_found_flag = 0;
-        return 0;
-    }
-
-    Mp += strlen(pstr);
-    diag_printf("Found optional string [%s]\n", pstr);
-    Token_found_flag = 1;
-    return 1;
-}
-
 // Return 0 or 1 for str1 match, str2 match.  Return -1 if neither matches.
 // Does not update Mp if token found.  If not found, advances, trying to
 // find the string.  Doesn't advance past the found string.
@@ -558,35 +485,6 @@ required_string_3(char *str1, char *str2, char *str3)
         ignore_white_space();
         count++;
     }
-
-    return -1;
-    // exit (1);
-}
-
-int
-required_string_either_fred(char *str1, char *str2)
-{
-    ignore_white_space();
-
-    while (*Mp != EOF_CHAR) {
-        if (!strnicmp(str1, Mp, strlen(str1))) {
-            // Mp += strlen(str1);
-            diag_printf("Found required string [%s]\n", token_found = str1);
-            return fred_parse_flag = 0;
-        }
-        else if (!strnicmp(str2, Mp, strlen(str2))) {
-            // Mp += strlen(str2);
-            diag_printf("Found required string [%s]\n", token_found = str2);
-            return fred_parse_flag = 1;
-        }
-
-        advance_to_eoln(NULL);
-        ignore_white_space();
-    }
-
-    if (*Mp == EOF_CHAR)
-        diag_printf("Unable to find either required token [%s] or [%s]\n", str1,
-                    str2);
 
     return -1;
     // exit (1);
@@ -1138,12 +1036,7 @@ read_file_text(char *filename, int mode)
                                             file_len, mp2)) != 0) {
         mp2 += num_chars_read;
 
-        if (Fred_running) {
-            in_comment = strip_comments_fred(outbuf, in_comment);
-        }
-        else {
-            in_comment = strip_comments(outbuf, in_comment);
-        }
+        in_comment = strip_comments(outbuf, in_comment);
         str = outbuf;
         while (*str) {
             if (*str == -33) {

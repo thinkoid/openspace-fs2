@@ -616,7 +616,6 @@ int
 check_special_cruiser_asteroid_collision(object *heavy, object *light,
                                          float *cruiser_mass, int *cruiser_light)
 {
-#ifndef FS2_DEMO
     int asteroid_type;
 
     if (heavy->type == OBJ_ASTEROID) {
@@ -661,7 +660,6 @@ check_special_cruiser_asteroid_collision(object *heavy, object *light,
             }
         }
     }
-#endif
     return 0;
 }
 

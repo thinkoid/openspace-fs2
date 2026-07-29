@@ -36,15 +36,11 @@ typedef struct particle
     ubyte reverse; // play any animations in reverse
 } particle;
 
-#ifdef FS2_DEMO
-#define MAX_PARTICLES 500
-#else
 // Reduced from 2000 to 800 by MK on 4/1/98.  Most I ever saw was 400 and the system recovers
 // gracefully from running out of slots.
 // AP: Put it to 1500 on 4/15/98.  Primary hit sparks weren't finding open slots.
 // Made todo item for John to force oldest smoke particles to give up their slots.
 #define MAX_PARTICLES 2000
-#endif
 
 int Num_particles = 0;
 particle Particles[MAX_PARTICLES];

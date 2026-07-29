@@ -353,14 +353,14 @@ nebl_init()
         // texture
         required_string("+b_texture:");
         stuff_string(name, F_NAME, NULL);
-        if ((l != &bogus_lightning) && !Fred_running) {
+        if (l != &bogus_lightning) {
             l->texture = bm_load(name);
         }
 
         // glow
         required_string("+b_glow:");
         stuff_string(name, F_NAME, NULL);
-        if ((l != &bogus_lightning) && !Fred_running) {
+        if (l != &bogus_lightning) {
             l->glow = bm_load(name);
         }
 

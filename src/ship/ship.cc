@@ -80,16 +80,12 @@ extern void ssm_create(vector *target, vector *start, int ssm_index);
 #include <math/staticrand.hh>
 #include <missionui/missionshipchoice.hh>
 
-#ifdef FS2_DEMO
-#define MAX_SHIP_SUBOBJECTS 360
-#else
 // Reduced from 1000 to 400 by MK on 4/1/98.
 // Highest I saw was 164 in sm2-03a which Sandeep says has a lot of ships.
 // JAS: sm3-01 needs 460.   You cannot know this number until *all* ships
 // have warped in.   So I put code in the paging code which knows all ships
 // that will warp in.
 #define MAX_SHIP_SUBOBJECTS 700
-#endif
 
 //#define MIN_COLLISION_MOVE_DIST      5.0
 //#define COLLISION_VEL_CONST       0.1
@@ -435,20 +431,6 @@ parse_ship()
 
     // AL 28-3-98: If this is a demo build, we only want to parse weapons that are preceded with
     //             the '@' symbol
-#ifdef DEMO // not needed FS2_DEMO (using separate table file)
-    if (sip->name[0] != '@') {
-        // advance to next weapon, and return -1
-        if (skip_to_start_of_strings("$Name:", "#End") != 1) {
-            Int3();
-        }
-        return -1;
-    }
-#endif
-
-#ifdef NDEBUG
-    if (strchr(sip->name, '#') && Fred_running)
-        rtn = 1;
-#endif
 
     if (sip->name[0] == '@') {
         char old_name[NAME_LENGTH];
@@ -1392,31 +1374,18 @@ ship_set(int ship_index, int objnum, int ship_type)
         shipp->sub_expl_sound_handle[i] = -1;
     }
 
-    if (!Fred_running) {
-        shipp->final_warp_time = timestamp(-1);
-        shipp->final_death_time = timestamp(
-            -1); // There death sequence ain't start et.
-        shipp->really_final_death_time = timestamp(
-            -1); // There death sequence ain't start et.
-        shipp->next_fireball = timestamp(
-            -1); // When a random fireball will pop up
-        shipp->next_hit_spark = timestamp(-1); // when a hit spot will spark
-        for (i = 0; i < MAX_SHIP_ARCS; i++) {
-            shipp->arc_timestamp[i] = timestamp(-1); // Mark this arc as unused
-        }
-        shipp->arc_next_time = timestamp(-1); // No electrical arcs yet.
+    shipp->final_warp_time = timestamp(-1);
+    shipp->final_death_time = timestamp(
+        -1); // There death sequence ain't start et.
+    shipp->really_final_death_time = timestamp(
+        -1); // There death sequence ain't start et.
+    shipp->next_fireball = timestamp(
+        -1); // When a random fireball will pop up
+    shipp->next_hit_spark = timestamp(-1); // when a hit spot will spark
+    for (i = 0; i < MAX_SHIP_ARCS; i++) {
+        shipp->arc_timestamp[i] = timestamp(-1); // Mark this arc as unused
     }
-    else { // the values should be different for Fred
-        shipp->final_warp_time = -1;
-        shipp->final_death_time = 0;
-        shipp->really_final_death_time = -1;
-        shipp->next_fireball = -1;
-        shipp->next_hit_spark = -1;
-        for (i = 0; i < MAX_SHIP_ARCS; i++) {
-            shipp->arc_timestamp[i] = -1;
-        }
-        shipp->arc_next_time = -1;
-    }
+    shipp->arc_next_time = timestamp(-1); // No electrical arcs yet.
     shipp->team = TEAM_FRIENDLY; // Default friendly, probably get overridden.
     shipp->arrival_location = 0;
     shipp->arrival_distance = 0;
@@ -1444,12 +1413,7 @@ ship_set(int ship_index, int objnum, int ship_type)
     for (i = 0; i < MAX_PLAYERS; i++)
         shipp->last_targeted_subobject[i] = NULL;
 
-    if (Fred_running) {
-        objp->hull_strength = 100.0f;
-    }
-    else {
-        objp->hull_strength = sip->initial_hull_strength;
-    }
+    objp->hull_strength = sip->initial_hull_strength;
 
     shipp->afterburner_fuel = sip->afterburner_fuel_capacity;
 
@@ -1462,12 +1426,7 @@ ship_set(int ship_index, int objnum, int ship_type)
     shipp->cmeasure_fire_stamp = timestamp(0);
 
     for (i = 0; i < MAX_SECONDARY_BANKS; i++) {
-        if (Fred_running) {
-            shipp->weapons.secondary_bank_ammo[i] = 100;
-        }
-        else {
-            shipp->weapons.secondary_bank_ammo[i] = 0;
-        }
+        shipp->weapons.secondary_bank_ammo[i] = 0;
 
         swp->secondary_bank_ammo[i] = 0;
         swp->secondary_next_slot[i] = 0;
@@ -1480,13 +1439,8 @@ ship_set(int ship_index, int objnum, int ship_type)
         float weapon_size;
         weapon_size = Weapon_info[sip->secondary_bank_weapons[i]].cargo_size;
         Assert(weapon_size > 0.0f);
-        if (Fred_running) {
-            swp->secondary_bank_ammo[i] = 100;
-        }
-        else {
-            swp->secondary_bank_ammo[i] = fl2i(
-                sip->secondary_bank_ammo_capacity[i] / weapon_size + 0.5f);
-        }
+        swp->secondary_bank_ammo[i] = fl2i(
+            sip->secondary_bank_ammo_capacity[i] / weapon_size + 0.5f);
     }
 
     swp->current_primary_bank = -1;
@@ -1521,10 +1475,7 @@ ship_set(int ship_index, int objnum, int ship_type)
     ets_init_ship(objp); // init ship fields that are used for the ETS
 
     physics_ship_init(objp);
-    if (Fred_running)
-        objp->shields[0] = 100.0f;
-    else
-        set_shield_strength(objp, sip->shields);
+    set_shield_strength(objp, sip->shields);
 
     shipp->target_shields_delta = 0.0f;
     shipp->target_weapon_energy_delta = 0.0f;
@@ -1694,12 +1645,7 @@ subsys_set(int objnum, int ignore_subsys_info)
 
         ship_system->system_info =
             sp; // set the system_info pointer to point to the data read in from the model
-        if (!Fred_running) {
-            ship_system->current_hits = sp->max_hits; // set the max hits
-        }
-        else {
-            ship_system->current_hits = 0.0f; // Jason wants this to be 0 in Fred.
-        }
+        ship_system->current_hits = sp->max_hits; // set the max hits
         ship_system->turret_next_fire_stamp = timestamp(0);
         ship_system->turret_next_enemy_check_stamp = timestamp(0);
         ship_system->turret_enemy_objnum = -1;
@@ -1746,8 +1692,7 @@ subsys_set(int objnum, int ignore_subsys_info)
 
         for (k = 0; k < MAX_SECONDARY_BANKS; k++) {
             ship_system->weapons.secondary_bank_ammo[k] =
-                (Fred_running ? 100
-                              : ship_system->weapons.secondary_bank_capacity[k]);
+                ship_system->weapons.secondary_bank_capacity[k];
 
             ship_system->weapons.secondary_next_slot[k] = 0;
         }
@@ -3032,9 +2977,6 @@ ship_init_thrusters()
 
     // AL 29-3-98: Don't want to include Shivan thrusters in the demo build
     int num_thrust_anims = NUM_THRUST_ANIMS;
-#ifdef DEMO // N/A FS2_DEMO
-    num_thrust_anims = NUM_THRUST_ANIMS - 2;
-#endif
 
     for (i = 0; i < num_thrust_anims; i++) {
         ta = &Thrust_anims[i];
@@ -3051,9 +2993,6 @@ ship_init_thrusters()
 
     // AL 29-3-98: Don't want to include Shivan thrusters in the demo build
     int num_thrust_glow_anims = NUM_THRUST_GLOW_ANIMS;
-#ifdef DEMO // N/A FS2_DEMO
-    num_thrust_glow_anims = NUM_THRUST_GLOW_ANIMS - 2;
-#endif
 
     for (i = 0; i < num_thrust_glow_anims; i++) {
         ta = &Thrust_glow_anims[i];
@@ -3808,12 +3747,7 @@ ship_set_default_weapons(ship *shipp, ship_info *sip)
     swp->num_primary_banks = sip->num_primary_banks;
     swp->num_secondary_banks = sip->num_secondary_banks;
     for (i = 0; i < swp->num_secondary_banks; i++) {
-        if (Fred_running) {
-            swp->secondary_bank_ammo[i] = 100;
-        }
-        else {
-            swp->secondary_bank_ammo[i] = sip->secondary_bank_ammo_capacity[i];
-        }
+        swp->secondary_bank_ammo[i] = sip->secondary_bank_ammo_capacity[i];
 
         swp->secondary_bank_capacity[i] = sip->secondary_bank_ammo_capacity[i];
     }
@@ -4051,20 +3985,14 @@ ship_create(matrix *orient, vector *pos, int ship_type)
     // limit than FreeSpace.  On release, however, we will reduce it, thus FreeSpace needs
     // to check against what this limit will be, otherwise testing the missions before
     // release could work fine, yet not work anymore once a release build is made.
-    if (Fred_running) {
-        if (t >= MAX_SHIPS)
-            return -1;
-    }
-    else {
-        if (t >= SHIPS_LIMIT) {
-            Error(
-                LOCATION,
-                XSTR(
-                    "There is a limit of %d ships in the mission at once.  Please be sure that you do not have more than %d ships present in the mission at the same time.",
-                    1495),
-                SHIPS_LIMIT, SHIPS_LIMIT);
-            return -1;
-        }
+    if (t >= SHIPS_LIMIT) {
+        Error(
+            LOCATION,
+            XSTR(
+                "There is a limit of %d ships in the mission at once.  Please be sure that you do not have more than %d ships present in the mission at the same time.",
+                1495),
+            SHIPS_LIMIT, SHIPS_LIMIT);
+        return -1;
     }
 
     //nprintf(("AI", "Number of ships = %i\n", t));
@@ -4271,9 +4199,7 @@ ship_model_change(int n, int ship_type)
                            &sip->subsystems[0]); // use the highest detail level
 
     // page in nondims
-    if (!Fred_running) {
-        model_page_in_textures(model_num, ship_type);
-    }
+    model_page_in_textures(model_num, ship_type);
 
     Objects[sp->objnum].radius = model_get_radius(model_num);
     sip->modelnum = model_num;
@@ -4340,20 +4266,10 @@ change_ship_type(int n, int ship_type)
     subsys_set(sp->objnum);
 
     // set the correct hull strength
-    if (Fred_running) {
-        objp->hull_strength = 100.0f;
-    }
-    else {
-        objp->hull_strength = sip->initial_hull_strength;
-    }
+    objp->hull_strength = sip->initial_hull_strength;
 
     // set the correct shields strength
-    if (Fred_running) {
-        objp->shields[0] = 100.0f;
-    }
-    else {
-        set_shield_strength(objp, sip->shields);
-    }
+    set_shield_strength(objp, sip->shields);
 
     sp->afterburner_fuel = sip->afterburner_fuel_capacity;
 
@@ -5595,12 +5511,9 @@ wing_name_lookup(char *name, int ignore_count)
 {
     int i, wing_limit;
 
-    if (Fred_running)
-        wing_limit = MAX_WINGS;
-    else
-        wing_limit = num_wings;
+    wing_limit = num_wings;
 
-    if (Fred_running || ignore_count) { // current_count not used for Fred..
+    if (ignore_count) {
         for (i = 0; i < wing_limit; i++)
             if (Wings[i].wave_count && !stricmp(Wings[i].name, name))
                 return i;
@@ -8918,9 +8831,6 @@ DCF(art, "")
 void
 ship_update_artillery_lock()
 {
-#if defined(FS2_DEMO)
-    return;
-#else
     ai_info *aip = NULL;
     weapon_info *tlaser = NULL;
     mc_info *cinfo = NULL;
@@ -9043,7 +8953,6 @@ ship_update_artillery_lock()
             aip->artillery_lock_time = 0.0f;
         }
     }
-#endif
 }
 
 // checks if a world point is inside the extended bounding box of a ship

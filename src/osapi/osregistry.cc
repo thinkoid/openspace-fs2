@@ -35,16 +35,8 @@ static char szAppVersion[128];
 
 char *Osreg_company_name = "Volition";
 char *Osreg_class_name = "Freespace2Class";
-#if defined(FS2_DEMO)
-char *Osreg_app_name = "FreeSpace2Demo";
-char *Osreg_title = "Freespace 2 Demo";
-#elif defined(OEM_BUILD)
-char *Osreg_app_name = "FreeSpace2OEM";
-char *Osreg_title = "Freespace 2 OEM";
-#else
 char *Osreg_app_name = "FreeSpace2";
 char *Osreg_title = "Freespace 2";
-#endif
 
 int Os_reg_inited = 0;
 

@@ -24,51 +24,43 @@ jumpnode_render(object *jumpnode_objp, vector *pos, vector *view_pos)
 
     node = &Jump_nodes[jumpnode_objp->instance];
 
-    if (Fred_running) {
-        model_set_outline_color(0, 255, 0);
-        model_render(node->modelnum, &node_orient, pos,
-                     MR_NO_LIGHTING | MR_LOCK_DETAIL | MR_NO_POLYS |
-                         MR_SHOW_OUTLINE);
-    }
-    else {
-        if (view_pos) {
-            int alpha_index = HUD_color_alpha;
+    if (view_pos) {
+        int alpha_index = HUD_color_alpha;
 
-            // generate alpha index based on distance to jump node
-            float dist;
+        // generate alpha index based on distance to jump node
+        float dist;
 
-            dist = vm_vec_dist_quick(view_pos, pos);
+        dist = vm_vec_dist_quick(view_pos, pos);
 
-            // linearly interpolate alpha.  At 1000m or less, full intensity.  At 10000m or more 1/2 intensity.
-            if (dist < 1000) {
-                alpha_index = HUD_COLOR_ALPHA_USER_MAX - 2;
-            }
-            else if (dist > 10000) {
-                alpha_index = HUD_COLOR_ALPHA_USER_MIN;
-            }
-            else {
-                alpha_index = fl2i(HUD_COLOR_ALPHA_USER_MAX - 2 +
-                                   (dist - 1000) *
-                                       (HUD_COLOR_ALPHA_USER_MIN -
-                                        HUD_COLOR_ALPHA_USER_MAX - 2) /
-                                       (9000) +
-                                   0.5f);
-                if (alpha_index < HUD_COLOR_ALPHA_USER_MIN) {
-                    alpha_index = HUD_COLOR_ALPHA_USER_MIN;
-                }
-            }
-
-            //    nprintf(("Alan","alpha index is: %d\n", alpha_index));
-            gr_set_color_fast(&HUD_color_defaults[alpha_index]);
-            //       model_set_outline_color(HUD_color_red, HUD_color_green, HUD_color_blue);
+        // linearly interpolate alpha.  At 1000m or less, full intensity.  At 10000m or more 1/2 intensity.
+        if (dist < 1000) {
+            alpha_index = HUD_COLOR_ALPHA_USER_MAX - 2;
+        }
+        else if (dist > 10000) {
+            alpha_index = HUD_COLOR_ALPHA_USER_MIN;
         }
         else {
-            gr_set_color(HUD_color_red, HUD_color_green, HUD_color_blue);
+            alpha_index = fl2i(HUD_COLOR_ALPHA_USER_MAX - 2 +
+                               (dist - 1000) *
+                                   (HUD_COLOR_ALPHA_USER_MIN -
+                                    HUD_COLOR_ALPHA_USER_MAX - 2) /
+                                   (9000) +
+                               0.5f);
+            if (alpha_index < HUD_COLOR_ALPHA_USER_MIN) {
+                alpha_index = HUD_COLOR_ALPHA_USER_MIN;
+            }
         }
-        model_render(node->modelnum, &node_orient, pos,
-                     MR_NO_LIGHTING | MR_LOCK_DETAIL | MR_NO_POLYS |
-                         MR_SHOW_OUTLINE_PRESET);
+
+        //    nprintf(("Alan","alpha index is: %d\n", alpha_index));
+        gr_set_color_fast(&HUD_color_defaults[alpha_index]);
+        //       model_set_outline_color(HUD_color_red, HUD_color_green, HUD_color_blue);
     }
+    else {
+        gr_set_color(HUD_color_red, HUD_color_green, HUD_color_blue);
+    }
+    model_render(node->modelnum, &node_orient, pos,
+                 MR_NO_LIGHTING | MR_LOCK_DETAIL | MR_NO_POLYS |
+                     MR_SHOW_OUTLINE_PRESET);
 }
 
 // create a jump node object and return index to it.

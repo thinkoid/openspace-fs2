@@ -34,13 +34,6 @@
 
 // --------------------------------------------------------------------------------------------------------
 // Demo title screen
-#ifdef FS2_DEMO
-static int Demo_title_active = 0;
-static int Demo_title_bitmap = -1;
-static int Demo_title_expire_timestamp = 0;
-static int Demo_title_need_fade_in = 1;
-static char *Demo_title_bitmap_filename = NOX("DemoTitle1");
-#endif
 
 // --------------------------------------------------------------------------------------------------------
 // PLAYER SELECT defines
@@ -252,21 +245,6 @@ player_select_init()
 
     Player_select_force_bastion = 0;
 
-#ifdef FS2_DEMO
-    /*
-   Demo_title_bitmap = bm_load(Demo_title_bitmap_filename);
-   if ( Demo_title_bitmap >= 0 ) {
-#ifndef HARDWARE_ONLY
-      palette_use_bm_palette(Demo_title_bitmap);
-#endif
-      Demo_title_active = 1;
-      Demo_title_expire_timestamp = timestamp(5000);
-   } else {
-      Demo_title_active = 0;
-   }
-   */
-    Demo_title_active = 0;
-#endif
 
     // create the UI window
     Player_select_window.create(0, 0, gr_screen.max_w, gr_screen.max_h, 0);
@@ -365,10 +343,6 @@ player_select_init()
         KEY_C);
 
     // disable the multi player button in the E3 and press tour builds
-#if defined(E3_BUILD) || defined(PRESS_TOUR_BUILD)
-    Player_select_buttons[gr_screen.res][MULTI_BUTTON].button.hide();
-    Player_select_buttons[gr_screen.res][MULTI_BUTTON].button.disable();
-#endif
 
     // attempt to load in the background bitmap
     Player_select_background_bitmap = bm_load(
@@ -397,57 +371,12 @@ player_select_init()
     }
 }
 
-#ifdef FS2_DEMO
-// Display the demo title screen
-void
-demo_title_blit()
-{
-    int k;
-
-    Mouse_hidden = 1;
-
-    if (timestamp_elapsed(Demo_title_expire_timestamp)) {
-        Demo_title_active = 0;
-    }
-
-    k = game_poll();
-    if (k > 0) {
-        Demo_title_active = 0;
-    }
-
-    if (Demo_title_need_fade_in) {
-        gr_fade_out(0);
-    }
-
-    gr_set_bitmap(Demo_title_bitmap);
-    gr_bitmap(0, 0);
-
-    gr_flip();
-
-    if (Demo_title_need_fade_in) {
-        gr_fade_in(0);
-        Demo_title_need_fade_in = 0;
-    }
-
-    if (!Demo_title_active) {
-        gr_fade_out(0);
-        Mouse_hidden = 0;
-    }
-}
-
-#endif
 
 void
 player_select_do()
 {
     int k;
 
-#ifdef FS2_DEMO
-    if (Demo_title_active) {
-        // demo_title_blit();
-        return;
-    }
-#endif
 
     // re-enabled for the software renderer: retail commented this out when
     // the shipped builds went hardware-only, leaving the 8bpp path black
@@ -499,10 +428,6 @@ player_select_do()
     // draw any pending messages on the bottom or middle of the screen
     player_select_display_all_text();
 
-#ifndef RELEASE_REAL
-    // gr_set_color_fast(&Color_bright_green);
-    // gr_string(0x8000, 10, "Development version - DO NOT RELEASE");
-#endif
 
     /*
    gr_set_color(255, 0, 0);
@@ -750,11 +675,6 @@ player_select_create_new_pilot()
 
     int play_scroll_sound = 1;
 
-#ifdef FS2_DEMO
-    if (Demo_title_active) {
-        play_scroll_sound = 0;
-    }
-#endif
 
     if (play_scroll_sound) {
         gamesnd_play_iface(SND_SCROLL);

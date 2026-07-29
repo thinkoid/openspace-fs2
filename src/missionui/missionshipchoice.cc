@@ -133,11 +133,7 @@ static int Ship_info_coords[GR_NUM_RESOLUTIONS][2] = { {
 #define SHIP_SELECT_H_COORD 3
 
 // NK: changed from 37 to 51 for new FS2 animations
-#ifdef FS2_DEMO
-#define SHIP_ANIM_LOOP_FRAME 0
-#else
 #define SHIP_ANIM_LOOP_FRAME 51
-#endif
 
 #define MAX_ICONS_ON_SCREEN 4
 
@@ -2454,7 +2450,6 @@ ss_load_icons(int ship_class)
 void
 ss_load_all_icons()
 {
-#ifndef DEMO // not for FS2_DEMO
 
     int i, j;
 
@@ -2472,7 +2467,6 @@ ss_load_all_icons()
         }
     }
 
-#endif
 }
 
 // Load in a specific ship animation.  The data is loaded as a memory-mapped file since these animations
@@ -2497,7 +2491,6 @@ ss_load_anim(int ship_class)
 void
 ss_load_all_anims()
 {
-#ifndef DEMO // not for FS2_DEMO
 
     int i;
 
@@ -2507,7 +2500,6 @@ ss_load_all_anims()
         }
     }
 
-#endif
 }
 
 // determine if the slot is disabled

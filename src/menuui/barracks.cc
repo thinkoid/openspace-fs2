@@ -1004,12 +1004,8 @@ barracks_button_pressed(int n)
         break;
 
     case B_STATS_MEDAL_BUTTON:
-#ifdef FS2_DEMO
-        game_feature_not_in_demo_popup();
-#else
         gamesnd_play_iface(SND_SWITCH_SCREENS);
         gameseq_post_event(GS_EVENT_VIEW_MEDALS);
-#endif
         break;
 
     case B_PILOT_DELETE_BUTTON:
@@ -1383,18 +1379,8 @@ barracks_init()
     barracks_init_stats(&Cur_pilot->stats);
 
     // disable some buttons for the e3 build
-#if defined(E3_BUILD) || defined(PRESS_TOUR_BUILD)
-    Buttons[gr_screen.res][B_PILOT_CLONE_BUTTON].button.hide();
-    Buttons[gr_screen.res][B_PILOT_CONVERT_BUTTON].button.hide();
-    Buttons[gr_screen.res][B_PILOT_CLONE_BUTTON].button.disable();
-    Buttons[gr_screen.res][B_PILOT_CONVERT_BUTTON].button.disable();
-#endif
 
     // e3 build
-#if defined(E3_BUILD) || defined(PRESS_TOUR_BUILD)
-    Buttons[gr_screen.res][B_PILOT_MULTI_MODE_BUTTON].button.hide();
-    Buttons[gr_screen.res][B_PILOT_MULTI_MODE_BUTTON].button.disable();
-#endif
 
     barracks_init_player_stuff(PLAYER_SELECT_MODE_SINGLE);
 }

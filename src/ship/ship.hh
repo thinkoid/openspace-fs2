@@ -799,11 +799,7 @@ extern engine_wash_info Engine_wash_info[MAX_ENGINE_WASH_TYPES];
 
 #define MAX_SHIPS_PER_WING 6
 
-#ifdef FS2_DEMO
-#define MAX_WINGS 15
-#else
 #define MAX_WINGS 25
-#endif
 
 // number of wings player can start a mission with
 #define MAX_PLAYER_WINGS 3

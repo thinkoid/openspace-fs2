@@ -917,7 +917,6 @@ gr_soft_init()
     gr_screen.gf_aaline = gr8_aaline;
     gr_screen.gf_pixel = gr8_pixel;
     gr_screen.gf_scaler = gr8_scaler;
-    gr_screen.gf_aascaler = gr8_aascaler;
     gr_screen.gf_tmapper = grx_tmapper;
 
     gr_screen.gf_gradient = gr8_gradient;

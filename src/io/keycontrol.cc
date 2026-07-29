@@ -80,16 +80,12 @@ typedef struct asteroid_field
 
 char CheatBuffer[CHEAT_BUFFER_LEN + 1];
 
-#ifdef FS2_DEMO
-char *Cheat_code_demo = NOX("33BE^(8]C01(:=BHt");
-#else
 char *Cheat_code = NOX("33BE^(8]C01(:=BHt"); // www.freespace2.com
 char *Cheat_code_fish = NOX("bDc9y+$;#AIDRoouM"); // vasudanswuvfishes
 char *Cheat_code_headz = NOX("!;:::@>F7L?@@2:@A"); // humanheadsinside.
 char *Cheat_code_tooled = NOX("sipp-^rM@L!U^usjX"); // tooledworkedowned
 char *Cheat_code_pirate = NOX("MAP4YP[4=-2uC(yJ^"); // arrrrwalktheplank
 char *Cheat_code_skip = NOX("7!ICkSI\"(8n3JesBP"); // skipmemymissionyo
-#endif
 // 666)6=N79+Z45=BE0e
 int Tool_enabled = 0;
 
@@ -819,7 +815,6 @@ process_debug_keys(int k)
       }
       */
 
-#ifndef FS2_DEMO
     case KEY_DEBUGGED + KEY_U: {
     case KEY_DEBUGGED1 + KEY_U:
         // launch asteroid
@@ -835,7 +830,6 @@ process_debug_keys(int k)
         //mission_goal_mark_all_true( PRIMARY_GOAL );
         break;
     }
-#endif
 
     case KEY_DEBUGGED + KEY_0: {
     case KEY_DEBUGGED1 + KEY_0:
@@ -1108,7 +1102,6 @@ process_debug_keys(int k)
 void
 ppsk_hotkeys(int k)
 {
-#ifndef FS2_DEMO
 
     // use k to check for keys that can have Shift,Ctrl,Alt,Del status
     int hotkey_set;
@@ -1200,7 +1193,6 @@ ppsk_hotkeys(int k)
         break;
     } // end switch
 
-#endif
 }
 
 // check keypress 'key' against a set of valid controls and mark the match in the
@@ -1376,16 +1368,6 @@ game_process_cheats(int k)
 
     cryptstring = jcrypt(&CheatBuffer[CHEAT_BUFFER_LEN - CRYPT_STRING_LENGTH]);
 
-#ifdef FS2_DEMO
-    if (!strcmp(Cheat_code_demo, cryptstring)) {
-        HUD_printf(XSTR("Cheats enabled.", 31));
-        Cheats_enabled = 1;
-        if (Player->flags & PLAYER_FLAGS_MSG_MODE) {
-            hud_squadmsg_toggle();
-        }
-    }
-
-#else
     if (!strcmp(Cheat_code, cryptstring)) {
         Cheats_enabled = 1;
         HUD_printf("Cheats enabled");
@@ -1472,7 +1454,6 @@ game_process_cheats(int k)
             }
         }
     }
-#endif
     /*
 //#ifdef INTERPLAYQA
    if ( !strcmp(Cheat_code_in_game, cryptstring) ) {

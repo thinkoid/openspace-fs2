@@ -10,24 +10,15 @@
 #ifndef _PSTYPES_H
 #define _PSTYPES_H
 
-// Build defines.  Comment in/out for whatever build is necessary:
-// #define OEM_BUILD                // enable for OEM builds
-// #define MULTIPLAYER_BETA_BUILD            // enable for multiplayer beta build
-// #define E3_BUILD                    // enable for 3dfx E3 build
-// #define PRESS_TOUR_BUILD         // enable for press tour build
-// #define FS2_DEMO              // enable demo build for FS2
-// #define PD_BUILD                 // fred documentation/evaluation build
-// #define FRENCH_BUILD          // build for French (obsolete)
+// Build defines.  The retail demo/OEM/E3/press-tour/PD/beta configurations
+// and the RELEASE_REAL knob were collapsed out 2026-07-29 -- the shipping
+// retail configuration is the only build.  Localization remains a knob:
 // #define GERMAN_BUILD          // build for German (this is now used)
-// this means that it is an actual release candidate, not just an optimized/release build
-#define RELEASE_REAL
 
 // uncomment this #define for DVD version (makes popups say DVD instead of CD 2 or whatever): JCF 5/10/2000
 // #define DVD_MESSAGE_HACK
 
-#if defined(MULTIPLAYER_BETA_BUILD) || defined(E3_BUILD) || defined(RELEASE_REAL)
 #define GAME_CD_CHECK
-#endif
 
 #include <ctype.h>
 #include <math.h>
@@ -88,11 +79,7 @@ long filelength(int fd);
 // value to represent an uninitialized state in any int or uint
 #define UNINITIALIZED 0x7f8e6d9c
 
-#if defined(DEMO) || defined(OEM_BUILD) // no change for FS2_DEMO
-#define MAX_PLAYERS 1
-#else
 #define MAX_PLAYERS 12
-#endif
 
 #define MAX_TEAMS 3
 
@@ -305,9 +292,6 @@ max(A a, B b)
 #define PI2 (3.141592654f * 2.0f)
 #define ANG_TO_RAD(x) ((x) * PI / 180)
 
-extern int Fred_running; // Is Fred running, or FreeSpace?
-extern int Pofview_running;
-extern int Nebedit_running;
 
 // Debug console stuff
 

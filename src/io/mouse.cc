@@ -89,12 +89,6 @@ mouse_mark_button(uint flags, int set)
 /// I DON'T WANT TO CALL CRITICAL SECTION CODE EACH FRAME TO CHECK THE LEFT MOUSE BUTTON.
 /// PLEASE SEE ALAN FOR MORE INFORMATION.
 ////////////////////////////
-#ifdef FS2_DEMO
-            {
-                extern void demo_reset_trailer_timer();
-                demo_reset_trailer_timer();
-            }
-#endif
             ////////////////////////////
             /// IT'S OVER.  SEE, IT WASN'T SO BAD RIGHT?  IT'S IS VERY UGLY LOOKING, I KNOW.
             ////////////////////////////

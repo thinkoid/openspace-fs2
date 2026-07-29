@@ -897,7 +897,7 @@ bm_convert_format(int bitmapnum, bitmap *bmp, ubyte bpp, ubyte flags)
 {
     int idx;
 
-    if (Fred_running || Pofview_running || (bmp->bpp == 8)) {
+    if (bmp->bpp == 8) {
         Assert(bmp->bpp == 8);
 
         return;
@@ -1016,7 +1016,7 @@ bm_lock_pcx(int handle, int bitmapnum, bitmap_entry *be, bitmap *bmp, ubyte bpp,
         // BMP_AABITMAP at 8bpp means "raw indexes, hands off" — the click
         // masks (X-m.pcx) are locked that way and their pixels are region
         // ids, not colors
-        if (Fred_running || Pofview_running || !(flags & BMP_AABITMAP)) {
+        if (!(flags & BMP_AABITMAP)) {
             bm_swizzle_8bit_for_fred(be, bmp, data, palette);
         }
     }
@@ -1103,12 +1103,7 @@ bm_lock_ani(int handle, int bitmapnum, bitmap_entry *be, bitmap *bmp, ubyte bpp,
             bm->flags |= BMP_TEX_XPARENT; // software blitter honors index 255
         }
         // briefing editor in Fred2 uses aabitmaps (ani's) - force to 8 bit
-        if (Fred_running) {
-            bm->bpp = 8;
-        }
-        else {
-            bm->bpp = bpp;
-        }
+        bm->bpp = bpp;
         bm->data = (uintptr_t)bm_malloc(first_frame + i, size);
 
         // software 8bpp: translate ANI indexes into the game palette (aabitmaps
@@ -1256,12 +1251,7 @@ bm_lock_tga(int handle, int bitmapnum, bitmap_entry *be, bitmap *bmp, ubyte bpp,
     // Unload any existing data
     bm_free_data(bitmapnum);
 
-    if (Fred_running) {
-        Assert(bpp == 8);
-    }
-    else {
-        Assert(bpp == 16);
-    }
+    Assert(bpp == 16);
 
     // should never try to make an aabitmap out of a targa
     Assert(!(flags & BMP_AABITMAP));

@@ -2386,12 +2386,10 @@ hud_target_in_reticle_new()
                 Weapon_info[Weapons[A->instance].weapon_info_index].model_num;
             break;
         case OBJ_ASTEROID: {
-#ifndef FS2_DEMO
             int subtype = 0;
             subtype = Asteroids[A->instance].asteroid_subtype;
             mc.model_num =
                 Asteroid_info[Asteroids[A->instance].type].model_num[subtype];
-#endif
         } break;
         case OBJ_JUMP_NODE:
             mc.model_num = Jump_nodes[A->instance].modelnum;
@@ -3412,7 +3410,6 @@ hud_show_brackets(object *targetp, vertex *projected_v)
                                                &targetp->pos, &x1, &y1, &x2, &y2);
             break;
 
-#ifndef FS2_DEMO
         case OBJ_ASTEROID: {
             int subtype = 0;
             subtype = Asteroids[targetp->instance].asteroid_subtype;
@@ -3421,7 +3418,6 @@ hud_show_brackets(object *targetp, vertex *projected_v)
             bound_rc = model_find_2d_bound_min(modelnum, &targetp->orient,
                                                &targetp->pos, &x1, &y1, &x2, &y2);
         } break;
-#endif
 
         case OBJ_JUMP_NODE:
             modelnum = Jump_nodes[targetp->instance].modelnum;
