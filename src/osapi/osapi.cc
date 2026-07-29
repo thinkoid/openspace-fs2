@@ -35,8 +35,6 @@ static char szWinTitle[128];
 static char szWinClass[128];
 static int Os_inited = 0;
 
-int Os_debugger_running = 0;
-
 // ----------------------------------------------------------------------------------------------------
 // OSAPI FORWARD DECLARATIONS
 //
@@ -107,13 +105,6 @@ os_foreground()
     return fAppActive;
 }
 
-// Returns the handle to the main window
-uint
-os_get_window()
-{
-    return 0;
-}
-
 // Returns the main SDL window, or NULL until os_create_window() succeeds.
 SDL_Window *
 os_get_sdl_window()
@@ -164,20 +155,6 @@ void
 os_sleep(int ms)
 {
     SDL_Delay(ms);
-}
-
-// Used to stop message processing
-void
-os_suspend()
-{
-    // single threaded now - nothing to suspend
-}
-
-// resume message processing
-void
-os_resume()
-{
-    // single threaded now - nothing to resume
 }
 
 // the SDL replacement for the retail win32_message_handler / win32_process2

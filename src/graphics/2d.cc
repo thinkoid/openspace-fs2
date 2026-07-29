@@ -431,9 +431,6 @@ gr_force_windowed()
         extern void gr_soft_force_windowed();
         gr_soft_force_windowed();
     }
-
-    if (Os_debugger_running)
-        os_sleep(1000);
 }
 
 void

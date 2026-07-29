@@ -55,14 +55,6 @@ debug_int3()
 // debug output (the old Win32 output window); filter ids are ignored
 // ----------------------------------------------------------------------
 
-#ifndef NDEBUG
-int Log_debug_output_to_file = 0;
-#endif
-
-void
-load_filter_info(void)
-{ }
-
 void
 outwnd_init(int /*display_under_freespace_window*/)
 { }

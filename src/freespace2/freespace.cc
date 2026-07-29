@@ -1347,7 +1347,6 @@ DCF_BOOL(show_shield_mesh, Show_shield_mesh)
 DCF_BOOL(player_attacking, Player_attacking_enabled)
 DCF_BOOL(show_waypoints, Show_waypoints)
 DCF_BOOL(show_area_effect, Show_area_effect)
-DCF_BOOL(log, Log_debug_output_to_file)
 DCF_BOOL(training_msg_method, Training_msg_method)
 DCF_BOOL(show_player_pos, Show_player_pos)
 DCF_BOOL(i_framerate, Interface_framerate)
@@ -1547,10 +1546,6 @@ game_init()
     srand(Game_init_seed);
 
     Framerate_delay = 0;
-
-#ifndef NDEBUG
-    load_filter_info();
-#endif
 
     extern void bm_init();
     bm_init();

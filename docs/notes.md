@@ -718,3 +718,24 @@ pre-surgery baseline (4756); math + POF oracle green; headless boot
 renders (73 frames dumped). The itch entry keeps the full design record;
 Boost.Intrusive remains the only sanctioned forward path for this file —
 all or nothing.
+
+## Fossil sweep: dead Win32-era headers and API surface (2026-07-29)
+
+An osapi survey turned up fossils; a tree-wide zero-includer scan completed
+the census. Deleted files (no includers anywhere): osapi/monopub.hh (1993
+Microsoft DDK header — mono-monitor kernel-driver IOCTLs for the dead
+outwnd debug window), io/sw_force.hh (SideWinder Force Feedback, the FF
+subsystem was swept 07-18), freespace2/freespaceresource.hh (MSVC-generated
+resource IDs for a FreeSpace.rc that no longer exists), hud/hudresource.hh
+(zero bytes), missionui/missionstats.hh + missionrecommend.hh (empty
+include guards; their .cc files are real and never included them). Pruned
+API: os_get_window (HWND-shaped stub returning 0, zero callers —
+os_get_sdl_window is the accessor), os_suspend/os_resume (empty,
+single-threaded now), os_toggle_fullscreen (declared, never defined), the
+THREADED critical-section macro block (zero users), Os_debugger_running
+(hardwired 0 since the SDL port; its one reader in gr_force_windowed was a
+debugger+DirectDraw mode-switch workaround, dead with it), and outwnd's
+remains: FILTER_NAME_LENGTH, load_filter_info (empty stub + its one call),
+Log_debug_output_to_file (set by the debug-console `log' toggle, read by
+nobody — the toggle lied). Verified: clean rebuild, normalized warning set
+byte-identical; tests green; headless boot renders.
