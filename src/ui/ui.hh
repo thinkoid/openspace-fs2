@@ -452,6 +452,8 @@ public:
                 int _position, int _window_size);
     int getpos();
     int changed();
+    // un-hides the virtual hide(int); no default arg, so hide() stays unambiguous
+    void hide(int n) override { UI_GADGET::hide(n); }
     void hide();
     void unhide();
     int get_hidden();
@@ -519,6 +521,8 @@ public:
     void forceUp();
 
     // general ui commands
+    // un-hides the virtual hide(int); no default arg, so hide() stays unambiguous
+    void hide(int n) override { UI_GADGET::hide(n); }
     void hide();
     void unhide();
     int get_hidden();
@@ -780,6 +784,8 @@ class UI_SLIDER : public UI_GADGET
       int getpos();
       float getcurrent();
       int changed();
+      // un-hides the virtual hide(int); no default arg, so hide() stays unambiguous
+    void hide(int n) override { UI_GADGET::hide(n); }
       void hide();
       void unhide();
       int get_hidden();
