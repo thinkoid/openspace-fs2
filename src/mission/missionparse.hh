@@ -10,7 +10,6 @@
 #ifndef _PARSE_H
 #define _PARSE_H
 
-#include "globalincs/linklist.hh"
 #include <setjmp.h>
 #include <parse/parselo.hh>
 #include <ship/ship.hh>
@@ -220,8 +219,9 @@ typedef struct subsys_status
 // a parse object
 // information from a $OBJECT: definition is read into this struct to
 // be copied into the real object, ship, etc. structs
-typedef struct p_object : list_links_t< p_object >
+typedef struct p_object
 {
+    struct p_object *next, *prev;
     char name[NAME_LENGTH];
     vector pos;
     matrix orient;
@@ -319,7 +319,7 @@ typedef struct p_object : list_links_t< p_object >
 // this is a valid player start object
 #define P_SF_PLAYER_START_VALID (1 << 31)
 
-extern list_t< p_object > ship_arrival_list; // used by sexpression parser
+extern p_object ship_arrival_list; // used by sexpression parser
 
 #ifdef FS2_DEMO
 #define MAX_SHIP_ARRIVALS 45

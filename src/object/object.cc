@@ -46,9 +46,9 @@
  *  Global variables
  */
 
-list_t< object > obj_free_list;
-list_t< object > obj_used_list;
-list_t< object > obj_create_list;
+object obj_free_list;
+object obj_used_list;
+object obj_create_list;
 
 object *Player_obj = NULL;
 object *Viewer_obj = NULL;
@@ -337,11 +337,10 @@ obj_allocate(void)
 
     // Find next available object
     objp = GET_FIRST(&obj_free_list);
-    Assert(objp !=
-           END_OF_LIST(&obj_free_list)); // shouldn't have the dummy element
+    Assert(objp != &obj_free_list); // shouldn't have the dummy element
 
     // remove objp from the free list
-    list_remove(objp);
+    list_remove(&obj_free_list, objp);
 
     // insert objp onto the end of create list
     list_append(&obj_create_list, objp);
@@ -383,7 +382,7 @@ obj_free(int objnum)
     objp = &Objects[objnum];
 
     // remove objp from the used list
-    list_remove(objp);
+    list_remove(&obj_used_list, objp);
 
     // add objp to the end of the free
     list_append(&obj_free_list, objp);
@@ -500,7 +499,7 @@ obj_delete(int objnum)
             ship_obj *moveup = GET_FIRST(&Ship_obj_list);
             while (moveup != END_OF_LIST(&Ship_obj_list)) {
                 if (OBJ_INDEX(objp) == moveup->objnum) {
-                    list_remove(moveup);
+                    list_remove(&Ship_obj_list, moveup);
                     break;
                 }
                 moveup = GET_NEXT(moveup);
@@ -593,7 +592,7 @@ obj_merge_created_list(void)
     //   OLD WAY: list_merge( &obj_used_list, &obj_create_list );
     object *objp = GET_FIRST(&obj_create_list);
     while (objp != END_OF_LIST(&obj_create_list)) {
-        list_remove(objp);
+        list_remove(obj_create_list, objp);
 
         // Add it to the object pairs array
         obj_add_pairs(OBJ_INDEX(objp));
@@ -630,9 +629,9 @@ move_docked_objects(object *objp)
         ship_info *sip;
         sip = &Ship_info[Ships[objp->instance].ship_info_index];
         if ((sip->flags & SIF_SUPPORT) || (sip->flags & SIF_CARGO)) {
-            Assert(!(
-                (sip->flags & SIF_SUPPORT) &&
-                (sip->flags & SIF_CARGO))); // Ship can't be both repair and cargo
+            Assert(!((sip->flags & SIF_SUPPORT) &&
+                     (sip->flags &
+                      SIF_CARGO))); // Ship can't be both repair and cargo
             if (aip->dock_objnum != -1) {
                 if (aip->mode == AIM_DOCK) {
                     if (aip->submode < AIS_UNDOCK_1)

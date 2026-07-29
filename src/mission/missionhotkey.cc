@@ -195,7 +195,7 @@ struct hotkey_buttons
     int x, y;
     int hotspot;
     UI_BUTTON
-    button; // because we have a class inside this struct, we need the constructor below..
+        button; // because we have a class inside this struct, we need the constructor below..
 
     hotkey_buttons(char *name, int x1, int y1, int h)
         : filename(name)
@@ -354,7 +354,7 @@ mission_hotkey_set_defaults()
     obj_merge_created_list();
     for (A = GET_FIRST(&obj_used_list); A != END_OF_LIST(&obj_used_list);
          A = GET_NEXT(A)) {
-        if ((A == END_OF_LIST(&obj_used_list)) || (A->type != OBJ_SHIP) ||
+        if ((A == &obj_used_list) || (A->type != OBJ_SHIP) ||
             ((Game_mode & GM_NORMAL) && (A == Player_obj))) {
             continue;
         }
@@ -411,8 +411,7 @@ void
 mission_hotkey_maybe_save_sets()
 {
     int i;
-    htarget_list *hitem;
-    list_t< htarget_list > *plist;
+    htarget_list *hitem, *plist;
     HK_save_info *hkp;
 
     if (!timestamp_elapsed(Mission_hotkey_save_timestamp)) {
@@ -466,8 +465,7 @@ mission_hotkey_mf_add(int set, int objnum, int how_to_add)
 void
 mission_hotkey_validate()
 {
-    htarget_list *hitem;
-    list_t< htarget_list > *plist;
+    htarget_list *hitem, *plist;
     object *A;
     int obj_valid, i;
 
@@ -491,7 +489,7 @@ mission_hotkey_validate()
                 htarget_list *temp;
 
                 temp = GET_NEXT(hitem);
-                list_remove(hitem);
+                list_remove(plist, hitem);
                 list_append(&htarget_free_list, hitem);
                 hitem->objp = NULL;
                 hitem = temp;
@@ -832,8 +830,7 @@ void
 reset_hotkeys()
 {
     int i;
-    htarget_list *hitem;
-    list_t< htarget_list > *plist;
+    htarget_list *hitem, *plist;
 
     for (i = 0; i < MAX_SHIPS; i++)
         Hotkey_bits[i] = 0;

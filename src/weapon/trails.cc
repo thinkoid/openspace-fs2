@@ -20,7 +20,7 @@
 #define MAX_TRAILS MAX_WEAPONS
 
 // Stuff for missile trails doesn't need to be saved or restored... or does it?
-typedef struct trail : list_links_t< trail >
+typedef struct trail
 {
     int head, tail; // pointers into the queue for the trail points
     vector pos[NUM_TRAIL_SECTIONS]; // positions of trail points
@@ -31,13 +31,15 @@ typedef struct trail : list_links_t< trail >
     // trail info
     trail_info info; // this is passed when creating a trail
 
+    struct trail *prev;
+    struct trail *next;
 } trail;
 
 int Num_trails = 0;
 trail Trails[MAX_TRAILS];
 
-list_t< trail > Trail_free_list;
-list_t< trail > Trail_used_list;
+trail Trail_free_list;
+trail Trail_used_list;
 
 // Reset everything between levels
 void
@@ -77,11 +79,10 @@ trail_create(trail_info info)
 
     // Find next available trail
     trailp = GET_FIRST(&Trail_free_list);
-    Assert(trailp !=
-           END_OF_LIST(&Trail_free_list)); // shouldn't have the dummy element
+    Assert(trailp != &Trail_free_list); // shouldn't have the dummy element
 
     // remove trailp from the free list
-    list_remove(trailp);
+    list_remove(&Trail_free_list, trailp);
 
     // insert trailp onto the end of used list
     list_append(&Trail_used_list, trailp);
@@ -348,7 +349,7 @@ trail_move_all(float frametime)
             trail *next_one = GET_NEXT(trailp);
 
             // remove objp from the used list
-            list_remove(trailp);
+            list_remove(&Trail_used_list, trailp);
 
             // add objp to the end of the free
             list_append(&Trail_free_list, trailp);

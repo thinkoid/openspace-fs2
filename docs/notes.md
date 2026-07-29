@@ -698,3 +698,23 @@ vm_angular_move_forward_vec, deliberate behavior change) — not fix-mine
 material. Ours: all three asserts demoted to nprintf("Physics", ...) with
 the residual value; shipped behavior (residual discarded, flight continues)
 wins.
+
+## Linklist retrofit reverted — retail macros and fat sentinel restored (2026-07-29)
+
+Second thoughts, one day in: the list_t<T>/list_links_t<T> retrofit was
+churn on a battle-tested C89 core — our own "lipstick on a pig" clause
+turned on our own surgery. All 37 files restored to their pre-retrofit
+state (templates gone, macro header back, node structs carry their manual
+next/prev again, sizeof(ship) back to 1744). What the surgery *learned*
+stays, re-applied on retail vocabulary because it is knowledge, not
+uniform: the aicode.cc shockwave-avoidance guard against the "not homing
+on anything" token (the audit's bug — retail read the token's ->type and
+survived on the fat sentinel's zeroed payload; now guarded explicitly),
+plus the inert respellings that document retail sloppiness — 7×
+GET_NEXT(&head)→GET_FIRST, 4× GET_LAST(elem)→GET_PREV, 4× weapons.cc
+token mints spelled END_OF_LIST(&obj_used_list). Every respelling expands
+macro-identically. Verified: clean rebuild, warning set back at the
+pre-surgery baseline (4756); math + POF oracle green; headless boot
+renders (73 frames dumped). The itch entry keeps the full design record;
+Boost.Intrusive remains the only sanctioned forward path for this file —
+all or nothing.

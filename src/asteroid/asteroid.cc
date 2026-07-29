@@ -33,8 +33,7 @@
 #define MAX_ASTEROID_OBJS MAX_ASTEROIDS
 asteroid_obj
     Asteroid_objs[MAX_ASTEROID_OBJS]; // array used to store asteroid object indexes
-list_t< asteroid_obj >
-    Asteroid_obj_list; // head of linked list of asteroid_obj structs
+asteroid_obj Asteroid_obj_list; // head of linked list of asteroid_obj structs
 
 // Asteroid editor requires first set of entries to be "None" and then "Asteroid XXX"
 // Any changes to this will require changes to the asteroid editor
@@ -153,7 +152,7 @@ asteroid_obj_list_remove(object *obj)
     Assert(index >= 0 && index < MAX_ASTEROID_OBJS);
     Assert(Asteroid_objs[index].flags & ASTEROID_OBJ_USED);
 
-    list_remove(&Asteroid_objs[index]);
+    list_remove(&Asteroid_obj_list, &Asteroid_objs[index]);
     Asteroid_objs[index].flags = 0;
 }
 

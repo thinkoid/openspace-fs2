@@ -10,7 +10,6 @@
 #ifndef __ASTEROID_H__
 #define __ASTEROID_H__
 
-#include "globalincs/linklist.hh"
 #include <ship/ship.hh>
 #include <parse/parselo.hh> // for NAME_LENGTH
 
@@ -46,11 +45,12 @@ typedef struct debris_struct
 } debris_struct;
 
 // Data structure to track the active asteroids
-typedef struct asteroid_obj : list_links_t< asteroid_obj >
+typedef struct asteroid_obj
 {
+    asteroid_obj *next, *prev;
     int flags, objnum;
 } asteroid_obj;
-extern list_t< asteroid_obj > Asteroid_obj_list;
+extern asteroid_obj Asteroid_obj_list;
 
 extern debris_struct Field_debris_info[];
 

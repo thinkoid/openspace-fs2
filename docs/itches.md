@@ -5,7 +5,27 @@ groom discipline feeds ("write it down instead of scratching it"). Each entry
 carries enough design to start cold. Chronological log stays in notes.md;
 this file is only the itches.
 
-## linklist: thin the sentinel — `links_t<T>` retrofit (2026-07-28) — SCRATCHED same day
+## linklist: thin the sentinel — `links_t<T>` retrofit (2026-07-28) — SCRATCHED same day, REVERTED 2026-07-29
+
+**Reverted (2026-07-29).** Second thoughts won: the retrofit was churn on a
+battle-tested C89 core — our own "don't put lipstick on a pig" clause,
+applied to our own surgery. The retail macro header and the fat sentinel
+are back wholesale. What survived, because it was knowledge rather than
+uniform:
+
+- the aicode.cc shockwave-avoidance guard (the audit's bug): an explicit
+  `END_OF_LIST(&obj_used_list)` token check instead of leaning on the
+  sentinel's zeroed payload;
+- the inert respellings that document retail sloppiness: seven
+  `GET_NEXT(&head)` → `GET_FIRST`, four `GET_LAST(elem)` → `GET_PREV`, and
+  the four weapons.cc assignments that mint the "not homing on anything"
+  token, now spelled `END_OF_LIST(&obj_used_list)`.
+
+All respellings expand macro-identically; verified by clean rebuild
+(warning set back to the pre-surgery baseline), math + POF oracle green,
+headless boot renders. The entry below stays as the design record. The
+escalation path (Boost.Intrusive, all or nothing) is unchanged and is now
+the only forward path — no more half-measures on this file.
 
 **Outcome (2026-07-28, 37 files).** Landed as designed, with three deltas
 found during surgery:

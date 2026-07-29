@@ -65,11 +65,12 @@ storm_type Storm_types[MAX_STORM_TYPES];
 #define LINK_LEFT 0
 #define LINK_RIGHT 1
 #define LINK_CHILD 2
-typedef struct l_node : list_links_t< l_node >
+typedef struct l_node
 {
     vector pos; // world position
     l_node *links[3]; // 3 links for lightning children
 
+    l_node *next, *prev; // for used and free-lists only
 } l_node;
 
 // nodes
@@ -77,8 +78,8 @@ l_node Nebl_nodes[MAX_LIGHTNING_NODES];
 int Num_lnodes = 0;
 
 // lightning node lists
-list_t< l_node > Nebl_free_list;
-list_t< l_node > Nebl_used_list;
+l_node Nebl_free_list;
+l_node Nebl_used_list;
 
 // actual lightning bolt themselves
 typedef struct l_bolt
@@ -849,11 +850,10 @@ nebl_new()
 
     // get a new node off the freelist
     lp = GET_FIRST(&Nebl_free_list);
-    Assert(lp !=
-           END_OF_LIST(&Nebl_free_list)); // shouldn't have the dummy element
+    Assert(lp != &Nebl_free_list); // shouldn't have the dummy element
 
     // remove trailp from the free list
-    list_remove(lp);
+    list_remove(&Nebl_free_list, lp);
 
     // insert trailp onto the end of used list
     list_append(&Nebl_used_list, lp);
@@ -874,7 +874,7 @@ void
 nebl_delete(l_node *lp)
 {
     // remove objp from the used list
-    list_remove(lp);
+    list_remove(&Nebl_used_list, lp);
 
     // add objp to the end of the free
     list_append(&Nebl_free_list, lp);

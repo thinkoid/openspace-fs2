@@ -4016,9 +4016,8 @@ modify_model_path_points(object *objp)
     path_num = pnp->path_num;
     Assert((path_num >= 0) && (path_num < pm->n_paths));
 
-    Assert(
-        pnp->path_index !=
-        -1); //   If this is -1, that means we never found the model path points
+    Assert(pnp->path_index !=
+           -1); //   If this is -1, that means we never found the model path points
 
     dir = 1;
     if (aip->ai_flags & AIF_USE_EXIT_PATH) {
@@ -5290,8 +5289,7 @@ evade_ship()
 
             psrandval = (float)(((Missiontime >> 14) & 0x0f) -
                                 8); // Value between -8 and 7
-            psrandval = psrandval /
-                        16.0f; //   Value between -1/2 and 1/2 (approx)
+            psrandval = psrandval / 16.0f; //   Value between -1/2 and 1/2 (approx)
 
             // If not close to behind, turn towards his right or left vector, whichever won't cross his path.
             if (vm_vec_dot(&vec_from_enemy, &En_objp->orient.rvec) > psrandval) {
@@ -8565,7 +8563,8 @@ ai_chase()
                 aip->submode_start_time = Missiontime;
                 break;
             case 1:
-                aip->submode_start_time = Missiontime; // Stay in super attack mode
+                aip->submode_start_time =
+                    Missiontime; // Stay in super attack mode
                 break;
             case 2:
             case 3:
@@ -11163,7 +11162,7 @@ aifft_find_turret_subsys(object *objp, ship_subsys *ssp, object *enemy_objp,
         }
     }
 
-    Assert(best_subsysp != END_OF_LIST(&eshipp->subsys_list));
+    Assert(best_subsysp != &eshipp->subsys_list);
 
     *dot_out = best_dot;
     return best_subsysp;
@@ -14136,8 +14135,8 @@ aas_1(object *objp, ai_info *aip, vector *safe_pos)
         if (wip->wi_flags & WIF_HOMING_ASPECT) {
             expected_pos = weaponp->homing_pos;
             // homing_object may hold the "not homing on anything" token
-            // (weapons.cc stores END_OF_LIST(&obj_used_list)), which carries
-            // no payload -- the fat sentinel used to absorb this read
+            // (weapons.cc stores END_OF_LIST(&obj_used_list)); retail read
+            // the token's ->type here and survived on its zeroed payload
             if (weaponp->homing_object &&
                 weaponp->homing_object != END_OF_LIST(&obj_used_list) &&
                 weaponp->homing_object->type == OBJ_SHIP) {

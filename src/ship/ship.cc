@@ -132,11 +132,11 @@ int Player_ship_class; // needs to be player specific, move to player structure
 // max number of ships tracked in ship list
 #define MAX_SHIP_OBJS MAX_SHIPS
 ship_obj Ship_objs[MAX_SHIP_OBJS]; // array used to store ship object indexes
-list_t< ship_obj > Ship_obj_list; // head of linked list of ship_obj structs
+ship_obj Ship_obj_list; // head of linked list of ship_obj structs
 
 ship_info Ship_info[MAX_SHIP_TYPES];
 ship_subsys Ship_subsystems[MAX_SHIP_SUBOBJECTS];
-list_t< ship_subsys > ship_subsys_free_list;
+ship_subsys ship_subsys_free_list;
 reinforcements Reinforcements[MAX_REINFORCEMENTS];
 
 int Num_player_ship_precedence; // Number of ship types in Player_ship_precedence
@@ -329,7 +329,7 @@ void
 ship_obj_list_remove(int index)
 {
     Assert(index >= 0 && index < MAX_SHIP_OBJS);
-    list_remove(&Ship_objs[index]);
+    list_remove(&Ship_obj_list, &Ship_objs[index]);
     ship_obj_list_reset_slot(index);
 }
 
@@ -1686,9 +1686,9 @@ subsys_set(int objnum, int ignore_subsys_info)
         ship_system = GET_FIRST(
             &ship_subsys_free_list); // get a new element from the ship_subsystem array
         Assert(ship_system !=
-               END_OF_LIST(
-                   &ship_subsys_free_list)); // shouldn't have the dummy element
-        list_remove(ship_system); // remove the element from the array
+               &ship_subsys_free_list); // shouldn't have the dummy element
+        list_remove(&ship_subsys_free_list,
+                    ship_system); // remove the element from the array
         list_append(&shipp->subsys_list,
                     ship_system); // link the element into the ship
 
@@ -2129,7 +2129,7 @@ ship_subsystem_delete(ship *shipp)
     while (systemp != END_OF_LIST(&shipp->subsys_list)) {
         temp = GET_NEXT(
             systemp); // use temporary since pointers will get screwed with next operation
-        list_remove(systemp); // remove the element
+        list_remove(&shipp->subsys_list, systemp); // remove the element
         list_append(&ship_subsys_free_list,
                     systemp); // and place back onto free list
         systemp = temp; // use the temp variable to move right along
@@ -4331,7 +4331,7 @@ change_ship_type(int n, int ship_type)
         for (ship_system = GET_FIRST(&sp->subsys_list);
              ship_system != END_OF_LIST(&sp->subsys_list);) {
             tmp = GET_NEXT(ship_system);
-            list_remove(ship_system);
+            list_remove(&sp->subsys_list, ship_system);
             list_append(&ship_subsys_free_list, ship_system);
             ship_system = tmp;
         }

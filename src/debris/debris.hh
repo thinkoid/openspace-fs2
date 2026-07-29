@@ -10,16 +10,15 @@
 #ifndef _DEBRIS_H
 #define _DEBRIS_H
 
-#include "globalincs/linklist.hh"
-
 struct object;
 struct CFILE;
 
 // Must be less than MAX_ARC_EFFECTS in model.h
 #define MAX_DEBRIS_ARCS 8
 
-typedef struct debris : list_links_t< debris >
+typedef struct debris
 {
+    debris *next, *prev; // used for a linked list of the hull debris chunks
     int flags; // See DEBRIS_??? defines
     int source_objnum; // What object this came from
     int source_sig; // Signature of the source object

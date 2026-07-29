@@ -10,7 +10,6 @@
 #ifndef _PLAYER_H
 #define _PLAYER_H
 
-#include "globalincs/linklist.hh"
 #include <object/object.hh>
 #include <physics/physics.hh>
 #include <mission/missionload.hh>
@@ -163,7 +162,7 @@ typedef struct player
     int flags;
     int save_flags;
 
-    list_t< htarget_list >
+    htarget_list
         keyed_targets[MAX_KEYED_TARGETS]; // linked list of hot-keyed targets
     int current_hotkey_set; // currently hotkey set in use, -1 if none
 

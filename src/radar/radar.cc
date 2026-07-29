@@ -66,8 +66,9 @@ float radx, rady;
 // object is resistant to sensors, so draw distorted
 #define BLIP_DRAW_DISTORTED (1 << 2)
 
-typedef struct blip : list_links_t< blip >
+typedef struct blip
 {
+    blip *prev, *next;
     int x, y, rad;
     int flags; // BLIP_ flags defined above
 } blip;
@@ -127,8 +128,8 @@ rcol Radar_color_rgb[MAX_RADAR_LEVELS][MAX_RADAR_COLORS] = {
 
 color Radar_colors[MAX_RADAR_LEVELS][MAX_RADAR_COLORS];
 
-list_t< blip > Blip_bright_list[MAX_RADAR_COLORS]; // linked list of bright blips
-list_t< blip > Blip_dim_list[MAX_RADAR_COLORS]; // linked list of dim blips
+blip Blip_bright_list[MAX_RADAR_COLORS]; // linked list of bright blips
+blip Blip_dim_list[MAX_RADAR_COLORS]; // linked list of dim blips
 blip Blips[MAX_BLIPS]; // blips pool
 int N_blips; // next blip index to take from pool
 
@@ -553,7 +554,7 @@ void
 draw_radar_blips(int rcol, int is_dim, int distort)
 {
     blip *b = NULL;
-    list_t< blip > *blip_head = NULL;
+    blip *blip_head = NULL;
 
     // Need to set font.
     gr_set_font(FONT1);

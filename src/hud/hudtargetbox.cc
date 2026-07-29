@@ -1326,8 +1326,7 @@ hud_render_target_weapon(object *target_objp)
     target_wip = &Weapon_info[wp->weapon_info_index];
 
     is_homing = FALSE;
-    if (target_wip->wi_flags & WIF_HOMING &&
-        wp->homing_object != END_OF_LIST(&obj_used_list))
+    if (target_wip->wi_flags & WIF_HOMING && wp->homing_object != &obj_used_list)
         is_homing = TRUE;
 
     is_player_missile = FALSE;

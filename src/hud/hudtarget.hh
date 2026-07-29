@@ -10,7 +10,6 @@
 #ifndef _HUDTARGET_H
 #define _HUDTARGET_H
 
-#include "globalincs/linklist.hh"
 #include <object/object.hh>
 #include <ship/ailocal.hh>
 #include <ship/ship.hh>
@@ -49,13 +48,14 @@
 #define HOTKEY_USER_ADDED 1
 #define HOTKEY_MISSION_FILE_ADDED 2
 
-typedef struct htarget_list : list_links_t< htarget_list >
+typedef struct htarget_list
 {
+    struct htarget_list *next, *prev; // for linked lists
     int how_added; // determines how this hotkey was added (mission default or player)
     object *objp; // the actual object
 } htarget_list;
 
-extern list_t< htarget_list > htarget_free_list;
+extern htarget_list htarget_free_list;
 extern int Hud_target_w, Hud_target_h;
 
 extern shader Training_msg_glass;

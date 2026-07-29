@@ -231,13 +231,13 @@ swarm_update_direction(object *objp, float frametime)
     swarmp = &Swarm_missiles[wp->swarm_index];
 
     // check if homing is lost.. if it is then get a new path to move swarm missile along
-    if (swarmp->homing_objnum != -1 && hobjp == END_OF_LIST(&obj_used_list)) {
+    if (swarmp->homing_objnum != -1 && hobjp == &obj_used_list) {
         swarmp->change_timestamp = 1;
         swarmp->path_num = -1;
         swarmp->homing_objnum = -1;
     }
 
-    if (hobjp != END_OF_LIST(&obj_used_list)) {
+    if (hobjp != &obj_used_list) {
         swarmp->homing_objnum = OBJ_INDEX(hobjp);
     }
 
@@ -282,7 +282,7 @@ swarm_update_direction(object *objp, float frametime)
         swarmp->change_timestamp = timestamp(swarmp->change_time);
 
         // check if swarm missile is homing, if so need to calculate a new target pos to turn towards
-        if (hobjp != END_OF_LIST(&obj_used_list) &&
+        if (hobjp != &obj_used_list &&
             f2fl(Missiontime - wp->creation_time) > 0.5f) {
             swarmp->original_target = wp->homing_pos;
 
@@ -376,7 +376,7 @@ swarm_update_direction(object *objp, float frametime)
         vm_vec_add2(&swarmp->new_target, &swarmp->last_offset);
     }
     else {
-        if (hobjp != END_OF_LIST(&obj_used_list) &&
+        if (hobjp != &obj_used_list &&
             f2fl(Missiontime - wp->creation_time) > 0.5f) {
             swarmp->new_target = swarmp->original_target;
             if (swarmp->last_dist < SWARM_DIST_STOP_SWARMING) {

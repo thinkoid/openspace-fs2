@@ -160,12 +160,11 @@ emp_apply(vector *pos, float inner_radius, float outer_radius,
         if (Ship_info[Ships[target->instance].ship_info_index].flags &
             (SIF_BIG_SHIP | SIF_HUGE_SHIP)) {
             // void ship_subsys_set_disrupted(ship_subsys *ss, int time)
-            list_t< ship_subsys > *slist = &Ships[target->instance].subsys_list;
-            moveup = END_OF_LIST(slist);
-            if (slist->next != NULL) {
-                moveup = slist->next;
+            moveup = &Ships[target->instance].subsys_list;
+            if (moveup->next != NULL) {
+                moveup = moveup->next;
             }
-            while (moveup != END_OF_LIST(slist)) {
+            while (moveup != &Ships[target->instance].subsys_list) {
                 // if this is a turret, disrupt it
                 if ((moveup->system_info != NULL) &&
                     (moveup->system_info->type == SUBSYSTEM_TURRET)) {
