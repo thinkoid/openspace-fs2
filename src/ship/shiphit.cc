@@ -85,7 +85,7 @@ is_subsys_destroyed(ship *shipp, int submodel)
     ship_subsys *subsys;
 
     if (submodel == -1) {
-        false;
+        return false; // retail wrote a bare "false;" (fs2open fixed the same)
     }
 
     for (subsys = GET_FIRST(&shipp->subsys_list);

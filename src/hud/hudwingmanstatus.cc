@@ -529,8 +529,6 @@ hud_wingman_status_blit_dots(int wing_index, int screen_index,
 {
     int i, sx, sy, is_bright, bitmap = -1, screen_pos;
 
-    Wingman_status_frames[WINGMAN_STATUS_DOTS].first_frame;
-
     if (Wingman_status_frames[WINGMAN_STATUS_DOTS].first_frame < 0) {
         return;
     }

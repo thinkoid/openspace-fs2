@@ -1146,7 +1146,8 @@ player_level_init()
     Player->locking_subsys_parent = -1;
 
     Player->killer_objtype = -1; // type of object that killed player
-    Player->killer_weapon_index; // weapon used to kill player (if applicable)
+    // weapon used to kill player (if applicable); retail dropped the "= -1"
+    Player->killer_weapon_index = -1;
     Player->killer_parent_name[0] =
         0; // name of parent object that killed the player
 

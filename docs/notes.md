@@ -989,3 +989,25 @@ but each was a latent memory-corruption on modded data:
 Gate: 36 removed / 0 added, tests green, boot renders 73 frames.
 Remaining 272: unused-but-set 155 (E4), overloaded-virtual 102 (E5),
 unused-value 8 + unused-function 7 (swept next).
+
+## Survey E3b: unused-value/function sweep -- 272 -> 257 (2026-07-29)
+
+Eight no-effect statements, four of them dropped intent:
+
+- hudsquadmsg.cc:2364: "if (!(Msg_shortcut_command, orders_accepted))" --
+  a COMMA where & was meant, so the squadmsg shortcut went to any ship
+  accepting ANY order.  Retail's own lines 467/520 spell the intended
+  test; fs2open's rewrite agrees.  FIXED.
+- shiphit.cc is_subsys_destroyed: "false;" for "return false;" on the
+  submodel==-1 path (fs2open fixed the same).  FIXED.
+- localize.cc: "Ts_text_size;" -- the "= 0" reset dropped; every
+  neighbouring parse var resets.  FIXED.
+- playercontrol.cc player_level_init: "Player->killer_weapon_index;" --
+  the "= -1" dropped (neighbour killer_objtype has it).  FIXED.
+- Pure dead statements deleted: hudlock for-init, hudwingmanstatus
+  first_frame read, missionbriefcommon imi->direction, aicode
+  future_goal_point_2.
+- tests/gamestubs_gen.cc oracle_trap: caller-less since the last port
+  wave; [[maybe_unused]] (x7 test targets = the 7 unused-function).
+
+Gate: 15 removed / 0 added, tests green, boot renders 73 frames.

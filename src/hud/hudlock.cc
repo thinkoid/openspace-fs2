@@ -517,7 +517,7 @@ hud_draw_lock_triangles_old(int center_x, int center_y, int radius)
         ang += PI / 12;
     }
 
-    for (ang; ang <= end_ang; ang += PI / 2.0f) {
+    for (; ang <= end_ang; ang += PI / 2.0f) {
         // draw the orbiting triangles
 
         //ang = atan2(target_point.y,target_point.x);

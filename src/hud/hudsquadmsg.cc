@@ -2360,8 +2360,10 @@ hud_squadmsg_hotkey_select(int k)
         if (Ships[objp->instance].team != TEAM_FRIENDLY)
             continue;
 
-        // be sure that this ship can accept this command
-        if (!(Msg_shortcut_command, Ships[objp->instance].orders_accepted))
+        // be sure that this ship can accept this command (retail wrote a
+        // comma for the &, so any ship accepting ANY order got the
+        // shortcut command; lines 467/520 spell the intended test)
+        if (!(Msg_shortcut_command & Ships[objp->instance].orders_accepted))
             continue;
 
         hud_squadmsg_send_ship_command(objp->instance, Msg_shortcut_command,

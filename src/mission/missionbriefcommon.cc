@@ -1666,7 +1666,6 @@ brief_set_move_list(int new_stage, int current_stage, float time)
                     imi->accel = 4 * imi->total_dist / (time * time);
                     imi->last_dist = 0.0f;
                     imi->reached_dest = 0;
-                    imi->direction;
 
                     vm_vec_sub(&imi->direction, &imi->finish, &imi->start);
                     if (!IS_VEC_NULL(&imi->direction)) {

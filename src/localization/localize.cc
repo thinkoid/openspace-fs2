@@ -807,7 +807,7 @@ lcl_ext_lookup(char *out, int id)
     // reset parsing vars and go to town
     Ts_current_state = TS_SCANNING;
     Ts_id_text_size = 0;
-    Ts_text_size;
+    Ts_text_size = 0; // retail dropped the "= 0"; every neighbor resets
     memset(Ts_text, 0, PARSE_TEXT_STRING_LEN);
     memset(Ts_id_text, 0, PARSE_ID_STRING_LEN);
     while ((cftell(Lcl_ext_file) < Lcl_pointers[Lcl_pointer_count - 1]) &&

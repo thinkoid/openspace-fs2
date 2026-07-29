@@ -12509,8 +12509,6 @@ ai_formation()
             else if (dist_to_goal > 10.0f) {
                 float dv;
 
-                future_goal_point_2;
-
                 turn_towards_point(Pl_objp, &future_goal_point_2, NULL, 0.0f);
 
                 if (dist_to_goal > 25.0f) {
