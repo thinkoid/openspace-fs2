@@ -223,6 +223,18 @@ test('weapons-native-check', find_program('weapons_native_check.sh'),
     depends: [sim_dump],
     timeout: 120)
 
+# The lesson gate: Training-1's native SEXP must put the lesson ON the
+# boundary -- directives decoded as retail draws them, the Welcome
+# Message promoted, token-translated, voice wave named -- all via
+# hud_state within 10 sim-seconds.
+test('lesson-native-check', find_program('lesson_native_check.sh'),
+    args: [
+        sim_dump.full_path(),
+        meson.project_source_root(),
+    ],
+    depends: [sim_dump],
+    timeout: 120)
+
 # The reconciler gate: world.tscn headless on the native Training-1 --
 # presentation consuming the boundary end to end (pof2glb assets, load,
 # step, snapshot, ships as scene nodes, the Instructor's NODE measurably

@@ -46,6 +46,7 @@ struct flight_controls_t {
     bool fire_primary;
     bool fire_secondary;
     bool fire_countermeasure;
+    bool target_next;                  // edge -> retail's hud_target_next
 };
 
 // The flying state after a step -- physics_info's living fields.
@@ -99,6 +100,28 @@ struct event_t {
     fix time;                          // log: mission time of the entry
 };
 
+// One directives-gauge line, decoded exactly as training_obj_display
+// renders it (missiontraining.cc:198): the event's objective text (with
+// retail's [count] suffix), its EVENT_* status, and whether this is a
+// bright-green key line (objective_key_text through the token remap).
+struct directive_t {
+    char text[256];
+    int state;                         // 0 unborn / EVENT_CURRENT /
+                                       // EVENT_SATISFIED / EVENT_FAILED
+    bool key_line;
+};
+
+// The lesson's display half, value-only: what the training gauges would
+// draw this frame. training_text is empty outside a message's window
+// (retail's own text-length timing paces it headless -- the voice load
+// fails without a device and message_training_setup falls back);
+// training_voice names the wave so the presenter can play it.
+struct hud_state_t {
+    char training_text[8192];
+    char training_voice[64];
+    std::vector<directive_t> directives;
+};
+
 // The boundary object. Slice 1 grew the single-ship flight surface
 // (fly_*, the tests/physics_dump.cc call pair); slice 2 grows the WORLD:
 // load runs retail's game-path mission chain (arrival cues live), step is
@@ -121,6 +144,11 @@ struct fs2_t {
     void step(float dt, const flight_controls_t &controls);
     std::vector<object_state_t> snapshot() const;
     std::vector<event_t> events();     // drains
+    hud_state_t hud_state() const;
+
+    // mark a key used, by the mission's own name for it ("t", "M",
+    // "Tab") -- the sexp key-pressed predicate reads the mark
+    void key_mark(const char *key_text);
 
 private:
     physics_info m_pi;
@@ -133,6 +161,7 @@ private:
                                        // (no header ever declared it; the
                                        // boundary owns the replica)
     bool m_burn_held = false;          // afterburner edge detection
+    bool m_target_held = false;        // target-next edge detection
     int m_log_drained = 0;             // mission-log high-water mark
     std::vector<object_state_t> m_known; // last drain's world, for diffs
 

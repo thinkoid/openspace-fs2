@@ -155,9 +155,18 @@ main(int argc, char *argv[])
             }
         }
 
-        if (frame % every == 0)
+        if (frame % every == 0) {
             for (const object_state_t &o : sim.snapshot())
                 print_state(frame, o);
+
+            hud_state_t h = sim.hud_state();
+            if (h.training_text[0])
+                printf("hud %d msg '%s' voice '%s'\n", frame,
+                       h.training_text, h.training_voice);
+            for (const directive_t &d : h.directives)
+                printf("hud %d directive %d key %d '%s'\n", frame, d.state,
+                       int(d.key_line), d.text);
+        }
     }
 
     return 0;

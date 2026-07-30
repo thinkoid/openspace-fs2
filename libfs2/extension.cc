@@ -51,6 +51,7 @@ controls_of(const godot::Dictionary &controls)
     c.fire_primary = controls.get("fire_primary", false);
     c.fire_secondary = controls.get("fire_secondary", false);
     c.fire_countermeasure = controls.get("fire_countermeasure", false);
+    c.target_next = controls.get("target_next", false);
 
     return c;
 }
@@ -80,6 +81,10 @@ protected:
         godot::ClassDB::bind_method(godot::D_METHOD("snapshot"),
                                     &FS2::snapshot);
         godot::ClassDB::bind_method(godot::D_METHOD("events"), &FS2::events);
+        godot::ClassDB::bind_method(godot::D_METHOD("hud_state"),
+                                    &FS2::hud_state);
+        godot::ClassDB::bind_method(godot::D_METHOD("key_mark", "key_text"),
+                                    &FS2::key_mark);
     }
 
 public:
@@ -187,6 +192,32 @@ public:
         }
 
         return out;
+    }
+
+    godot::Dictionary hud_state() const
+    {
+        hud_state_t h = m_sim.hud_state();
+        godot::Dictionary out;
+
+        out["training_text"] = h.training_text;
+        out["training_voice"] = h.training_voice;
+
+        godot::Array dirs;
+        for (const directive_t &d : h.directives) {
+            godot::Dictionary line;
+            line["text"] = d.text;
+            line["state"] = d.state;
+            line["key"] = d.key_line;
+            dirs.push_back(line);
+        }
+        out["directives"] = dirs;
+
+        return out;
+    }
+
+    void key_mark(const godot::String &key_text)
+    {
+        m_sim.key_mark(key_text.utf8().get_data());
     }
 
     godot::Dictionary fly_state() const

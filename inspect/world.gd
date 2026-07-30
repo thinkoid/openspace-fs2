@@ -20,6 +20,17 @@
 extends Node3D
 
 const ShipClass := preload("res://ship.gd")
+const SoundBankClass := preload("res://sound.gd")
+
+# retail names for the keys the training sexps watch (key-pressed "t"),
+# forwarded through key_mark so Control_config[].used carries the truth
+const KEY_NAMES := {
+    KEY_T: "t",
+    KEY_M: "M",
+    KEY_TAB: "Tab",
+    KEY_BACKSLASH: "\\",
+    KEY_BACKSPACE: "Backspace",
+}
 
 var sim                       # FS2 (libfs2) instance
 var ships_root: Node3D
@@ -33,6 +44,11 @@ var hud_left: Label
 var hud_right: Label
 var ticker: Label
 var ticker_lines: Array[String] = []
+var directives: Label
+var training_msg: Label
+var sounds                     # SoundBank, voice playback
+var last_text := ""
+var msg_deadline := 0
 
 var assets_dir := ""
 var mission_name := ""
@@ -73,6 +89,10 @@ func _ready() -> void:
     _setup_lights()
     _setup_starfield()
     _setup_hud()
+
+    sounds = SoundBankClass.new()
+    add_child(sounds)
+    sounds.setup(root)
 
     print("world: %s native, root %s" % [mission_name, root])
 
@@ -116,6 +136,7 @@ func _physics_process(delta: float) -> void:
         "fire_primary": mouse_grabbed and
             (Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
              or Input.is_key_pressed(KEY_CTRL)),
+        "target_next": Input.is_key_pressed(KEY_T),
     }
     mouse_accum = Vector2.ZERO
 
@@ -177,6 +198,47 @@ func _physics_process(delta: float) -> void:
         hud_right.text = "speed %6.1f\nengine %4d%%" \
             % [vel.dot(fv2), int(throttle * 100.0)]
         hud_left.text = "%s\n%d ships" % [mission_name, ships.size()]
+
+    _update_lesson()
+
+# the lesson gauges, fed by the boundary's hud_state: the directives list
+# (status-marked, key lines indented) and the training message, with
+# Sensky's voice played once per message through the SoundBank
+func _update_lesson() -> void:
+    var h: Dictionary = sim.hud_state()
+
+    var lines: Array[String] = []
+    for d in h["directives"]:
+        if d["key"]:
+            lines.append("      " + d["text"])
+            continue
+        var mark := "  "
+        match int(d["state"]):
+            1: mark = "> "     # EVENT_CURRENT
+            2: mark = "+ "     # EVENT_SATISFIED
+            3: mark = "x "     # EVENT_FAILED
+        lines.append(mark + (d["text"] as String).replace("$", ""))
+    if lines.is_empty():
+        directives.text = ""
+    else:
+        directives.text = "directives\n" + "\n".join(lines)
+
+    # The message window is PRESENTATION-owned: headless retail can't time
+    # a voice it cannot play (the sim exposes the text for as long as the
+    # message is current), so the scene shows it while its own playback
+    # runs, with retail's text-length fallback (missiontraining.cc:787)
+    # when there is no wave.
+    var text: String = h["training_text"]
+    var voice: String = h["training_voice"]
+    if text != last_text:
+        last_text = text
+        msg_deadline = Time.get_ticks_msec() + 1000 + 150 * text.length()
+        if not voice.is_empty():
+            sounds.play_voice(voice)
+
+    var visible_now: bool = not text.is_empty() \
+        and (sounds.voice.playing or Time.get_ticks_msec() < msg_deadline)
+    training_msg.text = text.replace("$", "") if visible_now else ""
 
 # a new signature enters the world: a bolt for weapons, a Ship if the
 # assets carry the class's GLB, an honest gray box otherwise
@@ -244,6 +306,9 @@ func _unhandled_input(event: InputEvent) -> void:
         return
     if not (event is InputEventKey and event.pressed):
         return
+    # the training sexps watch retail key names; forward the press
+    if sim != null and KEY_NAMES.has(event.keycode):
+        sim.key_mark(KEY_NAMES[event.keycode])
     match event.keycode:
         KEY_A:
             throttle = clampf(throttle + 0.1, -1.0, 1.0)
@@ -327,6 +392,19 @@ func _setup_hud() -> void:
     hud_right.offset_top = 12
     hud_right.offset_right = -16
     hud.add_child(hud_right)
+
+    directives = _hud_label()
+    directives.position = Vector2(16, 120)
+    hud.add_child(directives)
+
+    training_msg = _hud_label()
+    training_msg.set_anchors_preset(Control.PRESET_CENTER_TOP)
+    training_msg.grow_horizontal = Control.GROW_DIRECTION_BOTH
+    training_msg.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    training_msg.offset_top = 60
+    training_msg.autowrap_mode = TextServer.AUTOWRAP_WORD
+    training_msg.custom_minimum_size = Vector2(900, 0)
+    hud.add_child(training_msg)
 
     ticker = _hud_label()
     ticker.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)

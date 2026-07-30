@@ -14,8 +14,11 @@
 #include <gamesnd/eventmusic.hh>
 #include <gamesnd/gamesnd.hh>
 #include <globalincs/linklist.hh>
+#include <graphics/font.hh>
 #include <graphics/grinternal.hh>
+#include <hud/hudmessage.hh>
 #include <hud/hud.hh>
+#include <hud/hudtarget.hh>
 #include <io/timer.hh>
 #include <lighting/lighting.hh>
 #include <localization/localize.hh>
@@ -50,6 +53,19 @@
 #include <weapon/shockwave.hh>
 #include <weapon/trails.hh>
 #include <weapon/weapon.hh>
+
+// missiontraining.cc file-scope state the lesson exposure reads: retail
+// never exported these because only its own display consumed them; the
+// boundary is a second display
+extern char Training_text[];
+extern int Training_msg_timestamp;
+extern int Training_obj_lines[];
+extern int Training_obj_num_lines;
+void message_training_que_check();
+#define TRAINING_OBJ_LINES_KEY (1 << 30)   // missiontraining.cc:62
+
+// controlsconfigcommon.cc's key-text resolver (sexp_key_pressed's own)
+int translate_key_to_index(char *key);
 
 // radar.cc's blip-list reset -- file-scope in retail, but its callers are
 // split: radar_frame_init (the caller game_frame uses) needs fonts, while
@@ -113,6 +129,7 @@ boot(const char *game_root)
     gr_screen.gf_init_color = null_init_color;
     gr_screen.gf_init_alphacolor = null_init_alphacolor;
     gr_screen.gf_zbuffer_clear = null_zbuffer_clear;
+    gr_screen.gf_set_font = grx_set_font;   // retail's own; fonts are DATA
 
     // a described 640x480 canvas nothing ever draws to: the sim's own
     // paths read it -- fireball_get_lod projects the explosion through g3
@@ -159,6 +176,9 @@ boot(const char *game_root)
 
     timer_init();
     lcl_init(LCL_ENGLISH);
+    // the .vf fonts load through cfile -- pure data, and every
+    // font-metric path (message wrapping, HUD text sizing) becomes real
+    gr_font_init();
     gamesnd_parse_soundstbl();
     parse_medal_tbl();     // mission parse resolves medal names (the loop
                            // missions' SOC promotions) against Medals[]
@@ -212,6 +232,9 @@ fs2_t::load(const char *game_root, const char *mission, int seed)
     mission_init_goals();
     mission_log_init();
     messages_init();
+    // the scrollback store (HUD_init calls it in retail's chain): the
+    // training path writes every message into it and asserts it exists
+    hud_init_msg_window();
     obj_snd_level_init();
     shockwave_level_init();
     afterburner_level_init();
@@ -399,10 +422,18 @@ fs2_t::step(float dt, const flight_controls_t &controls)
 
     ship_process_targeting_lasers();
 
+    // the target-next action, retail's own cycler (T in keycontrol)
+    if (controls.target_next && !m_target_held && !m_pre_entry)
+        hud_target_next();
+    m_target_held = controls.target_next;
+
     mission_parse_eval_stuff();        // arrivals and departures, live
     obj_move_all(flFrametime);
     mission_eval_goals();
     training_check_objectives();
+    // the training-message queue promotes on the DISPLAY path in retail
+    // (message_training_display calls it); a headless frame promotes here
+    message_training_que_check();
 
     if (!m_pre_entry)
         message_queue_process();
@@ -436,6 +467,70 @@ fs2_t::snapshot() const
             objp->type != OBJ_WEAPON)
             continue;
         out.push_back(record_of(objp));
+    }
+
+    return out;
+}
+
+void
+fs2_t::key_mark(const char *key_text)
+{
+    int z = translate_key_to_index(const_cast<char *>(key_text));
+    if (z >= 0)
+        control_used(z);
+}
+
+hud_state_t
+fs2_t::hud_state() const
+{
+    hud_state_t out;
+    out.training_text[0] = '\0';
+    out.training_voice[0] = '\0';
+
+    if (!m_world_live)
+        return out;
+
+    // the training message, gated exactly as the display gates it
+    // (missiontraining.cc:886): inside its timing window and non-empty
+    if (!timestamp_elapsed(Training_msg_timestamp) &&
+        strlen(Training_text) > 0) {
+        message_translate_tokens(out.training_text, Training_text);
+
+        // the wave name: setup keeps only the text, so find the message
+        // back the way the queue found it -- by its own content
+        for (int m = 0; m < Num_messages; m++) {
+            if (strcmp(Training_text, Messages[m].message) != 0)
+                continue;
+            int w = Messages[m].wave_info.index;
+            if (w >= 0)
+                strncpy(out.training_voice, Message_waves[w].name,
+                        sizeof(out.training_voice) - 1);
+            break;
+        }
+    }
+
+    // the directives, decoded as training_obj_display draws them
+    for (int i = 0; i < Training_obj_num_lines; i++) {
+        int z = Training_obj_lines[i] & 0xffff;
+
+        directive_t d;
+        memset(&d, 0, sizeof(d));
+
+        if (Training_obj_lines[i] & TRAINING_OBJ_LINES_KEY) {
+            d.key_line = true;
+            message_translate_tokens(d.text,
+                                     Mission_events[z].objective_key_text);
+        }
+        else {
+            strncpy(d.text, Mission_events[z].objective_text,
+                    sizeof(d.text) - 8);
+            if (Mission_events[z].count)
+                sprintf(d.text + strlen(d.text), NOX(" [%d]"),
+                        Mission_events[z].count);
+            d.state = mission_get_event_status(z);
+        }
+
+        out.directives.push_back(d);
     }
 
     return out;
