@@ -224,6 +224,15 @@ func _physics_process(delta: float) -> void:
         if not seen.has(sig):
             ships[sig]["node"].queue_free()
             ships.erase(sig)
+            continue
+        # wreckage arcs: the audible crackle (SND_DEBRIS_ARC_*,
+        # debris.cc:382) gets its blue-white flash -- presentation-side
+        # flicker, retail draws real arcs (model_add_arc)
+        var n: Node3D = ships[sig]["node"]
+        if n.has_meta("arc_mat"):
+            var m: StandardMaterial3D = n.get_meta("arc_mat")
+            m.emission = Color(0.5, 0.7, 1.0) * 2.0 if randf() < 0.06 \
+                else Color(0, 0, 0)
 
     if player_node:
         _update_camera(delta, player_node,
@@ -353,8 +362,11 @@ func _simple_node(kind: String, radius: float) -> Node3D:
             db.size = Vector3(s, s * 0.6, s * 1.4)
             mat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
             mat.albedo_color = Color(0.35, 0.35, 0.38)
+            mat.emission_enabled = true
+            mat.emission = Color(0, 0, 0)
             db.material = mat
             mi.mesh = db
+            mi.set_meta("arc_mat", mat)   # the crackle's visual half
     ships_root.add_child(mi)
     return mi
 

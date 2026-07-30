@@ -89,14 +89,16 @@ main(int argc, char *argv[])
 
             const object_state_t *me = nullptr;
             for (const object_state_t &o : now)
-                if (o.type != OBJ_WEAPON && o.player)
+                if (o.type == OBJ_SHIP && o.player)
                     me = &o;
 
             const object_state_t *foe = nullptr;
             float best = 0.0f;
             if (me) {
                 for (const object_state_t &o : now) {
-                    if (o.type == OBJ_WEAPON || o.player || o.dying)
+                    // ships only: fireballs and debris are team-0 records
+                    // and an undiscriminating gunner strafes the wreckage
+                    if (o.type != OBJ_SHIP || o.player || o.dying)
                         continue;
                     if (o.team == me->team)
                         continue;
