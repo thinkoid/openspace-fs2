@@ -291,6 +291,7 @@ record_of(object *objp)
                                : shipp->arrival_location;
     rec.player = (objp->flags & OF_PLAYER_SHIP) != 0;
     rec.dying = (shipp->flags & SF_DYING) != 0;
+    rec.afterburner = (objp->phys_info.flags & PF_AFTERBURNER_ON) != 0;
     rec.hull = objp->hull_strength;
     rec.hull_max = sip->initial_hull_strength;
 
@@ -346,11 +347,19 @@ fs2_t::step(float dt, const flight_controls_t &controls)
         Player->ci.fire_countermeasure_count =
             controls.fire_countermeasure ? 1 : 0;
 
-        // afterburner engages through retail's own fuel accounting
+        // afterburner engages through retail's own fuel accounting. The
+        // stop MUST say key_released: afterburners_start latches
+        // PF_AFTERBURNER_WAIT on every engage and only a key-released
+        // stop clears it (afterburner.cc:154/301) -- without it the
+        // burner lights exactly once per mission (field-reported).
+        // KNOWN LEAK: the 1300 ms relight lockout inside
+        // afterburners_start reads timer_get_milliseconds() -- WALL
+        // time; a future burn-replaying gate will see nondeterminism
+        // across differently-paced runs.
         if (controls.afterburner && !m_burn_held)
             afterburners_start(Player_obj);
         else if (!controls.afterburner && m_burn_held)
-            afterburners_stop(Player_obj);
+            afterburners_stop(Player_obj, 1);
         m_burn_held = controls.afterburner;
 
         object *objp = Player_obj;

@@ -144,6 +144,7 @@ public:
             d["team"] = o.team;
             d["player"] = o.player;
             d["dying"] = o.dying;
+            d["afterburner"] = o.afterburner;
             d["pos"] = from_vec(o.pos);
             d["rvec"] = from_vec(o.orient.rvec);
             d["uvec"] = from_vec(o.orient.uvec);

@@ -150,10 +150,14 @@ func _physics_process(delta: float) -> void:
             Vector3(uv.x, uv.y, -uv.z),
             -Vector3(fv.x, fv.y, -fv.z))
 
-        var moving: bool = (rec["vel"] as Vector3).length() > 0.5
+        # engine glow, field-calibrated: for the player, the burner truly
+        # ON (the sim's flag, not the Tab key -- a refused engage must not
+        # glow) or the engine above 0%; movers glow by their motion
         if entry["is_ship"]:
-            node.set_thrusters(moving or (rec["player"] and
-                                          (throttle > 0.0 or burn)))
+            if rec["player"]:
+                node.set_thrusters(rec["afterburner"] or throttle > 0.0)
+            else:
+                node.set_thrusters((rec["vel"] as Vector3).length() > 0.5)
 
         if rec["player"]:
             player_sig = sig

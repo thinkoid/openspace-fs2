@@ -74,6 +74,7 @@ struct object_state_t {
                                        // relocated the authored position
     bool player;
     bool dying;
+    bool afterburner;                  // PF_AFTERBURNER_ON, the sim's truth
 
     vector pos;
     matrix orient;
