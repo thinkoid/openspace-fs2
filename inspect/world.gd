@@ -244,20 +244,18 @@ func _update_lesson() -> void:
         and (sounds.voice.playing or Time.get_ticks_msec() < msg_deadline)
     training_msg.text = text.replace("$", "") if visible_now else ""
 
-# a new signature enters the world: a bolt for weapons, a Ship if the
-# assets carry the class's GLB, an honest gray box otherwise
+# a new signature enters the world: a bolt for weapons, a glow for
+# fireballs, a tumbling chunk for debris, a Ship if the assets carry the
+# class's GLB, an honest gray box otherwise
 func _spawn(sig: int, rec: Dictionary) -> void:
-    if rec.get("type", "ship") == "weapon":
-        var bolt := MeshInstance3D.new()
-        var bm := BoxMesh.new()
-        bm.size = Vector3(0.4, 0.4, 6.0)   # a laser slug, nose along -Z
-        var bmat := StandardMaterial3D.new()
-        bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-        bmat.albedo_color = Color(1.0, 0.35, 0.25)
-        bm.material = bmat
-        bolt.mesh = bm
-        ships_root.add_child(bolt)
-        ships[sig] = { "node": bolt, "is_ship": false, "radius": 1.0 }
+    var kind: String = rec.get("type", "ship")
+    if kind == "weapon":
+        ships[sig] = { "node": _simple_node(kind, 1.0), "is_ship": false,
+                       "radius": 1.0 }
+        return
+    if kind == "fireball" or kind == "debris":
+        ships[sig] = { "node": _simple_node(kind, rec["radius"]),
+                       "is_ship": false, "radius": rec["radius"] }
         return
 
     var stem := (rec["pof"] as String).get_basename().to_lower()
@@ -288,6 +286,37 @@ func _spawn(sig: int, rec: Dictionary) -> void:
     ships_root.add_child(node)
     ships[sig] = { "node": node, "is_ship": is_ship, "radius": radius }
     _tick("arrived: %s (%s)" % [rec["name"], rec["class"]])
+
+# the non-ship visuals: unshaded primitives sized by the sim's own radius
+func _simple_node(kind: String, radius: float) -> Node3D:
+    var mi := MeshInstance3D.new()
+    var mat := StandardMaterial3D.new()
+    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    match kind:
+        "weapon":
+            var bm := BoxMesh.new()
+            bm.size = Vector3(0.4, 0.4, 6.0)   # a laser slug, nose along -Z
+            mat.albedo_color = Color(1.0, 0.35, 0.25)
+            bm.material = mat
+            mi.mesh = bm
+        "fireball":
+            var sm := SphereMesh.new()
+            sm.radius = maxf(radius, 1.0)
+            sm.height = sm.radius * 2.0
+            mat.albedo_color = Color(1.0, 0.55, 0.15, 0.8)
+            mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+            sm.material = mat
+            mi.mesh = sm
+        "debris":
+            var db := BoxMesh.new()
+            var s: float = clampf(radius, 0.5, 6.0)
+            db.size = Vector3(s, s * 0.6, s * 1.4)
+            mat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+            mat.albedo_color = Color(0.35, 0.35, 0.38)
+            db.material = mat
+            mi.mesh = db
+    ships_root.add_child(mi)
+    return mi
 
 func _tick(line: String) -> void:
     ticker_lines.append(line)

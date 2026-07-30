@@ -142,7 +142,13 @@ public:
         for (const object_state_t &o : m_sim.snapshot()) {
             godot::Dictionary d;
             d["signature"] = o.signature;
-            d["type"] = o.type == OBJ_WEAPON ? "weapon" : "ship";
+            switch (o.type) {
+            case OBJ_WEAPON:   d["type"] = "weapon"; break;
+            case OBJ_FIREBALL: d["type"] = "fireball"; break;
+            case OBJ_DEBRIS:   d["type"] = "debris"; break;
+            default:           d["type"] = "ship"; break;
+            }
+            d["radius"] = o.radius;
             d["name"] = o.name;
             d["class"] = o.class_name;
             d["pof"] = o.pof;

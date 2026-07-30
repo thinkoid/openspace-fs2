@@ -62,11 +62,13 @@ struct flight_state_t {
 // One mission object, value-only, as the snapshot reports it. The signature
 // is retail's own stable id (object.signature, minted to outlive objnum
 // reuse) -- the reconciler keys scene nodes by it. type is retail's OBJ_*:
-// ships carry the full record, weapons carry class/pos/orient/vel only.
+// ships carry the full record; weapons, fireballs and debris carry the
+// kinematic core (class name where they have one, radius always).
 struct object_state_t {
     int signature;
     int objnum;
     int type;                          // OBJ_SHIP / OBJ_WEAPON / ...
+    float radius;
     char name[32];                     // Ships[].ship_name
     char class_name[32];               // Ship_info[].name
     char pof[32];                      // Ship_info[].pof_file

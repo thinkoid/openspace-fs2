@@ -340,6 +340,7 @@ record_of(object *objp)
     rec.signature = objp->signature;
     rec.objnum = OBJ_INDEX(objp);
     rec.type = objp->type;
+    rec.radius = objp->radius;
     rec.pos = objp->pos;
     rec.orient = objp->orient;
     rec.vel = objp->phys_info.vel;
@@ -350,6 +351,8 @@ record_of(object *objp)
         strncpy(rec.class_name, wip->name, sizeof(rec.class_name) - 1);
         return rec;
     }
+    if (objp->type == OBJ_FIREBALL || objp->type == OBJ_DEBRIS)
+        return rec;
 
     ship *shipp = &Ships[objp->instance];
     ship_info *sip = &Ship_info[shipp->ship_info_index];
@@ -516,7 +519,8 @@ fs2_t::snapshot() const
     for (object *objp = GET_FIRST(&obj_used_list);
          objp != END_OF_LIST(&obj_used_list); objp = GET_NEXT(objp)) {
         if (objp->type != OBJ_SHIP && objp->type != OBJ_START &&
-            objp->type != OBJ_WEAPON)
+            objp->type != OBJ_WEAPON && objp->type != OBJ_FIREBALL &&
+            objp->type != OBJ_DEBRIS)
             continue;
         out.push_back(record_of(objp));
     }
