@@ -311,9 +311,11 @@ func _unhandled_input(event: InputEvent) -> void:
         sim.key_mark(KEY_NAMES[event.keycode])
     match event.keycode:
         KEY_A:
-            throttle = clampf(throttle + 0.1, -1.0, 1.0)
+            # snappedf: ±0.1 float steps leave 5.5e-17 residue at "0%",
+            # and the glow's `throttle > 0` believes it (field-reported)
+            throttle = snappedf(clampf(throttle + 0.1, -1.0, 1.0), 0.1)
         KEY_Z:
-            throttle = clampf(throttle - 0.1, -1.0, 1.0)
+            throttle = snappedf(clampf(throttle - 0.1, -1.0, 1.0), 0.1)
         KEY_0:
             throttle = 0.0
         KEY_BACKSLASH:
