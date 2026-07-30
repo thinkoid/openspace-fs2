@@ -1,10 +1,11 @@
-# FS2 → Godot migration — MOTHBALLED
+# FS2 → Godot migration
 
-> **Status: mothballed 2026-07-27.** This branch is preserved, complete and
-> working, at the point where the first training mission is playable end to
-> end under Godot. It is not abandoned for failing — everything here passes
-> its gates — but for a strategic reason recorded below. The retail Linux
-> port on `master` remains the live project; its README describes it.
+> **Status: LIVE — revived 2026-07-30, GDExtension-first.** Mothballed
+> 2026-07-27 at the Training-1-playable milestone for the reason recorded
+> below; revived along that section's own exit route: the simulation stays
+> the port's C++, compiled as a native module, and Godot keeps presentation.
+> The retail Linux port on `master` is now the mothballed line — complete,
+> playable, and serving as this migration's reference implementation.
 
 This is the `godot` branch of **openspace-fs2**: an experiment in hosting the
 retail FreeSpace 2 game on the Godot engine. In nine days (2026-07-18 to
@@ -13,7 +14,7 @@ retail mission's data extracted, and **Training Mission 1 flyable as an
 actual lesson** — the Instructor flies his waypoints, directives tick off,
 messages play in voice, guns fire and score, the radar works.
 
-## Why mothballed
+## Why it was mothballed (2026-07-27)
 
 The migration plan (docs/godot-migration-plan.md) called for FS2 to keep the
 simulation as a C++ library with Godot presenting. The implementation drifted
@@ -31,6 +32,42 @@ the converters already make) and keep Godot strictly for presentation — i.e.
 the original plan's ownership table, enforced this time. The GDScript ports
 below remain valuable either way: they are executable, line-cited,
 gate-tested *specifications* of retail behavior.
+
+## The revival (2026-07-30)
+
+The crossroads assessment that reopened the branch weighed four directions —
+Godot via GDExtension, an art revamp, continued incremental modernization of
+the port, a fresh rewrite on a modern engine — and landed on the first, for
+reasons the mothball note already implies: the port's cleaned C++ is the
+payload, not the alternative; a rewrite would re-earn robustness already
+owned; chipping at the port has no exit condition and its remaining bulk
+(renderer, sound, platform glue) is what any engine future discards; and the
+art ambitions are cheap here (GLB is Godot's native format) and expensive
+everywhere else. The full argument is in master's `docs/notes.md`,
+"Crossroads" entry.
+
+The plan, in order:
+
+1. **Reunify with master.** Since the split, master replayed the entire
+   normalization (at tab width 3, not this branch's 8) and ran the full
+   fix + warning-survey campaign — 32 commits, warnings 4,756 → 15, real
+   retail bugs found and fixed. Merge master in, resolving shared sources
+   to master's side wholesale; this branch's additions (`tools/`,
+   `inspect/`, the test checkers, `subprojects/libpof`, the docs) carry
+   over; the few hybrid files (meson wiring, `debug_int3`'s
+   `FS2_INT3_CONTINUE`) re-merge by hand. The 18-gate suite re-proves the
+   result before anything else moves.
+2. **The GDExtension boundary.** The ownership table, enforced this time:
+   retail subsystems compiled as a native module, value-only snapshots out,
+   Godot presents. The GDScript ports below retire slice by slice into what
+   they already are — executable, line-cited specifications — and their
+   gates become the boundary's differential oracle: the GDExtension must
+   produce what the GDScript port produced, which was pinned against retail.
+3. **The art track rides along.** Retail assets (through `pof2glb`) stay
+   the working fleet while the boundary stabilizes — holding assets constant
+   keeps the oracles pointed at the boundary code, not at new meshes. The
+   ship-design-language line (`docs/ship-design-language.md`) starts when a
+   new ship is just a new GLB beside the old ones.
 
 ## What was built
 
