@@ -211,6 +211,20 @@ test('training-flight-check', find_program('training_flight_check.sh'),
     depends: [sim_dump],
     timeout: 120)
 
+# The reconciler gate: world.tscn headless on the native Training-1 --
+# presentation consuming the boundary end to end (pof2glb assets, load,
+# step, snapshot, ships as scene nodes, the Instructor's NODE measurably
+# flying under retail AI).
+test('world-scene-check', find_program('world_scene_check.sh'),
+    args: [
+        pof2glb.full_path(),
+        libfs2_gdext,
+        meson.current_source_dir() / 'check_world_scene.gd',
+        meson.project_source_root(),
+    ],
+    depends: [pof2glb, libfs2_so],
+    timeout: 120)
+
 # The INVERTED flight gate (the plan's gate-inversion, live): physics_dump's
 # trace replayed through the native boundary must agree BIT-EXACTLY -- both
 # sides run the same foundation machine code, so the tolerance is zero and

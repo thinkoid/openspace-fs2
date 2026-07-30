@@ -67,6 +67,9 @@ func _ready() -> void:
     if args[0] == "mission":
         get_tree().change_scene_to_file.call_deferred("res://mission.tscn")
         return
+    if args[0] == "world":
+        get_tree().change_scene_to_file.call_deferred("res://world.tscn")
+        return
     var glb_path: String = args[0]
     var tres_path := glb_path.get_basename() + ".tres"
 
