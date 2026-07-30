@@ -1,9 +1,11 @@
 # -*- mode: gdscript -*-
 #
-# The first flyable scene: a Ship under keyboard control, moved by
-# FlightModel -- retail's own integrator, oracle-pinned by flight-check --
-# with a chase camera and a starfield for motion reference. First waypoint
-# on the road to flying the first training mission.
+# The first flyable scene: a Ship under keyboard control, moved by the
+# NATIVE simulation -- libfs2's FS2 boundary class, retail's integrator as
+# machine code, bit-exact against physics_dump (flight-native-check) --
+# with a chase camera and a starfield for motion reference. The GDScript
+# FlightModel it replaces stays in the tree as the executable spec
+# (flight-check still pins it against the same oracle).
 #
 #     godot --path inspect res://fly.tscn -- /abs/path/to/ship.glb
 #
@@ -22,10 +24,13 @@ extends Node3D
 # preloaded rather than by class_name: the global class registry is not
 # primed on a cold headless run (no .godot cache), preload always resolves
 const ShipClass := preload("res://ship.gd")
+# the retired GDScript port, kept as the spec -- its FIGHTER constant is
+# still the synthetic-parameter source (mirrored in physics_dump.cc)
 const FlightClass := preload("res://flight_model.gd")
 
-var ship: Node3D      # ShipClass instance
-var fm                # FlightClass instance
+var ship: Node3D            # ShipClass instance
+var sim                     # FS2 (libfs2) instance
+var flight_params := {}     # the p-dict fly_reset was given; R replays it
 var throttle := 0.0
 var cam: Camera3D
 var hud: CanvasLayer
@@ -64,20 +69,24 @@ func _ready() -> void:
         return
     add_child(ship)
 
-    fm = FlightClass.new()
+    if not _load_libfs2():
+        return
+    sim = ClassDB.instantiate("FS2")
 
     # real numbers when available: shiptbl2tres's ship_params.tres beside
     # the GLB (retail's parse_shiptbl, oracle-checked by shiptbl-check),
     # keyed by POF stem; the synthetic FIGHTER otherwise
     var params_path := glb.get_base_dir() + "/ship_params.tres"
     var stem := glb.get_file().get_basename().to_lower()
+    flight_params = FlightClass.FIGHTER
     if FileAccess.file_exists(params_path):
         var sp: Resource = ResourceLoader.load(params_path)
         if sp and sp.ships.has(stem):
-            fm.set_params(sp.ships[stem], ship.data.mass)
+            flight_params = _tbl_params(sp.ships[stem], ship.data.mass)
             ship_label = "%s (ships.tbl)" % sp.ships[stem]["name"]
     if ship_label.is_empty():
         ship_label = "%s (synthetic params)" % stem
+    sim.fly_reset(flight_params)
 
     if ship.data.eyes.size() > 0:
         var e: Dictionary = ship.data.eyes[0]
@@ -103,8 +112,51 @@ func _fatal(msg: String) -> void:
     printerr("fly: " + msg)
     get_tree().quit(1)
 
+# libfs2 loads at runtime through the build tree's generated
+# fs2.gdextension (GDExtensionManager -- the same contract the gates use;
+# nothing is written into this project). FS2_GDEXT overrides the default
+# sibling-build location.
+func _load_libfs2() -> bool:
+    if ClassDB.class_exists("FS2"):
+        return true
+    var gdext := OS.get_environment("FS2_GDEXT")
+    if gdext.is_empty():
+        gdext = ProjectSettings.globalize_path("res://") \
+            + "../build/libfs2/fs2.gdextension"
+    if GDExtensionManager.load_extension(gdext) != \
+            GDExtensionManager.LOAD_STATUS_OK:
+        _fatal("cannot load libfs2 (%s) -- build it, or set FS2_GDEXT"
+               % gdext)
+        return false
+    return true
+
+# flight_model.gd's set_params mapping, kept semantically identical: a
+# ships.tbl entry (ShipParams dict) becomes the p-dict fly_reset takes.
+# Retail computes mass = POF mass * tbl density (ship.cc:1300); the 5
+# slide-capable retail ships lose their lateral axes until a slide slice
+# earns its keep.
+func _tbl_params(tbl: Dictionary, pof_mass: float) -> Dictionary:
+    var mv: Vector3 = tbl["max_vel"]
+    if mv.x > 0.0 or mv.y > 0.0:
+        push_warning("fly: slide not implemented, zeroing lateral max_vel")
+        mv.x = 0.0
+        mv.y = 0.0
+    return {
+        "mass": pof_mass * tbl["density"],
+        "max_vel": mv,
+        "max_rear_vel": tbl["max_rear_vel"],
+        "max_rotvel": tbl["max_rotvel"],
+        "forward_accel_time_const": tbl["forward_accel"],
+        "forward_decel_time_const": tbl["forward_decel"],
+        "side_slip_time_const": tbl["damp"],
+        "rotdamp": tbl["rotdamp"],
+        "afterburner_max_vel": tbl["afterburner_max_vel"],
+        "afterburner_forward_accel_time_const":
+            tbl["afterburner_forward_accel"],
+    }
+
 func _physics_process(delta: float) -> void:
-    if fm == null:   # _fatal quits deferred; don't simulate meanwhile
+    if sim == null:  # _fatal quits deferred; don't simulate meanwhile
         return
 
     # pointer capture: grabbing in _ready races the WM (window not yet
@@ -116,7 +168,7 @@ func _physics_process(delta: float) -> void:
     # positive bank rolls LEFT): pitch is stick-true (Up pushes the nose
     # down), turn and roll are direction-true (Left turns left, Q rolls
     # left) -- user-calibrated 2026-07-25.
-    fm.afterburner = Input.is_key_pressed(KEY_TAB)
+    var burn := Input.is_key_pressed(KEY_TAB)
 
     var ci := {
         "pitch": clampf(_axis(KEY_UP, KEY_DOWN)
@@ -125,27 +177,32 @@ func _physics_process(delta: float) -> void:
                           + mouse_accum.x * MOUSE_SENS, -1.0, 1.0),
         "bank": _axis(KEY_Q, KEY_E),
         "forward": throttle,
+        "afterburner": burn,
     }
     mouse_accum = Vector2.ZERO
-    fm.read_flying_controls(ci, delta)
-    fm.sim(delta)
+    sim.fly_step(delta, ci)
+    var st: Dictionary = sim.fly_state()
 
     # FS2 frame -> Godot frame at the visual boundary only
-    ship.position = Vector3(fm.pos.x, fm.pos.y, -fm.pos.z)
+    var p: Vector3 = st["pos"]
+    var rv: Vector3 = st["rvec"]
+    var uv: Vector3 = st["uvec"]
+    var fv: Vector3 = st["fvec"]
+    ship.position = Vector3(p.x, p.y, -p.z)
     ship.basis = Basis(
-        Vector3(fm.rvec.x, fm.rvec.y, -fm.rvec.z),
-        Vector3(fm.uvec.x, fm.uvec.y, -fm.uvec.z),
-        -Vector3(fm.fvec.x, fm.fvec.y, -fm.fvec.z))
+        Vector3(rv.x, rv.y, -rv.z),
+        Vector3(uv.x, uv.y, -uv.z),
+        -Vector3(fv.x, fv.y, -fv.z))
 
     # the free rotators turn (dishes, panels -- loaded ROT only; the rate is
     # inspection-flavor, retail's per-subsystem turn rate is ships.tbl data)
     for r in ship.rotators():
         r["node"].rotate_object_local(r["axis"], 0.5 * delta)
 
-    ship.set_thrusters(throttle > 0.0 or fm.afterburner)
+    ship.set_thrusters(throttle > 0.0 or burn)
 
     _update_camera(delta)
-    hud_right.text = "speed %6.1f\nengine %4d%%" % [fm.fspeed, int(throttle * 100.0)]
+    hud_right.text = "speed %6.1f\nengine %4d%%" % [st["fspeed"], int(throttle * 100.0)]
 
 # +1 when `pos` is held, -1 for `neg` -- keyboard stick
 static func _axis(pos: Key, neg: Key) -> float:
@@ -177,7 +234,9 @@ func _unhandled_input(event: InputEvent) -> void:
             view_chase = not view_chase
             ship.model.visible = view_chase
         KEY_R:
-            fm = FlightClass.new()
+            # replays the SAME params -- the FlightModel-era reset silently
+            # dropped a tbl ship back to the synthetic FIGHTER
+            sim.fly_reset(flight_params)
             throttle = 0.0
         KEY_H:
             hud.visible = not hud.visible

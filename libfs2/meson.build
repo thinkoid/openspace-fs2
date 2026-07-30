@@ -87,4 +87,15 @@ if godot_exe.found()
         link_with: godot_cpp_lib,
         dependencies: [sdl2_dep, openal_dep, gl_dep],
         link_args: ['-Wl,--no-undefined'])
+
+    # The runtime loading contract: consumers (fly.gd, the gates) hand this
+    # file to GDExtensionManager.load_extension. It lives in the build tree
+    # with the .so's absolute path baked in -- the inspect/ project is never
+    # written to.
+    gdext_conf = configuration_data()
+    gdext_conf.set('SO_PATH', libfs2_so.full_path())
+    libfs2_gdext = configure_file(
+        input: 'fs2.gdextension.in',
+        output: 'fs2.gdextension',
+        configuration: gdext_conf)
 endif

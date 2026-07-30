@@ -1,0 +1,12 @@
+; Template for meson's configure_file(): the built library's absolute path
+; lands in the build tree beside the .so. Consumers (fly.gd, the gates)
+; load it at runtime through GDExtensionManager.load_extension -- nothing
+; is written into the inspect/ project.
+
+[configuration]
+entry_symbol = "fs2_library_init"
+compatibility_minimum = "4.7"
+
+[libraries]
+linux.debug.x86_64 = "@SO_PATH@"
+linux.release.x86_64 = "@SO_PATH@"

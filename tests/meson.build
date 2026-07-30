@@ -120,14 +120,15 @@ test('tres-load-check', find_program('tres_load_check.sh'),
     depends: [pof2glb],
     timeout: 120)
 
-# The GDExtension gate: a headless godot boot dlopens libfs2.so through a
-# throwaway project and check_gdext.gd proves FS2.version() round-trips the
+# The GDExtension gate: a headless godot boot loads libfs2 through the
+# build tree's generated fs2.gdextension (the same load_extension contract
+# fly.gd uses) and check_gdext.gd proves FS2.version() round-trips the
 # vcs_tag string through the boundary (GDScript -> shim -> fs2_t and back).
 # libfs2_so is a disabler without godot on PATH, which un-defines this test;
 # the script also skips 77 on its own for the meson-reconfigure-less case.
 test('gdext-check', find_program('gdext_check.sh'),
     args: [
-        libfs2_so.full_path(),
+        libfs2_gdext,
         meson.current_source_dir() / 'check_gdext.gd',
         meson.project_source_root(),
     ],
@@ -180,6 +181,22 @@ test('flight-check', find_program('flight_check.sh'),
         meson.project_source_root(),
     ],
     depends: [physics_dump],
+    timeout: 120)
+
+# The INVERTED flight gate (the plan's gate-inversion, live): physics_dump's
+# trace replayed through the native boundary must agree BIT-EXACTLY -- both
+# sides run the same foundation machine code, so the tolerance is zero and
+# any difference indicts the boundary itself. flight-check (above) keeps
+# the GDScript port honest as the executable spec; this keeps the native
+# side honest against the same oracle.
+test('flight-native-check', find_program('flight_native_check.sh'),
+    args: [
+        physics_dump.full_path(),
+        libfs2_gdext,
+        meson.current_source_dir() / 'check_flight_native.gd',
+        meson.project_source_root(),
+    ],
+    depends: [physics_dump, libfs2_so],
     timeout: 120)
 
 # The targeting gate: cycle order, hostile filter, and the `targeted`
