@@ -1066,3 +1066,31 @@ catalogued decision (see the E4+E5 flag list above).  The survey (A-F)
 is closed.  Parked stock: cf_get_file_list copy-paste dedup, commented-
 code policy (~2000 lines), D-leftovers (observer, EAX chain, MP button
 handlers), objectsort modernization (rejected: draw-order risk).
+
+## Crossroads: port line mothballed, godot line revived (2026-07-30)
+
+With the survey closed, four directions were weighed: (1) return to
+Godot with the gameplay as a GDExtension, (2) an art revamp, (3)
+continued incremental modernization, (4) a reference-point rewrite on a
+modern engine.  Decision: (1), with (3) as its method and (2) riding
+along.  In brief: a rewrite discards working gameplay to obtain an
+engine that GDExtension gets without the rewrite; chipping alone has no
+exit condition, and its remaining bulk (renderer, sound, platform glue)
+is exactly what any engine future discards; and the art revamp's cost is
+engine-dependent -- on Godot GLB is native and the glb2pof BSP boss
+fight never has to be fought.
+
+So: master is MOTHBALLED at this survey-complete milestone -- playable,
+warnings 4756 -> 15, every survivor catalogued above.  Not abandoned:
+fixes land here on their merits, and this branch remains the migration's
+authoritative retail reference -- the C++ the GDExtension compiles and
+the behavior its oracles diff against.  The `godot` branch is
+de-mothballed per its own mothball README's exit condition ("revival, if
+ever, goes GDExtension-first"); its README carries the revival plan.
+First task over there: reunification -- master's 32 post-divergence
+commits (the whole fix + survey campaign) merge in, shared sources
+resolving to master's side.
+
+Parked port-line stock stays parked (the E4+E5 flag list, the
+commented-code policy, cf_get_file_list dedup); the campaign playtest
+remains open as the port's own closing gate.

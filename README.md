@@ -23,27 +23,30 @@ anchors sit beside it (Emacs `compilation-mode` files).
 ## Two projects, one lineage
 
 The Linux port is complete, and it is not the end of the line — it is the end
-of *a* line. For a while (2026-07-22 to 2026-07-27) this repository hosted a
-second project beside it: a migration to Godot, the retail simulation meant to
-stay authoritative as a C++ library behind a modern engine boundary. That
-project is **mothballed** — the implementation had drifted into reimplementing
-the simulation in GDScript, whose endgame is a rewrite of what the port
-already owns in C++. It stopped deliberately at a gate-clean, playable
-milestone; the `godot` branch is preserved, and its README is the map:
-architecture, working recipes, and the revival route (GDExtension-first) if
-it ever comes back.
+of *a* line. As of **2026-07-30 this branch is mothballed** at its
+survey-complete milestone: the campaign plays, the codebase survey is closed
+(warnings 4,756 → 15, every survivor a catalogued decision in
+[docs/notes.md](docs/notes.md)), and further chipping would mean modernizing
+subsystems — the renderer above all — that the next stage replaces outright.
 
-The port line is the live line: playtesting, wrinkle fixes, whatever serves
-the authentic retail game. The lineage runs retail 2002 → Linux port 2026,
-in one continuous history.
+The live project is the **Godot migration on the `godot` branch**, revived
+the same day along its own mothball note's exit route: GDExtension-first.
+The simulation stays this port's C++, compiled as a native module; Godot
+owns presentation. That branch's README carries the map and the plan.
+
+Mothballed is not abandoned: fixes still land here on their merits, and this
+branch remains the migration's authoritative retail reference — the code the
+GDExtension compiles and the behavior its oracles diff against. The lineage
+runs retail 2002 → Linux port 2026 → Godot host, in one continuous history.
 
 ## Branches
 
 - `retail` — `663b3471b`, the 2002 Volition warpcore CVS import. Pristine,
   immutable.
-- `master` — the working branch; the port happens here.
-- `godot` — the mothballed Godot migration, frozen at its Training-1-playable
-  milestone; see its own README.
+- `master` — the retail-forward port; mothballed 2026-07-30 at its
+  survey-complete milestone, live as the migration's reference implementation.
+- `godot` — the working branch: the Godot migration, revived 2026-07-30,
+  GDExtension-first; see its own README.
 - `fs2open` — fs2open `release_26_0_0`, reference implementation and fix-mine
   source. Read, cherry-pick ideas, never build on.
 - `reference/*` — abandoned 2018/2023 fork lines; style reference only.
