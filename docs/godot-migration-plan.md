@@ -726,13 +726,182 @@ only). What remains is polish and the evaluator differential gate (a
 retail event-trace dump against the VM's replay, physics_dump-style)
 once wanted.
 
+## Second step: the GDExtension boundary (`libfs2`)
+
+Designed 2026-07-30, after the revival and the reunification merge. This is
+the "FS2 as a simulation library" horizon item made concrete — the ownership
+table enforced by an ABI. The GDScript era proved the semantics and built the
+gates; this step moves execution back into retail's own machine code and
+demotes the ports to oracles.
+
+### The library
+
+A GDExtension is a shared library Godot dlopens, described by a small
+`.gdextension` file; the library registers classes with ClassDB and they
+appear to GDScript as native types. Ours:
+
+```
+libfs2.so  =  foundation (the retail corpus, unchanged)
+            + the tool-proven stub family (gr_*, snd as event capture, ...)
+            + fs2_t, the boundary object          (engine-agnostic C++)
+            + one shim TU registering class FS2   (the only file that
+                                                   includes a Godot header)
+```
+
+The founding fact: **the tools already prove the sim runs headless.**
+`mission2tres` and `shiptbl2tres` link all of foundation, stub the graphics
+vtable, and run retail's real init and parse chains to completion. The
+boundary is the same trick with a longer leash — keep calling the frame
+chain instead of stopping after the parse.
+
+Two layers, two audiences:
+
+- **`fs2_t`** (in libfs2 proper) — a plain struct owning the world:
+  `load()`, `step()`, `snapshot()`, `events()`, ordinary C++ types
+  throughout, no Godot header anywhere. The library compiles without Godot
+  existing, so `sim_dump` and the oracle gates link it directly — the
+  boundary API is tested without an engine in the room.
+- **`FS2`** (the shim TU) — the ClassDB-registered wrapper: holds an
+  `fs2_t`, forwards the four calls, marshals structs to Variants.
+  Deliberately boring; pure translation, no logic. GDScript reads
+  `var sim := FS2.new()`; the sim side reads `fs2_t sim; sim.step(dt)` —
+  each world in its own dialect, one page of glue between them.
+
+### The API and the two flows
+
+```
+fs2_t
+    load(game_root, mission, seed)   // cfile at root, tables, GAME-path parse
+    step(dt, commands)               // one retail frame, minus presentation
+    snapshot()                       // value-only world state
+    events()                         // discontinuities, drained per call
+```
+
+Godot owns the call cadence: the glue scene steps the sim from
+`_physics_process`. But **dt is an input, not a policy** — the plan keeps
+retail's variable timestep, so the sim accepts whatever dt arrives exactly
+as retail accepted flFrametime. In play that is Godot's steady physics
+tick; in gates it is a recorded dt sequence replayed exactly. `seed` pins
+the rand stream at load (the sexp caching is tuned so tight a re-rolled
+rand breaks the campaign); determinism is a boundary parameter, never a
+retail modification.
+
+No callbacks from sim into engine, ever — the sim is called, answers,
+returns. The one-way rule of the ownership table, enforced by the ABI:
+libfs2 does not link against Godot at all.
+
+- **Commands in — input inversion at the device layer.** Rather than
+  rewriting playercontrol, the boundary writes retail's own key/joystick
+  state before stepping: a virtual stick. Retail's control code runs
+  unmodified, reading state it believes came from hardware. The GDScript
+  bindings table survives as the Godot-side mapping from real keys to
+  boundary commands.
+- **Snapshots out — keyed by `object.signature`.** Retail already carries
+  a stable id minted to outlive objnum reuse; the snapshot uses it as-is.
+  Per object: signature, class, position, orientation, velocity, hull,
+  submodel angles (turrets, rotators). A retail mission is a few hundred
+  objects; a full snapshot is kilobytes per tick.
+- **Events out — the discontinuities.** Object created (Godot instances
+  the ship scene for that class), object destroyed, message spoken,
+  directive changed, **sound requested** — the `snd_play` stubs stop
+  being silent and become recorders, so audio is an event stream Godot
+  plays through its own mixer.
+
+### What native linkage buys
+
+The GDScript line stopped at Training-1 because every subsystem had to be
+transcribed. The native sim gets retail's implementations by linkage:
+
+- **Mission loading runs the GAME path, not FRED's** — arrival cues,
+  departure, reinforcements, waves all just work; `mission_eval_arrivals`
+  is in foundation. (The reunification's narrow `Fred_running` stays the
+  tools' private mode; the sim never sets it.)
+- **Collision upgrades itself**: the swept-sphere approximation retires in
+  favor of retail's real BSP `model_collide` — fidelity rises by deleting
+  code.
+- **The SEXP VM is the real evaluator** — `mission_process_event`, the
+  KNOWN_* caching, the timestamp overloads, all of it.
+- The mothball README's "not crossed" list (missiles, shields, subsystem
+  damage, dogfight AI, energy management, the ~100 unported operators)
+  stops being a porting backlog and becomes a **stubbing audit**: the code
+  is present; the per-subsystem question is only "does it touch
+  gr/snd/UI, and is that seam stubbed or evented?"
+
+### The Godot side
+
+`inspect/` pivots from simulating to presenting. The asset pipeline is
+untouched — pof2glb's GLB + `.tres` per class — and `mission.gd` becomes a
+reconciler: on `object created`, instance the ship scene for that class
+keyed by signature; each tick, apply transforms and submodel angles from
+the snapshot; on `destroyed`, free it (the "Missions rendered by Godot"
+horizon item, verbatim). The HUD gauges keep their drawing code; their
+data now comes from the snapshot. Each GDScript sim file —
+`flight_model.gd`, `weapons.gd`, `waypoint_ai.gd`, `sexp_vm.gd` — retires
+when its native counterpart drives the same gauge.
+
+### Verification — the gates invert
+
+The retired ports are not deleted; they are demoted to oracles:
+
+- **flight-check inverts.** Today it diffs `flight_model.gd`'s replay
+  against `physics_dump` (retail's integrator). The native sim IS that
+  integrator, so the gate diffs the GDScript port against the boundary's
+  snapshot trace — same trace format, same tolerances, roles swapped.
+- **Per-slice retirement gates.** Before a GDScript sim file dies, run the
+  mission under both sims and diff the observable record — positions per
+  tick, event timing, directive transitions. The port was pinned against
+  retail; the native sim must reproduce what the pin certified.
+- **The ultimate oracle is the port itself.** The same C++ compiles into
+  `fs2` and into libfs2; fed the same mission, seed, and dt sequence, the
+  two must produce matching sim traces. A `sim_dump` tool (physics_dump's
+  grown-up sibling, linking `fs2_t` directly) makes that a meson gate.
+
+### Build: godot-cpp, vendored
+
+Settled 2026-07-30: **godot-cpp**, vendored as a submodule beside libpof,
+built by our meson directly — it is source files plus a python binding
+generator over `extension_api.json`; a `custom_target` runs the generator
+at configure time. No SCons, no CMake. The api json can be dumped from the
+installed godot (`godot --dump-extension-api`) so bindings match the real
+4.7.1. The raw C interface was considered and declined: it would mean
+hand-writing the object model godot-cpp generates — CFront run in reverse,
+visible plumbing rather than visible mechanism, and none of it ours.
+
+### Phasing — one gate per bite
+
+1. **Slice 0, skeleton.** Submodule + meson target + `.gdextension`;
+   Godot loads libfs2 and a `version()` method returns the vcs_tag
+   string. Gate: a headless script asserts the round-trip.
+2. **Slice 1, flight.** One ship, native physics; commands in, transform
+   out; `fly.tscn` switches to the native sim. Gate: inverted
+   flight-check. Retires `flight_model.gd`.
+3. **Slice 2, the world.** Game-path mission load, object list,
+   snapshots; arrival cues live for the first time on this branch.
+   Training-1's layout appears from the native sim; retail AI flies the
+   Instructor. Retires `waypoint_ai.gd`.
+4. **Slice 3, weapons + collision.** Retail `model_collide`, hull ledger
+   native. Retires `weapons.gd`.
+5. **Slice 4, events + HUD data.** Native SEXP processing, directives,
+   messages, sounds-as-events. Retires `sexp_vm.gd` — the biggest
+   transcription, replaced by the original.
+6. **Then the frontier the GDScript line never reached** — arrival/
+   departure missions, dogfight AI, shields, missiles — mostly by
+   auditing stubs rather than writing systems.
+
+**Exit:** Training-1 playable again, the same lesson as the mothball
+milestone — but `inspect/` reduced to presentation and every game
+semantic executing in the same machine code the retail port ships. The
+ownership table, enforced this time.
+
 ## Where this work lives
 
-- `master` — the retail Linux port, its own line, formatted uniformly at the
-  branch point so migration diffs never carry format churn.
-- `godot` branch (in this repo) — the migration's early phases: converter,
-  inspection project, manifests. They sit next to the port's readers, which they
-  depend on.
+- `master` — the retail Linux port; mothballed 2026-07-30 at its
+  survey-complete milestone, serving as the migration's reference
+  implementation. The reunification merge (2026-07-30) carried its whole
+  fix + survey campaign into this branch.
+- `godot` branch (in this repo) — the migration: converter, inspection
+  project, manifests, and now the libfs2 boundary. They sit next to the
+  port's readers, which they depend on.
 - Separate repo (later) — when FS2 becomes a library behind a narrow boundary
   (below), the port graduates to a pinned dependency (submodule/subtree).
 
@@ -740,14 +909,14 @@ once wanted.
 
 Deliberately unspecified until the near work forces its hand:
 
-- **FS2 as a simulation library.** A narrow command/snapshot/event boundary lets
-  a headless client load a mission, step it, submit input, and read back
-  immutable snapshots. The boundary's exact shape is *discovered* here, not
-  designed now — no vast abstraction built in advance.
+- **FS2 as a simulation library.** GRADUATED — this is now the second step
+  above (`libfs2`), designed after the GDScript era discovered the
+  boundary's real shape, exactly as this bullet predicted it would be.
 - **Missions rendered by Godot.** A mission is not a `.tscn` on disk. FS2 owns
   the mission and its object list; Godot builds a transient scene tree at runtime
   by instancing per-*type* ship scenes keyed by stable FS2 object IDs, copying
-  authoritative transforms each tick.
+  authoritative transforms each tick. (The second step's reconciler is this,
+  implemented.)
 - **Presentation replacement.** HUD, menus, briefing/debriefing, audio, and
   video move to Godot once the simulation runs behind the boundary.
 - **Selective modernization.** Only where it clearly pays — never rewriting
