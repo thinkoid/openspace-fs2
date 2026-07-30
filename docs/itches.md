@@ -5,6 +5,18 @@ groom discipline feeds ("write it down instead of scratching it"). Each entry
 carries enough design to start cold. Chronological log stays in notes.md;
 this file is only the itches.
 
+## docs: the test book — every gate's why and how (2026-07-30)
+
+Requested by the user at slice 1: a detailed markdown treatment of ALL the
+meson gates (20 at time of writing) — per gate: what question it answers
+(the why), the mechanism (oracle, driver, comparison discipline, tolerances
+and their justification), what proved it bites, and what it deliberately
+does not cover. The material is scattered today across tests/meson.build
+comments, the gate scripts' headers, and the migration plan's slice-facts
+blocks; the book gathers it in one place. Natural home: docs/tests.md.
+Write it when the boundary slices settle (each slice adds/inverts gates —
+a book written mid-inversion goes stale weekly).
+
 ## linklist: thin the sentinel — `links_t<T>` retrofit (2026-07-28) — SCRATCHED same day, REVERTED 2026-07-29
 
 **Reverted (2026-07-29).** Second thoughts won: the retrofit was churn on a
