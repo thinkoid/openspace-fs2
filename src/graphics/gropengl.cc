@@ -261,7 +261,7 @@ gr_opengl_flip()
         frame_stride = (s && atoi(s) > 0) ? atoi(s) : 60;
     }
     if (dumpdir && (frame_no++ % frame_stride) == 0) {
-        int w = gr_screen.max_w, h = gr_screen.max_h;
+        int w = gr_screen.window_w, h = gr_screen.window_h;
         ubyte *pixels = (ubyte *)malloc(w * h * 3);
         if (pixels) {
             glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -333,7 +333,8 @@ gr_opengl_set_clip(int x, int y, int w, int h)
     gr_screen.clip_height = h;
 
     glEnable(GL_SCISSOR_TEST);
-    glScissor(x, gr_screen.max_h - y - h, w, h);
+    int s = gr_screen.window_scale; // scissor is in real window pixels
+    glScissor(x * s, (gr_screen.max_h - y - h) * s, w * s, h * s);
 }
 
 void
@@ -687,7 +688,7 @@ gr_opengl_aabitmap(int x, int y)
 }
 
 void
-gr_opengl_string(int sx, int sy, char *s)
+gr_opengl_string(int sx, int sy, const char *s)
 {
     int width, spacing, letter;
     int x, y;
@@ -777,14 +778,12 @@ gr_opengl_string(int sx, int sy, char *s)
 void
 gr_opengl_line(int x1, int y1, int x2, int y2)
 {
-    int clipped = 0, swapped = 0;
-
     gr_opengl_set_state(TEXTURE_SOURCE_NONE, ALPHA_BLEND_ALPHA_BLEND_ALPHA,
                         ZBUFFER_TYPE_NONE);
 
     INT_CLIPLINE(x1, y1, x2, y2, gr_screen.clip_left, gr_screen.clip_top,
-                 gr_screen.clip_right, gr_screen.clip_bottom, return, clipped = 1,
-                 swapped = 1);
+                 gr_screen.clip_right, gr_screen.clip_bottom, return, (void)0,
+                 (void)0);
 
     float sx1, sy1;
     float sx2, sy2;
@@ -844,7 +843,7 @@ gr_opengl_aaline(vertex *v1, vertex *v2)
 void
 gr_opengl_gradient(int x1, int y1, int x2, int y2)
 {
-    int clipped = 0, swapped = 0;
+    int swapped = 0;
 
     if (!gr_screen.current_color.is_alphacolor) {
         gr_line(x1, y1, x2, y2);
@@ -852,7 +851,7 @@ gr_opengl_gradient(int x1, int y1, int x2, int y2)
     }
 
     INT_CLIPLINE(x1, y1, x2, y2, gr_screen.clip_left, gr_screen.clip_top,
-                 gr_screen.clip_right, gr_screen.clip_bottom, return, clipped = 1,
+                 gr_screen.clip_right, gr_screen.clip_bottom, return, (void)0,
                  swapped = 1);
 
     gr_opengl_set_state(TEXTURE_SOURCE_NONE, ALPHA_BLEND_ALPHA_BLEND_ALPHA,
@@ -1268,12 +1267,6 @@ gr_opengl_scaler(vertex *va, vertex *vb)
     gr_opengl_tmapper_internal(4, vl, TMAP_FLAG_TEXTURED, 1);
 }
 
-void
-gr_opengl_aascaler(vertex *va, vertex *vb)
-{
-    gr_opengl_scaler(va, vb);
-}
-
 // draw a bitmap as a one-shot textured quad: lock at 16bpp, upload, draw,
 // delete.  Menu screens draw one or two of these per frame, so the immediate
 // upload is fine for now; route through the tcache if it ever shows up hot.
@@ -1542,7 +1535,7 @@ gr_opengl_set_color_fast(color *dst)
 void
 gr_opengl_print_screen(char *filename)
 {
-    int w = gr_screen.max_w, h = gr_screen.max_h;
+    int w = gr_screen.window_w, h = gr_screen.window_h;
 
     ubyte *pixels = (ubyte *)malloc(w * h * 3);
     if (!pixels)
@@ -2396,12 +2389,36 @@ gr_opengl_get_region(int front, int w, int h, ubyte *data)
     gr_opengl_set_state(TEXTURE_SOURCE_NO_FILTERING, ALPHA_BLEND_NONE,
                         ZBUFFER_TYPE_NONE);
 
-    glPixelStorei(GL_PACK_ROW_LENGTH, gr_screen.max_w);
+    int s = gr_screen.window_scale;
+    if (s == 1) {
+        glPixelStorei(GL_PACK_ROW_LENGTH, gr_screen.max_w);
 
-    glReadPixels(0, gr_screen.max_h - h - 1, w, h, GL_BGRA,
-                 GL_UNSIGNED_SHORT_1_5_5_5_REV, data);
+        glReadPixels(0, gr_screen.max_h - h - 1, w, h, GL_BGRA,
+                     GL_UNSIGNED_SHORT_1_5_5_5_REV, data);
 
-    glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+        glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+        return;
+    }
+
+    // magnified viewport: the canvas region occupies an s-times-larger
+    // window rectangle; read it whole and decimate back to canvas pixels,
+    // laid out with the max_w row pitch the callers expect
+    ushort *big = (ushort *)malloc(w * s * h * s * sizeof(ushort));
+    if (!big)
+        return;
+
+    glReadPixels(0, (gr_screen.max_h - h) * s - 1, w * s, h * s, GL_BGRA,
+                 GL_UNSIGNED_SHORT_1_5_5_5_REV, big);
+
+    for (int y = 0; y < h; y++) {
+        ushort *src = big + y * s * w * s;
+        ushort *dst = (ushort *)data + y * gr_screen.max_w;
+        for (int x = 0; x < w; x++) {
+            dst[x] = src[x * s];
+        }
+    }
+
+    free(big);
 }
 
 int
@@ -2645,7 +2662,7 @@ gr_opengl_init()
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-    if (os_create_window(gr_screen.max_w, gr_screen.max_h, 1)) {
+    if (os_create_window(gr_screen.window_w, gr_screen.window_h, 1)) {
         Error(LOCATION, "Can't create window for OpenGL");
     }
 
@@ -2725,7 +2742,9 @@ gr_opengl_init()
     gr_screen.bits_per_pixel = 16;
     gr_screen.bytes_per_pixel = 2;
 
-    glViewport(0, 0, gr_screen.max_w, gr_screen.max_h);
+    // the viewport maps the authored canvas onto the (possibly magnified)
+    // window; GL re-rasterizes, so the 3-D world gains the real resolution
+    glViewport(0, 0, gr_screen.window_w, gr_screen.window_h);
 
     // 2D screen coordinates, top-left origin, y down
     glMatrixMode(GL_PROJECTION);
@@ -2782,7 +2801,6 @@ gr_opengl_init()
     gr_screen.gf_aaline = gr_opengl_aaline;
     gr_screen.gf_pixel = gr_opengl_pixel;
     gr_screen.gf_scaler = gr_opengl_scaler;
-    gr_screen.gf_aascaler = gr_opengl_aascaler;
     gr_screen.gf_tmapper = gr_opengl_tmapper;
 
     gr_screen.gf_gradient = gr_opengl_gradient;

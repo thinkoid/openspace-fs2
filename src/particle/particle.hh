@@ -77,7 +77,7 @@ typedef struct particle_emitter
     float min_life; // How long the particles live
     float max_life; // How long the particles live
     vector normal; // What normal the particle emit arond
-    float normal_variance; //   How close they stick to that normal 0=good, 1=360 degree
+    float normal_variance; // How close they stick to that normal 0=good, 1=360 degree
     float min_vel; // How fast the slowest particle can move
     float max_vel; // How fast the fastest particle can move
     float min_rad; // Min radius

@@ -34,19 +34,12 @@
 
 // --------------------------------------------------------------------------------------------------------
 // Demo title screen
-#ifdef FS2_DEMO
-static int Demo_title_active = 0;
-static int Demo_title_bitmap = -1;
-static int Demo_title_expire_timestamp = 0;
-static int Demo_title_need_fade_in = 1;
-static char *Demo_title_bitmap_filename = NOX("DemoTitle1");
-#endif
 
 // --------------------------------------------------------------------------------------------------------
 // PLAYER SELECT defines
 //
 
-//#define MAX_PLAYER_SELECT_LINES               8                                                       // max # of pilots displayed at once
+//#define MAX_PLAYER_SELECT_LINES      8                    // max # of pilots displayed at once
 int Player_select_max_lines[GR_NUM_RESOLUTIONS] = {
     // max # of pilots displayed at once
     8, // GR_640
@@ -80,10 +73,10 @@ int Choose_list_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
                                                   { // GR_1024
                                                     183, 186, 640, 139 } };
 
-char *Player_select_background_bitmap_name[GR_NUM_RESOLUTIONS] = {
+const char *Player_select_background_bitmap_name[GR_NUM_RESOLUTIONS] = {
     "ChoosePilot", "2_ChoosePilot"
 };
-char *Player_select_background_mask_bitmap[GR_NUM_RESOLUTIONS] = {
+const char *Player_select_background_mask_bitmap[GR_NUM_RESOLUTIONS] = {
     "ChoosePilot-m", "2_ChoosePilot-m"
 };
 // palette for the screen
@@ -95,13 +88,13 @@ char *Player_select_background_mask_bitmap[GR_NUM_RESOLUTIONS] = {
 // convenient struct for handling all button controls
 struct barracks_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y, xt, yt;
     int hotspot;
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    barracks_buttons(char *name, int x1, int y1, int xt1, int yt1, int h)
+    barracks_buttons(const char *name, int x1, int y1, int xt1, int yt1, int h)
         : filename(name)
         , x(x1)
         , y(y1)
@@ -119,7 +112,7 @@ static barracks_buttons
           barracks_buttons("CPB_01", 172, 205, 175, 240, 1),
           barracks_buttons("CPB_02", 226, 205, 229, 240, 2),
 
-          // scroll up, scroll down,    and accept (respectively)
+          // scroll up, scroll down,   and accept (respectively)
           barracks_buttons("CPB_03", 429, 213, -1, -1, 3),
           barracks_buttons("CPB_04", 456, 213, -1, -1, 4),
           barracks_buttons("CPB_05", 481, 207, 484, 246, 5),
@@ -157,7 +150,7 @@ UI_BUTTON
     Player_select_list_region; // button for detecting mouse clicks on this screen
 UI_INPUTBOX Player_select_input_box; // input box for adding new pilot names
 
-// #define PLAYER_SELECT_PALETTE_FNAME                                  NOX("InterfacePalette")
+// #define PLAYER_SELECT_PALETTE_FNAME             NOX("InterfacePalette")
 int Player_select_background_bitmap; // bitmap for this screen
 int Player_select_palette; // palette bitmap for this screen (software mode needs it)
 int Player_select_autoaccept = 0;
@@ -199,8 +192,8 @@ static int Player_select_middle_text_y[GR_NUM_RESOLUTIONS] = {
 
 char Player_select_bottom_text[150] = "";
 char Player_select_middle_text[150] = "";
-void player_select_set_bottom_text(char *txt);
-void player_select_set_middle_text(char *txt);
+void player_select_set_bottom_text(const char *txt);
+void player_select_set_middle_text(const char *txt);
 
 // FORWARD DECLARATIONS
 void player_select_init_player_stuff(int mode); // initialize the pilot list
@@ -212,7 +205,7 @@ int player_select_create_new_pilot();
 void player_select_delete_pilot();
 void player_select_display_all_text();
 void player_select_display_copyright();
-void player_select_set_bottom_text(char *txt);
+void player_select_set_bottom_text(const char *txt);
 void player_select_set_controls(int gray);
 void player_select_draw_list();
 void player_select_process_noninput(int k);
@@ -252,21 +245,6 @@ player_select_init()
 
     Player_select_force_bastion = 0;
 
-#ifdef FS2_DEMO
-    /*
-        Demo_title_bitmap = bm_load(Demo_title_bitmap_filename);
-        if ( Demo_title_bitmap >= 0 ) {
-#ifndef HARDWARE_ONLY
-                palette_use_bm_palette(Demo_title_bitmap);
-#endif
-                Demo_title_active = 1;
-                Demo_title_expire_timestamp = timestamp(5000);
-        } else {
-                Demo_title_active = 0;
-        }
-        */
-    Demo_title_active = 0;
-#endif
 
     // create the UI window
     Player_select_window.create(0, 0, gr_screen.max_w, gr_screen.max_h, 0);
@@ -365,10 +343,6 @@ player_select_init()
         KEY_C);
 
     // disable the multi player button in the E3 and press tour builds
-#if defined(E3_BUILD) || defined(PRESS_TOUR_BUILD)
-    Player_select_buttons[gr_screen.res][MULTI_BUTTON].button.hide();
-    Player_select_buttons[gr_screen.res][MULTI_BUTTON].button.disable();
-#endif
 
     // attempt to load in the background bitmap
     Player_select_background_bitmap = bm_load(
@@ -386,9 +360,9 @@ player_select_init()
     Player_select_initial_count = -1;
     memset(Player_select_very_first_pilot_callsign, 0, CALLSIGN_LEN + 2);
 
-    //  if(Player_select_num_pilots == 0){
-    //          Player_select_autoaccept = 1;
-    //  }
+    //   if(Player_select_num_pilots == 0){
+    //      Player_select_autoaccept = 1;
+    //   }
 
     player_select_init_player_stuff(PLAYER_SELECT_MODE_SINGLE);
 
@@ -397,57 +371,12 @@ player_select_init()
     }
 }
 
-#ifdef FS2_DEMO
-// Display the demo title screen
-void
-demo_title_blit()
-{
-    int k;
-
-    Mouse_hidden = 1;
-
-    if (timestamp_elapsed(Demo_title_expire_timestamp)) {
-        Demo_title_active = 0;
-    }
-
-    k = game_poll();
-    if (k > 0) {
-        Demo_title_active = 0;
-    }
-
-    if (Demo_title_need_fade_in) {
-        gr_fade_out(0);
-    }
-
-    gr_set_bitmap(Demo_title_bitmap);
-    gr_bitmap(0, 0);
-
-    gr_flip();
-
-    if (Demo_title_need_fade_in) {
-        gr_fade_in(0);
-        Demo_title_need_fade_in = 0;
-    }
-
-    if (!Demo_title_active) {
-        gr_fade_out(0);
-        Mouse_hidden = 0;
-    }
-}
-
-#endif
 
 void
 player_select_do()
 {
     int k;
 
-#ifdef FS2_DEMO
-    if (Demo_title_active) {
-        // demo_title_blit();
-        return;
-    }
-#endif
 
     // re-enabled for the software renderer: retail commented this out when
     // the shipped builds went hardware-only, leaving the 8bpp path black
@@ -499,22 +428,18 @@ player_select_do()
     // draw any pending messages on the bottom or middle of the screen
     player_select_display_all_text();
 
-#ifndef RELEASE_REAL
-    // gr_set_color_fast(&Color_bright_green);
-    // gr_string(0x8000, 10, "Development version - DO NOT RELEASE");
-#endif
 
     /*
-        gr_set_color(255, 0, 0);
-        vector whee[5];
-        vector *arr[5] = {&whee[0], &whee[1], &whee[2], &whee[3], &whee[4]};
-        whee[0].x = 10; whee[0].y = 10; whee[0].z = 0.0f;
-        whee[1].x = 50; whee[1].y = 50; whee[1].z = 0.0f;
-        whee[2].x = 50; whee[2].y = 90; whee[2].z = 0.0f;
-        whee[3].x = 90; whee[3].y = 130; whee[3].z = 0.0f;
-        whee[4].x = 180; whee[4].y = 130; whee[4].z = 0.0f;
-        gr_pline_special(arr, 5, 2);
-        */
+   gr_set_color(255, 0, 0);
+   vector whee[5];
+   vector *arr[5] = {&whee[0], &whee[1], &whee[2], &whee[3], &whee[4]};
+   whee[0].x = 10; whee[0].y = 10; whee[0].z = 0.0f;
+   whee[1].x = 50; whee[1].y = 50; whee[1].z = 0.0f;
+   whee[2].x = 50; whee[2].y = 90; whee[2].z = 0.0f;
+   whee[3].x = 90; whee[3].y = 130; whee[3].z = 0.0f;
+   whee[4].x = 180; whee[4].y = 130; whee[4].z = 0.0f;
+   gr_pline_special(arr, 5, 2);
+   */
 
     gr_flip();
 }
@@ -544,7 +469,7 @@ player_select_close()
         Player_select_background_bitmap = -1;
     }
     // if(Player_select_palette >= 0){
-    //  bm_release(Player_select_palette);
+    //   bm_release(Player_select_palette);
     //Player_select_palette = -1;
     // }
 
@@ -664,8 +589,8 @@ player_select_button_pressed(int n)
             // clear the player out
             // JH: What the hell?  How do you clone a pilot if you clear out the source you are copying
             // from?  These next 2 lines are pure stupidity, so I commented them out!
-            //                  memset(Player,0,sizeof(player));
-            //                  Player = NULL;
+            //       memset(Player,0,sizeof(player));
+            //       Player = NULL;
 
             // display some text on the bottom of the dialog
             player_select_set_bottom_text(
@@ -750,11 +675,6 @@ player_select_create_new_pilot()
 
     int play_scroll_sound = 1;
 
-#ifdef FS2_DEMO
-    if (Demo_title_active) {
-        play_scroll_sound = 0;
-    }
-#endif
 
     if (play_scroll_sound) {
         gamesnd_play_iface(SND_SCROLL);
@@ -791,9 +711,7 @@ void
 player_select_delete_pilot()
 {
     char filename[MAX_PATH_LEN + 1];
-    int i, deleted_cur_pilot;
-
-    deleted_cur_pilot = 0;
+    int i;
 
     // tack on the full path and the pilot file extension
     // build up the path name length
@@ -862,7 +780,7 @@ player_select_scroll_list_down()
 int
 player_select_get_last_pilot_info()
 {
-    char *last_player;
+    const char *last_player;
 
     last_player = os_config_read_string(NULL, "LastPlayer", NULL);
 
@@ -1163,7 +1081,7 @@ player_select_display_copyright()
     int sx, sy, w;
     char Copyright_msg1[256], Copyright_msg2[256];
 
-    //  strcpy(Copyright_msg1, XSTR("Descent: FreeSpace - The Great War, Copyright c 1998, Volition, Inc.", -1));
+    //   strcpy(Copyright_msg1, XSTR("Descent: FreeSpace - The Great War, Copyright c 1998, Volition, Inc.", -1));
     gr_set_color_fast(&Color_white);
 
     sprintf(Copyright_msg1, NOX("FreeSpace 2"));
@@ -1222,7 +1140,7 @@ player_select_pilot_file_filter(char *filename)
 }
 
 void
-player_select_set_bottom_text(char *txt)
+player_select_set_bottom_text(const char *txt)
 {
     if (txt) {
         strncpy(Player_select_bottom_text, txt, 149);
@@ -1230,7 +1148,7 @@ player_select_set_bottom_text(char *txt)
 }
 
 void
-player_select_set_middle_text(char *txt)
+player_select_set_middle_text(const char *txt)
 {
     if (txt) {
         strncpy(Player_select_middle_text, txt, 149);

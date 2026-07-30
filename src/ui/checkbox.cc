@@ -12,11 +12,12 @@
 #include <globalincs/alphacolors.hh>
 
 void
-UI_CHECKBOX::create(UI_WINDOW *wnd, char *_text, int _x, int _y, int _state)
+UI_CHECKBOX::create(UI_WINDOW *wnd, const char *_text, int _x, int _y,
+                    int _state)
 {
     int _w, _h;
 
-    //  gr_get_string_size( &_w, &_h, "X" );
+    //   gr_get_string_size( &_w, &_h, "X" );
     _w = 18;
     _h = 18;
 

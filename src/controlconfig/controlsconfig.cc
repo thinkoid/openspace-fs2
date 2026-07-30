@@ -41,12 +41,12 @@
 #define CONTROL_W_COORD 2
 #define CONTROL_H_COORD 3
 
-char *Conflict_background_bitmap_fname[GR_NUM_RESOLUTIONS] = {
+const char *Conflict_background_bitmap_fname[GR_NUM_RESOLUTIONS] = {
     "ControlConfig", // GR_640
     "2_ControlConfig" // GR_1024
 };
 
-char *Conflict_background_bitmap_mask_fname[GR_NUM_RESOLUTIONS] = {
+const char *Conflict_background_bitmap_mask_fname[GR_NUM_RESOLUTIONS] = {
     "ControlConfig-m", // GR_640
     "2_ControlConfig-m" // GR_1024
 };
@@ -369,22 +369,22 @@ int Config_allowed[] = {
 
 /*
 // old invalid demo keys
-#define INVALID_DEMO_KEYS_MAX   14
+#define INVALID_DEMO_KEYS_MAX 14
 int Invalid_demo_keys[] = {
-        INCREASE_SHIELD,
-        DECREASE_SHIELD,
-        SHIELD_EQUALIZE,
-        SHIELD_XFER_TOP,
-        SHIELD_XFER_BOTTOM,
-        SHIELD_XFER_LEFT,
-        SHIELD_XFER_RIGHT,
-        XFER_SHIELD,
-        XFER_LASER,
-        MULTI_MESSAGE_ALL,
-        MULTI_MESSAGE_FRIENDLY,
-        MULTI_MESSAGE_HOSTILE,
-        MULTI_MESSAGE_TARGET,
-        MULTI_OBSERVER_ZOOM_TO
+   INCREASE_SHIELD,
+   DECREASE_SHIELD,
+   SHIELD_EQUALIZE,
+   SHIELD_XFER_TOP,
+   SHIELD_XFER_BOTTOM,
+   SHIELD_XFER_LEFT,
+   SHIELD_XFER_RIGHT,
+   XFER_SHIELD,
+   XFER_LASER,
+   MULTI_MESSAGE_ALL,
+   MULTI_MESSAGE_FRIENDLY,
+   MULTI_MESSAGE_HOSTILE,
+   MULTI_MESSAGE_TARGET,
+   MULTI_OBSERVER_ZOOM_TO
 };
 */
 #define INVALID_DEMO_KEYS_MAX 0
@@ -426,13 +426,6 @@ control_config_detect_axis()
 int
 control_config_valid_action(int n)
 {
-#ifdef FS2_DEMO
-    int i;
-
-    for (i = 0; i < INVALID_DEMO_KEYS_MAX; i++)
-        if (n == Invalid_demo_keys[i])
-            return 0;
-#endif
 
     return 1;
 }
@@ -440,7 +433,7 @@ control_config_valid_action(int n)
 void
 control_config_conflict_check()
 {
-    int i, j, a, b, c, shift = -1, alt = -1;
+    int i, j, a, b, shift = -1, alt = -1;
 
     for (i = 0; i < CCFG_MAX; i++) {
         Conflicts[i].key = Conflicts[i].joy = -1;
@@ -465,51 +458,50 @@ control_config_conflict_check()
             for (j = i + 1; j < CCFG_MAX; j++) {
                 if (control_config_valid_action(j)) {
                     if (Control_config[i].key_id >= 0) {
-                        c = 0;
                         a = Control_config[i].key_id;
                         b = Control_config[j].key_id;
                         if (a == b) {
                             Conflicts[i].key = j;
                             Conflicts[j].key = i;
-                            Conflicts_tabs[Control_config[i].tab] = 1;
-                            Conflicts_tabs[Control_config[j].tab] = 1;
+                            Conflicts_tabs[(int)Control_config[i].tab] = 1;
+                            Conflicts_tabs[(int)Control_config[j].tab] = 1;
                         }
 
-                        /*                              if ((a >= 0) && (a & KEY_SHIFTED) && (shift >= 0)) {
-                                                        Conflicts[i].key = shift;
-                                                        Conflicts[shift].key = i;
-                                                        Conflicts_tabs[ Control_config[i].tab ] = 1;
-                                                        Conflicts_tabs[ Control_config[shift].tab ] = 1;
-                                                }
+                        /*          if ((a >= 0) && (a & KEY_SHIFTED) && (shift >= 0)) {
+                     Conflicts[i].key = shift;
+                     Conflicts[shift].key = i;
+                     Conflicts_tabs[ Control_config[i].tab ] = 1;
+                     Conflicts_tabs[ Control_config[shift].tab ] = 1;
+                  }
 
-                                                if ((b >= 0) && (b & KEY_SHIFTED) && (shift >= 0)) {
-                                                        Conflicts[j].key = shift;
-                                                        Conflicts[shift].key = j;
-                                                        Conflicts_tabs[ Control_config[j].tab ] = 1;
-                                                        Conflicts_tabs[ Control_config[shift].tab ] = 1;
-                                                }
+                  if ((b >= 0) && (b & KEY_SHIFTED) && (shift >= 0)) {
+                     Conflicts[j].key = shift;
+                     Conflicts[shift].key = j;
+                     Conflicts_tabs[ Control_config[j].tab ] = 1;
+                     Conflicts_tabs[ Control_config[shift].tab ] = 1;
+                  }
 
-                                                if ((a >= 0) && (a & KEY_ALTED) && (alt >= 0)) {
-                                                        Conflicts[i].key = alt;
-                                                        Conflicts[alt].key = i;
-                                                        Conflicts_tabs[ Control_config[i].tab ] = 1;
-                                                        Conflicts_tabs[ Control_config[alt].tab ] = 1;
-                                                }
+                  if ((a >= 0) && (a & KEY_ALTED) && (alt >= 0)) {
+                     Conflicts[i].key = alt;
+                     Conflicts[alt].key = i;
+                     Conflicts_tabs[ Control_config[i].tab ] = 1;
+                     Conflicts_tabs[ Control_config[alt].tab ] = 1;
+                  }
 
-                                                if ((b >= 0) && (b & KEY_ALTED) && (alt >= 0)) {
-                                                        Conflicts[j].key = alt;
-                                                        Conflicts[alt].key = j;
-                                                        Conflicts_tabs[ Control_config[j].tab ] = 1;
-                                                        Conflicts_tabs[ Control_config[alt].tab ] = 1;
-                                                }*/
+                  if ((b >= 0) && (b & KEY_ALTED) && (alt >= 0)) {
+                     Conflicts[j].key = alt;
+                     Conflicts[alt].key = j;
+                     Conflicts_tabs[ Control_config[j].tab ] = 1;
+                     Conflicts_tabs[ Control_config[alt].tab ] = 1;
+                  }*/
                     }
 
                     if ((Control_config[i].joy_id >= 0) &&
                         (Control_config[i].joy_id == Control_config[j].joy_id)) {
                         Conflicts[i].joy = j;
                         Conflicts[j].joy = i;
-                        Conflicts_tabs[Control_config[i].tab] = 1;
-                        Conflicts_tabs[Control_config[j].tab] = 1;
+                        Conflicts_tabs[(int)Control_config[i].tab] = 1;
+                        Conflicts_tabs[(int)Control_config[j].tab] = 1;
                     }
                 }
             }
@@ -534,13 +526,12 @@ control_config_conflict_check()
 void
 control_config_list_prepare()
 {
-    int j, k, y, z;
+    int j, y, z;
     int font_height = gr_get_font_height();
 
     Num_cc_lines = y = z = 0;
     while (z < CCFG_MAX) {
         if ((Control_config[z].tab == Tab) && control_config_valid_action(z)) {
-            k = Control_config[z].key_id;
             j = Control_config[z].joy_id;
             Cc_lines[Num_cc_lines].label = XSTR(Control_config[z].text,
                                                 CONTROL_CONFIG_XSTR + z);
@@ -724,7 +715,7 @@ control_config_bind_axis(int i, int axis)
 int
 control_config_remove_binding()
 {
-    int z, j, k;
+    int z;
     config_item_undo *ptr;
 
     if (Selected_line < 0) {
@@ -754,7 +745,6 @@ control_config_remove_binding()
         return -1;
     }
 
-    j = k = -1;
     ptr = get_undo_block(1);
     ptr->index[0] = z;
     ptr->list[0] = Control_config[z];
@@ -1089,7 +1079,7 @@ control_config_do_bind()
     int i;
 
     game_flush();
-    //  if ((Selected_line < 0) || (Cc_lines[Selected_line].cc_index & JOY_AXIS)) {
+    //   if ((Selected_line < 0) || (Cc_lines[Selected_line].cc_index & JOY_AXIS)) {
     if (Selected_line < 0) {
         gamesnd_play_iface(SND_GENERAL_FAIL);
         return;
@@ -1464,8 +1454,8 @@ control_config_close()
 void
 control_config_do_frame(float frametime)
 {
-    char buf[256], *str, *jptr;
-    int i, j, k, w, x, y, z, len, line, conflict;
+    char buf[256], *str;
+    int i, j, k, w, x, y, z, line, conflict;
     int font_height = gr_get_font_height();
     int select_tease_line =
         -1; // line mouse is down on, but won't be selected until button released
@@ -1990,13 +1980,13 @@ control_config_do_frame(float frametime)
             *bound_string = 0;
     }
 
-    //  gr_set_color_fast(&Color_text_heading);
-    //  gr_printf(LIST_X + 20, HEADING_Y, Heading[Tab]);
+    //   gr_set_color_fast(&Color_text_heading);
+    //   gr_printf(LIST_X + 20, HEADING_Y, Heading[Tab]);
 
-    //  gr_get_string_size(&w, &h, Heading[Tab]);
-    //  y = HEADING_Y + h / 2 - 1;
-    //  gr_line(LIST_X, y, LIST_X + 18, y);
-    //  gr_line(LIST_X + w + 21, y, LIST_X + LIST_W, y);
+    //   gr_get_string_size(&w, &h, Heading[Tab]);
+    //   y = HEADING_Y + h / 2 - 1;
+    //   gr_line(LIST_X, y, LIST_X + 18, y);
+    //   gr_line(LIST_X + w + 21, y, LIST_X + LIST_W, y);
 
     if (Cc_lines[Num_cc_lines - 1].y + font_height >
         Cc_lines[Scroll_offset].y +
@@ -2043,7 +2033,6 @@ control_config_do_frame(float frametime)
             k = Control_config[z].key_id;
             j = Control_config[z].joy_id;
             x = Control_list_key_x[gr_screen.res];
-            jptr = NULL;
             *buf = 0;
 
             if ((k < 0) && (j < 0)) {
@@ -2069,7 +2058,6 @@ control_config_do_frame(float frametime)
 
                     gr_printf(x, y, buf);
 
-                    len = strlen(buf);
                     Cc_lines[line].kx =
                         x - Control_list_coords[gr_screen.res][CONTROL_X_COORD];
                     gr_get_string_size(&w, NULL, buf);
@@ -2284,7 +2272,7 @@ control_get_axes_readings(int *h, int *p, int *b, int *ta, int *tr)
 
     joystick_read_raw_axis(JOY_NUM_AXES, axes_values);
 
-    //  joy_get_scaled_reading will return a value represents the joystick pos from -1 to +1 (fixed point)
+    //   joy_get_scaled_reading will return a value represents the joystick pos from -1 to +1 (fixed point)
     *h = 0;
     if (Axis_map_to[0] >= 0)
         *h = joy_get_scaled_reading(axes_values[Axis_map_to[0]], Axis_map_to[0]);
@@ -2348,41 +2336,41 @@ control_config_clear()
 int
 control_config_handle_conflict()
 { /*
-        if ((Selected_item == -1) && ((Conflicts[z].key >= 0) || (Conflicts[z].joy >= 0))) {  // we are deleting a conflict
-                j = Conflicts[z].joy;
-                if ((j >= 0) && (Control_config[j].joy_id < 0))
-                        j = -1;
+   if ((Selected_item == -1) && ((Conflicts[z].key >= 0) || (Conflicts[z].joy >= 0))) {  // we are deleting a conflict
+      j = Conflicts[z].joy;
+      if ((j >= 0) && (Control_config[j].joy_id < 0))
+         j = -1;
 
-                k = Conflicts[z].key;
-                if ((k >= 0) && (Control_config[k].key_id < 0))
-                        k = -1;
+      k = Conflicts[z].key;
+      if ((k >= 0) && (Control_config[k].key_id < 0))
+         k = -1;
 
-                if ((j >= 0) && (k >= 0) && (j != k)) {  // deleting 2 conflicts, each in different actions
-                        ptr = get_undo_block(2);
-                        ptr->index[0] = j;
-                        ptr->list[0] = Control_config[j];
-                        Control_config[j].joy_id = (short) -1;
+      if ((j >= 0) && (k >= 0) && (j != k)) {  // deleting 2 conflicts, each in different actions
+         ptr = get_undo_block(2);
+         ptr->index[0] = j;
+         ptr->list[0] = Control_config[j];
+         Control_config[j].joy_id = (short) -1;
 
-                        ptr->index[1] = k;
-                        ptr->list[1] = Control_config[k];
-                        Control_config[k].key_id = (short) -1;
+         ptr->index[1] = k;
+         ptr->list[1] = Control_config[k];
+         Control_config[k].key_id = (short) -1;
 
-                } else {  // only 1 action in conflict with selected action (might be both controls, though)
-                        z = j;
-                        if (j < 0)
-                                z = k;
+      } else {  // only 1 action in conflict with selected action (might be both controls, though)
+         z = j;
+         if (j < 0)
+            z = k;
 
-                        Assert(z >= 0);
-                        ptr = get_undo_block(1);
-                        ptr->index[0] = z;
-                        ptr->list[0] = Control_config[z];
+         Assert(z >= 0);
+         ptr = get_undo_block(1);
+         ptr->index[0] = z;
+         ptr->list[0] = Control_config[z];
 
-                        if (j >= 0)
-                                Control_config[z].joy_id = (short) -1;
+         if (j >= 0)
+            Control_config[z].joy_id = (short) -1;
 
-                        if (k >= 0)
-                                Control_config[z].key_id = (short) -1;
-                }*/
+         if (k >= 0)
+            Control_config[z].key_id = (short) -1;
+      }*/
 
     return 0;
 }

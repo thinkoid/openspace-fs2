@@ -64,21 +64,14 @@ static char Red_alert_precursor_mission[MAX_FILENAME_LEN];
 // Red Alert Interface
 /////////////////////////////////////////////////////////////////////////////
 
-char *Red_alert_fname[GR_NUM_RESOLUTIONS] = { "RedAlert", "2_RedAlert" };
+const char *Red_alert_fname[GR_NUM_RESOLUTIONS] = { "RedAlert", "2_RedAlert" };
 
-char *Red_alert_mask[GR_NUM_RESOLUTIONS] = { "RedAlert-m", "2_RedAlert-m" };
+const char *Red_alert_mask[GR_NUM_RESOLUTIONS] = { "RedAlert-m", "2_RedAlert-m" };
 
 // font to use for "incoming transmission"
 int Ra_flash_font[GR_NUM_RESOLUTIONS] = { FONT2, FONT2 };
 
 int Ra_flash_y[GR_NUM_RESOLUTIONS] = { 140, 200 };
-
-static int Ra_flash_coords[GR_NUM_RESOLUTIONS][2] = { {
-                                                          61, 108 // GR_640
-                                                      },
-                                                      {
-                                                          61, 108 // GR_1024
-                                                      } };
 
 #define NUM_BUTTONS 2
 
@@ -368,7 +361,7 @@ red_alert_do_frame(float frametime)
     k = Ui_window.process() & ~KEY_DEBUGGED;
     switch (k) {
     case KEY_ESC:
-        //                      gameseq_post_event(GS_EVENT_ENTER_GAME);
+        //        gameseq_post_event(GS_EVENT_ENTER_GAME);
         gameseq_post_event(GS_EVENT_MAIN_MENU);
         break;
     } // end switch
@@ -792,10 +785,10 @@ void
 red_alert_start_mission()
 {
     // if we are not in campaign mode, go to debriefing
-    //  if ( !(Game_mode & GM_CAMPAIGN_MODE) ) {
-    //          gameseq_post_event( GS_EVENT_DEBRIEF ); // proceed to debriefing
-    //          return;
-    //  }
+    //   if ( !(Game_mode & GM_CAMPAIGN_MODE) ) {
+    //      gameseq_post_event( GS_EVENT_DEBRIEF );   // proceed to debriefing
+    //      return;
+    //   }
 
     // check player health here.
     // if we're dead (or about to die), don't start red alert mission.

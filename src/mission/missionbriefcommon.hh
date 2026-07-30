@@ -114,7 +114,7 @@ typedef struct brief_icon
     vector pos;
     char label[MAX_LABEL_LEN];
     char closeup_label[MAX_LABEL_LEN];
-    //  char            text[MAX_ICON_TEXT_LEN];
+    //   char     text[MAX_ICON_TEXT_LEN];
     hud_anim fadein_anim;
     hud_anim fadeout_anim;
     hud_anim highlight_anim;
@@ -186,7 +186,7 @@ extern int Brief_bmap_coords[GR_NUM_RESOLUTIONS][2];
 extern int Brief_grid_coords[GR_NUM_RESOLUTIONS][4];
 extern int Brief_text_coords[GR_NUM_RESOLUTIONS][4];
 extern int Brief_text_max_lines[GR_NUM_RESOLUTIONS];
-extern char *Brief_static_name[GR_NUM_RESOLUTIONS];
+extern const char *Brief_static_name[GR_NUM_RESOLUTIONS];
 extern int Brief_static_coords[GR_NUM_RESOLUTIONS][2];
 
 // Needed for Fred
@@ -197,20 +197,20 @@ extern int Brief_static_coords[GR_NUM_RESOLUTIONS][2];
 #define BRIEF_GRID_W (BRIEF_GRID0_X2 - BRIEF_GRID3_X1 + 1)
 #define BRIEF_GRID_H (BRIEF_GRID0_Y2 - BRIEF_GRID3_Y1 + 1)
 /*
-#define BRIEF_GRID0_X1                                          63
-#define BRIEF_GRID0_Y1                                          122
-#define BRIEF_GRID1_X1                                          575
-#define BRIEF_GRID1_Y1                                          122
-#define BRIEF_GRID2_X1                                          63
-#define BRIEF_GRID2_Y1                                          350
+#define BRIEF_GRID0_X1                 63
+#define BRIEF_GRID0_Y1                 122
+#define BRIEF_GRID1_X1                 575
+#define BRIEF_GRID1_Y1                 122
+#define BRIEF_GRID2_X1                 63
+#define BRIEF_GRID2_Y1                 350
 
-#define BRIEF_TEXT_X1                                           0
-#define BRIEF_TEXT_Y1                                           397
-#define BRIEF_TEXT_X2                                           441
-#define BRIEF_TEXT_Y2                                           477
-#define BRIEF_TEXT_BEGIN_X                                      50
-#define BRIEF_TEXT_BEGIN_Y                                      414
-#define BRIEF_TEXT_H                                                    54
+#define BRIEF_TEXT_X1                  0
+#define BRIEF_TEXT_Y1                  397
+#define BRIEF_TEXT_X2                  441
+#define BRIEF_TEXT_Y2                  477
+#define BRIEF_TEXT_BEGIN_X             50
+#define BRIEF_TEXT_BEGIN_Y             414
+#define BRIEF_TEXT_H                   54
 
 */
 

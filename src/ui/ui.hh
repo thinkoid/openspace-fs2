@@ -83,7 +83,7 @@ class UI_GADGET
     friend UI_DOT_SLIDER_NEW;
 
 protected:
-    char *bm_filename;
+    const char *bm_filename;
     int kind;
     int hotkey;
     int x, y, w, h;
@@ -102,7 +102,7 @@ protected:
     // Data for supporting bitmaps associated with different states of the control
     int uses_bmaps;
     int m_num_frames;
-    //          ubyte           *bmap_storage[MAX_BMAPS_PER_GADGET];
+    //      ubyte    *bmap_storage[MAX_BMAPS_PER_GADGET];
 
     void drag_with_children(int dx, int dy);
     void start_drag_with_children();
@@ -160,7 +160,7 @@ public:
     // this keeps the loading code from trying to load bitmaps which don't exist
     // and taking an unnecessary disk hit.
     int set_bmaps(
-        char *ani_filename, int nframes = 3,
+        const char *ani_filename, int nframes = 3,
         int start_frame = 1); // extracts MAX_BMAPS_PER_GADGET from .ani file
 
     void reset(); // zero out m_flags
@@ -175,7 +175,7 @@ public:
 #define UI_XSTR_COLOR_PINK 1
 typedef struct UI_XSTR
 {
-    char *xstr; // base string
+    const char *xstr; // base string (window copies own theirs via strdup)
     int xstr_id; // xstring id
     int x, y; // coords of the string
     int clr; // color to use
@@ -260,7 +260,7 @@ public:
     int button_hilighted(); // is the mouse over this button?
     void set_button_hilighted(); // force button to be highlighted
     void press_button(); // force button to get pressed
-    void create(UI_WINDOW *wnd, char *_text, int _x, int _y, int _w, int _h,
+    void create(UI_WINDOW *wnd, const char *_text, int _x, int _y, int _w, int _h,
                 int do_repeat = 0, int ignore_focus = 0);
     void set_highlight_action(void (*user_function)(void));
     void set_disabled_action(void (*user_function)(void));
@@ -310,7 +310,7 @@ class UI_INPUTBOX : public UI_GADGET
     int flags;
     int pixel_limit; // base max characters on how wide the string is (-1 to ignore) in pixels
     int locked;
-    //          int should_reset;
+    //      int should_reset;
     int ignore_escape;
     color *text_color;
     char *valid_chars;
@@ -331,16 +331,17 @@ class UI_INPUTBOX : public UI_GADGET
     virtual void destroy();
 
 public:
-    //          int first_time;
+    //      int first_time;
 
-    void create(UI_WINDOW *wnd, int _x, int _y, int _w, int _textlen, char *text,
+    void create(UI_WINDOW *wnd, int _x, int _y, int _w, int _textlen,
+                const char *text,
                 int _flags = 0, int pixel_lim = -1, color *clr = NULL);
-    void set_valid_chars(char *vchars);
+    void set_valid_chars(const char *vchars);
     void set_invalid_chars(char *ichars);
     int changed();
     int pressed();
     void get_text(char *out);
-    void set_text(char *in);
+    void set_text(const char *in);
 };
 
 // Icon flags
@@ -364,7 +365,8 @@ class UI_ICON : public UI_GADGET
     virtual void destroy();
 
 public:
-    void create(UI_WINDOW *wnd, char *_text, int _x, int _y, int _w, int _h);
+    void create(UI_WINDOW *wnd, const char *_text, int _x, int _y, int _w,
+                int _h);
 };
 
 class UI_CHECKBOX : public UI_GADGET
@@ -388,7 +390,7 @@ class UI_CHECKBOX : public UI_GADGET
 public:
     int changed();
     int checked();
-    void create(UI_WINDOW *wnd, char *_text, int _x, int _y, int _state);
+    void create(UI_WINDOW *wnd, const char *_text, int _x, int _y, int _state);
     void set_state(int _state);
 };
 
@@ -414,7 +416,7 @@ class UI_RADIO : public UI_GADGET
 public:
     int changed();
     int checked();
-    void create(UI_WINDOW *wnd, char *_text, int _x, int _y, int _state,
+    void create(UI_WINDOW *wnd, const char *_text, int _x, int _y, int _state,
                 int _group);
 };
 
@@ -450,6 +452,8 @@ public:
                 int _position, int _window_size);
     int getpos();
     int changed();
+    // un-hides the virtual hide(int); no default arg, so hide() stays unambiguous
+    void hide(int n) override { UI_GADGET::hide(n); }
     void hide();
     void unhide();
     int get_hidden();
@@ -495,7 +499,7 @@ private:
 public:
     // create the slider
     void create(UI_WINDOW *wnd, int _x, int _y, int _w, int _h, int _numberItems,
-                char *_bitmapSliderControl, void (*_upCallback)(),
+                const char *_bitmapSliderControl, void (*_upCallback)(),
                 void (*_downCallback)(), void (*_captureCallback)());
 
     // range management
@@ -517,6 +521,8 @@ public:
     void forceUp();
 
     // general ui commands
+    // un-hides the virtual hide(int); no default arg, so hide() stays unambiguous
+    void hide(int n) override { UI_GADGET::hide(n); }
     void hide();
     void unhide();
     int get_hidden();
@@ -537,7 +543,7 @@ class UI_DOT_SLIDER : public UI_GADGET
 public:
     int pos; // 0 thru 10
 
-    void create(UI_WINDOW *wnd, int _x, int _y, char *bm, int id,
+    void create(UI_WINDOW *wnd, int _x, int _y, const char *bm, int id,
                 int end_buttons = 1, int num_pos = 10);
     virtual void draw();
     virtual void process(int focus = 0);
@@ -557,9 +563,9 @@ class UI_DOT_SLIDER_NEW : public UI_GADGET
 public:
     int pos; // 0 thru 10
 
-    void create(UI_WINDOW *wnd, int _x, int _y, int num_pos, char *bm_slider,
-                int slider_mask, char *bm_left = NULL, int left_mask = -1,
-                int left_x = -1, int left_y = -1, char *bm_right = NULL,
+    void create(UI_WINDOW *wnd, int _x, int _y, int num_pos, const char *bm_slider,
+                int slider_mask, const char *bm_left = NULL, int left_mask = -1,
+                int left_x = -1, int left_y = -1, const char *bm_right = NULL,
                 int right_mask = -1, int right_x = -1, int right_y = -1,
                 int dot_width = 19);
     virtual void draw();
@@ -673,9 +679,9 @@ protected:
 public:
     UI_WINDOW(); // constructor
     ~UI_WINDOW(); // destructor
-    void set_mask_bmap(char *fname);
-    void set_mask_bmap(int bmap, char *name);
-    void set_foreground_bmap(char *fname);
+    void set_mask_bmap(const char *fname);
+    void set_mask_bmap(int bmap, const char *name);
+    void set_foreground_bmap(const char *fname);
     void create(int x, int y, int w, int h, int flags);
     int process(int key_in = -1, int process_mouse = 1);
     void draw();
@@ -691,7 +697,8 @@ public:
     }
     void render_tooltip(char *str);
     void set_ignore_gadgets(int state);
-    void add_XSTR(char *string, int xstr_id, int x, int y, UI_GADGET *assoc,
+    void add_XSTR(const char *string, int xstr_id, int x, int y,
+                  UI_GADGET *assoc,
                   int color_type, int font_id = -1);
     void add_XSTR(UI_XSTR *xstr);
 
@@ -704,13 +711,13 @@ public:
 // 2 extremely useful structs
 typedef struct ui_button_info
 {
-    char *filename;
+    const char *filename;
     int x, y, xt, yt;
     int hotspot;
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    ui_button_info(char *name, int x1, int y1, int xt1, int yt1, int h)
+    ui_button_info(const char *name, int x1, int y1, int xt1, int yt1, int h)
         : filename(name)
         , x(x1)
         , y(y1)
@@ -722,69 +729,68 @@ typedef struct ui_button_info
 
 /*
 typedef struct {
-        char *mask;
-        int start;
-        int end;
+   char *mask;
+   int start;
+   int end;
 } tooltip_group;
 
 typedef struct {
-        int hotspot;
-        char *text;
+   int hotspot;
+   char *text;
 } tooltip;
 
-#define MAX_TOOLTIP_GROUPS      50
-#define MAX_TOOLTIPS                    500
+#define MAX_TOOLTIP_GROUPS 50
+#define MAX_TOOLTIPS       500
 
 extern int Num_tooltip_groups;
 extern tooltip_group Tooltip_groups[MAX_TOOLTIP_GROUPS];
 extern tooltip Tooltips[MAX_TOOLTIPS];
 */
 
-int ui_getfilelist(int MaxNum, char **list, char *filespec);
-void ui_sort_filenames(int n, char **list);
-
 /*
 class UI_SLIDER : public UI_GADGET
 {
-        friend UI_BUTTON;
-                int horz;
-                int position;
-                int window_size;
-                int fake_length;
-                int fake_position;
-                int fake_size;
-                UI_BUTTON left_button;
-                UI_BUTTON right_button;
-                int last_scrolled;
-                int drag_x, drag_y;
-                int drag_starting;
-                int dragging;
-                int moved;
+   friend UI_BUTTON;
+      int horz;
+      int position;
+      int window_size;
+      int fake_length;
+      int fake_position;
+      int fake_size;
+      UI_BUTTON left_button;
+      UI_BUTTON right_button;
+      int last_scrolled;
+      int drag_x, drag_y;
+      int drag_starting;
+      int dragging;
+      int moved;
 
-                int marker_x, marker_y, marker_w, marker_h;
-                int n_positions, pixel_range, increment;
-                float start, stop, current;
-                int mouse_locked;
+      int marker_x, marker_y, marker_w, marker_h;
+      int n_positions, pixel_range, increment;
+      float start, stop, current;
+      int mouse_locked;
 
-                virtual void draw();
-                virtual void process(int focus = 0);
+      virtual void draw();
+      virtual void process(int focus = 0);
 
-                // Used to index into bmap_ids[] array to locate right bitmap for slider
-                enum { SLIDER_BAR_NORMAL = 0 };
-                enum { SLIDER_BAR_DISABLED = 1 };
-                enum { SLIDER_MARKER_NORMAL = 2 };
-                enum { SLIDER_MARKER_DISABLED = 3 };
+      // Used to index into bmap_ids[] array to locate right bitmap for slider
+      enum { SLIDER_BAR_NORMAL = 0 };
+      enum { SLIDER_BAR_DISABLED = 1 };
+      enum { SLIDER_MARKER_NORMAL = 2 };
+      enum { SLIDER_MARKER_DISABLED = 3 };
 
-        public:
-                void create(UI_WINDOW *wnd, int _x, int _y, int _w, int _h, float _start, float _stop, float _pos, int n_positions);
-                int getpos();
-                float getcurrent();
-                int changed();
-                void hide();
-                void unhide();
-                int get_hidden();
-                void link_hotspot(int up_button_num, int down_button_num);
-                int set_bmaps(char *left_button_fname, char *right_button_fname, char *bar_fname, char *marker_fname);
+   public:
+      void create(UI_WINDOW *wnd, int _x, int _y, int _w, int _h, float _start, float _stop, float _pos, int n_positions);
+      int getpos();
+      float getcurrent();
+      int changed();
+      // un-hides the virtual hide(int); no default arg, so hide() stays unambiguous
+    void hide(int n) override { UI_GADGET::hide(n); }
+      void hide();
+      void unhide();
+      int get_hidden();
+      void link_hotspot(int up_button_num, int down_button_num);
+      int set_bmaps(char *left_button_fname, char *right_button_fname, char *bar_fname, char *marker_fname);
 };
 */
 

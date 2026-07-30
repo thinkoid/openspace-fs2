@@ -14,19 +14,19 @@
 
  Here is the README that came with the source code:
 
-        Sample code to draw antialiased lines as described in the Journal of
-        Graphic Tools article High Quality Hardware Line Antialiasing by
-        Scott R. Nelson of Sun Microsystems.
+   Sample code to draw antialiased lines as described in the Journal of
+   Graphic Tools article High Quality Hardware Line Antialiasing by
+   Scott R. Nelson of Sun Microsystems.
 
-        The code is written in C and designed to run on any machine with the
-        addition of a proper "display" module.  Currently, display modules
-        exist for Macintosh, Unix, and Wintel machines.  Thanks to Sanjay Gupta
-        (sanjay.gupta@eng.sun.com) for the Unix X11 display code and Chris
-        Babcock (babcock@rtp.idt.com) for the Windows code.
+   The code is written in C and designed to run on any machine with the
+   addition of a proper "display" module.  Currently, display modules
+   exist for Macintosh, Unix, and Wintel machines.  Thanks to Sanjay Gupta
+   (sanjay.gupta@eng.sun.com) for the Unix X11 display code and Chris
+   Babcock (babcock@rtp.idt.com) for the Windows code.
 
-        This code is not 100% bug free and is definitely not optimized for
-        performance.  It does, however, illustrate all of the points made in
-        the JGT article.
+   This code is not 100% bug free and is definitely not optimized for
+   performance.  It does, however, illustrate all of the points made in
+   the JGT article.
 */
 
 #include <stdio.h>
@@ -61,7 +61,7 @@
 #define FIX_XY_TO_INT(x) ((long int)(x) >> (long int)FIX_XY_SHIFT)
 
 // Sizes for tables in Draw
-// Line filter width adjustment        // .75          // .5 works good with 5.0 gamma
+// Line filter width adjustment  // .75      // .5 works good with 5.0 gamma
 #define FILTER_WIDTH 0.75
 // Filter table size
 #define F_TABLE_SIZE 64
@@ -122,7 +122,7 @@ aaline_init_tables()
     double m; // Slope
     double d; // Distance from center of curve
     double v; // Value to put in table
-    double sr; //       The square root value
+    double sr; // The square root value
 
     aaline_inited = 1;
 
@@ -460,17 +460,17 @@ draw_line(aa_setup_line *line)
     // Interpolate the edges
     while (count >= 0) {
         /*-
-                * Compute end-point code (defined as follows):
-                *  0 =  0, 0: short, no boundary crossing
-                *  1 =  0, 1: short line overlap (< 1.0)
-                *  2 =  0, 2: 1st pixel of 1st endpoint
-                *  3 =  1, 0: short line overlap (< 1.0)
-                *  4 =  1, 1: short line overlap (> 1.0)
-                *  5 =  1, 2: 2nd pixel of 1st endpoint
-                *  6 =  2, 0: last of 2nd endpoint
-                *  7 =  2, 1: first of 2nd endpoint
-                *  8 =  2, 2: regular part of line
-                */
+      * Compute end-point code (defined as follows):
+      *  0 =  0, 0: short, no boundary crossing
+      *  1 =  0, 1: short line overlap (< 1.0)
+      *  2 =  0, 2: 1st pixel of 1st endpoint
+      *  3 =  1, 0: short line overlap (< 1.0)
+      *  4 =  1, 1: short line overlap (> 1.0)
+      *  5 =  1, 2: 2nd pixel of 1st endpoint
+      *  6 =  2, 0: last of 2nd endpoint
+      *  7 =  2, 1: first of 2nd endpoint
+      *  8 =  2, 2: regular part of line
+      */
 
         ep_code = ((scount < 2) ? scount : 2) * 3 + ((ecount < 2) ? ecount : 2);
 
@@ -640,7 +640,7 @@ gr8_aaline(vertex *v1, vertex *v2)
         return;
     }
 
-    //  return;
+    //   return;
 
     aa1.x = v1->sx;
     aa1.y = v1->sy;
@@ -649,7 +649,6 @@ gr8_aaline(vertex *v1, vertex *v2)
     aa2.y = v2->sy;
 
     {
-        int clipped = 0, swapped = 0;
         float a1, b1, a2, b2;
         a1 = (float)gr_screen.clip_left;
         b1 = (float)gr_screen.clip_top;
@@ -657,7 +656,7 @@ gr8_aaline(vertex *v1, vertex *v2)
         b2 = (float)gr_screen.clip_bottom;
 
         FL_CLIPLINE(aa1.x, aa1.y, aa2.x, aa2.y, a1, b1, a2, b2, return,
-                    clipped = 1, swapped = 1);
+                    (void)0, (void)0);
     }
 
     aaline_setup(&aa1, &aa2);

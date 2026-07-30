@@ -36,7 +36,7 @@ int Num_cmeasures = 0;
 int Cmeasure_inited = 0;
 int Cmeasures_homing_check = 0;
 int Countermeasures_enabled =
-    1; //       Debug, set to 0 means no one can fire countermeasures.
+    1; //   Debug, set to 0 means no one can fire countermeasures.
 
 // This will get called at the start of each level.
 void
@@ -47,21 +47,21 @@ cmeasure_init()
     if (!Cmeasure_inited) {
         Cmeasure_inited = 1;
 
-        /*              // Do all the processing that happens only once
-                if ( Debris_model < 0 )         {
-                        if (Debris_model>-1)    {
-                                polymodel * pm;
-                                pm = model_get(Debris_model);
-                                Debris_num_submodels = pm->n_models;
-                        }
-                }
+        /*     // Do all the processing that happens only once
+      if ( Debris_model < 0 )    {
+         if (Debris_model>-1) {
+            polymodel * pm;
+            pm = model_get(Debris_model);
+            Debris_num_submodels = pm->n_models;
+         }
+      }
 
-                for (i=0; i<MAX_SPECIES_NAMES; i++ )    {
-                        Debris_textures[i] = bm_load( Debris_texture_files[i] );
-                        if ( Debris_textures[i] < 0 ) { 
-                                Warning( LOCATION, "Couldn't load species %d debris\ntexture, '%s'\n", i, Debris_texture_files[i] );
-                        }
-                }
+      for (i=0; i<MAX_SPECIES_NAMES; i++ )   {
+         Debris_textures[i] = bm_load( Debris_texture_files[i] );
+         if ( Debris_textures[i] < 0 ) { 
+            Warning( LOCATION, "Couldn't load species %d debris\ntexture, '%s'\n", i, Debris_texture_files[i] );
+         }
+      }
 */
     }
 
@@ -84,19 +84,19 @@ cmeasure_render(object *objp)
     cmip = &Cmeasure_info[cmp->subtype];
 
     if (cmp->subtype == CMEASURE_UNUSED) {
-        Int3(); //      Hey, what are we doing in here?
+        Int3(); //   Hey, what are we doing in here?
         return;
     }
 
-    //  float                           size = -1.0f;
-    //  vertex                  p;
-    //  g3_rotate_vertex(&p, &objp->pos );
-    //  if ( rand() > RAND_MAX/2 )      {
-    //          gr_set_color( 255, 0, 0 );
-    //  } else {
-    //          gr_set_color( 255, 255, 255 );
-    //  }
-    //  g3_draw_sphere(&p, 100.0f );
+    //   float          size = -1.0f;
+    //   vertex         p;
+    //   g3_rotate_vertex(&p, &objp->pos );
+    //   if ( rand() > RAND_MAX/2 ) {
+    //      gr_set_color( 255, 0, 0 );
+    //   } else {
+    //      gr_set_color( 255, 255, 255 );
+    //   }
+    //   g3_draw_sphere(&p, 100.0f );
 
     if (cmip->model_num > -1) {
         model_clear_instance(cmip->model_num);
@@ -107,33 +107,33 @@ cmeasure_render(object *objp)
     }
 
     /*
-        // JAS TODO: Replace with proper fireball
-        int                             framenum = -1;
-        float                           size = -1.0f;
-        vertex                  p;
-        cmeasure                        *cmp;
+   // JAS TODO: Replace with proper fireball
+   int            framenum = -1;
+   float          size = -1.0f;
+   vertex         p;
+   cmeasure       *cmp;
 
-        fireball_data   *fd;
+   fireball_data  *fd;
 
-        cmp = &Cmeasures[objp->instance];
-        fd = &Fireball_data[FIREBALL_SHIP_EXPLODE1];
+   cmp = &Cmeasures[objp->instance];
+   fd = &Fireball_data[FIREBALL_SHIP_EXPLODE1];
 
-        switch (cmp->subtype) {
-        case CMEASURE_UNUSED:
-                Int3(); //      Hey, what are we doing in here?
-                break;
-        default:
-                framenum = (int) (fd->num_frames * Cmeasures[objp->instance].lifeleft*4) % fd->num_frames;
-                size = objp->radius;
-                break;
-        }
+   switch (cmp->subtype) {
+   case CMEASURE_UNUSED:
+      Int3();  // Hey, what are we doing in here?
+      break;
+   default:
+      framenum = (int) (fd->num_frames * Cmeasures[objp->instance].lifeleft*4) % fd->num_frames;
+      size = objp->radius;
+      break;
+   }
 
-        Assert(framenum != -1);
-        Assert(size != -1.0f);
+   Assert(framenum != -1);
+   Assert(size != -1.0f);
 
-        gr_set_bitmap(fd->bitmap_id + framenum);
-        g3_rotate_vertex(&p, &objp->pos );
-        g3_draw_bitmap(&p, 0, size*0.5f, TMAP_FLAG_TEXTURED );
+   gr_set_bitmap(fd->bitmap_id + framenum);
+   g3_rotate_vertex(&p, &objp->pos );
+   g3_draw_bitmap(&p, 0, size*0.5f, TMAP_FLAG_TEXTURED );
 */
 }
 
@@ -144,7 +144,7 @@ cmeasure_delete(object *objp)
 
     num = objp->instance;
 
-    //  Assert( Cmeasures[num].objnum == OBJ_INDEX(objp));
+    //   Assert( Cmeasures[num].objnum == OBJ_INDEX(objp));
 
     Cmeasures[num].subtype = CMEASURE_UNUSED;
     Num_cmeasures--;
@@ -164,14 +164,14 @@ cmeasure_process_post(object *objp, float frame_time)
     int num;
     num = objp->instance;
 
-    //  Assert( Cmeasures[num].objnum == objnum );
+    //   Assert( Cmeasures[num].objnum == objnum );
     cmeasure *cmp = &Cmeasures[num];
 
     if (cmp->lifeleft >= 0.0f) {
         cmp->lifeleft -= frame_time;
         if (cmp->lifeleft < 0.0f) {
             objp->flags |= OF_SHOULD_BE_DEAD;
-            //                  demo_do_flag_dead(OBJ_INDEX(objp));
+            //       demo_do_flag_dead(OBJ_INDEX(objp));
         }
     }
 }
@@ -197,7 +197,7 @@ cmeasure_create(object *source_obj, vector *pos, int cm_type, int rand_val)
 #endif
 
     Cmeasures_homing_check =
-        2; //   Tell homing code to scan everything for two frames.  If only one frame, get sync problems due to objects being created at end of frame!
+        2; //  Tell homing code to scan everything for two frames.  If only one frame, get sync problems due to objects being created at end of frame!
 
     parent_objnum = OBJ_INDEX(source_obj);
 
@@ -245,7 +245,7 @@ cmeasure_create(object *source_obj, vector *pos, int cm_type, int rand_val)
     cmp->lifeleft = cmeasurep->life_min +
                     cmp->lifeleft * (cmeasurep->life_max - cmeasurep->life_min);
 
-    //  cmp->objnum = objnum;
+    //   cmp->objnum = objnum;
     cmp->team = shipp->team;
     cmp->subtype = cm_type;
     cmp->objnum = objnum;
@@ -289,7 +289,7 @@ cmeasure_create(object *source_obj, vector *pos, int cm_type, int rand_val)
         &obj->phys_info
              .max_rotvel); // make so he can't change speed on his own VOLITION anymore.
 
-    //  obj->phys_info.flags |= PF_USE_VEL;
+    //   obj->phys_info.flags |= PF_USE_VEL;
 
     return arand; // need to return this value for multiplayer purposes
 }

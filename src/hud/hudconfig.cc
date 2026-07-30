@@ -110,28 +110,28 @@ int HUD_config_default_flags2 = { (1 << (HUD_OFFSCREEN_RANGE - 32)) |
 int HUD_default_popup_mask = {
     0 | // (1<<HUD_LEAD_INDICATOR) |
     0 | // (1<<HUD_ORIENTATION_TEE) |
-    0 | //      (1<<HUD_HOSTILE_TRIANGLE) |
+    0 | //  (1<<HUD_HOSTILE_TRIANGLE) |
     0 | // (1<<HUD_TARGET_TRIANGLE) |
-    0 | //      (1<<HUD_MISSION_TIME) |
-    0 | //      (1<<HUD_RETICLE_CIRCLE) |
-    0 | //      (1<<HUD_THROTTLE_GAUGE) |
-    0 | //      (1<<HUD_RADAR) |
-    0 | //      (1<<HUD_TARGET_MONITOR) |
-    0 | //      (1<<HUD_CENTER_RETICLE) |
-    0 | //      (1<<HUD_TARGET_MONITOR_EXTRA_DATA) |
-    0 | //      (1<<HUD_TARGET_SHIELD_ICON) |
-    0 | //      (1<<HUD_PLAYER_SHIELD_ICON) |
-    0 | //      (1<<HUD_ETS_GAUGE) |
-    0 | //      (1<<HUD_AUTO_TARGET) |
-    0 | //      (1<<HUD_AUTO_SPEED) |
-    0 | //      (1<<HUD_WEAPONS_GAUGE) |
-    0 | //      (1<<HUD_ESCORT_VIEW) |
-    0 | //      (1<<HUD_DIRECTIVES_VIEW) |
-    0 | //      (1<<HUD_THREAT_GAUGE) |
-    0 | //      (1<<HUD_AFTERBURNER_ENERGY) |
-    0 | //      (1<<HUD_WEAPONS_ENERGY) |
-    0 | //      (1<<HUD_WEAPON_LINKING_GAUGE) |
-    0 | //      (1<<HUD_TARGET_MINI_ICON) |
+    0 | //  (1<<HUD_MISSION_TIME) |
+    0 | //  (1<<HUD_RETICLE_CIRCLE) |
+    0 | //  (1<<HUD_THROTTLE_GAUGE) |
+    0 | //  (1<<HUD_RADAR) |
+    0 | //  (1<<HUD_TARGET_MONITOR) |
+    0 | //  (1<<HUD_CENTER_RETICLE) |
+    0 | //  (1<<HUD_TARGET_MONITOR_EXTRA_DATA) |
+    0 | //  (1<<HUD_TARGET_SHIELD_ICON) |
+    0 | //  (1<<HUD_PLAYER_SHIELD_ICON) |
+    0 | //  (1<<HUD_ETS_GAUGE) |
+    0 | //  (1<<HUD_AUTO_TARGET) |
+    0 | //  (1<<HUD_AUTO_SPEED) |
+    0 | //  (1<<HUD_WEAPONS_GAUGE) |
+    0 | //  (1<<HUD_ESCORT_VIEW) |
+    0 | //  (1<<HUD_DIRECTIVES_VIEW) |
+    0 | //  (1<<HUD_THREAT_GAUGE) |
+    0 | //  (1<<HUD_AFTERBURNER_ENERGY) |
+    0 | //  (1<<HUD_WEAPONS_ENERGY) |
+    0 | //  (1<<HUD_WEAPON_LINKING_GAUGE) |
+    0 | //  (1<<HUD_TARGET_MINI_ICON) |
     0 | //(1<<HUD_OFFSCREEN_INDICATOR)
     0 | // talking head
     0 | // damage gauge
@@ -155,16 +155,15 @@ int HC_select_all = 0;
 // Module Globals
 //////////////////////////////////////////////////////////////////////////////
 
-#pragma warning(disable : 4710)
 
-char *Hud_config_fname[GR_NUM_RESOLUTIONS] = { "HUDConfig", "2_HUDConfig" };
+const char *Hud_config_fname[GR_NUM_RESOLUTIONS] = { "HUDConfig", "2_HUDConfig" };
 
-char *Hud_config_mask_fname[GR_NUM_RESOLUTIONS] = { "HUDConfig-m",
+const char *Hud_config_mask_fname[GR_NUM_RESOLUTIONS] = { "HUDConfig-m",
                                                     "2_HUDConfig-m" };
 
 struct HC_gauge_region
 {
-    char *filename;
+    const char *filename;
     int x, y;
     int hotspot;
     int use_iff;
@@ -174,7 +173,7 @@ struct HC_gauge_region
     int color;
     UI_BUTTON button;
 
-    HC_gauge_region(char *name, int x1, int y1, int h, int iff, int cp, int b,
+    HC_gauge_region(const char *name, int x1, int y1, int h, int iff, int cp, int b,
                     int nf, int cl)
         : filename(name)
         , x(x1)
@@ -322,7 +321,6 @@ struct HC_gauge_region HC_gauge_regions[GR_NUM_RESOLUTIONS][NUM_HUD_GAUGES] = {
     }
 };
 
-#pragma warning(default : 4710)
 
 int HC_gauge_description_coords[GR_NUM_RESOLUTIONS][3] = { { // GR_640
                                                              35, 397, 197 },
@@ -438,7 +436,6 @@ HC_gauge_descriptions(int n)
 #define HCB_RESET 18
 #define HCB_ACCEPT 19
 
-#pragma warning(disable : 4710)
 
 ui_button_info HC_buttons[GR_NUM_RESOLUTIONS][NUM_HUD_BUTTONS] = {
     {
@@ -556,21 +553,21 @@ void hud_config_set_rgb(int gauge, int r, int g, int b);
 void hud_config_set_alpha(int gauge, int a);
 
 /*
-#define NUM_HC_SPECIAL_BITMAPS  2
-#define HC_SPECIAL_RETICLE                      0
-#define HC_SPECIAL_TEXT                         1
+#define NUM_HC_SPECIAL_BITMAPS   2
+#define HC_SPECIAL_RETICLE       0
+#define HC_SPECIAL_TEXT          1
 typedef struct HC_special_bitmap
 {
-        char *filename;
-        int x,y;
-        int bitmap;
+   char *filename;
+   int x,y;
+   int bitmap;
 } HC_special_bitmap;
 
 HC_special_bitmap HC_special_bitmaps[NUM_HC_SPECIAL_BITMAPS] =
 {
 //XSTR:OFF
-        {"HG_00a", 272, 146, -1},
-        {"HG_04a", 132, 271, -1},
+   {"HG_00a", 272, 146, -1},
+   {"HG_04a", 132, 271, -1},
 //XSTR:ON
 };
 */
@@ -583,40 +580,40 @@ static int HC_gauge_selected; // gauge is selected
 
 // slider controls
 /*
-#define HC_NUM_SLIDERS                                                  1
-#define HC_BRIGHTNESS_SLIDER                                    0
+#define HC_NUM_SLIDERS                    1
+#define HC_BRIGHTNESS_SLIDER              0
 struct hc_sliders {
-        // base slider
-        char *filename;
-        int x, y, xt, yt;
-        int hotspot;
-        int dot_w;
-        int dots;
+   // base slider
+   char *filename;
+   int x, y, xt, yt;
+   int hotspot;
+   int dot_w;
+   int dots;
 
-        // left and right buttons
-        char *left_filename;
-        int left_mask, left_x, left_y;
-        char *right_filename;
-        int right_mask, right_x, right_y;
+   // left and right buttons
+   char *left_filename;
+   int left_mask, left_x, left_y;
+   char *right_filename;
+   int right_mask, right_x, right_y;
 
-        // slider control
-        UI_DOT_SLIDER_NEW slider;  // because we have a class inside this struct, we need the constructor below..
+   // slider control
+   UI_DOT_SLIDER_NEW slider;  // because we have a class inside this struct, we need the constructor below..
 
-        hc_sliders(char *name, int x1, int y1, int xt1, int yt1, int h, int _dot_w, int _dots, char *_left_filename, int _left_mask, int _left_x, int _left_y, char *_right_filename, int _right_mask, int _right_x, int _right_y) : 
-                                 filename(name), x(x1), y(y1), xt(xt1), yt(yt1), hotspot(h), dot_w(_dot_w), dots(_dots), left_filename(_left_filename), left_mask(_left_mask), left_x(_left_x), left_y(_left_y), right_filename(_right_filename), right_mask(_right_mask), right_x(_right_x), right_y(_right_y) {}
+   hc_sliders(char *name, int x1, int y1, int xt1, int yt1, int h, int _dot_w, int _dots, char *_left_filename, int _left_mask, int _left_x, int _left_y, char *_right_filename, int _right_mask, int _right_x, int _right_y) : 
+             filename(name), x(x1), y(y1), xt(xt1), yt(yt1), hotspot(h), dot_w(_dot_w), dots(_dots), left_filename(_left_filename), left_mask(_left_mask), left_x(_left_x), left_y(_left_y), right_filename(_right_filename), right_mask(_right_mask), right_x(_right_x), right_y(_right_y) {}
 };
 
 hc_sliders HC_sliders[GR_NUM_RESOLUTIONS][HC_NUM_SLIDERS] = {
-        { // GR_640
-                hc_sliders(     "HCB_22",       419,    379,    -1,     -1,     22,     20,     10,                                                     
-                                                "HCB_23",       23,     611,    379,
-                                                "HCB_21",       21,     391,    379)
-        },
-        { // GR_1024
-                hc_sliders(     "2_HCB_22",     670,    606,    -1,     -1,     22,     32,     10,                                                     
-                                                "2_HCB_23",     23,     698,    606,
-                                                "2_HCB_21",     21,     625,    606),
-        }       
+   { // GR_640
+      hc_sliders( "HCB_22",   419,  379,  -1,   -1,   22,   20,   10,                     
+                  "HCB_23",   23,   611,  379,
+                  "HCB_21",   21,   391,  379)
+   },
+   { // GR_1024
+      hc_sliders( "2_HCB_22", 670,  606,  -1,   -1,   22,   32,   10,                     
+                  "2_HCB_23", 23,   698,  606,
+                  "2_HCB_21", 21,   625,  606),
+   }  
 };
 */
 
@@ -670,7 +667,7 @@ int HC_slider_coords[GR_NUM_RESOLUTIONS][NUM_HC_SLIDERS][4] = {
 };
 #define HCS_CONV(__v) (255 - (__v))
 
-char *HC_slider_fname[GR_NUM_RESOLUTIONS] = { "slider", "2_slider" };
+const char *HC_slider_fname[GR_NUM_RESOLUTIONS] = { "slider", "2_slider" };
 
 // sync sliders
 void
@@ -694,7 +691,7 @@ hud_config_synch_ui()
 {
     // game_load_palette();
     HUD_init_hud_color_array();
-    // HC_sliders[gr_screen.res][HC_BRIGHTNESS_SLIDER].slider.pos = HUD_color_alpha-3;          // convert to value from 0-10
+    // HC_sliders[gr_screen.res][HC_BRIGHTNESS_SLIDER].slider.pos = HUD_color_alpha-3;    // convert to value from 0-10
 
     // sync sliders to currently selected gauge
     hud_config_synch_sliders(HC_gauge_selected);
@@ -708,7 +705,7 @@ hud_config_init_ui()
     struct HC_gauge_region *hg;
     struct ui_button_info *hb;
 
-    //  common_set_interface_palette("HUDConfigPalette");  // set the interface palette
+    //   common_set_interface_palette("HUDConfigPalette");  // set the interface palette
     hud_config_synch_ui();
     HC_background_bitmap = bm_load(Hud_config_fname[gr_screen.res]);
 
@@ -722,13 +719,13 @@ hud_config_init_ui()
         }
         hg->button.create(&HC_ui_window, "", hg->x, hg->y, 60, 30, 0, 1);
         // set up callback for when a mouse first goes over a button
-        //              hg->button.set_highlight_action(common_play_highlight_sound);
+        //     hg->button.set_highlight_action(common_play_highlight_sound);
         hg->button.hide();
         hg->button.link_hotspot(hg->hotspot);
 
         // if ( hg->use_iff ) {
-        //                      hg->bitmap = bm_load_animation(hg->filename, &hg->nframes);
-        //      } else {
+        //        hg->bitmap = bm_load_animation(hg->filename, &hg->nframes);
+        //  } else {
         hg->bitmap = bm_load(hg->filename);
         hg->nframes = 1;
         // }
@@ -792,22 +789,22 @@ hud_config_init_ui()
     HC_fname_input.set_text("");
 
     /*
-        for (i=0; i<NUM_HC_SPECIAL_BITMAPS; i++) {
-                HC_special_bitmaps[i].bitmap = bm_load(HC_special_bitmaps[i].filename);
-        }
-        */
+   for (i=0; i<NUM_HC_SPECIAL_BITMAPS; i++) {
+      HC_special_bitmaps[i].bitmap = bm_load(HC_special_bitmaps[i].filename);
+   }
+   */
 
     // create sliders
     /*
-        for(i=0; i<HC_NUM_SLIDERS; i++){
-                HC_sliders[gr_screen.res][i].slider.create(&HC_ui_window, HC_sliders[gr_screen.res][i].x, HC_sliders[gr_screen.res][i].y,
-                                                                                                                                                HC_sliders[gr_screen.res][i].dots, HC_sliders[gr_screen.res][i].filename,
-                                                                                                                                                HC_sliders[gr_screen.res][i].hotspot, HC_sliders[gr_screen.res][i].right_filename, HC_sliders[gr_screen.res][i].right_mask, HC_sliders[gr_screen.res][i].right_x, HC_sliders[gr_screen.res][i].right_y,
-                                                                                                                                                HC_sliders[gr_screen.res][i].left_filename, HC_sliders[gr_screen.res][i].left_mask, HC_sliders[gr_screen.res][i].left_x, HC_sliders[gr_screen.res][i].left_y,
-                                                                                                                                                HC_sliders[gr_screen.res][i].dot_w);
-        }
-        HC_sliders[gr_screen.res][HC_BRIGHTNESS_SLIDER].slider.pos = HUD_color_alpha - 3;
-        */
+   for(i=0; i<HC_NUM_SLIDERS; i++){
+      HC_sliders[gr_screen.res][i].slider.create(&HC_ui_window, HC_sliders[gr_screen.res][i].x, HC_sliders[gr_screen.res][i].y,
+                                                      HC_sliders[gr_screen.res][i].dots, HC_sliders[gr_screen.res][i].filename,
+                                                      HC_sliders[gr_screen.res][i].hotspot, HC_sliders[gr_screen.res][i].right_filename, HC_sliders[gr_screen.res][i].right_mask, HC_sliders[gr_screen.res][i].right_x, HC_sliders[gr_screen.res][i].right_y,
+                                                      HC_sliders[gr_screen.res][i].left_filename, HC_sliders[gr_screen.res][i].left_mask, HC_sliders[gr_screen.res][i].left_x, HC_sliders[gr_screen.res][i].left_y,
+                                                      HC_sliders[gr_screen.res][i].dot_w);
+   }
+   HC_sliders[gr_screen.res][HC_BRIGHTNESS_SLIDER].slider.pos = HUD_color_alpha - 3;
+   */
 
     HC_gauge_hot = -1;
     HC_gauge_selected = -1;
@@ -941,30 +938,30 @@ hud_config_render_gauges()
         }
 
         /*
-                else {
+      else {
 
-                        int offset=0;
-                                // set correct frame if using iff
-                        if ( HC_gauge_regions[i].use_iff ) {
-                                if ( HC_gauge_selected == i ) {
-                                        offset=2;
-                                } else if ( HC_gauge_hot == i ) {
-                                        offset=1;
-                                }
+         int offset=0;
+            // set correct frame if using iff
+         if ( HC_gauge_regions[i].use_iff ) {
+            if ( HC_gauge_selected == i ) {
+               offset=2;
+            } else if ( HC_gauge_hot == i ) {
+               offset=1;
+            }
 
-                                // If gauge is disabled, then draw disabled frame
-                                if ( !(hud_config_show_flag_is_set(i)) ) {
-                                        offset=3;
-                                }
-                        }
+            // If gauge is disabled, then draw disabled frame
+            if ( !(hud_config_show_flag_is_set(i)) ) {
+               offset=3;
+            }
+         }
 
-                        if ( HC_gauge_regions[i].bitmap >= 0 ) {
-                                Assert(offset < HC_gauge_regions[i].nframes);
-                                gr_set_bitmap(HC_gauge_regions[i].bitmap+offset);
-                                gr_bitmap(HC_gauge_regions[i].x, HC_gauge_regions[i].y);
-                        }
-                }
-                */
+         if ( HC_gauge_regions[i].bitmap >= 0 ) {
+            Assert(offset < HC_gauge_regions[i].nframes);
+            gr_set_bitmap(HC_gauge_regions[i].bitmap+offset);
+            gr_bitmap(HC_gauge_regions[i].x, HC_gauge_regions[i].y);
+         }
+      }
+      */
     }
 }
 
@@ -1533,14 +1530,14 @@ void
 hud_config_render_special_bitmaps()
 {
     /*
-        int i;
-        for (i=1; i<NUM_HC_SPECIAL_BITMAPS; i++) {
-                if (HC_special_bitmaps[i].bitmap >= 0) {
-                        gr_set_bitmap(HC_special_bitmaps[i].bitmap);
-                        gr_bitmap(HC_special_bitmaps[i].x, HC_special_bitmaps[i].y);
-                }
-        }
-        */
+   int i;
+   for (i=1; i<NUM_HC_SPECIAL_BITMAPS; i++) {
+      if (HC_special_bitmaps[i].bitmap >= 0) {
+         gr_set_bitmap(HC_special_bitmaps[i].bitmap);
+         gr_bitmap(HC_special_bitmaps[i].x, HC_special_bitmaps[i].y);
+      }
+   }
+   */
 }
 
 // update HUD_color_alpha based on brightness slider
@@ -1608,12 +1605,12 @@ hud_config_do_frame(float frametime)
     hud_config_draw_color_status();
 
     /*
-        if (HC_special_bitmaps[HC_SPECIAL_RETICLE].bitmap >= 0) {
-                hud_set_default_color();
-                gr_set_bitmap(HC_special_bitmaps[HC_SPECIAL_RETICLE].bitmap);
-                gr_aabitmap(HC_special_bitmaps[HC_SPECIAL_RETICLE].x, HC_special_bitmaps[HC_SPECIAL_RETICLE].y);
-        }
-        */
+   if (HC_special_bitmaps[HC_SPECIAL_RETICLE].bitmap >= 0) {
+      hud_set_default_color();
+      gr_set_bitmap(HC_special_bitmaps[HC_SPECIAL_RETICLE].bitmap);
+      gr_aabitmap(HC_special_bitmaps[HC_SPECIAL_RETICLE].x, HC_special_bitmaps[HC_SPECIAL_RETICLE].y);
+   }
+   */
 
     // maybe force draw the select all button
     if (HC_select_all) {
@@ -1652,7 +1649,7 @@ hud_config_unload_gauges()
 void
 hud_config_close()
 {
-    //  common_free_interface_palette();                // restore game palette
+    //   common_free_interface_palette();    // restore game palette
     hud_config_unload_gauges();
     hud_init_popup_timers(); // ensure no popup gauges are active
 
@@ -1740,7 +1737,7 @@ hud_config_color_save(char *name)
 }
 
 void
-hud_config_color_load(char *name)
+hud_config_color_load(const char *name)
 {
     int idx, rval;
     char str[1024] = "";

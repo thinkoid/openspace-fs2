@@ -17,7 +17,7 @@
 // the callback is called when the scrollbar has been released
 void
 UI_SLIDER2::create(UI_WINDOW *wnd, int _x, int _y, int _w, int _h,
-                   int _numberItems, char *_bitmapSliderControl,
+                   int _numberItems, const char *_bitmapSliderControl,
                    void (*_upCallback)(), void (*_downCallback)(),
                    void (*_captureCallback)())
 {
@@ -86,15 +86,10 @@ UI_SLIDER2::draw()
 void
 UI_SLIDER2::process(int focus)
 {
-    int OnMe, keyfocus, mouse_lock_move;
+    int OnMe, mouse_lock_move;
 
     if (disabled_flag) {
         return;
-    }
-
-    keyfocus = 0;
-    if (my_wnd->selected_gadget == this) {
-        keyfocus = 1;
     }
 
     OnMe = is_mouse_on();

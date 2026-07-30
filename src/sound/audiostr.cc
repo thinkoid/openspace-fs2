@@ -36,7 +36,7 @@ typedef int (*TIMERCALLBACK)(void *);
 
 // This can be reduced to 88200 once we don't use any stereo
 #define BIGBUF_SIZE 180000
-//#define BIGBUF_SIZE                                   88300                   // This can be reduced to 88200 once we don't use any stereo
+//#define BIGBUF_SIZE               88300       // This can be reduced to 88200 once we don't use any stereo
 unsigned char *Wavedata_load_buffer = NULL; // buffer used for cueing audiostreams
 unsigned char *Wavedata_service_buffer =
     NULL; // buffer used for servicing audiostreams
@@ -505,7 +505,7 @@ AudioStream::WriteWaveData(uint size, uint *num_bytes_written, int service)
     }
 
     if (num_bytes_read > 0) {
-        //      nprintf(("SOUND", "SOUND ==> Queueing %d bytes of Data\n", num_bytes_read));
+        //  nprintf(("SOUND", "SOUND ==> Queueing %d bytes of Data\n", num_bytes_read));
 
         // unqueue and recycle any processed buffers
         ALint p = 0;
@@ -571,7 +571,7 @@ AudioStream::GetMaxWriteSize(void)
     if (!n && (q >= MAX_STREAM_BUFFERS)) // all buffers queued
         dwMaxSize = 0;
 
-    //  nprintf(("Alan","Max write size: %d\n", dwMaxSize));
+    //   nprintf(("Alan","Max write size: %d\n", dwMaxSize));
     return (dwMaxSize);
 }
 
@@ -604,7 +604,7 @@ AudioStream::ServiceBuffer(void)
     if (m_bFade == TRUE) {
         if (m_lCutoffVolume == -10000) {
             vol = Get_Volume();
-            //                  nprintf(("Alan","Volume is: %d\n",vol));
+            //       nprintf(("Alan","Volume is: %d\n",vol));
             m_lCutoffVolume = vol - VOLUME_ATTENUATION_BEFORE_CUTOFF;
             if (m_lCutoffVolume < -10000)
                 m_lCutoffVolume = -10000;
@@ -612,11 +612,11 @@ AudioStream::ServiceBuffer(void)
 
         vol = Get_Volume();
         vol = vol - FADE_VOLUME_INTERVAL; // decrease by 1db
-        //              nprintf(("Alan","Volume is now: %d\n",vol));
+        //     nprintf(("Alan","Volume is now: %d\n",vol));
         Set_Volume(vol);
 
-        //              nprintf(("Sound","SOUND => Volume for stream sound is %d\n",vol));
-        //              nprintf(("Alan","Cuttoff Volume is: %d\n",m_lCutoffVolume));
+        //     nprintf(("Sound","SOUND => Volume for stream sound is %d\n",vol));
+        //     nprintf(("Alan","Cuttoff Volume is: %d\n",m_lCutoffVolume));
         if (vol < m_lCutoffVolume) {
             m_bFade = 0;
             m_lCutoffVolume = -10000;
@@ -643,7 +643,7 @@ AudioStream::ServiceBuffer(void)
         uint num_bytes_written;
 
         if (WriteWaveData(dwFreeSpace, &num_bytes_written) == SUCCESS) {
-            //                  nprintf(("Alan","Num bytes written: %d\n", num_bytes_written));
+            //       nprintf(("Alan","Num bytes written: %d\n", num_bytes_written));
 
             if (m_pwavefile->m_total_uncompressed_bytes_read >=
                 m_pwavefile->m_max_uncompressed_bytes_to_read) {
@@ -1218,7 +1218,7 @@ WaveFile::Cue(void)
 //
 // Returns number of bytes actually read.
 //
-//      Returns -1 if there is nothing more to be read.  This function can return 0, since
+// Returns -1 if there is nothing more to be read.  This function can return 0, since
 // sometimes the amount of bytes requested is too small for the ACM decompression to
 // locate a suitable block
 int
@@ -1229,7 +1229,7 @@ WaveFile::Read(ubyte *pbDest, uint cbSize, int service)
     unsigned int src_bytes_used, convert_len, num_bytes_desired = 0,
                                               num_bytes_read;
 
-    //  nprintf(("Alan","Reqeusted: %d\n", cbSize));
+    //   nprintf(("Alan","Reqeusted: %d\n", cbSize));
 
     if (service) {
         uncompressed_wave_data = Wavedata_service_buffer;
@@ -1267,11 +1267,11 @@ WaveFile::Read(ubyte *pbDest, uint cbSize, int service)
 
         if (num_bytes_desired <= 0) {
             num_bytes_desired = 0;
-            //                          nprintf(("Alan","No bytes required for ADPCM time interval\n"));
+            //          nprintf(("Alan","No bytes required for ADPCM time interval\n"));
         }
         else {
             num_bytes_desired = ACM_query_source_size((void *)m_hStream, cbSize);
-            //                          nprintf(("Alan","Num bytes desired: %d\n", num_bytes_desired));
+            //          nprintf(("Alan","Num bytes desired: %d\n", num_bytes_desired));
         }
         break;
 
@@ -1370,7 +1370,7 @@ READ_ERROR:
 
 READ_DONE:
     m_total_uncompressed_bytes_read += uncompressed_bytes_written;
-    //  nprintf(("Alan","Read: %d\n", uncompressed_bytes_written));
+    //   nprintf(("Alan","Read: %d\n", uncompressed_bytes_written));
     return (uncompressed_bytes_written);
 }
 
@@ -1519,14 +1519,14 @@ audiostream_close()
 
 // Open a digital sound file for streaming
 //
-// input:       filename        =>      disk filename of sound file
-//                              type            => what type of audio stream do we want to open:
-//                                                                      ASF_SOUNDFX
-//                                                                      ASF_EVENTMUSIC
-//                                                                      ASF_VOICE
+// input:   filename => disk filename of sound file
+//          type     => what type of audio stream do we want to open:
+//                         ASF_SOUNDFX
+//                         ASF_EVENTMUSIC
+//                         ASF_VOICE
 //
-// returns:     success => handle to identify streaming sound
-//                              failure => -1
+// returns: success => handle to identify streaming sound
+//          failure => -1
 int
 audiostream_open(char *filename, int type)
 {

@@ -49,7 +49,7 @@ extern int Show_target_weapons;
 #endif
 
 // used to print out + or - after target distance and speed
-char *modifiers[] = {
+const char *modifiers[] = {
     //XSTR:OFF
     "+", "-", ""
     //XSTR:ON
@@ -63,19 +63,19 @@ char Target_extra_fname[GR_NUM_RESOLUTIONS][MAX_FILENAME_LEN] = { "targetview3",
                                                                   "targetview3" };
 
 // animation frames for the target view monitor
-// frames:      0       =>              background of target monitor
-//                              1       =>              foreground of target monitor
+// frames:  0  =>    background of target monitor
+//          1  =>    foreground of target monitor
 hud_frames Target_view_gauge;
 int Target_view_gauge_loaded = 0;
 
 // animation frames for the extended target information
-// frames:      0       =>              normal gague
+// frames:  0  =>    normal gague
 hud_frames Target_view_extra;
 int Target_view_extra_loaded = 0;
 
 // animation frames for the target view monitor integrity bar
-// frames:      0       =>              dark bar
-//                              1       =>              bright bar
+// frames:  0  =>    dark bar
+//          1  =>    bright bar
 hud_frames Target_view_integrity_gauge;
 int Target_view_integrity_gauge_loaded = 0;
 
@@ -266,10 +266,10 @@ hud_targetbox_init_flash()
 }
 
 // set the color for flashing text
-// input:       index   =>      item to flash
-//                              flash_fast      =>      optional param (default value 0), flash twice as fast
-// exit:        1 =>    set bright color
-//                      0 =>    set default color
+// input:   index => item to flash
+//          flash_fast  => optional param (default value 0), flash twice as fast
+// exit: 1 =>  set bright color
+//       0 =>  set default color
 int
 hud_targetbox_maybe_flash(int index, int flash_fast)
 {
@@ -357,7 +357,7 @@ hud_targetbox_init()
 // -------------------------------------------------------------------------------------
 // hud_save_restore_camera_data()
 //
-//      Called to save and restore the 3D camera settings.
+// Called to save and restore the 3D camera settings.
 //
 void
 hud_save_restore_camera_data(int save)
@@ -461,9 +461,9 @@ hud_blit_target_foreground()
 //
 // Get the shield and hull percentages for a given ship object
 //
-// input:       *objp           =>              pointer to ship object that you want strength values for
-//                              shields =>              OUTPUT parameter:       percentage value of shields (0->1.0)
-//                              integrity =>    OUTPUT parameter: percentage value of integrity (0->1.0)
+// input:   *objp    =>    pointer to ship object that you want strength values for
+//          shields  =>    OUTPUT parameter: percentage value of shields (0->1.0)
+//          integrity =>   OUTPUT parameter: percentage value of integrity (0->1.0)
 //
 void
 hud_get_target_strength(object *objp, float *shields, float *integrity)
@@ -633,19 +633,15 @@ hud_render_target_jump_node(object *target_objp)
 void
 hud_render_target_asteroid(object *target_objp)
 {
-#ifndef FS2_DEMO
     vector obj_pos = { 0.0f, 0.0f, 0.0f };
     vector camera_eye = { 0.0f, 0.0f, 0.0f };
     matrix camera_orient = IDENTITY_MATRIX;
     asteroid *asteroidp;
     vector orient_vec, up_vector;
-    int target_team;
     float time_to_impact, factor;
     int subtype;
 
     asteroidp = &Asteroids[target_objp->instance];
-
-    target_team = obj_team(target_objp);
 
     subtype = asteroidp->asteroid_subtype;
 
@@ -719,7 +715,6 @@ hud_render_target_asteroid(object *target_objp)
                        Targetbox_coords[gr_screen.res][TBOX_CLASS][1],
                        EG_TBOX_CLASS, NOX("impact: %.1f sec"), time_to_impact);
     }
-#endif
 }
 
 void
@@ -898,7 +893,7 @@ hud_render_target_ship_info(object *target_objp)
                   outstr);
 
         // AL 23-3-98: Fighter bays are a special case.  Player cannot destroy them, so don't
-        //                                      show the subsystem strength
+        //              show the subsystem strength
         if (strnicmp(NOX("fighter"),
                      Player_ai->targeted_subsys->system_info->name, 7)) {
             sprintf(outstr, XSTR("%d%%", 341), screen_integrity);
@@ -1106,8 +1101,8 @@ hud_maybe_render_cargo_scan(ship_info *target_sip)
 }
 
 // Get the eye position for an object at the origin, called from hud_render_target_ship()
-// input:       eye_pos         =>      Global pos for eye (output parameter)
-//                      orient          =>      Orientation of object at the origin
+// input:   eye_pos     => Global pos for eye (output parameter)
+//       orient      => Orientation of object at the origin
 void
 hud_targetbox_get_eye(vector *eye_pos, matrix *orient, int ship_num)
 {
@@ -1167,7 +1162,7 @@ hud_render_target_ship(object *target_objp)
         vm_vec_copy_scale(&obj_pos, &orient_vec, factor);
 
         // set camera eye to eye of ship relative to origin
-        //      hud_targetbox_get_eye(&camera_eye, &camera_orient, Player_obj->instance);
+        //  hud_targetbox_get_eye(&camera_eye, &camera_orient, Player_obj->instance);
 
         hud_render_target_setup(&camera_eye, &camera_orient,
                                 target_sip->closeup_zoom);
@@ -1241,13 +1236,12 @@ hud_render_target_debris(object *target_objp)
     matrix camera_orient = IDENTITY_MATRIX;
     debris *debrisp;
     vector orient_vec, up_vector;
-    int target_team, base_index;
+    int base_index;
     float factor;
 
     debrisp = &Debris[target_objp->instance];
 
     //target_sip = &Ship_info[debrisp->ship_info_index];
-    target_team = obj_team(target_objp);
 
     if (Detail.targetview_model) {
         // take the forward orientation to be the vector from the player to the current target
@@ -1315,12 +1309,9 @@ hud_render_target_weapon(object *target_objp)
     weapon_info *target_wip = NULL;
     weapon *wp = NULL;
     object *viewer_obj, *viewed_obj;
-    int target_team, is_homing, is_player_missile, missile_view, viewed_model_num,
-        w, h;
+    int is_homing, is_player_missile, missile_view, viewed_model_num, w, h;
     float factor;
     char outstr[100]; // temp buffer
-
-    target_team = obj_team(target_objp);
 
     wp = &Weapons[target_objp->instance];
     target_wip = &Weapon_info[wp->weapon_info_index];
@@ -1512,8 +1503,6 @@ hud_show_target_data(float frametime)
     int w, h; // width and height of string about to print
     object *target_objp;
     ship *shipp = NULL;
-    debris *debrisp = NULL;
-    ship_info *sip = NULL;
     int is_ship = 0;
 
     hud_set_gauge_color(HUD_TARGET_MONITOR);
@@ -1523,21 +1512,16 @@ hud_show_target_data(float frametime)
     switch (Objects[Player_ai->target_objnum].type) {
     case OBJ_SHIP:
         shipp = &Ships[target_objp->instance];
-        sip = &Ship_info[shipp->ship_info_index];
         is_ship = 1;
         break;
 
     case OBJ_DEBRIS:
-        debrisp = &Debris[target_objp->instance];
-        sip = &Ship_info[debrisp->ship_info_index];
         break;
 
     case OBJ_WEAPON:
-        sip = NULL;
         break;
 
     case OBJ_ASTEROID:
-        sip = NULL;
         break;
 
     case OBJ_JUMP_NODE:
@@ -1567,11 +1551,11 @@ hud_show_target_data(float frametime)
 
     float spd;
 #if 0
-        spd = vm_vec_dist(&target_objp->pos, &target_objp->last_pos) / frametime;
+   spd = vm_vec_dist(&target_objp->pos, &target_objp->last_pos) / frametime;
 #endif
     // 7/28/99 DKA: Do not use vec_mag_quick -- the error is too big
     spd = vm_vec_mag(&target_objp->phys_info.vel);
-    //  spd = target_objp->phys_info.fspeed;
+    //   spd = target_objp->phys_info.fspeed;
     if (spd < 0.1) {
         spd = 0.0f;
     }
@@ -1623,22 +1607,22 @@ hud_show_target_data(float frametime)
             case AIM_CHASE:
                 Assert(
                     aip->submode <=
-                    SM_BIG_PARALLEL); //        Must be <= largest chase submode value.
-                //                              sprintf(outstr,"AI: %s",Submode_text[aip->submode]);
+                    SM_BIG_PARALLEL); //  Must be <= largest chase submode value.
+                //            sprintf(outstr,"AI: %s",Submode_text[aip->submode]);
                 sprintf(outstr2, " / %s", Submode_text[aip->submode]);
                 strcat(outstr, outstr2);
                 break;
             case AIM_STRAFE:
                 Assert(
                     aip->submode <=
-                    AIS_STRAFE_POSITION); //    Must be <= largest chase submode value.
-                //                              sprintf(outstr,"AI: %s",Strafe_submode_text[aip->submode-AIS_STRAFE_ATTACK]);
+                    AIS_STRAFE_POSITION); // Must be <= largest chase submode value.
+                //            sprintf(outstr,"AI: %s",Strafe_submode_text[aip->submode-AIS_STRAFE_ATTACK]);
                 sprintf(outstr2, " / %s",
                         Strafe_submode_text[aip->submode - AIS_STRAFE_ATTACK]);
                 strcat(outstr, outstr2);
                 break;
             case AIM_WAYPOINTS:
-                //                              gr_printf(sx, sy, "Wpnum: %i",aip->wp_index);
+                //            gr_printf(sx, sy, "Wpnum: %i",aip->wp_index);
                 sprintf(outstr2, " / Wpnum: %i", aip->wp_index);
                 strcat(outstr, outstr2);
                 break;
@@ -1669,7 +1653,7 @@ hud_show_target_data(float frametime)
                         target_str, "%s",
                         Ships[Objects[aip->target_objnum].instance].ship_name);
 
-                //              gr_printf(TARGET_WINDOW_X1+TARGET_WINDOW_WIDTH+2, TARGET_WINDOW_Y1+4*h, "Target: %s", target_str);
+                //      gr_printf(TARGET_WINDOW_X1+TARGET_WINDOW_WIDTH+2, TARGET_WINDOW_Y1+4*h, "Target: %s", target_str);
                 gr_printf(sx, sy, "Targ: %s", target_str);
                 sy += dy;
 
@@ -1683,10 +1667,10 @@ hud_show_target_data(float frametime)
 
                 // data can be found in target montior
                 // gr_printf(TARGET_WINDOW_X1+TARGET_WINDOW_WIDTH+3, TARGET_WINDOW_Y1+6*h, "Targ dist: %5.1f", dist);
-                //              gr_printf(TARGET_WINDOW_X1+TARGET_WINDOW_WIDTH+2, TARGET_WINDOW_Y1+5*h, "Targ dot: %3.2f", dot);
+                //      gr_printf(TARGET_WINDOW_X1+TARGET_WINDOW_WIDTH+2, TARGET_WINDOW_Y1+5*h, "Targ dot: %3.2f", dot);
                 gr_printf(sx, sy, "Targ dot: %3.2f", dot);
                 sy += dy;
-                //              gr_printf(TARGET_WINDOW_X1+TARGET_WINDOW_WIDTH+2, TARGET_WINDOW_Y1+6*h, "Targ dst: %3.2f", dist);
+                //      gr_printf(TARGET_WINDOW_X1+TARGET_WINDOW_WIDTH+2, TARGET_WINDOW_Y1+6*h, "Targ dst: %3.2f", dist);
                 gr_printf(sx, sy, "Targ dst: %3.2f", dist);
                 sy += dy;
 
@@ -1713,7 +1697,7 @@ hud_show_target_data(float frametime)
             gr_printf(sx, sy, outstr);
             sy += dy;
 
-            //  Show information about attacker.
+            // Show information about attacker.
             {
                 int found = 0;
 
@@ -1880,8 +1864,8 @@ hud_targetbox_static_maybe_blit(float frametime)
 }
 
 // start the targetbox item flashing for duration ms
-// input:       index   =>      TBOX_FLASH_ #define
-//                              duration        =>      optional param (default value TBOX_FLASH_DURATION), how long to flash in ms
+// input:   index => TBOX_FLASH_ #define
+//          duration => optional param (default value TBOX_FLASH_DURATION), how long to flash in ms
 void
 hud_targetbox_start_flash(int index, int duration)
 {

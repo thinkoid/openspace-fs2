@@ -139,7 +139,7 @@ gamesnd_unload_interface_sounds()
 // Parse a sound effect line
 //
 void
-gamesnd_parse_line(game_snd *gs, char *tag)
+gamesnd_parse_line(game_snd *gs, const char *tag)
 {
     int is_3d;
 
@@ -234,8 +234,8 @@ gamesnd_init_struct(game_snd *gs)
     gs->filename[0] = 0;
     gs->id = -1;
     gs->id_sig = -1;
-    //  gs->is_3d = 0;
-    //  gs->use_ds3d = 0;
+    //   gs->is_3d = 0;
+    //   gs->use_ds3d = 0;
     gs->flags = 0;
 }
 

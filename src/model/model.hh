@@ -134,14 +134,14 @@ typedef struct model_subsystem
     float radius; // the extent of the subsystem
     float max_hits; // maximum hits of this subsystem
 
-    //  The following items are specific to turrets and will probably be moved to
-    //  a separate struct so they don't take up space for all subsystem types.
+    //   The following items are specific to turrets and will probably be moved to
+    //   a separate struct so they don't take up space for all subsystem types.
     char crewspot
         [MAX_NAME_LEN]; // unique identifying name for this turret -- used to assign AI class and multiplayer people
     int turret_weapon_type; // index in Weapon_info of weapon this fires
-    vector turret_norm; //      direction this turret faces
+    vector turret_norm; // direction this turret faces
     matrix turret_matrix; // turret_norm converted to a matrix.
-    float turret_fov; //        dot of turret_norm:vec_to_enemy > this means can see
+    float turret_fov; //   dot of turret_norm:vec_to_enemy > this means can see
     int turret_num_firing_points; // number of firing points on this turret
     vector turret_firing_point
         [MAX_TFP]; //   in parent object's reference frame, point from which to fire.
@@ -314,7 +314,7 @@ typedef struct dock_bay
 
 // struct that holds the indicies into path information associated with a fighter bay on a capital ship
 // NOTE: Fighter bay paths are identified by the path_name $bayN (where N is numbered from 1).
-//                      Capital ships only have ONE fighter bay on the entire ship
+//       Capital ships only have ONE fighter bay on the entire ship
 #define MAX_SHIP_BAY_PATHS 10
 typedef struct ship_bay
 {
@@ -511,7 +511,8 @@ void model_level_post_init();
 void model_free_all();
 
 // Loads a model from disk and returns the model number it loaded into.
-int model_load(char *filename, int n_subsystems, model_subsystem *subsystems);
+int model_load(const char *filename, int n_subsystems,
+               model_subsystem *subsystems);
 
 // notify the model system that a ship has died
 void model_notify_dead_ship(int objnum);
@@ -786,7 +787,7 @@ typedef struct mc_info
 
 // model_collide
 
-//      Model Collision flags, used in model_collide()
+// Model Collision flags, used in model_collide()
 // Check the polygons in the model.
 #define MC_CHECK_MODEL (1 << 0)
 // check for collision against shield, if it exists.
@@ -816,8 +817,8 @@ typedef struct mc_info
    type 'model_num' at 'orient' 'pos'.
 
    Returns the number of polys that were hit.  Zero is none, obviously.
-        Return true if a collision with hull (or shield, if MC_CHECK_SHIELD set), 
-        else return false.
+   Return true if a collision with hull (or shield, if MC_CHECK_SHIELD set), 
+   else return false.
 
    If it did it one or more, then hitpt is the closest 3d point that the
    vector hit.  See the MC_? defines for flag values.
@@ -829,33 +830,33 @@ typedef struct mc_info
 
    Here is a sample for how to use:
   
-        mc_info mc;
+   mc_info mc;
 
-        mc.model_num = ???;                     // Fill in the model to check
-        mc.orient = &obj->orient;       // The object's orient
-        mc.pos = &obj->pos;                     // The object's position
-        mc.p0 = &p0;                                    // Point 1 of ray to check
-        mc.p1 = &p1;                                    // Point 2 of ray to check
-        mc.flags = MC_CHECK_MODEL;      // flags
+   mc.model_num = ???;        // Fill in the model to check
+   mc.orient = &obj->orient;  // The object's orient
+   mc.pos = &obj->pos;        // The object's position
+   mc.p0 = &p0;               // Point 1 of ray to check
+   mc.p1 = &p1;               // Point 2 of ray to check
+   mc.flags = MC_CHECK_MODEL; // flags
 
 ** TO COLLIDE AGAINST A LINE SEGMENT
 
   model_collide(&mc);
-        if (mc.num_hits) {              
-                // We hit submodel mc.hit_submodel on texture mc.hitbitmap,
-                // at point mc.hit_point_world, with uv's of mc.hit_u, mc.hit_v.
-        }
+   if (mc.num_hits) {      
+      // We hit submodel mc.hit_submodel on texture mc.hitbitmap,
+      // at point mc.hit_point_world, with uv's of mc.hit_u, mc.hit_v.
+   }
 
 ** TO COLLIDE AGAINST A SPHERE
-        mc.flags |= MC_CHECK_SPHERELINE;
-        mc.radius = radius;
+   mc.flags |= MC_CHECK_SPHERELINE;
+   mc.radius = radius;
 
-        model_collide(&mc, radius);
-        if (mc.num_hits) {              
-                // We hit submodel mc.hit_submodel on texture mc.hitbitmap,
-                // at point mc.hit_point_world, with uv's of mc.hit_u, mc.hit_v.
-                // Check (mc.edge_hit) to see if we hit an edge
-        }
+   model_collide(&mc, radius);
+   if (mc.num_hits) {      
+      // We hit submodel mc.hit_submodel on texture mc.hitbitmap,
+      // at point mc.hit_point_world, with uv's of mc.hit_u, mc.hit_v.
+      // Check (mc.edge_hit) to see if we hit an edge
+   }
 */
 
 int model_collide(mc_info *mc_info);

@@ -120,7 +120,7 @@ void HUD_reset_clip();
 void HUD_set_clip(int x, int y, int w, int h);
 
 // do flashing text gauge
-void hud_start_text_flash(char *txt, int t);
+void hud_start_text_flash(const char *txt, int t);
 
 // convert a string to use mono spaced numbers
 void hud_num_make_mono(char *num_str);
@@ -129,7 +129,7 @@ void hud_num_make_mono(char *num_str);
 void hud_end_string_at_first_hash_symbol(char *src);
 
 // functions for handling hud animations
-void hud_anim_init(hud_anim *ha, int sx, int sy, char *filename);
+void hud_anim_init(hud_anim *ha, int sx, int sy, const char *filename);
 int hud_anim_render(hud_anim *ha, float frametime, int draw_alpha = 0,
                     int loop = 1, int hold_last = 0, int reverse = 0);
 int hud_anim_load(hud_anim *ha);
@@ -189,7 +189,7 @@ int hud_support_find_closest(int objnum);
 void hud_toggle_contrast();
 void hud_set_contrast(int high);
 
-//      Return mask of enemies.
+// Return mask of enemies.
 int opposing_team_mask(int team_mask);
 
 #endif /* __HUD_H__ */

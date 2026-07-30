@@ -17,8 +17,8 @@
 // Help overlays
 //
 // Adding a help overlay:    1) Add a #define that uniquely identifies your help overlay
-//                                                                        2) Increment MAX_HELP_OVERLAYS
-//                                                                        3) Add the filename for the help overlay to Help_overlays[] array in ContextHelp.cpp
+//                           2) Increment MAX_HELP_OVERLAYS
+//                           3) Add the filename for the help overlay to Help_overlays[] array in ContextHelp.cpp
 //
 // Must be kept current
 #define MAX_HELP_OVERLAYS 16

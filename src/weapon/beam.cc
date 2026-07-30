@@ -392,9 +392,11 @@ beam_fire(beam_fire_info *fire_info)
     Assert((fire_info->shooter->type == OBJ_SHIP) &&
            (fire_info->shooter->instance >= 0) &&
            (fire_info->shooter->instance < MAX_SHIPS));
+    // retail wrote "< 0 && >= MAX" -- a contradiction, so the range never
+    // rejected; the Assert above spells the intent
     if ((fire_info->shooter->type != OBJ_SHIP) ||
-        (fire_info->shooter->instance < 0) &&
-            (fire_info->shooter->instance >= MAX_SHIPS)) {
+        (fire_info->shooter->instance < 0) ||
+        (fire_info->shooter->instance >= MAX_SHIPS)) {
         return -1;
     }
     firing_ship = &Ships[fire_info->shooter->instance];
@@ -470,7 +472,7 @@ beam_fire(beam_fire_info *fire_info)
         beam_get_binfo(
             new_item, fire_info->accuracy,
             wip->b_info
-                .beam_shots); // to fill in b_info      - the set of directional aim vectors
+                .beam_shots); // to fill in b_info - the set of directional aim vectors
     }
 
     // create the associated object
@@ -540,9 +542,11 @@ beam_fire_targeting(beam_fire_info *fire_info)
     Assert((fire_info->shooter->type == OBJ_SHIP) &&
            (fire_info->shooter->instance >= 0) &&
            (fire_info->shooter->instance < MAX_SHIPS));
+    // retail wrote "< 0 && >= MAX" -- a contradiction, so the range never
+    // rejected; the Assert above spells the intent
     if ((fire_info->shooter->type != OBJ_SHIP) ||
-        (fire_info->shooter->instance < 0) &&
-            (fire_info->shooter->instance >= MAX_SHIPS)) {
+        (fire_info->shooter->instance < 0) ||
+        (fire_info->shooter->instance >= MAX_SHIPS)) {
         return -1;
     }
     firing_ship = &Ships[fire_info->shooter->instance];
@@ -571,7 +575,7 @@ beam_fire_targeting(beam_fire_info *fire_info)
     new_item->warmdown_stamp = -1;
     new_item->weapon_info_index = fire_info->beam_info_index;
     new_item->objp = fire_info->shooter;
-    new_item->sig = NULL;
+    new_item->sig = 0;
     new_item->subsys = NULL;
     new_item->life_left = 0;
     new_item->life_total = 0;
@@ -579,7 +583,7 @@ beam_fire_targeting(beam_fire_info *fire_info)
     new_item->f_collision_count = 0;
     new_item->target = NULL;
     new_item->target_subsys = NULL;
-    new_item->target_sig = NULL;
+    new_item->target_sig = 0;
     new_item->beam_sound_loop = -1;
     new_item->type = BEAM_TYPE_C;
     new_item->targeting_laser_offset = fire_info->targeting_laser_offset;
@@ -805,7 +809,7 @@ beam_type_b_move(beam *b)
     if ((double)dot_save >= 0.999999999) {
         actual_dir = b->binfo.dir_a;
     }
-    // otherwise move towards the dir   we calculated when firing this beam
+    // otherwise move towards the dir  we calculated when firing this beam
     else {
         vm_vec_interp_constant(&actual_dir, &b->binfo.dir_a, &b->binfo.dir_b,
                                BEAM_T(b));
@@ -1125,26 +1129,26 @@ beam_move_all_post()
     // process beam culling info
 #ifndef NDEBUG
     /*
-        if(Beam_test_stamp == -1){
-                Beam_test_stamp = timestamp(BEAM_TEST_STAMP_TIME);
-                Beam_test_ints = 0;
-                Beam_test_framecount = 0;
-        } else {
-                if(timestamp_elapsed(Beam_test_stamp)){                 
-                        // report the results
-                        nprintf(("General", "Performed %f beam ints/frame (%d, %d, %d, %d), over %f seconds\n", (float)Beam_test_ints/(float)Beam_test_framecount, Beam_test_ints, Beam_test_framecount, Beam_test_ship, Beam_test_ast, (float)BEAM_TEST_STAMP_TIME / 1000.0f));
+   if(Beam_test_stamp == -1){
+      Beam_test_stamp = timestamp(BEAM_TEST_STAMP_TIME);
+      Beam_test_ints = 0;
+      Beam_test_framecount = 0;
+   } else {
+      if(timestamp_elapsed(Beam_test_stamp)){         
+         // report the results
+         nprintf(("General", "Performed %f beam ints/frame (%d, %d, %d, %d), over %f seconds\n", (float)Beam_test_ints/(float)Beam_test_framecount, Beam_test_ints, Beam_test_framecount, Beam_test_ship, Beam_test_ast, (float)BEAM_TEST_STAMP_TIME / 1000.0f));
 
-                        // reset vars
-                        Beam_test_stamp = timestamp(BEAM_TEST_STAMP_TIME);
-                        Beam_test_ints = 0;
-                        Beam_test_ship = 0;
-                        Beam_test_ast = 0;
-                        Beam_test_framecount = 0;
-                } else {
-                        Beam_test_framecount++;
-                }
-        }
-        */
+         // reset vars
+         Beam_test_stamp = timestamp(BEAM_TEST_STAMP_TIME);
+         Beam_test_ints = 0;
+         Beam_test_ship = 0;
+         Beam_test_ast = 0;
+         Beam_test_framecount = 0;
+      } else {
+         Beam_test_framecount++;
+      }
+   }
+   */
 #endif
 }
 
@@ -1497,7 +1501,7 @@ beam_add_light_small(beam *bm, object *objp, vector *pt_override = NULL)
     float fb = (float)wip->laser_color_1.blue / 255.0f;
 
     // add a unique light
-    // noise *= 0.1f;                   // a little less noise here, since we want the beam to generally cast a bright light
+    // noise *= 0.1f;         // a little less noise here, since we want the beam to generally cast a bright light
     light_add_point_unique(&near_pt, light_rad * 0.0001f, light_rad, 1.0f, fr, fg,
                            fb, OBJ_INDEX(objp));
 }
@@ -1717,7 +1721,6 @@ beam_get_model(object *objp)
         }
         return Debris[objp->instance].model_num;
 
-#ifndef FS2_DEMO
     case OBJ_ASTEROID:
         subtype = Asteroids[objp->instance].asteroid_subtype;
         Assert(Asteroids[objp->instance].type >= 0);
@@ -1725,7 +1728,6 @@ beam_get_model(object *objp)
             return -1;
         }
         return Asteroid_info[Asteroids[objp->instance].type].model_num[subtype];
-#endif
 
     default:
         // this shouldn't happen too often
@@ -1957,7 +1959,7 @@ beam_get_binfo(beam *b, float accuracy, int num_shots)
     case BEAM_TYPE_D:
         // get a bunch of shot aims
         for (idx = 0; idx < b->binfo.shot_count; idx++) {
-            //  MK, 9/3/99: Added pow() function to make increasingly likely to miss with subsequent shots.  30% more likely with each shot.
+            // MK, 9/3/99: Added pow() function to make increasingly likely to miss with subsequent shots.  30% more likely with each shot.
             float r = ((float)pow(1.3f, idx)) *
                       bwi->beam_miss_factor[skill_level] * accuracy;
             b->binfo.shot_aim[idx] = frand_range(0.0f, 1.0f + r);
@@ -2163,8 +2165,6 @@ int
 beam_collide_ship(obj_pair *pair)
 {
     beam *b;
-    ship *shipp;
-    ship_info *sip;
     mc_info test_collide;
     int model_num;
     float widest;
@@ -2221,9 +2221,6 @@ beam_collide_ship(obj_pair *pair)
     if ((pair->b->type != OBJ_SHIP) || (pair->b->instance < 0)) {
         return 1;
     }
-    shipp = &Ships[pair->b->instance];
-    sip = &Ship_info[shipp->ship_info_index];
-
     // get the widest portion of the beam
     widest = beam_get_widest(b);
 
@@ -2607,7 +2604,6 @@ beam_handle_collisions(beam *b)
     int idx, s_idx;
     beam_collision r_coll[MAX_FRAME_COLLISIONS];
     int r_coll_count = 0;
-    beam_weapon_info *bwi;
     weapon_info *wi;
     float widest;
 
@@ -2622,7 +2618,6 @@ beam_handle_collisions(beam *b)
         Int3();
         return;
     }
-    bwi = &Weapon_info[b->weapon_info_index].b_info;
     wi = &Weapon_info[b->weapon_info_index];
 
     // get the widest part of the beam
@@ -2791,12 +2786,12 @@ beam_get_cull_vals(object *objp, beam *b, float *cull_dot, float *cull_dist)
     case OBJ_SHIP:
         // for cap ships, only cull for 90deg or better
         /*
-                if(Ship_info[Ships[objp->instance].ship_info_index].flags & SIF_CAPITAL){
-                        *cull_dot = 0.0f;
-                        *cull_dist = 0.0f;
-                        return;
-                }
-                */
+      if(Ship_info[Ships[objp->instance].ship_info_index].flags & SIF_CAPITAL){
+         *cull_dot = 0.0f;
+         *cull_dist = 0.0f;
+         return;
+      }
+      */
 
         // for large ships, cull at some multiple of the radius
         if (Ship_info[Ships[objp->instance].ship_info_index].flags &
@@ -3141,7 +3136,7 @@ void
 beam_test_new(int whee)
 {
     int s1, s2, s3;
-    object *orion, *fenris, *herc2, *herc3, *herc6, *alpha;
+    object *fenris, *alpha;
     ship_subsys *orion_turret, *fenris_turret, *fenris_radar, *orion_radar,
         *lookup;
     beam_fire_info f;
@@ -3151,19 +3146,15 @@ beam_test_new(int whee)
     // lookup some stuff
     s1 = ship_name_lookup("GTD Orion 1");
     Assert(s1 >= 0);
-    orion = &Objects[Ships[s1].objnum];
     s2 = ship_name_lookup("GTC Fenris 2");
     Assert(s2 >= 0);
     fenris = &Objects[Ships[s2].objnum];
     s3 = ship_name_lookup("GTF Hercules 2");
     Assert(s3 >= 0);
-    herc2 = &Objects[Ships[s3].objnum];
     s3 = ship_name_lookup("GTF Hercules 3");
     Assert(s3 >= 0);
-    herc3 = &Objects[Ships[s3].objnum];
     s3 = ship_name_lookup("GTF Hercules 6");
     Assert(s3 >= 0);
-    herc6 = &Objects[Ships[s3].objnum];
     s3 = ship_name_lookup("Alpha 1");
     Assert(s3 >= 0);
     alpha = &Objects[Ships[s3].objnum];

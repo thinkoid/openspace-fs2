@@ -79,7 +79,7 @@ int Monitoring_coords[GR_NUM_RESOLUTIONS][2] = { { // GR_640
                                                  { // GR_1024
                                                    869, 331 } };
 
-char *Escort_gauge_filenames[GR_NUM_RESOLUTIONS][MAX_ESCORT_SHIPS] = {
+const char *Escort_gauge_filenames[GR_NUM_RESOLUTIONS][MAX_ESCORT_SHIPS] = {
     //XSTR:OFF
     { // GR_640
       "escort1", "escort2", "escort3" },
@@ -163,7 +163,7 @@ escort_compare_func(const void *e1, const void *e2)
 // create complete priority sorted escort list for all active ships
 // escorts - array of escort info
 // num_escorts - number of escorts requests in field of active ships
-//        This will be culled to MAX_ESCORTS, selecting the top set from escorts
+//   This will be culled to MAX_ESCORTS, selecting the top set from escorts
 void
 hud_create_complete_escort_list(escort_info *escorts, int *num_escorts)
 {
@@ -435,12 +435,8 @@ hud_escort_show_icon(int index, object *objp)
     int screen_integrity, offset;
     char buf[255];
     ship *sp;
-    ship_info *sip;
-    shield_hit_info *shi;
 
     sp = &Ships[objp->instance];
-    sip = &Ship_info[sp->ship_info_index];
-    shi = &Escort_ships[index].hit_info;
 
     // determine if its "friendly" or not
     if (Player_ship != NULL) {

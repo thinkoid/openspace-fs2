@@ -42,7 +42,8 @@
     g3_start_frame_func(zbuffer_flag, __FILE__, __LINE__)
 
 // use the g3_start_frame macro instead of calling this directly.
-extern void g3_start_frame_func(int zbuffer_flag, char *filename, int lineno);
+extern void g3_start_frame_func(int zbuffer_flag, const char *filename,
+                                int lineno);
 
 //set view from x,y,z & p,b,h, zoom.  Must call one of g3_set_view_*()
 void g3_set_view_angles(vector *view_pos, angles *view_orient, float zoom);
@@ -90,12 +91,6 @@ void g3_done_instance();
 //get current field of view.  Fills in angle for x & y
 void g3_get_FOV(float *fov_x, float *fov_y);
 
-//get zoom.  For a given window size, return the zoom which will achieve
-//the given FOV along the given axis.
-float g3_get_zoom(char axis, float fov, int window_width, int window_height);
-
-//returns the normalized, unscaled view vectors
-void g3_get_view_vectors(vector *forward, vector *up, vector *right);
 
 //returns true if a plane is facing the viewer. takes the unrotated surface
 //normal of the plane, and a point on it.  The normal need not be normalized

@@ -53,7 +53,7 @@ init_sexp()
 
 // allocates an sexp node.
 int
-alloc_sexp(char *text, int type, int subtype, int first, int rest)
+alloc_sexp(const char *text, int type, int subtype, int first, int rest)
 {
     int i;
 
@@ -218,12 +218,12 @@ get_sexp(char *token)
     return start;
 }
 
-//      Still a debug-level system.
-//      get_sexp_main reads and builds the internal representation for a
-//      symbolic expression.
-//      On entry:
-//              Mp points at first character in expression.
-//      The symbolic expression is built in Sexp_nodes beginning at node 0.
+// Still a debug-level system.
+// get_sexp_main reads and builds the internal representation for a
+// symbolic expression.
+// On entry:
+//    Mp points at first character in expression.
+// The symbolic expression is built in Sexp_nodes beginning at node 0.
 int
 get_sexp_main()
 {

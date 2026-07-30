@@ -65,14 +65,6 @@ debug_int3()
 // debug output (the old Win32 output window); filter ids are ignored
 // ----------------------------------------------------------------------
 
-#ifndef NDEBUG
-int Log_debug_output_to_file = 0;
-#endif
-
-void
-load_filter_info(void)
-{ }
-
 void
 outwnd_init(int /*display_under_freespace_window*/)
 { }
@@ -152,18 +144,8 @@ vm_malloc(int size)
     return malloc(size);
 }
 
-char *
-vm_strdup(const char *ptr)
-{
-    return strdup(ptr);
-}
-
 void
 vm_free(void *ptr)
 {
     free(ptr);
 }
-
-void
-vm_free_all()
-{ }

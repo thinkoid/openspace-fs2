@@ -18,7 +18,7 @@
 extern char Mission_text[MISSION_TEXT_SIZE];
 extern char Mission_text_raw[MISSION_TEXT_SIZE];
 extern char *Mp;
-extern char *token_found;
+extern const char *token_found;
 extern int fred_parse_flag;
 extern int Token_found_flag;
 extern jmp_buf parse_abort;
@@ -76,32 +76,34 @@ void ignore_gray_space();
 // error
 extern int get_line_num();
 extern char *next_tokens();
-extern void diag_printf(char *format, ...);
-extern void error_display(int error_level, char *format, ...);
+extern void diag_printf(const char *format, ...);
+extern void error_display(int error_level, const char *format, ...);
 
 // skip
-extern int skip_to_string(char *pstr, char *end = NULL);
+extern int skip_to_string(const char *pstr, const char *end = NULL);
 extern int skip_to_start_of_strings(char *pstr1, char *pstr2);
-extern void advance_to_eoln(char *terminators);
+extern void advance_to_eoln(const char *terminators);
 extern void skip_token();
 
 // required
-extern int required_string(char *pstr);
-extern int optional_string(char *pstr);
-extern int required_string_either(char *str1, char *str2);
-extern int required_string_3(char *str1, char *str2, char *str3);
+extern int required_string(const char *pstr);
+extern int optional_string(const char *pstr);
+extern int required_string_either(const char *str1, const char *str2);
+extern int required_string_3(const char *str1, const char *str2, const char *str3);
 
 // stuff
-extern void copy_to_eoln(char *outstr, char *more_terminators, char *instr,
+extern void copy_to_eoln(char *outstr, const char *more_terminators,
+                         char *instr,
                          int max);
-extern void copy_text_until(char *outstr, char *instr, char *endstr,
+extern void copy_text_until(char *outstr, char *instr, const char *endstr,
                             int max_chars);
 extern void stuff_string_white(char *pstr);
-extern void stuff_string(char *pstr, int type, char *terminators, int len = 0);
+extern void stuff_string(char *pstr, int type, const char *terminators,
+                         int len = 0);
 extern void stuff_string_line(char *pstr, int len);
 
 // Exactly the same as stuff string only Malloc's the buffer.
-//      Supports various FreeSpace primitive types.  If 'len' is supplied, it will override
+// Supports various FreeSpace primitive types.  If 'len' is supplied, it will override
 // the default string length if using the F_NAME case.
 char *stuff_and_malloc_string(int type, char *terminators, int len);
 extern void stuff_float(float *f);
@@ -112,20 +114,21 @@ extern int stuff_int_list(int *ilp, int max_ints, int lookup_type);
 extern int stuff_vector_list(vector *vlp, int max_vecs);
 extern void stuff_vector(vector *vp);
 extern void stuff_matrix(matrix *mp);
-extern int string_lookup(char *str1, char *strlist[], int max,
-                         char *description = NULL, int say_errors = 0);
-extern void find_and_stuff(char *id, int *addr, int f_type, char *strlist[],
-                           int max, char *description);
-extern int match_and_stuff(int f_type, char *strlist[], int max,
-                           char *description);
-extern void find_and_stuff_or_add(char *id, int *addr, int f_type,
+extern int string_lookup(const char *str1, const char *const strlist[], int max,
+                         const char *description = NULL, int say_errors = 0);
+extern void find_and_stuff(const char *id, int *addr, int f_type,
+                    const char *const strlist[],
+                           int max, const char *description);
+extern int match_and_stuff(int f_type, const char *const strlist[], int max,
+                           const char *description);
+extern void find_and_stuff_or_add(const char *id, int *addr, int f_type,
                                   char *strlist[], int *total, int max,
-                                  char *description);
+                                  const char *description);
 extern int get_string(char *str);
 extern void stuff_parenthesized_vector(vector *vp);
 void stuff_boolean(int *i);
-int check_for_string(char *pstr);
-int check_for_string_raw(char *pstr);
+int check_for_string(const char *pstr);
+int check_for_string_raw(const char *pstr);
 
 // general
 extern void init_parse();
@@ -136,15 +139,11 @@ extern void parse_main();
 // utility
 extern void mark_int_list(int *ilp, int max_ints, int lookup_type);
 extern void compact_multitext_string(char *str);
-extern void read_file_text(char *filename, int mode = CF_TYPE_ANY);
+extern void read_file_text(const char *filename, int mode = CF_TYPE_ANY);
 extern void debug_show_mission_text();
 extern void convert_sexp_to_string(int cur_node, char *outstr, int mode);
 char *split_str_once(char *src, int max_pixel_w);
 int split_str(char *src, int max_pixel_w, int *n_chars, char **p_str,
               int max_lines, char ignore_char = -1);
 
-// fred
-extern int required_string_fred(char *pstr, char *end = NULL);
-extern int required_string_either_fred(char *str1, char *str2);
-extern int optional_string_fred(char *pstr, char *end = NULL, char *end2 = NULL);
 #endif

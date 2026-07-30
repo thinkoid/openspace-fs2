@@ -12,12 +12,8 @@
 
 #include <globalincs/pstypes.hh>
 
-#ifdef FS2_DEMO
-#define MAX_BITMAPS 3500
-#else
 // How many bitmaps the game can handle
 #define MAX_BITMAPS 3500
-#endif
 
 // 16 bit pixel formats
 // 1555 LFB writes
@@ -35,12 +31,12 @@ extern int bm_texture_ram;
 // It returns a negative number if it couldn't load
 // the bitmap.   On success, it returns the bitmap
 // number.
-int bm_load(char *filename);
+int bm_load(const char *filename);
 
 // special load function. basically allows you to load a bitmap which already exists (by filename).
 // this is useful because in some cases we need to have a bitmap which is locked in screen format
 // _and_ texture format, such as pilot pics and squad logos
-int bm_load_duplicate(char *filename);
+int bm_load_duplicate(const char *filename);
 
 // Creates a bitmap that exists in RAM somewhere, instead
 // of coming from a disk file.  You pass in a pointer to a
@@ -66,7 +62,7 @@ void bm_release(int n);
 // It returns a negative number if it couldn't load
 // the bitmap.   On success, it returns the bitmap
 // number of the first frame and nframes is set.
-extern int bm_load_animation(char *filename, int *nframes, int *fps = NULL,
+extern int bm_load_animation(const char *filename, int *nframes, int *fps = NULL,
                              int can_drop_frames = 0);
 
 // This locks down a bitmap and returns a pointer to a bitmap
@@ -94,16 +90,10 @@ extern void bm_get_filename(int bitmapnum, char *filename);
 // resyncs all the bitmap palette
 extern void bm_update();
 
-// call to load all data for all bitmaps that have been requested to be loaded
-extern void bm_load_all();
 extern void bm_unload_all();
 
 // call to get the palette for a bitmap
 extern void bm_get_palette(int n, ubyte *pal, char *name);
-
-// Hacked function to get a pixel from a bitmap.
-// Only works good in 8bpp mode.
-void bm_get_pixel(int bitmap, float u, float v, ubyte *r, ubyte *g, ubyte *b);
 
 // Returns number of bytes of bitmaps locked this frame
 // ntotal = number of bytes of bitmaps locked this frame
@@ -113,41 +103,41 @@ void bm_get_frame_usage(int *ntotal, int *nnew);
 /* 
  * Example on using bm_create
  * 
-        {
-                static int test_inited = 0;
-                static int test_bmp;
-                static uint test_bmp_data[128*64];
+   {
+      static int test_inited = 0;
+      static int test_bmp;
+      static uint test_bmp_data[128*64];
 
-                if ( !test_inited )     {
-                        test_inited = 1;
-                        // Create the new bitmap and fill in its data.
-                        // When you're done with it completely, call
-                        // bm_release to free up the bitmap handle
-                        test_bmp = bm_create( 32, 128, 64, test_bmp_data );
-                        int i,j;
-                        for (i=0; i<64; i++ )   {
-                                for (j=0; j<64; j++ )   {
-                                        uint r=i*4;
-                                        test_bmp_data[j+i*128] = r;
-                                }
-                        }
-                }
+      if ( !test_inited )  {
+         test_inited = 1;
+         // Create the new bitmap and fill in its data.
+         // When you're done with it completely, call
+         // bm_release to free up the bitmap handle
+         test_bmp = bm_create( 32, 128, 64, test_bmp_data );
+         int i,j;
+         for (i=0; i<64; i++ )   {
+            for (j=0; j<64; j++ )   {
+               uint r=i*4;
+               test_bmp_data[j+i*128] = r;
+            }
+         }
+      }
 
-                bm_unload(test_bmp);    // this pages out the data, so that the
-                                                                        // next bm_lock will convert the new data to the
-                                                                        // correct bpp
+      bm_unload(test_bmp); // this pages out the data, so that the
+                           // next bm_lock will convert the new data to the
+                           // correct bpp
 
-                // put in new data
-                int x,y;
-                gr_reset_clip();
-                for (y=0; y<64; y++)
-                        for (x=0; x<128; x++ )
-                                test_bmp_data[y*128+x] = 15;
+      // put in new data
+      int x,y;
+      gr_reset_clip();
+      for (y=0; y<64; y++)
+         for (x=0; x<128; x++ )
+            test_bmp_data[y*128+x] = 15;
 
-                // Draw the bitmap to upper left corner
-                gr_set_bitmap(test_bmp);
-                gr_bitmap( 0,0 );
-        }
+      // Draw the bitmap to upper left corner
+      gr_set_bitmap(test_bmp);
+      gr_bitmap( 0,0 );
+   }
 */
 
 // Paging stuff

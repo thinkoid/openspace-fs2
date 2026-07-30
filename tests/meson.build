@@ -4,6 +4,11 @@
 # lists (game_stubs, oracle_stubs) are exported from the root meson.build --
 # tools/ builds before this dir and links them too (vpstage).
 
+# The game binary (../bin) links the same two stub files -- it is built against
+# unported gameplay too. Exported so bin/meson.build doesn't reach across the
+# tree for them; see the wart note there.
+game_stubs = files('stubs.cc', 'gamestubs_gen.cc')
+
 # sexp.cpp's evaluator half references gameplay code that is not ported yet;
 # gamestubs_gen.cpp fills those symbols with traps (see its header comment).
 sexp_dump = executable('sexp_dump',

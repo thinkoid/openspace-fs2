@@ -35,22 +35,22 @@
 #define LOWEST_COMPATIBLE_PLAYER_FILE_VERSION CURRENT_PLAYER_FILE_VERSION
 
 // keep track of pilot file changes here
-// version 2    : Added squad logo filename
-// version 3    : Changed size of scoring struct. use ushort instead of ints for storing alltime kills by ship type
+// version 2   : Added squad logo filename
+// version 3   : Changed size of scoring struct. use ushort instead of ints for storing alltime kills by ship type
 // version 4/5 : Added squadron name field
-// version 6    : changed max length on a multiplayer options field
-// version 130  : changed size of hud config struct
+// version 6   : changed max length on a multiplayer options field
+// version 130 : changed size of hud config struct
 // version 133 : misc changes. new hud gauge
 // version 134 : added HUD contrast toggle key
 // version 135 : added tips flag  (THIS IS THE DEMO VERSION - RETAIN COMPATIBILITY FROM HERE ON OUT)
 // version 136 : added intelligence flags to tech room visibility data
 // version 137 : 2 new HUD gauges.
-// version 138  : new multiplayer config
+// version 138 : new multiplayer config
 // version 139 : # medals increased - added compatibility with old plr file versions
 // version 140 : ships table reordered. clear out old pilot files
 // search for PLAYER INIT for new pilot initialization stuff. I _think_ its in the right spot for now
 // unique signiture to identify a .PLR file (FreeSpace Player File)  // FPSF appears as FSPF in file.
-#define PLR_FILE_ID 'FPSF'
+#define PLR_FILE_ID fourcc("FSPF")
 
 // Current content of a .PLR file
 //
@@ -133,8 +133,8 @@ verify_pilot_file(char *filename, int single, int *rank)
 
     // check for compatibility here
     file_version = cfread_uint(file);
-    /*  if (file_version < INITIAL_RELEASE_FILE_VERSION) { */
-    //  if (file_version != CURRENT_PLAYER_FILE_VERSION) {
+    /*   if (file_version < INITIAL_RELEASE_FILE_VERSION) { */
+    //   if (file_version != CURRENT_PLAYER_FILE_VERSION) {
     if (file_version < LOWEST_COMPATIBLE_PLAYER_FILE_VERSION) {
         nprintf(("Warning",
                  "WARNING => Player file is outdated and not compatible...\n"));
@@ -590,15 +590,15 @@ read_pilot_file(char *callsign, int single, player *p)
 
     os_config_write_string(NULL, "LastPlayer", cat);
     /*
-        // if he's not a multiplayer pilot, then load in the campaign file at this point!
-        if (!is_multi) {
-                if (mission_campaign_load_by_name(campaign_fname)) {
-                        strcpy(campaign_fname, BUILTIN_CAMPAIGN);
-                        if (mission_campaign_load_by_name(campaign_fname))
-                                Assert(0);
-                }
-        }
-        //Campaign.current_mission = mission_num;*/
+   // if he's not a multiplayer pilot, then load in the campaign file at this point!
+   if (!is_multi) {
+      if (mission_campaign_load_by_name(campaign_fname)) {
+         strcpy(campaign_fname, BUILTIN_CAMPAIGN);
+         if (mission_campaign_load_by_name(campaign_fname))
+            Assert(0);
+      }
+   }
+   //Campaign.current_mission = mission_num;*/
 
     hud_squadmsg_save_keys(); // when new pilot read in, must save info for squadmate messaging
 
@@ -670,7 +670,7 @@ write_pilot_file_core(player *p)
 
     i = strlen(p->callsign);
     if (i == 0)
-        return 0; //    This means there is no player, probably meaning he was deleted and game exited from same screen.
+        return 0; // This means there is no player, probably meaning he was deleted and game exited from same screen.
 
     Assert((i > 0) &&
            (i <= MAX_FILENAME_LEN - 4)); // ensure we won't overrun the buffer
@@ -987,11 +987,7 @@ init_new_pilot(player *p, int reset)
         hud_set_default_hud_config(p); // use a default hud config
 
         // in the demo, load up the hardcoded hcf file
-#ifdef FS2_DEMO
-        hud_config_color_load("hud_1.hcf");
-#else
         hud_config_color_load("hud_3.hcf");
-#endif
 
         control_config_reset_defaults(); // get a default keyboard config
         player_set_pilot_defaults(p); // set up any player struct defaults
@@ -1165,7 +1161,7 @@ pilot_load_squad_pic_list()
 
 // will attempt to load an insignia bitmap and set it as active for the player
 void
-player_set_squad_bitmap(player *p, char *fname)
+player_set_squad_bitmap(player *p, const char *fname)
 {
     // sanity check
     if (p == NULL) {
@@ -1192,15 +1188,15 @@ player_set_squad_bitmap(player *p, char *fname)
     }
 
     /*
-        flen = strlen(filename);
-        elen = strlen(ext);
-        Assert(flen < MAX_PATH_LEN);
-        strcpy(path, filename);
-        if ((flen < 4) || stricmp(path + flen - elen, ext)) {
-                Assert(flen + elen < MAX_PATH_LEN);
-                strcat(path, ext);
-        }
-        */
+   flen = strlen(filename);
+   elen = strlen(ext);
+   Assert(flen < MAX_PATH_LEN);
+   strcpy(path, filename);
+   if ((flen < 4) || stricmp(path + flen - elen, ext)) {
+      Assert(flen + elen < MAX_PATH_LEN);
+      strcat(path, ext);
+   }
+   */
 }
 
 // set squadron

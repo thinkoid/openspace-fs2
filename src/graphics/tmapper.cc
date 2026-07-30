@@ -65,7 +65,7 @@ tmap_scan_desc tmap_scanlines8[] = {
 
     { TMAP_FLAG_RAMP | TMAP_FLAG_GOURAUD | TMAP_FLAG_NEBULA, tmapscan_nebula8 },
 
-    //  { TMAP_FLAG_TEXTURED|TMAP_FLAG_TILED, tmapscan_lnn8_tiled_256x256 },
+    //   { TMAP_FLAG_TEXTURED|TMAP_FLAG_TILED, tmapscan_lnn8_tiled_256x256 },
     // Totally non-general specific inner loop for subspace effect
     { TMAP_FLAG_TEXTURED | TMAP_FLAG_CORRECT | TMAP_FLAG_TILED,
       tmapscan_pnn8_tiled_256x256_subspace },
@@ -91,7 +91,7 @@ tmapper_setup()
 
     // Some constants for the inner loop
     Tmap.FixedScale = 65536.0f;
-    Tmap.FixedScale8 = 2048.0f; //8192.0f;      // 2^16 / 8
+    Tmap.FixedScale8 = 2048.0f; //8192.0f;   // 2^16 / 8
     Tmap.One = 1.0f;
 
     // Set tmap_scanline to not call a function
@@ -143,45 +143,45 @@ tmapper_show_layers()
 /*
 void tmap_scan_generic()
 {
-        int ui,vi,i;
-        ubyte * dptr,c;
-        float l, dl;
-        float u, v, w, du, dv, dw;
-        
-        dptr = (ubyte *)Tmap.dest_row_data;
+   int ui,vi,i;
+   ubyte * dptr,c;
+   float l, dl;
+   float u, v, w, du, dv, dw;
+   
+   dptr = (ubyte *)Tmap.dest_row_data;
 
-        Tmap.fx_w = fl2i(Tmap.l.sw * GR_Z_RANGE)+gr_zoffset;
-        Tmap.fx_dwdx = fl2i(Tmap.deltas.sw * GR_Z_RANGE);
+   Tmap.fx_w = fl2i(Tmap.l.sw * GR_Z_RANGE)+gr_zoffset;
+   Tmap.fx_dwdx = fl2i(Tmap.deltas.sw * GR_Z_RANGE);
 
-        l = Tmap.l.b;
-        dl = Tmap.deltas.b;
+   l = Tmap.l.b;
+   dl = Tmap.deltas.b;
 
-        u = Tmap.l.u;
-        v = Tmap.l.v;
-        w = Tmap.l.sw;
-        du = Tmap.deltas.u;
-        dv = Tmap.deltas.v;
-        dw = Tmap.deltas.sw;
-        
-        for (i=0; i<Tmap.loop_count; i++ )      {
-                int tmp = (uint)dptr-Tmap.pScreenBits;
-                if ( Tmap.fx_w > (int)gr_zbuffer[tmp] ) {
-                        gr_zbuffer[tmp] = Tmap.fx_w;
+   u = Tmap.l.u;
+   v = Tmap.l.v;
+   w = Tmap.l.sw;
+   du = Tmap.deltas.u;
+   dv = Tmap.deltas.v;
+   dw = Tmap.deltas.sw;
+   
+   for (i=0; i<Tmap.loop_count; i++ )  {
+      int tmp = (uint)dptr-Tmap.pScreenBits;
+      if ( Tmap.fx_w > (int)gr_zbuffer[tmp] )   {
+         gr_zbuffer[tmp] = Tmap.fx_w;
 
-                        ui = fl2i( u / w ) % Tmap.bp->w;
-                        vi = fl2i( v / w ) % Tmap.bp->h;
+         ui = fl2i( u / w ) % Tmap.bp->w;
+         vi = fl2i( v / w ) % Tmap.bp->h;
 
-                        c = Tmap.pixptr[vi*Tmap.bp->w+ui];
-                        *dptr = gr_fade_table[fl2i(l*31)*256+c];
+         c = Tmap.pixptr[vi*Tmap.bp->w+ui];
+         *dptr = gr_fade_table[fl2i(l*31)*256+c];
 
-                }
-                Tmap.fx_w += Tmap.fx_dwdx;
-                l+=dl;
-                u+=du;
-                v+=dv;
-                w+=dw;
-                dptr++;
-        }
+      }
+      Tmap.fx_w += Tmap.fx_dwdx;
+      l+=dl;
+      u+=du;
+      v+=dv;
+      w+=dw;
+      dptr++;
+   }
 }
 */
 
@@ -272,9 +272,9 @@ change_fade_table(uint code)
                 else
                     gb = b;
 
-                //                              gr = r1;
-                //                              gg = g1;
-                //                              gb = b1;        //gi*2;
+                //            gr = r1;
+                //            gg = g1;
+                //            gb = b1; //gi*2;
 
                 x = l - 24; // x goes from 0 to 7
                 y = 31 - l; // y goes from 7 to 0
@@ -365,7 +365,7 @@ grx_tmapper(int nverts, vertex **verts, uint flags)
     }
 
     tmap_scanline = tmap_scanline_table[flags];
-    //  tmap_scanline = tmap_scan_generic;
+    //   tmap_scanline = tmap_scan_generic;
 
     // combos retail's table never listed (e.g. TEXTURED|CORRECT|XPARENT
     // from laser quads) degrade gracefully instead of asserting.  The
@@ -402,7 +402,7 @@ grx_tmapper(int nverts, vertex **verts, uint flags)
     if (flags & TMAP_FLAG_TEXTURED) {
         Tmap.bp = bm_lock(gr_screen.current_bitmap, 8, 0);
 
-        int was_tiled = 0, can_tile = 0;
+        int can_tile = 0;
         if (flags & TMAP_FLAG_TILED) {
             if ((Tmap.bp->w == 16) && (Tmap.bp->h == 16))
                 can_tile = 1;
@@ -416,7 +416,6 @@ grx_tmapper(int nverts, vertex **verts, uint flags)
                 can_tile = 1;
 
             if (!can_tile) {
-                was_tiled = 1;
                 flags &= (~TMAP_FLAG_TILED);
             }
         }
@@ -451,10 +450,10 @@ grx_tmapper(int nverts, vertex **verts, uint flags)
     }
 
     // Find the topmost vertex
-    //top = -1;                 // Initialize to dummy value to avoid compiler warning
-    //ymin = 0.0f;              // Initialize to dummy value to avoid compiler warning
-    //  Instead of initializing to avoid compiler warnings, set to first value outside loop and remove (i==0)
-    //  comparison, which otherwise happens nverts times.  MK, 3/20/98 (was tracing code figuring out my shield effect bug...)
+    //top = -1;         // Initialize to dummy value to avoid compiler warning
+    //ymin = 0.0f;      // Initialize to dummy value to avoid compiler warning
+    //   Instead of initializing to avoid compiler warnings, set to first value outside loop and remove (i==0)
+    //   comparison, which otherwise happens nverts times.  MK, 3/20/98 (was tracing code figuring out my shield effect bug...)
     ymin = verts[0]->sy;
     top = 0;
     for (i = 1; i < nverts; i++) {
@@ -631,10 +630,10 @@ grx_tmapper(int nverts, vertex **verts, uint flags)
                                 Tmap.fx_dl_dx = -Tmap.fx_dl_dx;
                                 Tmap.fx_l = (67 * F1_0) - Tmap.fx_l;
                                 Tmap.fx_l_right = (67 * F1_0) - Tmap.fx_l_right;
-                                //              Assert( Tmap.fx_l > 31*F1_0 );
-                                //              Assert( Tmap.fx_l < 66*F1_0 );
-                                //              Assert( Tmap.fx_dl_dx >= 0 );
-                                //              Assert( Tmap.fx_dl_dx < 31*F1_0 );
+                                //     Assert( Tmap.fx_l > 31*F1_0 );
+                                //     Assert( Tmap.fx_l < 66*F1_0 );
+                                //     Assert( Tmap.fx_dl_dx >= 0 );
+                                //     Assert( Tmap.fx_dl_dx < 31*F1_0 );
                             }
                         }
                     }

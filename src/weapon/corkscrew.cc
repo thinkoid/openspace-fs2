@@ -109,7 +109,7 @@ cscrew_maybe_fire_missile(int shipnum)
 // ------------------------------------------------------------------
 // cscrew_create()
 //
-//      Get a free corkscrew missile entry, and initialize the struct members
+// Get a free corkscrew missile entry, and initialize the struct members
 //
 int
 cscrew_create(object *obj)
@@ -201,7 +201,6 @@ cscrew_process_post(object *objp)
     vector cen, neg;
     vector new_pt;
     weapon *wp;
-    weapon_info *wip;
     cscrew_info *ci;
     float twist_val;
 
@@ -213,7 +212,6 @@ cscrew_process_post(object *objp)
 
     // get various useful pointers
     wp = &Weapons[objp->instance];
-    wip = &Weapon_info[wp->weapon_info_index];
     ci = &Corkscrew_missiles[wp->cscrew_index];
 
     // move to the outside of the corkscrew

@@ -32,56 +32,57 @@
 #error Neither FREESPACE1_FORMAT or FREESPACE2_FORMAT defined
 #endif
 
+// chunk ids spell the byte sequence as it appears in the file (retail
+// wrote them as reversed multichar literals: '2RDH' == fourcc("HDR2"))
+
 // FREESPACE1 FORMAT
 #if defined(FREESPACE1_FORMAT)
 // POF file header
-#define ID_OHDR 'RDHO'
+#define ID_OHDR fourcc("OHDR")
 // Subobject header
-#define ID_SOBJ 'JBOS'
+#define ID_SOBJ fourcc("SOBJ")
 #else
 // POF file header
-#define ID_OHDR '2RDH'
+#define ID_OHDR fourcc("HDR2")
 // Subobject header
-#define ID_SOBJ '2JBO'
+#define ID_SOBJ fourcc("OBJ2")
 #endif
 // Texture filename list
-#define ID_TXTR 'RTXT'
+#define ID_TXTR fourcc("TXTR")
 // POF file information, like command line, etc
-#define ID_INFO 'FNIP'
+#define ID_INFO fourcc("PINF")
 // Grid information
-#define ID_GRID 'DIRG'
+#define ID_GRID fourcc("GRID")
 // Special object -- like a gun, missile, docking point, etc.
-#define ID_SPCL 'LCPS'
+#define ID_SPCL fourcc("SPCL")
 // A spline based path
-#define ID_PATH 'HTAP'
+#define ID_PATH fourcc("PATH")
 // gun points
-#define ID_GPNT 'TNPG'
+#define ID_GPNT fourcc("GPNT")
 // missile points
-#define ID_MPNT 'TNPM'
+#define ID_MPNT fourcc("MPNT")
 // docking points
-#define ID_DOCK 'KCOD'
+#define ID_DOCK fourcc("DOCK")
 // turret gun points
-#define ID_TGUN 'NUGT'
+#define ID_TGUN fourcc("TGUN")
 // turret missile points
-#define ID_TMIS 'SIMT'
+#define ID_TMIS fourcc("TMIS")
 // thruster points
-#define ID_FUEL 'LEUF'
+#define ID_FUEL fourcc("FUEL")
 // shield definition
-#define ID_SHLD 'DLHS'
+#define ID_SHLD fourcc("SHLD")
 // eye information
-#define ID_EYE ' EYE'
+#define ID_EYE fourcc("EYE ")
 // insignia information
-#define ID_INSG 'GSNI'
+#define ID_INSG fourcc("INSG")
 // autocentering information
-#define ID_ACEN 'NECA'
+#define ID_ACEN fourcc("ACEN")
 
 #define uw(p) (*((uint *)(p)))
 #define w(p) (*((int *)(p)))
 #define wp(p) ((int *)(p))
 #define vp(p) ((vector *)(p))
 #define fl(p) (*((float *)(p)))
-
-extern int model_interp(matrix *orient, ubyte *data, polymodel *pm);
 
 // Creates the octants for a given polygon model
 void model_octant_create(polymodel *pm);
@@ -92,7 +93,7 @@ void model_octant_free(polymodel *pm);
 void model_calc_bound_box(vector *box, vector *big_mn, vector *big_mx);
 
 // the POF container reader (pofparse.cpp); fills pm, returns 1 on success
-int read_model_file(polymodel *pm, char *filename, int n_subsystems,
+int read_model_file(polymodel *pm, const char *filename, int n_subsystems,
                     model_subsystem *subsystems);
 
 void interp_clear_instance();

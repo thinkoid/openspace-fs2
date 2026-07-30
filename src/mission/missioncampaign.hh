@@ -17,19 +17,8 @@
 #include <stats/scoring.hh>
 
 // name of the builtin campaign.
-#if defined(FS2_DEMO)
-#define BUILTIN_CAMPAIGN "demo"
-#define BUILTIN_CAMPAIGN_NAME "DEMO Campaign"
-#elif defined(OEM_BUILD)
-#define BUILTIN_CAMPAIGN "FreeSpace2OEM"
-#define BUILTIN_CAMPAIGN_NAME "OEM Campaign"
-#elif defined(E3_BUILD)
-#define BUILTIN_CAMPAIGN "E3"
-#define BUILTIN_CAMPAIGN_NAME "E3 Campaign"
-#else
 #define BUILTIN_CAMPAIGN "FreeSpace2"
 #define BUILTIN_CAMPAIGN_NAME "The Main Freespace2 Campaign"
-#endif
 
 // maximum number of missions in a campaign
 #define MAX_CAMPAIGN_MISSIONS 100
@@ -50,7 +39,8 @@
 #define CAMPAIGN_MOVIE_PRE_MISSION 1
 #define CMAPAIGN_MOVIE_POST_MISSION 2
 
-#define CAMPAIGN_SINGLE_PLAYER_SIG 0xddddeeee
+// int-typed: read back with cfread_int and compared as int
+#define CAMPAIGN_SINGLE_PLAYER_SIG int(0xddddeeee)
 #define CAMPAIGN_MULTI_PLAYER_SIG 0xeeeeffff
 
 // defines for possibly persistent information
@@ -64,7 +54,7 @@
 
 #define CAMPAIGN_LOOP_MISSION_UNINITIALIZED -2
 
-extern char *campaign_types[MAX_CAMPAIGN_TYPES];
+extern const char *campaign_types[MAX_CAMPAIGN_TYPES];
 
 // structure for a campaign definition.  It contains the mission names and other interesting
 // information about a campaign and the mission strucuture within.
@@ -157,7 +147,7 @@ int mission_campaign_load_by_name(char *filename);
 int mission_campaign_load_by_name_csfe(char *filename, char *callsign);
 
 // load up and initialize a new campaign
-int mission_campaign_load(char *filename, int load_savefile = 1);
+int mission_campaign_load(const char *filename, int load_savefile = 1);
 
 // function to save the state of the campaign between missions or to load a campaign save file
 extern int mission_campaign_save(void);
@@ -175,12 +165,6 @@ extern void mission_campaign_mission_over(void);
 
 // frees all memory at game close time
 extern void mission_campaign_close(void);
-
-// read in a campaign file.  Used by Fred.
-int mission_campaign_load_fred(char *filename, char *name_verify = NULL);
-
-// used by Fred to get a mission's list of goals.
-void read_mission_goal_list(int num);
 
 void mission_campaign_build_list(int multiplayer);
 
@@ -206,7 +190,7 @@ void campaign_delete_save(char *cfn, char *pname);
 void campaign_savefile_load(char *fname, char *pname);
 
 // get name and type of specified campaign file
-int mission_campaign_get_info(char *filename, char *name, int *type,
+int mission_campaign_get_info(const char *filename, char *name, int *type,
                               int *max_players, char **desc = NULL);
 
 // get a listing of missions in a campaign

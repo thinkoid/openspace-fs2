@@ -122,7 +122,7 @@ tmapscan_nebula8()
     dldx = (int)(Tmap.deltas.b * max_neb_color * 2.0f * 256.0f);
 
 #ifdef USE_INLINE_ASM
-    //                  memset( dptr, 31, Tmap.loop_count );
+    //         memset( dptr, 31, Tmap.loop_count );
     _asm push eax _asm push ebx _asm push ecx _asm push edx _asm push edi
 
         // eax - l1
@@ -193,26 +193,26 @@ tmapscan_flat_gouraud()
     }
 
     /* HARDWARE_ONLY
-        if ( Current_alphacolor )       {
-                ubyte *lookup = &Current_alphacolor->table.lookup[0][0];
+   if ( Current_alphacolor )  {
+      ubyte *lookup = &Current_alphacolor->table.lookup[0][0];
 
-                int i;
-                ubyte * dptr;
-                fix l, dl;
-                
-                dptr = (ubyte *)Tmap.dest_row_data;
+      int i;
+      ubyte * dptr;
+      fix l, dl;
+      
+      dptr = (ubyte *)Tmap.dest_row_data;
 
-                l = Tmap.fx_l;
-                dl = Tmap.fx_dl_dx;
-                
-                for (i=0; i<Tmap.loop_count; i++ )      {
-                        *dptr = lookup[f2i(l*16)*256+*dptr];
-                        l+=dl;
-                        dptr++;
-                }
+      l = Tmap.fx_l;
+      dl = Tmap.fx_dl_dx;
+      
+      for (i=0; i<Tmap.loop_count; i++ )  {
+         *dptr = lookup[f2i(l*16)*256+*dptr];
+         l+=dl;
+         dptr++;
+      }
 
-        } else {
-        */
+   } else {
+   */
     int i;
     ubyte *dptr, c;
     fix l, dl;
@@ -769,21 +769,21 @@ tmapscan_lnn8_read()
     Tmap.fx_dv_dx = fl2f(Tmap.deltas.v);
 
     /*
-        int i;
+   int i;
 
-        ubyte * src = (ubyte *)Tmap.pixptr;
-        ubyte * dst = (ubyte *)Tmap.dest_row_data;
-        
-        for (i=0; i<Tmap.loop_count; i++ )      {
-                int u,v;
-                u = f2i(Tmap.fx_u);
-                v = f2i(Tmap.fx_v);
-                
-                src[u+v*Tmap.src_offset] = *dst++;
-                                                
-                Tmap.fx_u += Tmap.fx_du_dx;
-                Tmap.fx_v += Tmap.fx_dv_dx;
-        }
+   ubyte * src = (ubyte *)Tmap.pixptr;
+   ubyte * dst = (ubyte *)Tmap.dest_row_data;
+   
+   for (i=0; i<Tmap.loop_count; i++ )  {
+      int u,v;
+      u = f2i(Tmap.fx_u);
+      v = f2i(Tmap.fx_v);
+      
+      src[u+v*Tmap.src_offset] = *dst++;
+                  
+      Tmap.fx_u += Tmap.fx_du_dx;
+      Tmap.fx_v += Tmap.fx_dv_dx;
+   }
 */
 
     // Reverse mapper: copies the screen back into the texture along the
@@ -837,25 +837,25 @@ tmapscan_lnn8_write()
     Tmap.fx_dv_dx = fl2f(Tmap.deltas.v);
 
     /*
-        int i;
+   int i;
 
-        ubyte * src = (ubyte *)Tmap.pixptr;
-        ubyte * dst = (ubyte *)Tmap.dest_row_data;
-        
-        for (i=0; i<Tmap.loop_count; i++ )      {
-                int u,v;
-                u = f2i(Tmap.fx_u);
-                v = f2i(Tmap.fx_v);
+   ubyte * src = (ubyte *)Tmap.pixptr;
+   ubyte * dst = (ubyte *)Tmap.dest_row_data;
+   
+   for (i=0; i<Tmap.loop_count; i++ )  {
+      int u,v;
+      u = f2i(Tmap.fx_u);
+      v = f2i(Tmap.fx_v);
 
-                ubyte c = src[u+v*Tmap.src_offset];
-                if ( c != 0 )   {
-                        *dst = c;
-                }
-                dst++;
-                                        
-                Tmap.fx_u += Tmap.fx_du_dx;
-                Tmap.fx_v += Tmap.fx_dv_dx;
-        }
+      ubyte c = src[u+v*Tmap.src_offset];
+      if ( c != 0 )  {
+         *dst = c;
+      }
+      dst++;
+               
+      Tmap.fx_u += Tmap.fx_du_dx;
+      Tmap.fx_v += Tmap.fx_dv_dx;
+   }
 */
 
     // Forward mapper for model caching: texel 255 is transparent.

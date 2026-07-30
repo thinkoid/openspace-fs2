@@ -78,11 +78,11 @@ hud_init_missile_lock()
     // Load in the frames need for the lead indicator
     if (!Lock_gauge_loaded) {
         /*
-                Lock_gauge.first_frame = bm_load_animation(Lock_fname[gr_screen.res], &Lock_gauge.num_frames);
-                if ( Lock_gauge.first_frame < 0 ) {
-                        Warning(LOCATION,"Cannot load hud ani: Lock_fname[gr_screen.res]\n");
-                }
-                */
+      Lock_gauge.first_frame = bm_load_animation(Lock_fname[gr_screen.res], &Lock_gauge.num_frames);
+      if ( Lock_gauge.first_frame < 0 ) {
+         Warning(LOCATION,"Cannot load hud ani: Lock_fname[gr_screen.res]\n");
+      }
+      */
         hud_anim_init(&Lock_gauge, 0, 0, Lock_fname[gr_screen.res]);
         hud_anim_load(&Lock_gauge);
 
@@ -144,7 +144,7 @@ hud_show_lock_indicator(float frametime)
     }
 
     hud_set_iff_color(targetp);
-    //  nprintf(("Alan","lockx: %d, locky: %d TargetX: %d, TargetY: %d\n", Players[Player_num].lock_indicator_x, Players[Player_num].lock_indicator_y, Player->current_target_sx, Player->current_target_sy));
+    //   nprintf(("Alan","lockx: %d, locky: %d TargetX: %d, TargetY: %d\n", Players[Player_num].lock_indicator_x, Players[Player_num].lock_indicator_y, Player->current_target_sx, Player->current_target_sy));
 
     if (Player_ai->current_target_is_locked) {
         sx = Player->current_target_sx;
@@ -159,13 +159,13 @@ hud_show_lock_indicator(float frametime)
 
     // show locked indicator
     /*
-        if ( Lock_gauge.first_frame >= 0 ) {
-                gr_set_bitmap(Lock_gauge.first_frame);
-                gr_aabitmap(sx - Lock_gauge_half_w[gr_screen.res], sy - Lock_gauge_half_h[gr_screen.res]);
-        } else {
-                hud_draw_diamond(sx, sy, Lock_target_box_width[gr_screen.res], Lock_target_box_height[gr_screen.res]);
-        }
-        */
+   if ( Lock_gauge.first_frame >= 0 ) {
+      gr_set_bitmap(Lock_gauge.first_frame);
+      gr_aabitmap(sx - Lock_gauge_half_w[gr_screen.res], sy - Lock_gauge_half_h[gr_screen.res]);
+   } else {
+      hud_draw_diamond(sx, sy, Lock_target_box_width[gr_screen.res], Lock_target_box_height[gr_screen.res]);
+   }
+   */
     Lock_gauge.sx = sx - Lock_gauge_half_w[gr_screen.res];
     Lock_gauge.sy = sy - Lock_gauge_half_h[gr_screen.res];
     if (Player_ai->current_target_is_locked) {
@@ -349,11 +349,11 @@ hud_lock_on_subsys_ok()
 void
 hud_lock_check_if_target_in_lock_cone(vector *lock_world_pos)
 {
-    float dist, dot;
+    float dot;
     vector vec_to_target;
 
-    dist = vm_vec_normalized_dir(&vec_to_target, lock_world_pos,
-                                 &Player_obj->pos);
+    vm_vec_normalized_dir(&vec_to_target, lock_world_pos,
+                          &Player_obj->pos);
     dot = vm_vec_dot(&Player_obj->orient.fvec, &vec_to_target);
 
     if (dot > 0.85) {
@@ -374,29 +374,29 @@ hud_lock_secondary_weapon_changed(ship_weapon *swp)
 
     return 0;
     /*
-        int last_wi_index = -1;
-        int current_wi_index = -1;
+   int last_wi_index = -1;
+   int current_wi_index = -1;
 
 
-        // do a quick out if same bank is selected
-        if ( swp->current_secondary_bank == Player_ai->last_secondary_index ) {
-                return 0;
-        }
+   // do a quick out if same bank is selected
+   if ( swp->current_secondary_bank == Player_ai->last_secondary_index ) {
+      return 0;
+   }
 
-        // bank has changed, but it still may be the same weapon type
-        if ( swp->current_secondary_bank >= 0 ) {
-                current_wi_index = swp->secondary_bank_weapons[swp->current_secondary_bank];
-        }
+   // bank has changed, but it still may be the same weapon type
+   if ( swp->current_secondary_bank >= 0 ) {
+      current_wi_index = swp->secondary_bank_weapons[swp->current_secondary_bank];
+   }
 
-        if ( Player_ai->last_secondary_index >= 0 ) {
-                last_wi_index = swp->secondary_bank_weapons[Player_ai->last_secondary_index];
-        }
+   if ( Player_ai->last_secondary_index >= 0 ) {
+      last_wi_index = swp->secondary_bank_weapons[Player_ai->last_secondary_index];
+   }
 
-        if ( current_wi_index != last_wi_index ) {
-                return 1;
-        }
+   if ( current_wi_index != last_wi_index ) {
+      return 1;
+   }
 
-        return 0;
+   return 0;
 */
 }
 
@@ -465,14 +465,14 @@ hud_update_lock_indicator(float frametime)
     }
 
     // If locking on a subsystem, and not in sight... can't lock
-    //  Changed by MK on 4/3/98.  It was confusing me that my hornets would not lock on my target.
-    //  It will now be confusing that they lock, but don't home on your subsystem, but I think that's preferable.
-    //  Often you really care about destroying the target, not just the subsystem.
+    //   Changed by MK on 4/3/98.  It was confusing me that my hornets would not lock on my target.
+    //   It will now be confusing that they lock, but don't home on your subsystem, but I think that's preferable.
+    //   Often you really care about destroying the target, not just the subsystem.
     /*if ( Player_ai->targeted_subsys ) {
-                if ( !hud_lock_on_subsys_ok() ) {
-                        Player->target_in_lock_cone=0;
-                }
-        }*/
+      if ( !hud_lock_on_subsys_ok() ) {
+         Player->target_in_lock_cone=0;
+      }
+   }*/
 
     if (!Player->target_in_lock_cone) {
         Player->locking_on_center = 0;
@@ -517,7 +517,7 @@ hud_draw_lock_triangles_old(int center_x, int center_y, int radius)
         ang += PI / 12;
     }
 
-    for (ang; ang <= end_ang; ang += PI / 2.0f) {
+    for (; ang <= end_ang; ang += PI / 2.0f) {
         // draw the orbiting triangles
 
         //ang = atan2(target_point.y,target_point.x);

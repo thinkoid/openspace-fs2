@@ -62,7 +62,7 @@ int Gp_last_screen;
 
 struct gameplay_help_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y;
     int hotspot;
     int tab;
@@ -70,7 +70,7 @@ struct gameplay_help_buttons
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    gameplay_help_buttons(char *name, int x1, int y1, int h)
+    gameplay_help_buttons(const char *name, int x1, int y1, int h)
         : filename(name)
         , x(x1)
         , y(y1)
@@ -103,9 +103,9 @@ static UI_XSTR Game_help_text[GR_NUM_RESOLUTIONS][GAME_HELP_NUM_TEXT] = {
         &Buttons[gr_screen.res][CONTINUE_BUTTON].button } }
 };
 
-static char *Game_help_filename[GR_NUM_RESOLUTIONS] = { "F1", "2_F1" };
+static const char *Game_help_filename[GR_NUM_RESOLUTIONS] = { "F1", "2_F1" };
 
-static char *Game_help_mask_filename[GR_NUM_RESOLUTIONS] = { "F1-m", "2_F1-m" };
+static const char *Game_help_mask_filename[GR_NUM_RESOLUTIONS] = { "F1-m", "2_F1-m" };
 
 static UI_WINDOW Ui_window;
 static int Background_bitmap;
@@ -114,8 +114,8 @@ static int Gameplay_help_inited = 0;
 static int Current_help_page;
 
 // generate a line for the on-line help for a control item with specified id
-// input:       id              =>      index for control item within Control_config[]
-//                              buf     => buffer with enough space to hold ouput string
+// input:   id    => index for control item within Control_config[]
+//          buf   => buffer with enough space to hold ouput string
 char *
 gameplay_help_control_text(int id, char *buf)
 {
@@ -177,7 +177,7 @@ gameplay_help_blit_control_line(int x, int y, int id)
 
     gr_string(x, y, buf);
 
-    //  gr_string(x+KEY_DESCRIPTION_OFFSET,y,ci->text);
+    //   gr_string(x+KEY_DESCRIPTION_OFFSET,y,ci->text);
     gr_string(x + KEY_DESCRIPTION_OFFSET, y,
               XSTR(ci->text, CONTROL_CONFIG_XSTR + id));
 }
@@ -303,7 +303,7 @@ gameplay_help_process_key(int k)
 
     case KEY_SHIFTED | KEY_TAB:
         Buttons[gr_screen.res][PREVIOUS_PAGE_BUTTON].button.press_button();
-        //                      gameplay_help_goto_prev_screen();
+        //        gameplay_help_goto_prev_screen();
         break;
 
     default:
@@ -390,21 +390,17 @@ gameplay_help_draw_text()
             x_offset, y_offset, XSTR("F2", 137),
             XSTR("options screen (available anywhere in game)", 138));
 
-#ifndef FS2_DEMO
         y_offset += separation;
         gameplay_help_blit_control_line_raw(x_offset, y_offset, XSTR("F3", 139),
                                             XSTR("hotkey assignment", 140));
-#endif
 
         y_offset += separation;
         gameplay_help_blit_control_line_raw(x_offset, y_offset, XSTR("F4", 141),
                                             XSTR("HUD message scroll-back", 142));
 
-#ifndef FS2_DEMO
         y_offset += separation;
         gameplay_help_blit_control_line_raw(
             x_offset, y_offset, XSTR("F5...F12", 143), XSTR("hotkeys", 144));
-#endif
 
         y_offset += separation;
         gameplay_help_blit_control_line_raw(
@@ -582,7 +578,6 @@ gameplay_help_draw_text()
         gameplay_help_blit_control_line(x_offset, y_offset,
                                         STOP_TARGETING_SUBSYSTEM);
 
-#ifndef FS2_DEMO
 
         y_offset += separation;
         gameplay_help_blit_control_line_raw(
@@ -599,7 +594,6 @@ gameplay_help_draw_text()
                                             XSTR("Alt-Shift-F5...F12", 153),
                                             XSTR("Clear that hotkey", 154));
 
-#endif
 
         break;
 
@@ -643,12 +637,10 @@ gameplay_help_draw_text()
         y_offset += separation;
         gameplay_help_blit_control_line(x_offset, y_offset, WARP_MESSAGE);
 
-#ifndef FS2_DEMO
         y_offset += separation;
         gameplay_help_blit_control_line_raw(
             x_offset, y_offset, XSTR("F5...F12", 143),
             XSTR("send specified order to these target(s)", 156));
-#endif
         break;
 
     case GP_HELP_WEAPON_KEYS:
@@ -718,11 +710,11 @@ gameplay_help_draw_text()
         y_offset += separation;
         gameplay_help_blit_control_line(x_offset, y_offset, ETS_EQUALIZE);
         /*
-                        y_offset += separation;
-                        gameplay_help_blit_control_line(x_offset, y_offset,XFER_LASER);
+         y_offset += separation;
+         gameplay_help_blit_control_line(x_offset, y_offset,XFER_LASER);
 
-                        y_offset += separation;
-                        gameplay_help_blit_control_line(x_offset, y_offset,XFER_SHIELD);
+         y_offset += separation;
+         gameplay_help_blit_control_line(x_offset, y_offset,XFER_SHIELD);
 */
         break;
 
@@ -846,7 +838,7 @@ gameplay_help_draw_text()
 
         break;
 
-    } //        end switch
+    } // end switch
 }
 
 // gameplay_help_do_frame() is the function that displays help when acutally playing the game

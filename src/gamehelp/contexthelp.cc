@@ -74,11 +74,11 @@ typedef struct
 } help_overlay;
 
 // new help.tbl file way
-char *help_overlay_section_names[MAX_HELP_OVERLAYS] = {
+const char *help_overlay_section_names[MAX_HELP_OVERLAYS] = {
     "$ship", // ship_help
     "$weapon", // weapon_help
     "$briefing", // briefing
-    "$main", // main help overlay
+    "$main", //   main help overlay
     "$barracks", // barracks
     "$control", // control help
     "$debrief", // debrief help
@@ -88,7 +88,7 @@ char *help_overlay_section_names[MAX_HELP_OVERLAYS] = {
     "$main2", // main help overlay2
     "$hotkey", // hotkey help
     "$campaign", // campaign help
-    "$simulator", //    simulator help
+    "$simulator", // simulator help
     "$tech", // tech help
     "$command" // command help
 };
@@ -182,7 +182,7 @@ create_grey_shader()
     tmp = 0.4f / 3.0f;
 
     // The c matrix brightens everything a bit.
-    //  c = 0.125f;
+    //   c = 0.125f;
     c = 0.110f;
 
     gr_create_shader(&Grey_shader, tmp, tmp, tmp, c);
@@ -213,7 +213,6 @@ launch_context_help()
 
     switch (Source_game_state) {
     case GS_STATE_MAIN_MENU:
-#if !defined(PRESS_TOUR_BUILD) && !defined(PD_BUILD)
         int main_hall_num;
         main_hall_num = (main_hall_id() == 0) ? MH_OVERLAY : MH2_OVERLAY;
         if (!help_overlay_active(main_hall_num)) {
@@ -222,7 +221,6 @@ launch_context_help()
         else {
             help_overlay_set_state(main_hall_num, 0);
         }
-#endif
         break;
 
     case GS_STATE_GAME_PLAY:
@@ -397,7 +395,7 @@ parse_helptbl()
                     stuff_int(&help_overlaylist[overlay_id]
                                    .plinelist[GR_640][currcount]
                                    .vtxcount); // note that it is read into GR_640
-                    // help_overlaylist[overlay_id].plinelist[GR_1024][currcount].vtxcount = help_overlaylist[overlay_id].plinelist[GR_640][currcount].vtxcount;                        // set equal to 1024 version vertex count to prevent bugs
+                    // help_overlaylist[overlay_id].plinelist[GR_1024][currcount].vtxcount = help_overlaylist[overlay_id].plinelist[GR_640][currcount].vtxcount;        // set equal to 1024 version vertex count to prevent bugs
                     Assert(help_overlaylist[overlay_id]
                                .plinelist[GR_640][currcount]
                                .vtxcount <= HELP_MAX_PLINE_VERTICES);

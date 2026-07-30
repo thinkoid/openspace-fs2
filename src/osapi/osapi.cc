@@ -35,8 +35,6 @@ static char szWinTitle[128];
 static char szWinClass[128];
 static int Os_inited = 0;
 
-int Os_debugger_running = 0;
-
 // ----------------------------------------------------------------------------------------------------
 // OSAPI FORWARD DECLARATIONS
 //
@@ -58,7 +56,8 @@ extern void mouse_mark_motion(int x, int y);
 // If app_name is NULL or ommited, then TITLE is used
 // for the app name, which is where registry keys are stored.
 void
-os_init(char *wclass, char *title, char *app_name, char *version_string)
+os_init(const char *wclass, const char *title, const char *app_name,
+        const char *version_string)
 {
     os_init_registry_stuff(Osreg_company_name, title, version_string);
 
@@ -79,7 +78,7 @@ os_init(char *wclass, char *title, char *app_name, char *version_string)
 
 // set the main window title
 void
-os_set_title(char *title)
+os_set_title(const char *title)
 {
     strcpy(szWinTitle, title);
     if (sdl_window) {
@@ -105,13 +104,6 @@ int
 os_foreground()
 {
     return fAppActive;
-}
-
-// Returns the handle to the main window
-uint
-os_get_window()
-{
-    return 0;
 }
 
 // Returns the main SDL window, or NULL until os_create_window() succeeds.
@@ -166,20 +158,6 @@ os_sleep(int ms)
     SDL_Delay(ms);
 }
 
-// Used to stop message processing
-void
-os_suspend()
-{
-    // single threaded now - nothing to suspend
-}
-
-// resume message processing
-void
-os_resume()
-{
-    // single threaded now - nothing to resume
-}
-
 // the SDL replacement for the retail win32_message_handler / win32_process2
 // message pump: drain pending SDL events and route them to key/mouse, the
 // focus handling, and the quit path.
@@ -215,9 +193,11 @@ os_poll()
             }
         } break;
 
-        case SDL_MOUSEMOTION:
-            mouse_mark_motion(e.motion.x, e.motion.y);
-            break;
+        case SDL_MOUSEMOTION: {
+            // window coordinates -> authored-canvas coordinates
+            int s = max(gr_screen.window_scale, 1);
+            mouse_mark_motion(e.motion.x / s, e.motion.y / s);
+        } break;
 
         case SDL_WINDOWEVENT:
             switch (e.window.event) {

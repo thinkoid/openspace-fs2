@@ -463,7 +463,7 @@ emp_should_blit_gauge()
 
 // emp hud string
 void
-emp_hud_string(int x, int y, int gauge_id, char *str)
+emp_hud_string(int x, int y, int gauge_id, const char *str)
 {
     char tmp[256] = "";
 
@@ -484,7 +484,7 @@ emp_hud_string(int x, int y, int gauge_id, char *str)
 
 // emp hud printf
 void
-emp_hud_printf(int x, int y, int gauge_id, char *format, ...)
+emp_hud_printf(int x, int y, int gauge_id, const char *format, ...)
 {
     char tmp[256] = "";
     va_list args;
@@ -535,7 +535,7 @@ emp_maybe_reformat_text(char *text, int max_len, int gauge_id)
     if ((wt->stamp == -1) || timestamp_elapsed(wt->stamp)) {
         // reformat specific gauges differently
         switch (gauge_id) {
-        //      weapons
+        //  weapons
         case EG_WEAPON_TITLE:
         case EG_WEAPON_P1:
         case EG_WEAPON_P2:

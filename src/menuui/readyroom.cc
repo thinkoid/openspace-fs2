@@ -28,6 +28,10 @@
 #include <freespace2/freespace.hh>
 #include <globalincs/alphacolors.hh>
 
+#include <algorithm>
+#include <string>
+#include <unordered_set>
+
 #define MAX_MISSIONS 1024
 
 int Mission_list_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
@@ -67,17 +71,16 @@ int Campaign_list_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
 #define CUTSCENES_BUTTON 9
 #define CREDITS_BUTTON 10
 
-#define CAMPAIGN_MISSION_HASH_SIZE 307
 
 struct sim_room_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y, xt, yt;
     int hotspot;
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    sim_room_buttons(char *name, int x1, int y1, int xt1, int yt1, int h)
+    sim_room_buttons(const char *name, int x1, int y1, int xt1, int yt1, int h)
         : filename(name)
         , x(x1)
         , y(y1)
@@ -122,12 +125,12 @@ static sim_room_buttons Buttons[GR_NUM_RESOLUTIONS][NUM_BUTTONS] = {
     //XSTR:ON
 };
 
-char *Sim_filename[GR_NUM_RESOLUTIONS] = { "LoadMission", "2_LoadMission" };
-char *Sim_mask_filename[GR_NUM_RESOLUTIONS] = { "LoadMission-m",
+const char *Sim_filename[GR_NUM_RESOLUTIONS] = { "LoadMission", "2_LoadMission" };
+const char *Sim_mask_filename[GR_NUM_RESOLUTIONS] = { "LoadMission-m",
                                                 "2_LoadMission-m" };
 
-char *Campaign_filename[GR_NUM_RESOLUTIONS] = { "Campaign", "2_Campaign" };
-char *Campaign_mask_filename[GR_NUM_RESOLUTIONS] = { "Campaign-m",
+const char *Campaign_filename[GR_NUM_RESOLUTIONS] = { "Campaign", "2_Campaign" };
+const char *Campaign_mask_filename[GR_NUM_RESOLUTIONS] = { "Campaign-m",
                                                      "2_Campaign-m" };
 
 // misc text. ("Mission" and "Filename"
@@ -175,7 +178,6 @@ static int Campaign_names_inited = 0;
 static int Campaign_mission_names_inited = 0;
 static int Num_standalone_missions;
 static int Num_campaign_missions;
-static int Num_player_missions;
 static int Scroll_offset;
 static int Selected_line;
 static int Num_lines;
@@ -192,14 +194,21 @@ static UI_WINDOW Ui_window;
 static UI_BUTTON
     List_buttons[LIST_BUTTONS_MAX]; // buttons for each line of text in list
 
-typedef struct hash_node
-{
-    hash_node *next;
-    char *filename;
-} hash_node;
-
-static hash_node *Campaign_mission_hash_table[CAMPAIGN_MISSION_HASH_SIZE];
+// case-insensitive set of the current campaign's mission filenames, used to
+// filter them out of the standalone-mission list (retail: a hand-rolled
+// 307-bucket chained hash whose nodes aliased Campaign_missions[]; the set
+// owns its keys, so there is no lifetime coupling)
+static std::unordered_set< std::string > Campaign_mission_filenames;
 static int Hash_table_inited = 0;
+
+static std::string
+filename_key(const char *filename)
+{
+    std::string key(filename);
+    std::transform(key.begin(), key.end(), key.begin(),
+                   [](unsigned char c) { return char(tolower(c)); });
+    return key;
+}
 
 // special icons (1.04 + stuff)
 #define NUM_MISSION_ICONS 1
@@ -207,7 +216,7 @@ static int Hash_table_inited = 0;
 #define MISSION_ICON_VOLITION 0
 
 // icon offsets (see LIST_ defines above
-//#define MISSION_ICON_VOLITION_X                               (46)
+//#define MISSION_ICON_VOLITION_X            (46)
 #define MISSION_ICON_VOLITION_Y_OFFSET (-1)
 
 // icon offsets
@@ -216,145 +225,37 @@ static int Sim_volition_icon_x[GR_NUM_RESOLUTIONS] = { 38, 49 };
 // special icons themselves
 int Mission_icon_bitmaps[NUM_MISSION_ICONS];
 //XSTR:OFF
-char *Mission_icon_bitmap_filenames[NUM_MISSION_ICONS] = { "icon-volition" };
+const char *Mission_icon_bitmap_filenames[NUM_MISSION_ICONS] = { "icon-volition" };
 //XSTR:ON
 void sim_room_load_mission_icons();
 void sim_room_unload_mission_icons();
 void sim_room_blit_icons(int line_index, int y_start,
                          fs_builtin_mission *fb = NULL, int is_md = 0);
 
-// Finds a hash value for mission filename
-//
-// returns hash value
-int
-hash_filename(char *filename)
-{
-    unsigned long long hash_val = 0;
-    char *ptr = filename;
-
-    // Dont hash .fsm extension, convert all to upper case
-    for (int i = 0; i < ((int)strlen(filename) - 4); i++) {
-        hash_val = (hash_val << 4) + toupper(*ptr++);
-    }
-
-    return int(hash_val % CAMPAIGN_MISSION_HASH_SIZE);
-}
-
-// insert filename into Campaign_mission_hash_table
-//
-// returns 1 if successful, 0 if could not allocate memory
-int
-hash_insert(char *filename)
-{
-    int hash_val = hash_filename(filename);
-    hash_node *cur_node;
-
-    // Check if table empty
-    if (Campaign_mission_hash_table[hash_val] == NULL) {
-        Campaign_mission_hash_table[hash_val] = new hash_node;
-
-        cur_node = Campaign_mission_hash_table[hash_val];
-
-        if (cur_node == NULL) {
-            // Unable to allocate memory
-            return 0;
-        }
-    }
-    else {
-        // Walk down list to first empty node
-        cur_node = Campaign_mission_hash_table[hash_val];
-        while (cur_node->next != NULL) {
-            cur_node = cur_node->next;
-        }
-
-        // Create new node
-        cur_node->next = new hash_node;
-
-        if (cur_node->next == NULL) {
-            // unable to allocate memory
-            return 0;
-        }
-        else {
-            cur_node = cur_node->next;
-        }
-    }
-
-    // Initialize data
-    cur_node->next = NULL;
-    cur_node->filename = filename;
-
-    // Return successs
-    return 1;
-}
-
-// Checks if a filename already exitst in the hash table
+// Checks if a filename is one of the current campaign's missions
 //
 // returns 1 if found (collision), 0 if no collision
 int
 campaign_mission_hash_collision(char *filename)
 {
-    int hash_val = hash_filename(filename);
-    hash_node *cur_node = Campaign_mission_hash_table[hash_val];
-
-    if (cur_node == NULL) {
-        return 0;
-    }
-
-    do {
-        if (!stricmp(filename, cur_node->filename)) {
-            return 1;
-        }
-
-        cur_node = cur_node->next;
-    } while (cur_node != NULL);
-
-    // Ran out of stuff to check
-    return 0;
+    return Campaign_mission_filenames.count(filename_key(filename)) != 0;
 }
 
-// builds hash table of campaign mission filenames
-//
-// returns 1 if successful, 0 if not successful
-int
+// builds the set of campaign mission filenames
+void
 build_campaign_mission_filename_hash_table()
 {
-    int rval;
-    // Go through all campaign missions
+    Campaign_mission_filenames.clear();
     for (int i = 0; i < Num_campaign_missions; i++) {
-        rval = hash_insert(Campaign_missions[i]);
-        if (rval == 0) {
-            return 0;
-        }
+        Campaign_mission_filenames.insert(filename_key(Campaign_missions[i]));
     }
-
-    // successful
-    return 1;
 }
 
-// deletes hash table nodes
-//
+// releases the set between visits
 void
 campaign_mission_hash_table_delete()
 {
-    hash_node *cur_node;
-
-    for (int i = 0; i < CAMPAIGN_MISSION_HASH_SIZE; i++) {
-        // Look for entries into array
-        if (Campaign_mission_hash_table[i] != NULL) {
-            cur_node = Campaign_mission_hash_table[i];
-
-            // Walk down the list deleting self
-            while (cur_node->next != NULL) {
-                hash_node *temp = cur_node->next;
-                delete cur_node;
-                cur_node = temp;
-            }
-
-            // Delete last node
-            delete cur_node;
-            Campaign_mission_hash_table[i] = NULL;
-        }
-    }
+    Campaign_mission_filenames.clear();
 }
 
 // add a line of sim_room smuck to end of list
@@ -380,13 +281,7 @@ campaign_room_campaign_filter(char *filename)
     int type, max_players;
     char name[NAME_LENGTH], *desc = NULL;
 
-#ifdef OEM_BUILD
-    // also need to check if this is the builtin campaign
-    if (game_find_builtin_mission(filename) &&
-        mission_campaign_get_info(filename, name, &type, &max_players, &desc)) {
-#else
     if (mission_campaign_get_info(filename, name, &type, &max_players, &desc)) {
-#endif
         if (type == CAMPAIGN_TYPE_SINGLE) {
             Campaign_file_names_temp[Num_campaigns] = strdup(filename);
             Campaign_descs_temp[Num_campaigns++] = desc;
@@ -796,9 +691,9 @@ sim_room_can_resume_savegame(char *savegame_filename)
 }
 
 // Decide wether to resume a save game or not
-// exit:        1       =>      savegame has been restored
-//                      0       =>      no restore, proceed to briefing
-//                      -1      =>      don't start mission at all
+// exit: 1  => savegame has been restored
+//       0  => no restore, proceed to briefing
+//       -1 => don't start mission at all
 int
 sim_room_maybe_resume_savegame()
 {
@@ -806,58 +701,58 @@ sim_room_maybe_resume_savegame()
     return 0;
 
     /*
-        char savegame_filename[_MAX_FNAME];
-        int popup_rval = -1, resume_savegame = 0;
+   char savegame_filename[_MAX_FNAME];
+   int popup_rval = -1, resume_savegame = 0;
 
-        // Generate the save-game filename for this campaign
-        memset(savegame_filename, 0, _MAX_FNAME);
-        mission_campaign_savefile_generate_root(savegame_filename);
-        strcat(savegame_filename, NOX("svg"));
+   // Generate the save-game filename for this campaign
+   memset(savegame_filename, 0, _MAX_FNAME);
+   mission_campaign_savefile_generate_root(savegame_filename);
+   strcat(savegame_filename, NOX("svg"));
 
-        // Decide if we should offer choice to resume this savegame
-        if ( sim_room_can_resume_savegame(savegame_filename) ) {
-                popup_rval = popup(0, 3, XSTR("&Cancel",-1), XSTR("&Overwrite",-1), XSTR("&Resume",-1), XSTR("A save game for this mission exists.", -1));
-                switch ( popup_rval ) {
-                case 0:
-                case -1:
-                        resume_savegame = -1;
-                        break;
-                case 1:
-                        resume_savegame = 0;
-                        break;
-                case 2:
-                        resume_savegame = 1;
-                        break;
-                default:
-                        Int3();
-                        resume_savegame = -1;
-                        break;
-                }
-        } else {
-                resume_savegame = 0;
-        }
+   // Decide if we should offer choice to resume this savegame
+   if ( sim_room_can_resume_savegame(savegame_filename) ) {
+      popup_rval = popup(0, 3, XSTR("&Cancel",-1), XSTR("&Overwrite",-1), XSTR("&Resume",-1), XSTR("A save game for this mission exists.", -1));
+      switch ( popup_rval ) {
+      case 0:
+      case -1:
+         resume_savegame = -1;
+         break;
+      case 1:
+         resume_savegame = 0;
+         break;
+      case 2:
+         resume_savegame = 1;
+         break;
+      default:
+         Int3();
+         resume_savegame = -1;
+         break;
+      }
+   } else {
+      resume_savegame = 0;
+   }
 
-        if (resume_savegame == 1) {
-                if ( state_restore_all(savegame_filename) == -1 ) {
-                        popup_rval = popup(PF_TITLE_BIG | PF_TITLE_RED, 2, POPUP_NO, POPUP_YES, XSTR("Error\nSaved misison could not be loaded.\nDo you wish to start this mission from the beginning?", -1));
-                        if (popup_rval == 1) {
-                                resume_savegame = 0;
-                        } else {
-                                resume_savegame = -1;
-                        }
+   if (resume_savegame == 1) {
+      if ( state_restore_all(savegame_filename) == -1 ) {
+         popup_rval = popup(PF_TITLE_BIG | PF_TITLE_RED, 2, POPUP_NO, POPUP_YES, XSTR("Error\nSaved misison could not be loaded.\nDo you wish to start this mission from the beginning?", -1));
+         if (popup_rval == 1) {
+            resume_savegame = 0;
+         } else {
+            resume_savegame = -1;
+         }
 
-                } else {
-                        resume_savegame = 1;
-                }
-        }
+      } else {
+         resume_savegame = 1;
+      }
+   }
 
-        // If we are resuming this savegame, then delete the file
-        if (resume_savegame == 1) {
-                cf_delete(savegame_filename);
-        }
+   // If we are resuming this savegame, then delete the file
+   if (resume_savegame == 1) {
+      cf_delete(savegame_filename);
+   }
 
-        return resume_savegame;
-        */
+   return resume_savegame;
+   */
 }
 
 int
@@ -865,22 +760,6 @@ readyroom_continue_campaign()
 {
     if (mission_campaign_next_mission()) { // is campaign and next mission valid?
 
-#ifdef FS2_DEMO
-        int reset_campaign = 0;
-        reset_campaign = popup(
-            PF_BODY_BIG, 2, POPUP_NO, POPUP_YES,
-            XSTR(
-                "Demo Campaign Is Over.  Would you like to play the campaign again?",
-                111));
-        if (reset_campaign == 1) {
-            mission_campaign_savefile_delete(Campaign.filename);
-            mission_campaign_load(Campaign.filename);
-            mission_campaign_next_mission();
-        }
-        else {
-            return -1;
-        }
-#else
         gamesnd_play_iface(SND_GENERAL_FAIL);
         popup(
             0, 1, POPUP_OK,
@@ -888,7 +767,6 @@ readyroom_continue_campaign()
                 "The campaign is over.  To replay the campaign, either create a new pilot or restart the campaign in the campaign room.",
                 112));
         return -1;
-#endif
     }
 
     // CD CHECK
@@ -937,17 +815,11 @@ sim_room_button_pressed(int n)
         break;
 
     case MISSION_TAB:
-#ifdef OEM_BUILD
-        game_feature_not_in_demo_popup();
-        //                      gamesnd_play_iface(SND_GENERAL_FAIL);
-        break;
-#else
         Player->readyroom_listing_mode = MODE_MISSIONS;
         Selected_line = Scroll_offset = 0;
         gamesnd_play_iface(SND_USER_SELECT);
         sim_room_build_listing();
         break;
-#endif
 
     case CAMPAIGN_TAB:
         Player->readyroom_listing_mode = MODE_CAMPAIGNS;
@@ -1117,10 +989,8 @@ sim_room_init()
     Num_campaigns = cf_get_file_list(MAX_CAMPAIGNS, Campaign_file_names,
                                      CF_TYPE_MISSIONS, wild_card, CF_SORT_NAME);
 
-    Hash_table_inited = 0;
-    if (build_campaign_mission_filename_hash_table()) {
-        Hash_table_inited = 1;
-    }
+    build_campaign_mission_filename_hash_table();
+    Hash_table_inited = 1;
 
     // HACK
     GR_MAYBE_CLEAR_RES(Background_bitmap);
@@ -1335,7 +1205,9 @@ sim_room_do_frame(float frametime)
         gr_force_fit_string(buf, 255, list_w1);
         gr_printf(list_x1, Mission_list_coords[gr_screen.res][1], buf);
 
-        if (Campaign.filename) {
+        // retail tested the array's address (always true) and drew a bare
+        // extension when no campaign was loaded
+        if (Campaign.filename[0]) {
             sprintf(buf, NOX("%s%s"), Campaign.filename, FS_CAMPAIGN_FILE_EXT);
             gr_force_fit_string(buf, 255, list_w2);
             gr_printf(list_x2, Mission_list_coords[gr_screen.res][1], buf);
@@ -1492,12 +1364,6 @@ UI_XSTR Cr_text[GR_NUM_RESOLUTIONS][CR_NUM_TEXT] = {
     }
 };
 
-static struct
-{
-    char *text;
-    int len;
-} campaign_desc_lines[MAX_DESC_LINES];
-
 static int Num_desc_lines;
 static int Desc_scroll_offset;
 static int Selected_campaign_index;
@@ -1519,19 +1385,9 @@ campaign_room_build_listing()
             Campaign_names[i] = NULL;
             if (mission_campaign_get_info(Campaign_file_names[i], name, &type,
                                           &max_players)) {
-#ifdef PD_BUILD
-                if ((game_find_builtin_mission(name) == NULL) &&
-                    !strstr(name, "peterdrake")) {
-                    continue;
-                }
-                else {
-                    Campaign_names[i] = strdup(name);
-                }
-#else
                 if (type == CAMPAIGN_TYPE_SINGLE) {
                     Campaign_names[i] = strdup(name);
                 }
-#endif
             }
         }
 
@@ -1683,16 +1539,16 @@ campaign_room_button_pressed(int n)
         break;
 
         /*
-                case CR_HELP_BUTTON:
-                        launch_context_help();
-                        gamesnd_play_iface(SND_HELP_PRESSED);
-                        break;
+      case CR_HELP_BUTTON:
+         launch_context_help();
+         gamesnd_play_iface(SND_HELP_PRESSED);
+         break;
 
-                case CR_OPTIONS_BUTTON:
-                        gamesnd_play_iface(SND_SWITCH_SCREENS);
-                        gameseq_post_event(GS_EVENT_OPTIONS_MENU);
-                        return 1;
-                */
+      case CR_OPTIONS_BUTTON:
+         gamesnd_play_iface(SND_SWITCH_SCREENS);
+         gameseq_post_event(GS_EVENT_OPTIONS_MENU);
+         return 1;
+      */
 
     case CR_RESET_BUTTON:
         if ((Active_campaign_index < 0) ||

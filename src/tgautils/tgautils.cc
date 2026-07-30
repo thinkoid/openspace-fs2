@@ -97,7 +97,7 @@ targa_copy_data(char *to, char *from, int pixels, int fromsize, int tosize)
     }
 }
 
-//      targa_pixels_equal -- Test if two pixels are identical
+// targa_pixels_equal -- Test if two pixels are identical
 //
 // pix1 - first pixel data
 // pix2 - second pixel data
@@ -116,7 +116,7 @@ targa_pixels_equal(char *pix1, char *pix2, int pixbytes)
     return 1;
 }
 
-//      Perform targa RLE on the input data
+// Perform targa RLE on the input data
 //
 // out - Buffer to write it out to
 // in - Buffer to compress
@@ -191,13 +191,13 @@ targa_compress(char *out, char *in, int outsize, int pixsize, int bytecount)
 
         // current pixel == match pixel?
         if (targa_pixels_equal(inputpixel, matchpixel, outsize)) {
-            //  establishing a run of enough length to
-            //  save space by doing it
-            //          -- write the non-run length packet
-            //          -- start run-length packet
+            // establishing a run of enough length to
+            // save space by doing it
+            //    -- write the non-run length packet
+            //    -- start run-length packet
 
             if (++rlcount == rlthresh) {
-                //      close a non-run packet
+                //   close a non-run packet
 
                 if (pixcount > (rlcount + 1)) {
                     // write out length and do not set run flag
@@ -215,9 +215,9 @@ targa_compress(char *out, char *in, int outsize, int pixsize, int bytecount)
         }
         else {
             // no match -- either break a run or continue without one
-            //  if a run exists break it:
-            //          write the bytes in the string (outsize+1)
-            //          start the next string
+            // if a run exists break it:
+            //    write the bytes in the string (outsize+1)
+            //    start the next string
 
             if (rlcount >= rlthresh) {
                 *flagbyte++ = (char)(0x80 | rlcount);
@@ -227,9 +227,9 @@ targa_compress(char *out, char *in, int outsize, int pixsize, int bytecount)
                 continue;
             }
             else {
-                //      not a match and currently not a run
-                //              - save the current pixel
-                //              - reset the run-length flag
+                //   not a match and currently not a run
+                //      - save the current pixel
+                //      - reset the run-length flag
                 rlcount = 0;
                 matchpixel = inputpixel;
             }
@@ -556,12 +556,12 @@ targa_read_bitmap(char *real_filename, ubyte *image_data, ubyte *palette,
     }
 
     /*
-        char test=char(header.image_descriptor&0xF);
-        if((test!=8)&&(test!=0)) {
-                cfclose(targa_file);
-                return TARGA_ERROR_READING;
-        }
-        */
+   char test=char(header.image_descriptor&0xF);
+   if((test!=8)&&(test!=0)) {
+      cfclose(targa_file);
+      return TARGA_ERROR_READING;
+   }
+   */
 
     if ((header.image_type != 1) && (header.image_type != 2) &&
         (header.image_type != 9) && (header.image_type != 10)) {
@@ -705,40 +705,40 @@ targa_write_bitmap(char *real_filename, ubyte *data, ubyte *palette, int w, int 
 
     // Write the TGA header
     cfwrite_ubyte(0, f);
-    // f.write_ubyte(0);                                //      IDLength
+    // f.write_ubyte(0);            // IDLength
 
     cfwrite_ubyte(0, f);
-    //f.write_ubyte(0);                         //      ColorMapType
+    //f.write_ubyte(0);          // ColorMapType
 
     cfwrite_ubyte(10, f);
-    // f.write_ubyte(10);                       //      image_type: 2 = 24bpp, uncompressed, 10=24bpp rle compressed
+    // f.write_ubyte(10);        // image_type: 2 = 24bpp, uncompressed, 10=24bpp rle compressed
 
     cfwrite_ushort(0, f);
-    // f.write_ushort(0);                       // CMapStart
+    // f.write_ushort(0);        // CMapStart
 
     cfwrite_ushort(0, f);
-    // f.write_ushort(0);                       //      CMapLength
+    // f.write_ushort(0);        // CMapLength
 
     cfwrite_ubyte(0, f);
-    // f.write_ubyte(0);                                // CMapDepth
+    // f.write_ubyte(0);            // CMapDepth
 
     cfwrite_ushort(0, f);
-    // f.write_ushort(0);                       //      XOffset
+    // f.write_ushort(0);        // XOffset
 
     cfwrite_ushort(0, f);
-    // f.write_ushort(0);                       //      YOffset
+    // f.write_ushort(0);        // YOffset
 
     cfwrite_ushort((ushort)w, f);
-    // f.write_ushort((ushort)w);       //      Width
+    // f.write_ushort((ushort)w);   // Width
 
     cfwrite_ushort((ushort)h, f);
-    // f.write_ushort((ushort)h);       //      Height
+    // f.write_ushort((ushort)h);   // Height
 
     cfwrite_ubyte(24, f);
-    // f.write_ubyte(24);                       // pixel_depth
+    // f.write_ubyte(24);        // pixel_depth
 
     cfwrite_ubyte(0x20, f);
-    // f.write_ubyte(0x20);                             // ImageDesc  ( 0x20 = Origin at upper left )
+    // f.write_ubyte(0x20);            // ImageDesc  ( 0x20 = Origin at upper left )
 
     ubyte *compressed_data;
     compressed_data = (ubyte *)malloc(w * h * bytes_per_pixel);

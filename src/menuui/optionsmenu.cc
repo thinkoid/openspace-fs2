@@ -82,7 +82,7 @@
 
 struct options_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y;
     int hotspot;
     int tab;
@@ -90,7 +90,7 @@ struct options_buttons
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    options_buttons(char *name, int x1, int y1, int h, int t, int f = 0)
+    options_buttons(const char *name, int x1, int y1, int h, int t, int f = 0)
         : filename(name)
         , x(x1)
         , y(y1)
@@ -231,8 +231,8 @@ op_sliders Options_sliders[GR_NUM_RESOLUTIONS][NUM_OPTIONS_SLIDERS] = {
 
 static struct
 {
-    char *filename;
-    char *mask_filename;
+    const char *filename;
+    const char *mask_filename;
     int bitmap;
     int mask;
 
@@ -321,14 +321,14 @@ int Options_skills_text_coords[GR_NUM_RESOLUTIONS][4] = {
 #define NUM_DETAIL_SLIDERS 8
 
 /*
-#define DETAIL_DISTANCE_SLIDER  0
-#define NEBULA_DETAIL_SLIDER            1
-#define HARDWARE_TEXTURES_SLIDER        2
-#define NUM_PARTICLES_SLIDER            6
-#define SHARD_CULLING_SLIDER            3
-#define SHIELD_DETAIL_SLIDER            4
-#define NUM_STARS_SLIDER                        5
-#define LIGHTING_SLIDER                         7
+#define DETAIL_DISTANCE_SLIDER   0
+#define NEBULA_DETAIL_SLIDER     1
+#define HARDWARE_TEXTURES_SLIDER 2
+#define NUM_PARTICLES_SLIDER     6
+#define SHARD_CULLING_SLIDER     3
+#define SHIELD_DETAIL_SLIDER     4
+#define NUM_STARS_SLIDER         5
+#define LIGHTING_SLIDER          7
 */
 #define DETAIL_DISTANCE_SLIDER 0
 #define NEBULA_DETAIL_SLIDER 1
@@ -625,11 +625,11 @@ options_notify_do_frame()
 /*
 void options_set_bmaps(int btn, int bm_index)
 {
-        int j;
+   int j;
 
-        for (j=0; j<MAX_BMAPS_PER_GADGET; j++){
-                Buttons[gr_screen.res][btn].button.bmap_ids[j] = Button_bms[bm_index][j];
-        }
+   for (j=0; j<MAX_BMAPS_PER_GADGET; j++){
+      Buttons[gr_screen.res][btn].button.bmap_ids[j] = Button_bms[bm_index][j];
+   }
 }
 */
 
@@ -839,12 +839,8 @@ options_button_pressed(int n)
         break;
 
     case HUD_CONFIG_BUTTON:
-#ifdef FS2_DEMO
-        game_feature_not_in_demo_popup();
-#else
         gamesnd_play_iface(SND_SWITCH_SCREENS);
         gameseq_post_event(GS_EVENT_HUD_CONFIG);
-#endif
         break;
 
     case ACCEPT_BUTTON:
@@ -1011,7 +1007,7 @@ options_accept()
 {
     // If music is zero volume, disable
     if (Master_event_music_volume <= 0.0f) {
-        //              event_music_disable();
+        //     event_music_disable();
         event_music_level_close();
     }
 
@@ -1090,12 +1086,12 @@ options_menu_init()
     Buttons[gr_screen.res][GAMMA_UP].button.set_hotkey(KEY_PERIOD);
 
     /*
-        Skill_control.first_frame = bm_load_animation("OPa_11", &Skill_control.total_frames);
-        if (Skill_control.first_frame < 0) {
-                Error(LOCATION, "Could not load OPa_11.ani\n");
-                return;
-        }
-        */
+   Skill_control.first_frame = bm_load_animation("OPa_11", &Skill_control.total_frames);
+   if (Skill_control.first_frame < 0) {
+      Error(LOCATION, "Could not load OPa_11.ani\n");
+      return;
+   }
+   */
 
     for (i = 0; i < NUM_TABS; i++) {
         Backgrounds[gr_screen.res][i].bitmap = -1;
@@ -1207,7 +1203,7 @@ draw_gamma_box()
 
     // NEILK: i had to change this declaration because the size is determined dynamically. I just picked an arbitrary large number to data size (although we should always be using less)
     // TODO: change MAX size to maximum size for a 1024x768 bitmap
-    //  ushort Gamma_data[Options_gamma_coords[gr_screen.res][OPTIONS_W_COORD]*Options_gamma_coords[gr_screen.res][OPTIONS_H_COORD]*2];
+    //   ushort Gamma_data[Options_gamma_coords[gr_screen.res][OPTIONS_W_COORD]*Options_gamma_coords[gr_screen.res][OPTIONS_H_COORD]*2];
     ushort Gamma_data[MAX_GAMMA_BITMAP_SIZE];
 
     v = fl2i(pow(0.5f, 1.0f / Freespace_gamma) * 255.0f);
@@ -1218,13 +1214,6 @@ draw_gamma_box()
         v = 0;
     }
 
-    int Gamma_changed = 0;
-    if (v != Gamma_last_set) {
-        Gamma_changed = 1;
-    }
-    else {
-        Gamma_changed = 0;
-    }
     Gamma_last_set = v;
 
     {
@@ -1432,19 +1421,19 @@ options_menu_do_frame(float frametime)
     /*  Debug code: Graphs the joystick range scaling
 {
 int joy_get_scaled_reading(int raw, int axn);
-        int x, y;
+   int x, y;
 
-        gr_set_color_fast(&Color_white);
-        for (x=0; x<256; x+=16) {
-                gr_line(x + 15, 0, x + 15, 255);
-                gr_line(0, x + 15, 255, x + 15);
-        }
+   gr_set_color_fast(&Color_white);
+   for (x=0; x<256; x+=16) {
+      gr_line(x + 15, 0, x + 15, 255);
+      gr_line(0, x + 15, 255, x + 15);
+   }
 
-        gr_set_color_fast(&Color_bright_white);
-        for (x=0; x<256; x++) {
-                y = joy_get_scaled_reading(x * 256, 0) / 512;
-                gr_line(x, 128, x, 128 + y);
-        }
+   gr_set_color_fast(&Color_bright_white);
+   for (x=0; x<256; x++) {
+      y = joy_get_scaled_reading(x * 256, 0) / 512;
+      gr_line(x, 128, x, 128 + y);
+   }
 }*/
 
     gr_flip();

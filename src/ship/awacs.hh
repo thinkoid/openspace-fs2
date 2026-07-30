@@ -31,9 +31,9 @@ void awacs_level_init();
 void awacs_process();
 
 // get the total AWACS level for target to viewer
-// < 0.0f               : untargetable
-// 0.0 - 1.0f   : marginally targetable
-// 1.0f                 : fully targetable as normal
+// < 0.0f      : untargetable
+// 0.0 - 1.0f  : marginally targetable
+// 1.0f        : fully targetable as normal
 float awacs_get_level(object *target, ship *viewer, int use_awacs = 1);
 
 // Determine if ship is visible by team

@@ -16,14 +16,10 @@
 #include <cfile/cfile.hh>
 
 /*
- *              CONSTANTS
+ *    CONSTANTS
  */
 
-#ifdef FS2_DEMO
-#define MAX_OBJECTS 300
-#else
 #define MAX_OBJECTS 1000
-#endif
 
 // Number of sections in shield.
 #define MAX_SHIELD_SECTIONS 4
@@ -32,7 +28,7 @@
 #define OBJECT_CHECK
 #endif
 
-//      Team bitmasks.
+// Team bitmasks.
 #define TEAM_HOSTILE (1 << 0)
 #define TEAM_FRIENDLY (1 << 1)
 #define TEAM_NEUTRAL (1 << 2)
@@ -81,10 +77,10 @@
 
 #define UNUSED_OBJNUM                                                            \
     (-MAX_OBJECTS *                                                              \
-     2) //      Newer systems use this instead of -1 for invalid object.
+     2) //  Newer systems use this instead of -1 for invalid object.
 
 #ifndef NDEBUG
-extern char *Object_type_names[MAX_OBJECT_TYPES];
+extern const char *Object_type_names[MAX_OBJECT_TYPES];
 #endif
 
 // each object type should have these functions:  (I will use weapon as example)
@@ -92,8 +88,8 @@ extern char *Object_type_names[MAX_OBJECT_TYPES];
 // int weapon_create( weapon specific parameters )
 // {
 //    ...
-//              objnum = obj_create();
-//              ... Do some check to correctly handle obj_create returning  which
+//    objnum = obj_create();
+//    ... Do some check to correctly handle obj_create returning  which
 //        means that that object couldn't be created
 //    ... Initialize the weapon-specific info in Objects[objnum]
 //    return objnum;
@@ -120,7 +116,7 @@ extern char *Object_type_names[MAX_OBJECT_TYPES];
 // int weapon_check_collision( object * obj, object * other_obj, vector * hitpos )
 // {
 //    this should check if a vector from
-//              other_obj->last_pos to other_obj->pos with a radius of other_obj->radius
+//    other_obj->last_pos to other_obj->pos with a radius of other_obj->radius
 //    collides with object obj.   If it does, then fill in hitpos with the point
 //    of impact and return non-zero, otherwise return 0 if no impact.   Note that
 //    this shouldn't take any action... that happens in weapon_hit.
@@ -162,7 +158,7 @@ extern char *Object_type_names[MAX_OBJECT_TYPES];
      << 9) // for multiplayer -- indicates that it is selectable ingame joiners as their ship
 #define OF_WAS_RENDERED                                                          \
     (1                                                                           \
-     << 10) //  Set if this object was rendered this frame.  Only gets set if OF_RENDERS set.  Gets cleared or set in obj_render_all().
+     << 10) // Set if this object was rendered this frame.  Only gets set if OF_RENDERS set.  Gets cleared or set in obj_render_all().
 // object has not been added to collision list
 #define OF_NOT_IN_COLL (1 << 11)
 #define OF_BEAM_PROTECTED                                                        \
@@ -204,8 +200,8 @@ typedef struct object
     matrix last_orient; // how the object was oriented last frame
     physics_info phys_info; // a physics object
     float shields
-        [MAX_SHIELD_SECTIONS]; //       Shield is broken into components.  Quadrants on 4/24/97.
-    float hull_strength; //     Remaining hull strength.
+        [MAX_SHIELD_SECTIONS]; //   Shield is broken into components.  Quadrants on 4/24/97.
+    float hull_strength; //   Remaining hull strength.
     short objsnd_num
         [MAX_OBJECT_SOUNDS]; // Index of persistant sound struct.  -1 if no persistant sound assigned.
     ushort net_signature;
@@ -220,7 +216,7 @@ typedef struct object_orient_pos
 } object_orient_pos;
 
 /*
- *              VARIABLES
+ *    VARIABLES
  */
 
 extern int Object_inited;
@@ -252,7 +248,7 @@ extern object *Player_obj; // Which object is the player. Has to be valid.
 #define OBJ_INDEX(objp) (objp - Objects)
 
 /*
- *              FUNCTIONS
+ *    FUNCTIONS
  */
 
 //do whatever setup needs to be done
@@ -297,12 +293,12 @@ void obj_remove_pairs(object *a);
 // add an object to the pairs list
 void obj_add_pairs(int objnum);
 
-//      Returns true if objects A and B are expected to collide in next duration seconds.
-//      For purposes of this check, the first object moves from current location to predicted
-//      location.  The second object is assumed to be where it will be at time duration, NOT
-//      where it currently is.
-//      radius_scale: 0.0f means use polygon models, else scale sphere size by radius_scale
-//      radius_scale == 1.0f means Descent style collisions.
+// Returns true if objects A and B are expected to collide in next duration seconds.
+// For purposes of this check, the first object moves from current location to predicted
+// location.  The second object is assumed to be where it will be at time duration, NOT
+// where it currently is.
+// radius_scale: 0.0f means use polygon models, else scale sphere size by radius_scale
+// radius_scale == 1.0f means Descent style collisions.
 int objects_will_collide(object *A, object *B, float duration,
                          float radius_scale);
 

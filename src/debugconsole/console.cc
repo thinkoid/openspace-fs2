@@ -121,7 +121,7 @@ TOKEN_CODE scanner_token;
 
 char scanner_token_string[MAX_TOKEN_STRING_LENGTH];
 char scanner_word_string[MAX_TOKEN_STRING_LENGTH];
-char *scanner_bufferp = "";
+const char *scanner_bufferp = "";
 char *scanner_tokenp = scanner_token_string;
 
 CHAR_CODE scanner_char_table[256];
@@ -669,10 +669,10 @@ debug_console(void (*_func)())
                     strcpy(oldcommand_line[last_oldcommand], command_line);
                 }
             }
-            //                  int i;
-            //                  for (i=0; i<=last_oldcommand; i++ )     {
-            //                          dc_printf( "OC %d. %s\n", i, oldcommand_line[i] );
-            //                  }
+            //       int i;
+            //       for (i=0; i<=last_oldcommand; i++ ) {
+            //          dc_printf( "OC %d. %s\n", i, oldcommand_line[i] );
+            //       }
 
             debug_output('\n');
             command_line_pos = 0;

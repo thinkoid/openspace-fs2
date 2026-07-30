@@ -92,8 +92,8 @@ typedef struct ss_wing_info
     ss_slot_info ss_slots[MAX_WING_SLOTS];
 } ss_wing_info;
 
-//ss_icon_info  Ss_icons[MAX_SHIP_TYPES];               // holds ui info on different ship icons
-//ss_wing_info  Ss_wings[MAX_WING_BLOCKS];              // holds ui info for wings and wing slots
+//ss_icon_info Ss_icons[MAX_SHIP_TYPES];     // holds ui info on different ship icons
+//ss_wing_info Ss_wings[MAX_WING_BLOCKS];    // holds ui info for wings and wing slots
 
 ss_wing_info Ss_wings_teams[MAX_TEAMS][MAX_WING_BLOCKS];
 ss_wing_info *Ss_wings;
@@ -133,11 +133,7 @@ static int Ship_info_coords[GR_NUM_RESOLUTIONS][2] = { {
 #define SHIP_SELECT_H_COORD 3
 
 // NK: changed from 37 to 51 for new FS2 animations
-#ifdef FS2_DEMO
-#define SHIP_ANIM_LOOP_FRAME 0
-#else
 #define SHIP_ANIM_LOOP_FRAME 51
-#endif
 
 #define MAX_ICONS_ON_SCREEN 4
 
@@ -203,11 +199,11 @@ static int SS_active_list_size;
 //////////////////////////////////////////////////////
 // Background bitmaps data for ship_select
 //////////////////////////////////////////////////////
-static char *Ship_select_background_fname[GR_NUM_RESOLUTIONS] = {
+static const char *Ship_select_background_fname[GR_NUM_RESOLUTIONS] = {
     "ShipSelect", "2_ShipSelect"
 };
 
-static char *Ship_select_background_mask_fname[GR_NUM_RESOLUTIONS] = {
+static const char *Ship_select_background_mask_fname[GR_NUM_RESOLUTIONS] = {
     "ShipSelect-m", "2_ShipSelect-m"
 };
 
@@ -226,14 +222,14 @@ int Ship_select_background_bitmap;
 // convenient struct for handling all button controls
 struct ss_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y, xt, yt;
     int hotspot;
     int scrollable;
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    ss_buttons(char *name, int x1, int y1, int xt1, int yt1, int h, int s)
+    ss_buttons(const char *name, int x1, int y1, int xt1, int yt1, int h, int s)
         : filename(name)
         , x(x1)
         , y(y1)
@@ -851,8 +847,8 @@ maybe_change_selected_wing_ship(int wb_num, int ws_num)
 // ---------------------------------------------------------------------
 // do_mouse_over_wing_slot()
 //
-// returns:     0 => icon wasn't dropped onto slot
-//                              1 => icon was dropped onto slot
+// returns: 0 => icon wasn't dropped onto slot
+//          1 => icon was dropped onto slot
 int
 do_mouse_over_wing_slot(int block, int slot)
 {
@@ -1109,7 +1105,7 @@ ship_select_blit_ship_info()
 // ship_select_do() is called once per game frame, and is responsible for
 // updating the ship select screen
 //
-//      frametime is in seconds
+// frametime is in seconds
 void
 ship_select_do(float frametime)
 {
@@ -1300,7 +1296,7 @@ ship_select_do(float frametime)
                            Ship_anim_coords[gr_screen.res][0],
                            Ship_anim_coords[gr_screen.res][1]);
             aps.start_at = SHIP_ANIM_LOOP_FRAME;
-            //                  aps.start_at = 0;
+            //       aps.start_at = 0;
             aps.screen_id = ON_SHIP_SELECT;
             aps.framerate_independent = 1;
             aps.skip_frames = 0;
@@ -1361,7 +1357,7 @@ ship_select_do(float frametime)
 }
 
 // ------------------------------------------------------------------------
-//      ship_select_close() is called once when the ship select screen is exited
+// ship_select_close() is called once when the ship select screen is exited
 //
 //
 void
@@ -1403,7 +1399,7 @@ ship_select_close()
     // restoring a game from the Options screen invoked from ship select
 }
 
-//      ss_unload_icons() frees the bitmaps used for ship icons
+// ss_unload_icons() frees the bitmaps used for ship icons
 void
 ss_unload_icons()
 {
@@ -1423,7 +1419,7 @@ ss_unload_icons()
 }
 
 // ------------------------------------------------------------------------
-//      draw_ship_icons() will request which icons to draw on screen.
+// draw_ship_icons() will request which icons to draw on screen.
 void
 draw_ship_icons()
 {
@@ -1447,7 +1443,7 @@ draw_ship_icons()
 }
 
 // ------------------------------------------------------------------------
-//      draw_ship_icon_with_number() will draw a ship icon on screen with the
+// draw_ship_icon_with_number() will draw a ship icon on screen with the
 // number of available ships to the left.
 //
 //
@@ -1498,7 +1494,7 @@ draw_ship_icon_with_number(int screen_offset, int ship_class)
 }
 
 // ------------------------------------------------------------------------
-//      stop_ship_animation() will halt the currently playing ship animation.  The
+// stop_ship_animation() will halt the currently playing ship animation.  The
 // instance will be freed, (but the compressed data is not freed).  The animation
 // will not display after this function is called (even on this frame), since
 // the instance is removed from the anim_render_list.
@@ -1552,16 +1548,16 @@ ss_load_individual_animation(int ship_class)
                 ("SHIP ANI: Found hires version of %s\n", animation_filename));
         }
         /*
-                // this is lame and doesnt work cuz cf_exist() doesnt search the packfiles
-                if (!cf_exist(animation_filename, CF_TYPE_INTERFACE)) {
-                        // file does not exist, use original low res version
-                        strcpy(animation_filename, Ship_info[ship_class].anim_filename);
-                        mprintf(("Ship ANI: Can not find %s, using lowres version instead.\n", animation_filename)); 
-                } else {
-                        animation_filename[strlen(animation_filename) - 4] = '\0';
-                        mprintf(("SHIP ANI: Found hires version of %s\n",animation_filename));
-                }
-                */
+      // this is lame and doesnt work cuz cf_exist() doesnt search the packfiles
+      if (!cf_exist(animation_filename, CF_TYPE_INTERFACE)) {
+         // file does not exist, use original low res version
+         strcpy(animation_filename, Ship_info[ship_class].anim_filename);
+         mprintf(("Ship ANI: Can not find %s, using lowres version instead.\n", animation_filename)); 
+      } else {
+         animation_filename[strlen(animation_filename) - 4] = '\0';
+         mprintf(("SHIP ANI: Found hires version of %s\n",animation_filename));
+      }
+      */
     }
     else {
         strcpy(animation_filename, Ship_info[ship_class].anim_filename);
@@ -1572,7 +1568,7 @@ ss_load_individual_animation(int ship_class)
 }
 
 // ------------------------------------------------------------------------
-//      start_ship_animation() will start a ship animation playing, and will
+// start_ship_animation() will start a ship animation playing, and will
 // load the compressed anim from disk if required.
 void
 start_ship_animation(int ship_class, int play_sound)
@@ -1608,13 +1604,13 @@ start_ship_animation(int ship_class, int play_sound)
 
     Ship_anim_class = ship_class;
 
-    //  if ( play_sound ) {
+    //   if ( play_sound ) {
     gamesnd_play_iface(SND_SHIP_ICON_CHANGE);
-    //  }
+    //   }
 }
 
 // ------------------------------------------------------------------------
-//      unload_ship_anims() will free all compressed anims from memory that were
+// unload_ship_anims() will free all compressed anims from memory that were
 // loaded for the ship animations.
 //
 //
@@ -1630,7 +1626,7 @@ unload_ship_anims()
 }
 
 // ------------------------------------------------------------------------
-//      unload_ship_anim_instances() will free any active ship animation instances.
+// unload_ship_anim_instances() will free any active ship animation instances.
 //
 //
 void
@@ -1806,10 +1802,10 @@ pick_from_wing(int wb_num, int ws_num)
 // draw_wing_block() will draw the wing icons for the wing formation number
 // passed in as a parameter.
 //
-// input:       wb_num  =>              wing block number (numbering starts at 0)
-//                              hot_slot        =>              index of slot that mouse is over
-//                              selected_slot   =>      index of slot that is selected
-//                              class_select    =>      all ships of this class are drawn selected (send -1 to not use)
+// input:   wb_num   =>    wing block number (numbering starts at 0)
+//          hot_slot =>    index of slot that mouse is over
+//          selected_slot  => index of slot that is selected
+//          class_select   => all ships of this class are drawn selected (send -1 to not use)
 void
 draw_wing_block(int wb_num, int hot_slot, int selected_slot, int class_select)
 {
@@ -1918,7 +1914,7 @@ draw_wing_block(int wb_num, int hot_slot, int selected_slot, int class_select)
 }
 
 // ------------------------------------------------------------------------
-//      unload_ship_icons() frees the memory that was used to hold the bitmaps
+// unload_ship_icons() frees the memory that was used to hold the bitmaps
 // for ship icons
 //
 void
@@ -1936,7 +1932,7 @@ unload_wing_icons()
 }
 
 // ------------------------------------------------------------------------
-//      create_wings() will ensure the correct ships are in the player wings
+// create_wings() will ensure the correct ships are in the player wings
 // for the game.  It works by calling change_ship_type() on the wing ships
 // so they match what the player selected.   ship_create() is called for the
 // player ship (and current_count, ship_index[] is updated), since it is not yet
@@ -2014,7 +2010,7 @@ create_wings()
                         // Change the ship type of the ship if different than current.
                         // NOTE: This will reset the weapons for this ship.  I think this is
                         //       the right thing to do, since the ships may have different numbers
-                        //                      of weapons and may not have the same allowed weapon types
+                        //       of weapons and may not have the same allowed weapon types
                         if (Ships[wp->ship_index[j]].ship_info_index !=
                             Wss_slots[slot_index].ship_class)
                             change_ship_type(wp->ship_index[j],
@@ -2106,7 +2102,7 @@ ship_stop_animation()
 //
 // Updates the ship class of the player ship
 //
-//      parameters:     si_index  => ship info index of ship class to change to
+// parameters: si_index  => ship info index of ship class to change to
 //
 //
 void
@@ -2119,7 +2115,7 @@ update_player_ship(int si_index)
     // Change the ship type of the player ship if different than current.
     // NOTE: This will reset the weapons for this ship.  I think this is
     //       the right thing to do, since the ships may have different numbers
-    //                  of weapons and may not have the same allowed weapon types
+    //         of weapons and may not have the same allowed weapon types
     if (Player_ship->ship_info_index != si_index)
         change_ship_type(Player_obj->instance, si_index);
 
@@ -2129,10 +2125,10 @@ update_player_ship(int si_index)
 // ----------------------------------------------------------------------------
 // create a default player ship
 //
-//      parameters:             use_last_flown  => select ship that was last flown on a mission
-//                                              (this is a default parameter which is set to 1)
+// parameters:    use_last_flown => select ship that was last flown on a mission
+//                (this is a default parameter which is set to 1)
 //
-// returns:                     0 => success
+// returns:       0 => success
 //               !0 => failure
 //
 int
@@ -2201,15 +2197,15 @@ ss_return_saindex(int slot_num)
 // For a given wing slot, return the ship index if the ship has been created.
 // Otherwise, find the index into ship_arrivals[] for the ship
 //
-//      input:  wing_block      =>              wing block of ship to find
-//                              wing_slot       =>              wing slot of ship to find
-//                              ship_index      =>              OUTPUT parameter: the Ships[] index of the ship in the wing slot
-//                                                                              This value will be -1 if there is no ship created yet
-//                              ppobjp          =>              OUTPUT parameter: returns a pointer to a parse object for
-//                                                                              the ship that hasn't been created yet.  Set to NULL if the
-//                                                                              ship has already been created
+// input:   wing_block  =>    wing block of ship to find
+//          wing_slot   =>    wing slot of ship to find
+//          ship_index  =>    OUTPUT parameter: the Ships[] index of the ship in the wing slot
+//                            This value will be -1 if there is no ship created yet
+//          ppobjp      =>    OUTPUT parameter: returns a pointer to a parse object for
+//                            the ship that hasn't been created yet.  Set to NULL if the
+//                            ship has already been created
 //
-// returns:     the original ship class of the ship, or -1 if the ship doesn't exist
+// returns: the original ship class of the ship, or -1 if the ship doesn't exist
 //
 // NOTE: For the player wing, the player is not yet in the wp->ship_index[].. so
 // that is why there is an offset of 1 when getting ship indicies from the player
@@ -2454,7 +2450,6 @@ ss_load_icons(int ship_class)
 void
 ss_load_all_icons()
 {
-#ifndef DEMO // not for FS2_DEMO
 
     int i, j;
 
@@ -2472,7 +2467,6 @@ ss_load_all_icons()
         }
     }
 
-#endif
 }
 
 // Load in a specific ship animation.  The data is loaded as a memory-mapped file since these animations
@@ -2497,7 +2491,6 @@ ss_load_anim(int ship_class)
 void
 ss_load_all_anims()
 {
-#ifndef DEMO // not for FS2_DEMO
 
     int i;
 
@@ -2507,7 +2500,6 @@ ss_load_all_anims()
         }
     }
 
-#endif
 }
 
 // determine if the slot is disabled
@@ -2655,7 +2647,7 @@ ss_init_units()
                 objnum = Ships[wp->ship_index[j]].objnum;
                 if (Objects[objnum].flags & OF_PLAYER_SHIP) {
                     if (ss_slot->status & WING_SLOT_LOCKED) {
-                        // Int3();      // Get Alan
+                        // Int3();  // Get Alan
 
                         // just unflag it
                         ss_slot->status &= ~(WING_SLOT_LOCKED);
@@ -2676,7 +2668,7 @@ ss_init_units()
                 }
                 if (ship_arrivals[ss_slot->sa_index].flags & P_OF_PLAYER_START) {
                     if (ss_slot->status & WING_SLOT_LOCKED) {
-                        // Int3();      // Get Alan
+                        // Int3();  // Get Alan
 
                         // just unflag it
                         ss_slot->status &= ~(WING_SLOT_LOCKED);
@@ -2793,7 +2785,7 @@ ss_synch_interface()
 int
 ss_swap_slot_slot(int from_slot, int to_slot, int *sound)
 {
-    int i, tmp, fwnum, fsnum, twnum, tsnum;
+    int i, tmp;
 
     if (from_slot == to_slot) {
         *sound = SND_ICON_DROP_ON_WING;
@@ -2805,12 +2797,6 @@ ss_swap_slot_slot(int from_slot, int to_slot, int *sound)
         *sound = SND_ICON_DROP;
         return 0;
     }
-
-    fwnum = from_slot / 4;
-    fsnum = from_slot % 4;
-
-    twnum = to_slot / 4;
-    tsnum = to_slot % 4;
 
     // swap ship class
     tmp = Wss_slots[from_slot].ship_class;
@@ -2836,7 +2822,7 @@ ss_swap_slot_slot(int from_slot, int to_slot, int *sound)
 int
 ss_dump_to_list(int from_slot, int to_list, int *sound)
 {
-    int i, fwnum, fsnum;
+    int i;
     wss_unit *slot;
 
     slot = &Wss_slots[from_slot];
@@ -2846,9 +2832,6 @@ ss_dump_to_list(int from_slot, int to_list, int *sound)
         *sound = SND_ICON_DROP;
         return 0;
     }
-
-    fwnum = from_slot / 4;
-    fsnum = from_slot % 4;
 
     // put ship back in list
     Ss_pool[to_list]++; // return to list

@@ -18,25 +18,25 @@ get drawn go thru the 2d/texture mapper libraries only.   This will make
 supporting accelerators and psx easier.   Colors will always be set with
 the color set functions.
 
-gr_surface_flip()       switch onscreen, offscreen
+gr_surface_flip() switch onscreen, offscreen
 
-gr_set_clip(x,y,w,h)    // sets the clipping region
+gr_set_clip(x,y,w,h) // sets the clipping region
 gr_reset_clip(x,y,w,h)  // sets the clipping region
 gr_set_color --? 8bpp, 15bpp?
 gr_set_font(int fontnum)
 // see GR_ALPHABLEND defines for values for alphablend_mode
 // see GR_BITBLT_MODE defines for bitblt_mode.
 // Alpha = scaler for intensity
-gr_set_bitmap( int bitmap_num, int alphblend_mode, int bitblt_mode, float alpha )       
+gr_set_bitmap( int bitmap_num, int alphblend_mode, int bitblt_mode, float alpha )   
 gr_set_shader( int value )  0=normal -256=darken, 256=brighten
 gr_set_palette( ubyte * palette ) 
 
-gr_clear()      // clears entire clipping region
+gr_clear()  // clears entire clipping region
 gr_bitmap(x,y)
 gr_bitmap_ex(x,y,w,h,sx,sy)
 gr_rect(x,y,w,h)
 gr_shade(x,y,w,h)
-gr_string(x,y,char * text)
+gr_string(x,y,const char * text)
 gr_line(x1,y1,x2,y2)
 
  
@@ -98,6 +98,8 @@ typedef struct screen
 {
     uint signature; // changes when mode or palette or width or height changes
     int max_w, max_h; // Width and height
+    int window_w, window_h; // presented window size = canvas * window_scale
+    int window_scale; // integer canvas->window magnification (-res WxH)
     int res; // GR_640 or GR_1024
     int mode; // What mode gr_init was called with.
     float aspect; // Aspect ratio
@@ -191,7 +193,7 @@ typedef struct screen
 
     void (*gf_rect)(int x, int y, int w, int h);
     void (*gf_shade)(int x, int y, int w, int h);
-    void (*gf_string)(int x, int y, char *text);
+    void (*gf_string)(int x, int y, const char *text);
 
     // Draw a gradient line... x1,y1 is bright, x2,y2 is transparent.
     void (*gf_gradient)(int x1, int y1, int x2, int y2);
@@ -212,9 +214,6 @@ typedef struct screen
 
     // Scales current bitmap between va and vb with clipping
     void (*gf_scaler)(vertex *va, vertex *vb);
-
-    // Scales current bitmap between va and vb with clipping, draws an aabitmap
-    void (*gf_aascaler)(vertex *va, vertex *vb);
 
     // Texture maps the current bitmap.  See TMAP_FLAG_?? defines for flag values
     void (*gf_tmapper)(int nv, vertex *verts[], uint flags);
@@ -332,8 +331,7 @@ extern int Gr_mmx;
 // 1024 x 768
 #define GR_1024 1
 
-extern int gr_init(int res, int mode, int depth = 16, int fred_x = -1,
-                   int fred_y = -1);
+extern int gr_init(int res, int mode, int depth = 16);
 
 // Call this when your app ends.
 extern void gr_close();
@@ -350,15 +348,16 @@ extern screen gr_screen;
 // it will return the same font number both times.  This font is
 // then set to be the current font, and default font if none is
 // yet specified.
-int gr_init_font(char *typeface);
+int gr_init_font(const char *typeface);
 
 // Does formatted printing.  This calls gr_string after formatting,
 // so if you don't need to format the string, then call gr_string
 // directly.
-extern void _cdecl gr_printf(int x, int y, char *format, ...);
+extern void _cdecl gr_printf(int x, int y, const char *format, ...);
 
 // Returns the size of the string in pixels in w and h
-extern void gr_get_string_size(int *w, int *h, char *text, int len = 9999);
+extern void gr_get_string_size(int *w, int *h, const char *text,
+                               int len = 9999);
 
 // Returns the height of the current font
 extern int gr_get_font_height();
@@ -419,8 +418,8 @@ gr_set_bitmap(int bitmap_num, int alphablend = GR_ALPHABLEND_NONE,
 #define gr_create_shader GR_CALL(gr_screen.gf_create_shader)
 #define gr_set_shader GR_CALL(gr_screen.gf_set_shader)
 #define gr_clear GR_CALL(gr_screen.gf_clear)
-// #define gr_bitmap                            GR_CALL(gr_screen.gf_bitmap)
-// #define gr_bitmap_ex                 GR_CALL(gr_screen.gf_bitmap_ex)
+// #define gr_bitmap          GR_CALL(gr_screen.gf_bitmap)
+// #define gr_bitmap_ex       GR_CALL(gr_screen.gf_bitmap_ex)
 #define gr_aabitmap GR_CALL(gr_screen.gf_aabitmap)
 #define gr_aabitmap_ex GR_CALL(gr_screen.gf_aabitmap_ex)
 #define gr_rect GR_CALL(gr_screen.gf_rect)
@@ -433,7 +432,6 @@ gr_set_bitmap(int bitmap_num, int alphablend = GR_ALPHABLEND_NONE,
 #define gr_aaline GR_CALL(gr_screen.gf_aaline)
 #define gr_pixel GR_CALL(gr_screen.gf_pixel)
 #define gr_scaler GR_CALL(gr_screen.gf_scaler)
-#define gr_aascaler GR_CALL(gr_screen.gf_aascaler)
 #define gr_tmapper GR_CALL(gr_screen.gf_tmapper)
 
 #define gr_gradient GR_CALL(gr_screen.gf_gradient)

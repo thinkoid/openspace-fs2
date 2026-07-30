@@ -162,7 +162,7 @@ DCF_BOOL(doppler, Doppler_enabled)
 //
 // Get a free slot in the Objsnds[] array
 //
-//      returns -1 if no slot is available
+// returns -1 if no slot is available
 int
 obj_snd_get_slot()
 {
@@ -205,7 +205,7 @@ obj_snd_level_init()
 //
 // Stop a persistant sound from playing.
 //
-// parameters:  objp                    => pointer to object that sound is to be stopped for
+// parameters:  objp       => pointer to object that sound is to be stopped for
 //
 //
 void
@@ -301,7 +301,7 @@ obj_snd_stop_all()
 // Calculate the frequency of a sound to be played, based on the relative velocities
 // of the source and observor
 //
-//      returns:                frequency of the sound
+// returns:    frequency of the sound
 //
 int
 obj_snd_get_freq(int source_freq, object *source, object *observor,
@@ -323,12 +323,12 @@ obj_snd_get_freq(int source_freq, object *source, object *observor,
 // ---------------------------------------------------------------------------------------
 // obj_snd_stop_lowest_vol()
 //
-//      Stop a playing object sound, if it is quieter than sound at new_distance
+// Stop a playing object sound, if it is quieter than sound at new_distance
 //
-// input:               new_vol                 =>      volume of requested sound to play
+// input:      new_vol        => volume of requested sound to play
 //
-//      returns:                TRUE    =>              A sound was stopped
-//                                      FALSE   =>              A sound was not stopped
+// returns:    TRUE  =>    A sound was stopped
+//             FALSE =>    A sound was not stopped
 //
 int
 obj_snd_stop_lowest_vol(float new_vol)
@@ -386,7 +386,7 @@ obj_snd_stop_lowest_vol(float new_vol)
 // play a flyby sound.  Only play flyby sound for OBJ_SHIP objects.
 //
 // NOTE: global data Flyby_last_objp, Flyby_next_sound, Flyby_next_repeat are
-//                      used.
+//       used.
 //
 void
 maybe_play_flyby_snd(float closest_dist, object *closest_objp)
@@ -436,7 +436,7 @@ maybe_play_flyby_snd(float closest_dist, object *closest_objp)
 
                 //float dist = vm_vec_dist(&closest_objp->pos, &View_position);
                 //nprintf(("AI", "Frame %i: Playing flyby sound, species = %i, size = %i, dist = %7.3f\n", Framecount, species, ship_size, dist));
-                //                              nprintf(("AI", "Frame %i: Playing flyby sound, species = %i, size = %i, dist = %7.3f\n", Framecount, Debug_1, Debug_2, dist));
+                //            nprintf(("AI", "Frame %i: Playing flyby sound, species = %i, size = %i, dist = %7.3f\n", Framecount, Debug_1, Debug_2, dist));
                 //Debug_1 = (Debug_1+1)%3;
                 //Debug_2 = (Debug_2+1)%2;
 
@@ -595,8 +595,8 @@ obj_snd_do_frame()
                 }
                 Assert(Num_obj_sounds_playing <= MAX_OBJ_SOUNDS_PLAYING);
 
-            } //                end if ( distance < Snds[osp->id].max )
-        } //            if ( osp->instance == -1 )
+            } //     end if ( distance < Snds[osp->id].max )
+        } //      if ( osp->instance == -1 )
         else {
             if (distance > Snds[osp->id].max) {
                 int sound_index = -1;
@@ -627,7 +627,7 @@ obj_snd_do_frame()
         if (ds_using_ds3d()) {
             channel = ds_get_channel(osp->instance);
             // for DirectSound3D sounds, re-establish the maximum speed based on the
-            //  speed_vol_multiplier
+            // speed_vol_multiplier
             if (sp == NULL || ((sp != NULL) && (sp->flags & SF_ENGINES_ON))) {
                 snd_set_volume(osp->instance,
                                gs->default_volume * speed_vol_multiplier);
@@ -686,13 +686,13 @@ obj_snd_do_frame()
 //
 // Assign a persistant sound to an object.
 //
-// parameters:  objnum          => index of object that sound is being assigned to
-//              i                               => Index into Snds[] array
-//                                       fname          => filename of sound to play ( so DS3D can load the sound )
+// parameters:  objnum     => index of object that sound is being assigned to
+//              i          => Index into Snds[] array
+//              fname      => filename of sound to play ( so DS3D can load the sound )
 //
-// returns:     -1                      => sound could not be assigned (possible, since only MAX_OBJECT_SOUNDS persistant
-//                                                                              sound can be assigned per object).
-//               0                      => sound was successfully assigned
+// returns:     -1         => sound could not be assigned (possible, since only MAX_OBJECT_SOUNDS persistant
+//                            sound can be assigned per object).
+//               0         => sound was successfully assigned
 //
 int
 obj_snd_assign(int objnum, int i, vector *pos, int main)
@@ -755,7 +755,7 @@ obj_snd_assign(int objnum, int i, vector *pos, int main)
 //
 // Remove a persistant sound that has been assigned to an object.
 //
-// parameters:  objnum          => index of object that sound is being removed from.
+// parameters:  objnum     => index of object that sound is being removed from.
 //
 //
 void
@@ -803,18 +803,18 @@ void
 obj_snd_delete_all()
 {
     /*
-        obj_snd *osp, *temp;    
-        
-        osp = GET_FIRST(&obj_snd_list); 
-        while( (osp != NULL) && (osp !=END_OF_LIST(&obj_snd_list)) )    {
-                temp = GET_NEXT(osp);
-                Assert( osp->objnum != -1 );
+   obj_snd  *osp, *temp;   
+   
+   osp = GET_FIRST(&obj_snd_list);  
+   while( (osp != NULL) && (osp !=END_OF_LIST(&obj_snd_list)) )   {
+      temp = GET_NEXT(osp);
+      Assert( osp->objnum != -1 );
 
-                obj_snd_delete( osp->objnum );
+      obj_snd_delete( osp->objnum );
 
-                osp = temp;
-        }
-        */
+      osp = temp;
+   }
+   */
 
     int idx;
     for (idx = 0; idx < MAX_OBJ_SNDS; idx++) {

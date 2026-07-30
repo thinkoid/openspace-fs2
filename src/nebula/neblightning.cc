@@ -353,14 +353,14 @@ nebl_init()
         // texture
         required_string("+b_texture:");
         stuff_string(name, F_NAME, NULL);
-        if ((l != &bogus_lightning) && !Fred_running) {
+        if (l != &bogus_lightning) {
             l->texture = bm_load(name);
         }
 
         // glow
         required_string("+b_glow:");
         stuff_string(name, F_NAME, NULL);
-        if ((l != &bogus_lightning) && !Fred_running) {
+        if (l != &bogus_lightning) {
             l->glow = bm_load(name);
         }
 
@@ -502,7 +502,7 @@ nebl_render_all()
                 b->used = 0;
                 continue;
             }
-            bi = &Bolt_types[b->type];
+            bi = &Bolt_types[(int)b->type];
 
             // if this guy is still on a delay
             if (b->delay != -1) {
@@ -1302,7 +1302,7 @@ nebl_jitter(l_bolt *b)
         ((b->type >= Num_bolt_types) && (b->type != DEBUG_BOLT))) {
         return;
     }
-    bi = &Bolt_types[b->type];
+    bi = &Bolt_types[(int)b->type];
 
     // get the bolt direction
     vm_vec_sub(&temp, &b->strike, &b->start);

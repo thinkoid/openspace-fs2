@@ -76,8 +76,8 @@ void obj_check_all_collisions();
 // CODE is locatated in CollideGeneral.cpp
 int weapon_will_never_hit(object *weapon, object *other, obj_pair *current_pair);
 
-//      See if two lines intersect by doing recursive subdivision.
-//      Bails out if larger distance traveled is less than sum of radii + 1.0f.
+// See if two lines intersect by doing recursive subdivision.
+// Bails out if larger distance traveled is less than sum of radii + 1.0f.
 // CODE is locatated in CollideGeneral.cpp
 int collide_subdivide(vector *p0, vector *p1, float prad, vector *q0, vector *q1,
                       float qrad);
@@ -115,11 +115,11 @@ int collide_asteroid_weapon(obj_pair *pair);
 // CODE is locatated in CollideShipShip.cpp
 int collide_ship_ship(obj_pair *pair);
 
-//      Predictive functions.
-//      Returns true if vector from curpos to goalpos with radius radius will collide with object goalobjp
+// Predictive functions.
+// Returns true if vector from curpos to goalpos with radius radius will collide with object goalobjp
 int pp_collide(vector *curpos, vector *goalpos, object *goalobjp, float radius);
 
-//      Return true if objp will collide with some large ship if it moves distance distance.
+// Return true if objp will collide with some large ship if it moves distance distance.
 int collide_predict_large_ship(object *objp, float distance);
 
 // function to remove old weapons when no more weapon slots available.

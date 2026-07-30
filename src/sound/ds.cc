@@ -167,16 +167,16 @@ ds_ds_to_al_gain(int ds_vol)
 //
 // Parse a wave file.
 //
-// parameters:          filename                        => file of sound to parse
-//                                              dest                            => address of pointer of where to store raw sound data (output parm)
-//                                              dest_size               => number of bytes of sound data stored (output parm)
-//                                              header                  => address of pointer to a WAVEFORMATEX struct (output parm)
+// parameters:    filename       => file of sound to parse
+//                dest           => address of pointer of where to store raw sound data (output parm)
+//                dest_size      => number of bytes of sound data stored (output parm)
+//                header         => address of pointer to a WAVEFORMATEX struct (output parm)
 //
-// returns:                     0                                       => wave file successfully parsed
-//                                              -1                                      => error
+// returns:       0              => wave file successfully parsed
+//                -1             => error
 //
-//      NOTE: memory is malloced for the header and dest in this function.  It is the responsibility
-//                      of the caller to free this memory later.
+// NOTE: memory is malloced for the header and dest in this function.  It is the responsibility
+//       of the caller to free this memory later.
 //
 int
 ds_parse_wave(char *filename, ubyte **dest, uint *dest_size,
@@ -303,12 +303,12 @@ ds_get_hid()
 //
 //
 // parameters:
-//                                       sid                              => pointer to software id for sound ( output parm)
-//                                       hid                              => pointer to hardware id for sound ( output parm)
-//                                       final_size               => pointer to storage to receive uncompressed sound size (output parm)
+//              sid             => pointer to software id for sound ( output parm)
+//              hid             => pointer to hardware id for sound ( output parm)
+//              final_size      => pointer to storage to receive uncompressed sound size (output parm)
 //              header          => pointer to a WAVEFORMATEX structure
-//                                       si                               => sound_info structure, contains details on the sound format
-//                                       flags                    => buffer properties ( DS_HARDWARE , DS_3D )
+//              si              => sound_info structure, contains details on the sound format
+//              flags           => buffer properties ( DS_HARDWARE , DS_3D )
 //
 // returns:     -1           => sound effect could not loaded into a secondary buffer
 //               0           => sound effect successfully loaded into a secondary buffer
@@ -745,17 +745,17 @@ ds_close()
 // Find a free channel to play a sound on.  If no free channels exists, free up one based
 // on volume levels.
 //
-//      input:          new_volume      =>              volume in DS units for sound to play at
-//                                      snd_id          =>              which kind of sound to play
-//                                      priority                =>              DS_MUST_PLAY
-//                                                                                      DS_LIMIT_ONE
-//                                                                                      DS_LIMIT_TWO
-//                                                                                      DS_LIMIT_THREE
+// input:      new_volume  =>    volume in DS units for sound to play at
+//             snd_id      =>    which kind of sound to play
+//             priority    =>    DS_MUST_PLAY
+//                               DS_LIMIT_ONE
+//                               DS_LIMIT_TWO
+//                               DS_LIMIT_THREE
 //
-//      returns:                channel number to play sound on
-//                                      -1 if no channel could be found
+// returns:    channel number to play sound on
+//             -1 if no channel could be found
 //
-// NOTE:        snd_id is needed since we limit the number of concurrent samples
+// NOTE: snd_id is needed since we limit the number of concurrent samples
 //
 //
 int
@@ -957,11 +957,11 @@ ds_stop_easy(int sid)
     }
 }
 
-//      Play a sound without the usual baggage (used for playing back real-time voice)
+// Play a sound without the usual baggage (used for playing back real-time voice)
 //
 // parameters:
-//                                      sid                     => software id of sound
-//                                      volume      => volume of sound effect in DirectSound units
+//             sid         => software id of sound
+//             volume      => volume of sound effect in DirectSound units
 int
 ds_play_easy(int sid, int volume)
 {
@@ -999,15 +999,15 @@ ds_play_easy(int sid, int volume)
 //
 //
 // parameters:
-//                                      sid                     => software id of sound
-//                                      hid                     => hardware id of sound ( -1 if not in hardware )
-//                                      snd_id          =>      what kind of sound this is
-//                                      priority                =>              DS_MUST_PLAY
-//                                                                                      DS_LIMIT_ONE
-//                                                                                      DS_LIMIT_TWO
-//                                                                                      DS_LIMIT_THREE
-//                                      volume      => volume of sound effect in DirectSound units
-//                                      pan         => pan of sound in DirectSound units
+//             sid         => software id of sound
+//             hid         => hardware id of sound ( -1 if not in hardware )
+//             snd_id      => what kind of sound this is
+//             priority    =>    DS_MUST_PLAY
+//                               DS_LIMIT_ONE
+//                               DS_LIMIT_TWO
+//                               DS_LIMIT_THREE
+//             volume      => volume of sound effect in DirectSound units
+//             pan         => pan of sound in DirectSound units
 //             looping     => whether the sound effect is looping or not
 //
 // returns:    -1          => sound effect could not be started
@@ -1025,7 +1025,7 @@ ds_play(int sid, int hid, int snd_id, int priority, int volume, int pan,
     ch_idx = ds_get_free_channel(volume, snd_id, priority);
 
     if (ch_idx < 0) {
-        //              nprintf(( "Sound", "SOUND ==> Not playing sound requested at volume %.2f\n", ds_get_percentage_vol(volume) ));
+        //     nprintf(( "Sound", "SOUND ==> Not playing sound requested at volume %.2f\n", ds_get_percentage_vol(volume) ));
         return -1;
     }
 
@@ -1167,9 +1167,9 @@ ds_stop_channel_all()
 // ---------------------------------------------------------------------------------------
 // ds_set_volume()
 //
-//      Set the volume for a channel.  The volume is expected to be in DirectSound units
+// Set the volume for a channel.  The volume is expected to be in DirectSound units
 //
-//      If the sound is a 3D sound buffer, this is like re-establishing the maximum
+// If the sound is a 3D sound buffer, this is like re-establishing the maximum
 // volume.
 //
 void
@@ -1185,7 +1185,7 @@ ds_set_volume(int channel, int vol)
 // ---------------------------------------------------------------------------------------
 // ds_set_pan()
 //
-//      Set the pan for a channel.  The pan is expected to be in DirectSound units
+// Set the pan for a channel.  The pan is expected to be in DirectSound units
 //
 void
 ds_set_pan(int channel, int pan)
@@ -1206,7 +1206,7 @@ ds_set_pan(int channel, int pan)
 // ---------------------------------------------------------------------------------------
 // ds_get_pitch()
 //
-//      Get the pitch of a channel
+// Get the pitch of a channel
 //
 int
 ds_get_pitch(int channel)
@@ -1232,7 +1232,7 @@ ds_get_pitch(int channel)
 // ---------------------------------------------------------------------------------------
 // ds_set_pitch()
 //
-//      Set the pitch of a channel
+// Set the pitch of a channel
 //
 void
 ds_set_pitch(int channel, int pitch)
@@ -1276,25 +1276,25 @@ ds_chg_loop_status(int channel, int loop)
 //
 // Starts a ds3d sound playing
 //
-//      input:
+// input:
 //
-//                                      sid                             =>      software id for sound to play
-//                                      hid                             =>      hardware id for sound to play (-1 if not in hardware)
-//                                      snd_id                  => identifies what type of sound is playing
-//                                      pos                             =>      world pos of sound
-//                                      vel                             =>      velocity of object emitting sound
-//                                      min                             =>      distance at which sound doesn't get any louder
-//                                      max                             =>      distance at which sound becomes inaudible
-//                                      looping                 =>      boolean, whether to loop the sound or not
-//                                      max_volume              =>      volume (-10000 to 0) for 3d sound at maximum
-//                                      estimated_vol   =>      manual estimated volume
-//                                      priority                =>              DS_MUST_PLAY
-//                                                                                      DS_LIMIT_ONE
-//                                                                                      DS_LIMIT_TWO
-//                                                                                      DS_LIMIT_THREE
+//             sid            => software id for sound to play
+//             hid            => hardware id for sound to play (-1 if not in hardware)
+//             snd_id         => identifies what type of sound is playing
+//             pos            => world pos of sound
+//             vel            => velocity of object emitting sound
+//             min            => distance at which sound doesn't get any louder
+//             max            => distance at which sound becomes inaudible
+//             looping        => boolean, whether to loop the sound or not
+//             max_volume     => volume (-10000 to 0) for 3d sound at maximum
+//             estimated_vol  => manual estimated volume
+//             priority    =>    DS_MUST_PLAY
+//                               DS_LIMIT_ONE
+//                               DS_LIMIT_TWO
+//                               DS_LIMIT_THREE
 //
-//      returns:                        0                               => sound started successfully
-//                                              -1                              => sound could not be played
+// returns:       0           => sound started successfully
+//                -1          => sound could not be played
 //
 int
 ds3d_play(int sid, int hid, int snd_id, vector *pos, vector *vel, int min,

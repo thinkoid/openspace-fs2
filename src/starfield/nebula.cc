@@ -28,9 +28,7 @@
 #define MAX_TRIS 200
 #define MAX_POINTS 300
 
-static int neb_w = 0, neb_h = 0;
 
-static int nebula_inited = 0;
 static int num_pts = 0;
 
 static vector nebula_vecs[MAX_POINTS];
@@ -93,7 +91,7 @@ load_nebula_sub(char *filename)
 {
     CFILE *fp;
     char id[16];
-    int version, major, minor;
+    int version, major;
 
     fp = cfopen(filename, "rb");
 
@@ -109,7 +107,6 @@ load_nebula_sub(char *filename)
     }
     cfread(&version, sizeof(int), 1, fp);
     major = version / 100;
-    minor = version % 100;
 
     if (major != NEBULA_MAJOR_VERSION) {
         mprintf(("An out of date nebula file.\n"));
@@ -147,7 +144,7 @@ load_nebula_sub(char *filename)
 }
 
 void
-nebula_init(char *filename, int pitch, int bank, int heading)
+nebula_init(const char *filename, int pitch, int bank, int heading)
 {
     angles a;
 
@@ -158,7 +155,7 @@ nebula_init(char *filename, int pitch, int bank, int heading)
 }
 
 void
-nebula_init(char *filename, angles *pbh)
+nebula_init(const char *filename, angles *pbh)
 {
     if (Nebula_loaded) {
         nebula_close();

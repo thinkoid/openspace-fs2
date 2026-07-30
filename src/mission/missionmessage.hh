@@ -60,7 +60,7 @@ extern message_extra Message_waves[MAX_MESSAGE_WAVES];
 // this number in this define should match the number of elements in the next array
 #define MAX_BUILTIN_MESSAGE_TYPES 41
 
-extern char *Builtin_message_types[MAX_BUILTIN_MESSAGE_TYPES];
+extern const char *Builtin_message_types[MAX_BUILTIN_MESSAGE_TYPES];
 
 #define MESSAGE_ARRIVE_ENEMY 0
 #define MESSAGE_ATTACK_TARGET 1
@@ -178,7 +178,8 @@ int message_anim_is_playing();
 void message_kill_all(int kill_all);
 
 void message_queue_message(int message_num, int priority, int timing,
-                           char *who_from, int source, int group, int delay,
+                           const char *who_from, int source, int group,
+                           int delay,
                            int builtin_type = -1);
 
 // functions which send messages to player -- called externally

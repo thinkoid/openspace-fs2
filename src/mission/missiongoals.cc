@@ -49,10 +49,10 @@
 #define GOAL_SCREEN_H_COORD 3
 
 /*
-#define GOAL_SCREEN_TEXT_X      81
-#define GOAL_SCREEN_TEXT_Y      95
-#define GOAL_SCREEN_TEXT_W      385
-#define GOAL_SCREEN_TEXT_H      299
+#define GOAL_SCREEN_TEXT_X 81
+#define GOAL_SCREEN_TEXT_Y 95
+#define GOAL_SCREEN_TEXT_W 385
+#define GOAL_SCREEN_TEXT_H 299
 #define GOAL_SCREEN_ICON_X 45
 */
 
@@ -138,13 +138,13 @@ struct goal_list
 
 struct goal_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y;
     int hotspot;
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    goal_buttons(char *name, int x1, int y1, int h)
+    goal_buttons(const char *name, int x1, int y1, int h)
         : filename(name)
         , x(x1)
         , y(y1)
@@ -758,8 +758,10 @@ mission_goal_status_change(int goal_num, int new_status)
         if (type != BONUS_GOAL) {
             if (Game_mode & GM_NORMAL) {
                 hud_add_objective_messsage(type, new_status);
-                if (!Mission_goals[goal_num].flags &
-                    MGF_NO_MUSIC) { // maybe play event music
+                // maybe play event music (retail spelled this
+                // !flags & FLAG; exact by accident, NO_MUSIC is bit 0
+                // and the only flag)
+                if (!(Mission_goals[goal_num].flags & MGF_NO_MUSIC)) {
                     event_music_primary_goal_failed();
                 }
                 //HUD_sourced_printf(HUD_SOURCE_FAILED, "%s goal failed at time %6.1f!", Goal_type_text(type), f2fl(Missiontime) );
@@ -952,7 +954,7 @@ mission_process_event(int event)
             // value at the sexpresion node to unknown so that it will get reevaled
             Mission_events[event].timestamp = timestamp(
                 Mission_events[event].interval * 1000);
-            //                  Sexp_nodes[Mission_events[event].formula].value = SEXP_UNKNOWN;
+            //       Sexp_nodes[Mission_events[event].formula].value = SEXP_UNKNOWN;
         }
     }
 }
@@ -971,7 +973,7 @@ mission_maybe_play_directive_success_sound()
 void
 mission_eval_goals()
 {
-    int i, result, goal_changed = 0;
+    int i, result;
 
     // before checking whether or not we should evaluate goals, we should run through the events and
     // process any whose timestamp is valid and has expired.  This would catch repeating events only
@@ -1001,17 +1003,15 @@ mission_eval_goals()
         if (Mission_goals[i].satisfied == GOAL_INCOMPLETE) {
             result = eval_sexp(Mission_goals[i].formula);
             if (Sexp_nodes[Mission_goals[i].formula].value == SEXP_KNOWN_FALSE) {
-                goal_changed = 1;
                 mission_goal_status_change(i, GOAL_FAILED);
             }
             else if (result) {
-                goal_changed = 1;
                 mission_goal_status_change(i, GOAL_COMPLETE);
             } // end if result
 
             // tell the player how to end the mission
             //if ( goal_changed && mission_evaluate_primary_goals() != PRIMARY_GOALS_INCOMPLETE ) {
-            //  HUD_sourced_printf(HUD_SOURCE_IMPORTANT, "Press %s to end mission and return to base", textify_scancode(Control_config[END_MISSION].key_id) );
+            // HUD_sourced_printf(HUD_SOURCE_IMPORTANT, "Press %s to end mission and return to base", textify_scancode(Control_config[END_MISSION].key_id) );
             //}
         } // end if goals[i].satsified != GOAL_COMPLETE
     } // end for
@@ -1040,9 +1040,9 @@ mission_eval_goals()
     }
 }
 
-//      evaluate_primary_goals() will determine if the primary goals for a mission are complete
+// evaluate_primary_goals() will determine if the primary goals for a mission are complete
 //
-//      returns 1 - all primary goals are all complete or imcomplete (or there are no primary goals at all)
+// returns 1 - all primary goals are all complete or imcomplete (or there are no primary goals at all)
 // returns 0 - not all primary goals are complete
 int
 mission_evaluate_primary_goals()

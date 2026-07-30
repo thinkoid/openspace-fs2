@@ -621,3 +621,476 @@ Morning housekeeping, three commits: `41d0cd1c9` docs adoption (fixmine/fs2-inve
 User compared GL vs software screenshots of the training mission: the afterburner and weapon-energy gauges (and the weapons panel) rendered as grey/black/wrong-green bands under the software rasterizer. Root cause chain: `bm_page_in_aabitmap()` set `used_flags = 0` — the dead-subsystem sweep (5b2148062) collapsed retail's `if (D3D_enabled) BMP_AABITMAP else 0` to the WRONG (Glide-era) branch — so `bm_page_in_stop()` unpacked every HUD aabitmap ANI as a regular bitmap (pixels palette-translated to game-palette indices); `bm_lock`'s reload test never compares flags (and its pal_changed test exempts aabitmap locks), so the HUD's aabitmap locks returned the translated data forever; `gr8_aabitmap_ex` fed indices 74..254 into the 16x256 alphacolor table — reads past it into neighboring Alphacolors slots = the deterministic banding. Hardware escaped by accident: 16bpp tcache locks forced a bitdepth reload (the GL log's "Reloading ... from bitdepth 8 to 16" vs software's "Reloading ... to remap palette" was the tell). Fix: `used_flags = BMP_AABITMAP;` — the other `bm_page_in_*` variants' 0 is CORRECT for software (tmapper/bitblt lock plain textures with 0). **User-verified in a test flight: artefacts gone.**
 NOTE vs the 2026-07-18 VERDICT above: the *gradient banding* analysis stands (authentic 8bpp quantization); today's grey/black corruption was a distinct, real bug on top of it — the earlier "bands of green and dark... probably authentic; verify later" flag was this.
 Optional hardening left on the table: an aabitmap-mismatch reload condition in `bm_lock` (compare requested flags vs the stamped `used_flags`) would make the cache self-healing against any flag-mismatched lock order.
+
+## Itch list founded — docs/itches.md (2026-07-28)
+
+Standing redesign queue now lives in `docs/itches.md` (the groom discipline's
+"write it down instead of scratching it" gets a home). Founding entry: the
+linklist `links_t<T>` retrofit — thin the fat sentinel (416 dead bytes per
+`object` head; `ship.subsys_list` = 23% of `Ships[]`) to a 16-byte templated
+head, kill the sentinel/node type confusion, drop `list_remove`'s dead head
+parameter and the caller-less `list_merge`. Full design, cost census, and
+verification gate in the entry. Born of the 2026-07-28 linklist review, which
+otherwise *affirmed* the sentinel-ring design (std::list is the same ring
+with a thin sentinel).
+
+## linklist list_t<T> retrofit — LANDED (2026-07-28), 37 files
+
+The itch list's founding entry, scratched the day it was written (design
+record + outcome deltas in `docs/itches.md`). The fat sentinels are gone:
+heads are `list_t<T>` (16 bytes), nodes inherit `list_links_t<T>`, the
+macros are function templates with the same names and call shape,
+`list_remove` lost its dead head parameter (~40 sites), caller-less
+`list_merge` died. `sizeof(ship)` 1744 → 1352. Type checking flushed out
+retail quirks the preprocessor had been swallowing: 7× `GET_NEXT(&head)`
+meaning GET_FIRST, `&obj_used_list` stored as a "no homing object" sentinel
+value (now `END_OF_LIST(&obj_used_list)`), `GET_LAST`-on-element in the
+subsys/target advance helpers, and muzzleflash.cc's pooled-list machinery
+revealed as Volition-commented dead code (left verbatim). Verified: full
+build warning-set identical to pre-surgery, math + pof-oracle tests green.
+Campaign playtest pending.
+
+## linklist follow-up: the fat sentinel was load-bearing once (2026-07-28)
+
+Auditing the new header's safety comment ("only links are ever touched
+through a sentinel pointer") against the tree found one retail violation:
+aicode.cc shockwave avoidance read `homing_object->type` with a NULL guard
+but no guard against the "not homing on anything" token (weapons.cc stores
+END_OF_LIST(&obj_used_list) at missile birth and on lost aspect lock). The
+fat sentinel's zero-initialized payload absorbed that read benignly for 28
+years; the thin sentinel made it out-of-bounds. One guard added at the
+site. Every other payload access through a possibly-sentinel pointer
+(weapon_home, hudtargetbox, swarm, missionbrief, missionhotkey) checks
+first — audited. Header comment rewritten to state the C++17 truth: the
+sentinel pun is formally UB (no T object at the head's address), defined
+in practice by the ABI and pinned by static_asserts — container_of
+territory, documented as such. Boost.Intrusive recorded in the itch entry
+as the escalation path if call sites ever modernize wholesale.
+
+## Resolution: presentation scaling landed — the game presents at 2048x1536 (2026-07-28)
+
+`-res WxH` (integer canvas multiples): engine renders the authored 1024
+canvas unchanged; software present magnifies s×s per pixel, GL magnifies via
+viewport (and re-rasterizes the 3-D world at real resolution — free fidelity
+there). Mouse ÷s in, ×s on warp; GL scissor ×s, region reads decimated.
+PROVEN presentation-only: canvas frame dumps byte-identical with and without
+-res. The doc's native canvas-scale plan (resolution-scaling.md §4-5) was
+started (stage-1 framebuffer commit caf4ef7d5, reverted into window
+semantics) and deliberately deferred after survey found clip_* dual-space
+reads + the need for 8bpp magnifying blitters — SCP's per-call disease;
+recorded in the doc §6. GL-native is the follow-up era. Campaign playtest
+now unblocked at playable window size: `./fs2 -window -res 2048x1536` (and
+`-opengl` variant needs a real-display check).
+
+## Retail numeric-margin asserts in vecmat interpolation — demoted (2026-07-28)
+
+Training-mission playtest died on `Assert(fl_abs(theta_goal.z) < 0.001f)`
+(vecmat.cc, vm_forward_interpolate; identical twin in vm_matrix_interpolate,
+plus a local_rot_axis.x sibling in the bank arm). CATALOGUE: these are
+diagnostics, not gates — the checked residual is discarded immediately below
+(bank comes from delta_bank / the rvec arm), and retail SHIPPED with asserts
+compiled out, so no player build ever gated on them. Volition knew the
+margin was fragile: Andsager's debug-replay rig sits around the aicode.cc
+caller. Why we hit it and 1999 rarely did: MSVC/x87 ran the math in 80-bit
+intermediates; gcc/SSE keeps 32-bit floats throughout, eroding the 1e-3
+margin. fs2open's answer was replacing the whole function (PR 2668,
+vm_angular_move_forward_vec, deliberate behavior change) — not fix-mine
+material. Ours: all three asserts demoted to nprintf("Physics", ...) with
+the residual value; shipped behavior (residual discarded, flight continues)
+wins.
+
+## Linklist retrofit reverted — retail macros and fat sentinel restored (2026-07-29)
+
+Second thoughts, one day in: the list_t<T>/list_links_t<T> retrofit was
+churn on a battle-tested C89 core — our own "lipstick on a pig" clause
+turned on our own surgery. All 37 files restored to their pre-retrofit
+state (templates gone, macro header back, node structs carry their manual
+next/prev again, sizeof(ship) back to 1744). What the surgery *learned*
+stays, re-applied on retail vocabulary because it is knowledge, not
+uniform: the aicode.cc shockwave-avoidance guard against the "not homing
+on anything" token (the audit's bug — retail read the token's ->type and
+survived on the fat sentinel's zeroed payload; now guarded explicitly),
+plus the inert respellings that document retail sloppiness — 7×
+GET_NEXT(&head)→GET_FIRST, 4× GET_LAST(elem)→GET_PREV, 4× weapons.cc
+token mints spelled END_OF_LIST(&obj_used_list). Every respelling expands
+macro-identically. Verified: clean rebuild, warning set back at the
+pre-surgery baseline (4756); math + POF oracle green; headless boot
+renders (73 frames dumped). The itch entry keeps the full design record;
+Boost.Intrusive remains the only sanctioned forward path for this file —
+all or nothing.
+
+## Fossil sweep: dead Win32-era headers and API surface (2026-07-29)
+
+An osapi survey turned up fossils; a tree-wide zero-includer scan completed
+the census. Deleted files (no includers anywhere): osapi/monopub.hh (1993
+Microsoft DDK header — mono-monitor kernel-driver IOCTLs for the dead
+outwnd debug window), io/sw_force.hh (SideWinder Force Feedback, the FF
+subsystem was swept 07-18), freespace2/freespaceresource.hh (MSVC-generated
+resource IDs for a FreeSpace.rc that no longer exists), hud/hudresource.hh
+(zero bytes), missionui/missionstats.hh + missionrecommend.hh (empty
+include guards; their .cc files are real and never included them). Pruned
+API: os_get_window (HWND-shaped stub returning 0, zero callers —
+os_get_sdl_window is the accessor), os_suspend/os_resume (empty,
+single-threaded now), os_toggle_fullscreen (declared, never defined), the
+THREADED critical-section macro block (zero users), Os_debugger_running
+(hardwired 0 since the SDL port; its one reader in gr_force_windowed was a
+debugger+DirectDraw mode-switch workaround, dead with it), and outwnd's
+remains: FILTER_NAME_LENGTH, load_filter_info (empty stub + its one call),
+Log_debug_output_to_file (set by the debug-console `log' toggle, read by
+nobody — the toggle lied). Verified: clean rebuild, normalized warning set
+byte-identical; tests green; headless boot renders.
+
+## Fruit-sweep sections A+C applied — bug fixes and zero-risk deletions (2026-07-29)
+
+From the 2026-07-29 low-hanging-fruit survey (full census in the rolling
+notes.txt).  Section A, the port-divergence fixes: debris.cc hull-arc
+probability un-overflowed (RAND_MAX*2/3 was sized for MSVC's 15-bit
+RAND_MAX; on glibc it overflowed and hull debris never arced -- retail
+arcs 2/3 of pieces); missionmessage.cc's three sprintf-append-to-self UB
+sites respelled sprintf(p+strlen(p),...); atan2_safe's header declaration
+un-swapped to match the (y,x) definition + a do-not-swap-for-libm warning.
+Section C, the deletions: sw_error.hh + sw_guid.hh (orphaned by the
+sw_force.hh deletion -- includer-cascade); the stale CVS-era src/Makefile
+(21 Network/multi_*.o ghosts); the dead inverse-sqrt LUT apparatus in
+floating.cc + the shadowed fl_isqrt extern + 4 dead macros (fl_is_nan
+used MSVC-only _isnan); asqrt(); the never-activated fhash module
+(localization/fhash.{cc,hh}, whose init memset also overflowed its
+pointer array 4x -- a live retail buffer overflow, now moot) + parselo's
+two dead fhash branches; vm_strdup/vm_free_all/VM_MALLOC/VM_FREE; 40
+verified phantom declarations across 16 headers (declared, defined
+nowhere; 3 candidates found live and kept); 31 unused file-scope statics;
+9 set-but-never-read locals (incl. hudtarget's vestigial
+nearest_turret_subsys auto-target-turret remnant and vecmat's tv plane
+residual).  Retail bugs deliberately NOT fixed (catalogue, section B of
+the survey): keycontrol.cc:1970 match-target precedence, the !x&FLAG
+assert family, rand_alt's impotent reseed.  Verified: warning-set diff
+accounts for every removal with zero additions (4756 -> 4697); tests
+green; headless boot renders.  Census bonus: gcc's
+-Wunused-but-set-variable warnings carry a trailing `=' in the bracket
+tag -- category greps must allow it.
+
+## Survey D applied: dead build configs collapsed, Fred/Pofview folded (2026-07-29)
+
+The two big mechanical collapses from the 07-29 survey.  Build configs:
+every FS2_DEMO / OEM_BUILD / E3_BUILD / PD_BUILD / PRESS_TOUR_BUILD /
+MULTIPLAYER_BETA(_BUILD) / FS1-era DEMO conditional resolved (dead
+branches deleted, inverted live guards unwrapped), RELEASE_REAL unwrapped
+and its define retired -- the shipping retail configuration is now the
+only build; GERMAN_BUILD survives as the one localization knob.  Done
+with a scratchpad mini-unifdef (no unifdef on the box, no new dependency)
+scoped to exactly those macros -- #if 0 blocks and NDEBUG guards
+untouched.  Fred_running (assigned once, to 0) and Pofview_running +
+Nebedit_running (same; pofview lives in pcs2 now) folded through ~136
+sites; cascade deletions: missiongrid.cc entirely (grid globals moved to
+missionbriefcommon.cc, their sole consumer), the gf_aascaler dispatch
+(gr8_aascaler 209 lines, gr_opengl_aascaler, the 2d.hh member+macro) and
+the calc_alphacolor*_old chain + alphacolor_old struct, six FRED-only
+sexp.cc functions (~180 lines incl. query_referenced_in_sexp), the three
+parselo *_fred variants, physics_sim_editor, and (fold fallout)
+read_mission_goal_list; gr_init lost its fred_x/fred_y params.  The fold
+script's blind spot -- single-statement if with an else -- produced
+orphan elses that the compiler enumerated and we fixed against the
+pristine originals; a hunk-audit confirmed every deleted line came from a
+dead branch.  One latent debug-crash also died: obj_delete's
+OBJ_WAYPOINT/JUMP_NODE arm asserted Fred_running, i.e. would have fired
+in our debug build the first time a jump-node object was deleted in-game.
+Verified: clean rebuild, warning set accounted (4691 -> 4676; -12
+write-strings from deleted FRED code, +0 new); tests green; headless
+boot renders.
+
+## Survey F underway: const-correctness sweep, 4676 -> 1808 warnings (2026-07-29)
+
+Three tranches of the -Wwrite-strings wall, hub-first instead of
+site-by-site: (1) the controlconfig cluster (six Scan_code/Joy_button
+tables, config_item.text, translate_key/textify_scancode) and the
+gr_printf/gr_string/gf_string dispatch -- const-ing those two graphics
+sinks alone removed ~1000 literal-site warnings tree-wide; (2) a scripted
+pass const-ing all 69 literal string tables + 40 externs, then a
+compile-chase that surfaced the real distinction: LITERAL tables const
+cleanly, but RUNTIME-OWNER tables (Campaign_names, Cargo_names,
+Ship_class_names, Pilot_image_names, Ai_class_names, Weapon_names --
+strdup'd/filled at parse time, some freed) must stay char*; hubs const'd
+along the way: bm_load family, UI_WINDOW::set_mask_bmap/
+set_foreground_bmap, UI_GADGET::set_bmaps + bm_filename, the slider
+creates, parselo needles (required_string/optional_string/skip_to_string
+/required_string_either/_3) + strlist APIs as const char *const[]
+(accepts both char** and const char**), token_found, hud_anim_init,
+nebula_init, wing_name_lookup, cf_add_ext; (3) struct-field hubs:
+sexp_oper.text (the 133-warning Operators[] table), UI_XSTR.xstr (every
+menu screen's template tables; the window's strdup'd copies keep
+ownership -- one commented (void*) cast at the free site), cfopen +
+cf_create_default_path_string.  Verified at each tranche: zero errors,
+clean rebuild, tests green; headless boot renders after the batch.
+REMAINING: ~1500 write-strings (top: optionsmenu 196, hudconfig 157,
+controlsconfig 82, missiondebrief 65, barracks 63 -- mostly ui_button_info
+/ per-screen fname tables and Error/Warning format params) + the ~300
+non-write-strings tail.  Same recipe continues.
+
+## Survey F tranches 4-6: write-strings 1808 -> 504 total, 80 remaining (2026-07-29)
+
+Continued hub-first: the per-screen button-struct clones (17 structs --
+options_buttons, HC_gauge_region, barracks_buttons/bitmaps, wl/ss/brief/
+goal/hotkey/sim_room/scrollback/techroom/credits/gameplay-help buttons,
+op_sliders -- all the same filename-member+ctor idiom, const'd by a
+block-aware script); static and multi-dim literal tables the first regex
+missed (34 more); ui_button_info itself; the os_config_* family (params
+and read_string returns); parselo's second layer (error_display/
+diag_printf formats, find_and_stuff id/description, stuff_string
+terminators, copy/advance_to_eoln, read_file_text); UI_CHECKBOX/RADIO/
+ICON/INPUTBOX creates + add_XSTR (all strdup/copy semantics);
+HUD_printf/HUD_sourced_printf/emp_hud_*; sexp_error_message;
+popup_background + popup_get_button_filename; snazzy_menu_add_region;
+common_set_interface_palette; cf_get_file_list filter + cf_matches_spec;
+ship_name_lookup/ship_type_name_lookup; g3_start_frame_func;
+load_animating_pointer; gamesnd_parse_line; gr_get_string_size;
+Osreg_* singles.  Two decl/def-drift link errors caught by the linker
+(os_config_read_string default param, match_and_stuff continuation
+line) -- the mismatch shows as an undefined reference, not a compile
+error; align continuation lines when const-ing wrapped prototypes.
+Verified: zero errors, tests green, headless boot renders 75 frames.
+Warning totals: 4756 (survey start) -> 504; write-strings 4278 -> 80.
+The 80 are scattered singles (~30 files, 1-9 each); the ~420
+non-write-strings tail (multichar, unknown-pragmas, conversion-null,
+char-subscripts, parentheses) is E-material.
+
+## Survey F COMPLETE: -Wwrite-strings extinct, 4278 -> 0 (2026-07-29)
+
+The final tranche took the last 80 scattered singles: the remaining
+lookup/parse params (check_for_string, copy_text_until endstr, model_load
+/read_model_file, bm_load_sub, cfputs/cfwrite_string/cfwrite source
+buffers, alloc_sexp/find_operator, event_music score names, gr_init_font/
+gr_create_font, read_menu_tbl menu name, message_log_add_seg,
+message_queue_message who_from chain, Skill_level_names return,
+mission_campaign_load/get_info/maybe_add, game_do_cd_check_specific,
+lcl_ext_associate, set_valid_chars, ui_string_centered,
+stars_set_background_model, hud helpers), the last literal-table struct
+fields (shield_ani, popup_background), and a handful of const locals.
+One deliberate cast survives: credits.cc's no-credits fallback aliases a
+literal into the mutable Credit_text buffer pointer (retail design;
+nothing writes on that path) -- commented at the site.  Every tranche
+gate ran clean; final state: 424 warnings total, ZERO write-strings,
+tests green, headless boot renders 75 frames.  The 424 that remain are
+the pre-existing tail (multichar 24, unknown-pragmas 22, conversion-null
+19, char-subscripts, parentheses, unused-value/function, sign-compare,
+register, ...) -- survey section E.
+
+## Survey B resolved: the !x & FLAG family respelled (2026-07-29)
+
+The precedence-slip census (`if (!x & FLAG)` reading `(!x) & FLAG`) came
+to six sites; analysis against the flag values turned up that all five
+flags involved are bit 0, so the buggy form degrades to "flags word
+entirely zero" -- which decides each verdict:
+
+- keycontrol.cc TOGGLE_AUTO_MATCH_TARGET_SPEED: the ONE live bug.  The
+  test sits inside the branch that just set AUTO_MATCH_SPEED (bit 3), so
+  flags is provably nonzero and the condition always false -- the
+  player_match_target_speed() call under it was dead code on every
+  platform since 1999.  Toggling auto-match on never engaged matching
+  until the next target switch.  FIXED (fs2open precedent; the code
+  documents the intent).
+- asteroid.cc Assert, sound.cc Sound_spew counter, missiongoals.cc
+  goal-failed music: exact by accident -- in each case the bit-0 flag is
+  the only flag, so flags==0 <=> bit clear.  Respelled inert.
+- missionparse.cc debris sweep: DEBRIS_EXPIRE (1<<1) exists, but
+  debris.cc zeroes the whole word on init and delete, so reachable
+  states are {0, USED, USED|EXPIRE} and the buggy test was exact.  One
+  future flag away from going live.  Respelled inert.
+- staticrand.cc rand_alt: static int x = Rnd_seed initializes on first
+  call, so srand_alt can never reseed afterward -- but srand_alt has
+  ZERO callers and rand_alt exactly one (aicode rearm-retry jitter,
+  fine with a fixed seed).  Landmine, not a fault; left as-is.
+  srand_alt is a C-pile deletion candidate for the next sweep.
+
+Gate: build clean, tests green, headless boot renders 73 frames.
+
+## Survey E1: mechanical tail -- pragmas, register, multichar, endif (2026-07-29)
+
+Warnings 419 -> 370, all four categories extinct, zero additions.
+
+- 22 MSVC pragmas deleted (warning push/pop/disable, optimize, auto_inline)
+  across 9 files.  Curio: aicode.cc/aibig.cc set optimize("",off) and never
+  restore it -- retail's AI compiled at -O0 on MSVC.
+- pcxutils.cc: 2 C++17-deprecated register specifiers dropped.
+- freespace.cc: "#else if !defined(NDEBUG)" respelled plain #else (the
+  trailing tokens were always ignored; the intended condition is the exact
+  complement of the #if, so behavior identical).
+- multichar magics: new constexpr fourcc() in pstypes.hh builds the
+  little-endian int from the ON-DISK byte order, so ids now read as the
+  file bytes (fourcc("HDR2")) instead of reversed multichar ('2RDH').
+  Swapped: 17 modelsinc.hh chunk ids, pofparse.cc 'OPSP' -> "PSPO",
+  palman PAL_ID -> "VPAL", managepilot PLR_FILE_ID -> "FSPF".  fourcc
+  returns int (multichar's type) to keep comparison signedness.  Proven
+  by a 22-identity static_assert battery vs the multichar originals AND
+  the pof-oracle byte-identical gate.
+
+Gate: build clean, tests green, boot renders 74 frames (exercises
+PLR_FILE_ID + PAL_ID reads).
+
+## Survey E2: per-site verifications -- warnings 370 -> 308 (2026-07-29)
+
+62 warnings across 12 categories, every site read in context.  The finds:
+
+- beam.cc x2 (beam_fire/beam_fire_targeting): the range guard spelled
+  "instance < 0 && instance >= MAX_SHIPS" -- a contradiction, always
+  false, so the range check never rejected anything.  The Assert directly
+  above spells the intent; respelled to ||.
+- popup.cc: "if ((PF_ALLOW_DEAD_KEYS) && ...)" tested the bare macro --
+  always true, so EVERY in-mission popup processed the dead-key set.
+  Respelled to (flags & PF_ALLOW_DEAD_KEYS); no caller passes it, so the
+  block is now dead -- fs2open reached the same verdict ("unused even in
+  retail") and deleted flag and block.
+- freespace.cc view-target HUD: jump_node_name was declared inside the
+  OBJ_JUMP_NODE case and read (dangling) after the switch.  Hoisted.
+- medals.cc: sprintf(base, "%s%c", base, ...) self-overlap UB -- same
+  class as the missionmessage find; now appends via base + strlen(base).
+  (This one statement carried both the restrict AND a format-overflow
+  warning -- 61 sites, 62 warnings.)
+- ship.cc show_ship_subsys_count(): dead debug statistic (Ship_subsys_hwm
+  never read) containing a real bug -- Ships[objp->type] where instance
+  was meant.  Deleted function, global, and call.
+- keycontrol.cc: "k & ~KEY_SHIFTED + KEY_ALTED" masks with ~0x1000+0x2000
+  == 0xFFF -- accidentally right for every k the switch admits.
+  Respelled to k & ~(KEY_SHIFTED + KEY_ALTED).
+- readyroom/missiondebrief/sound: array-address checks (always true)
+  respelled to name[0] intent; the readyroom one drew a bare ".fc2"
+  extension when no campaign was loaded.
+- Inert mechanics: 13 char-subscript (int) casts (a 14th died with
+  show_ship_subsys_count), parens documenting shipped precedence
+  (aicode x3, collideshipship), braces pinning else bindings (aicode x3,
+  window.cc), int-typed campaign file magics (0xbeefcafe & co, fixing 4
+  sign-compares), NULL->0/0.0f family (model_load x9, cfread defaults x6,
+  beam sigs, shiphit, bmpman ptr_u, strnicmp==NULL), is_training_mission
+  declared in missionparse.hh instead of function-local in hudbrackets.
+
+Gate: delta fully accounted (62 removed, 0 added), tests green, boot
+renders 73 frames.
+
+## Survey E3: the format family extinct -- warnings 308 -> 272 (2026-07-29)
+
+All 36 remaining format=/format-overflow sites (medals' restrict fix in E2
+had already taken the 37th).  Nothing here was a live bug on retail data --
+every overflow needs a table/mission name longer than retail ever ships --
+but each was a latent memory-corruption on modded data:
+
+- '0'-flag-with-precision family (font, credits, slider, missiondebrief,
+  14 sites): %0.2d -> %.2d, byte-identical output per the C standard.
+- Struct-field sprintf targets got precision bounds ("%.*s_%d" with
+  MAX_FILENAME_LEN/NAME_LENGTH arithmetic): fireball/weapon expl LOD
+  filenames, bmpman [frame] suffixes, wing-wave ship-name bashing
+  (missionparse), ship_create names, debrief promotion/badge voice files.
+  Identical output for every retail-length name; truncation instead of
+  corruption beyond.
+- Local buffers sized to their actual worst case: campaign savefile names
+  (callsign + base + ext > _MAX_FNAME), medals blit_label text, medals
+  hi-res "2_" filenames, sexp error text (8192 + framing).
+- font.cc gr_print_timestamp: h[2]/m[3]/s[3] exact-fit buffers widened.
+- freespace.cc show_framerate: %d fed a fix (long) -- cast to int.
+
+Gate: 36 removed / 0 added, tests green, boot renders 73 frames.
+Remaining 272: unused-but-set 155 (E4), overloaded-virtual 102 (E5),
+unused-value 8 + unused-function 7 (swept next).
+
+## Survey E3b: unused-value/function sweep -- 272 -> 257 (2026-07-29)
+
+Eight no-effect statements, four of them dropped intent:
+
+- hudsquadmsg.cc:2364: "if (!(Msg_shortcut_command, orders_accepted))" --
+  a COMMA where & was meant, so the squadmsg shortcut went to any ship
+  accepting ANY order.  Retail's own lines 467/520 spell the intended
+  test; fs2open's rewrite agrees.  FIXED.
+- shiphit.cc is_subsys_destroyed: "false;" for "return false;" on the
+  submodel==-1 path (fs2open fixed the same).  FIXED.
+- localize.cc: "Ts_text_size;" -- the "= 0" reset dropped; every
+  neighbouring parse var resets.  FIXED.
+- playercontrol.cc player_level_init: "Player->killer_weapon_index;" --
+  the "= -1" dropped (neighbour killer_objtype has it).  FIXED.
+- Pure dead statements deleted: hudlock for-init, hudwingmanstatus
+  first_frame read, missionbriefcommon imi->direction, aicode
+  future_goal_point_2.
+- tests/gamestubs_gen.cc oracle_trap: caller-less since the last port
+  wave; [[maybe_unused]] (x7 test targets = the 7 unused-function).
+
+Gate: 15 removed / 0 added, tests green, boot renders 73 frames.
+
+## Survey E4+E5: unused-but-set bulk + overloaded-virtual -- 257 -> 15 (2026-07-29)
+
+E4 (155 sites, four parallel per-file passes, every site read in context):
+124 variables deleted outright (pure aliases, dead counters, values whose
+only consumer is commented-out code -- each verified), 12 kept their
+side-effectful call as a bare statement (vm_vec_normalized_dir out-params,
+ai_path steering, model_rotate_gun, obj_create, stuff_* parse advancement,
+g3_rotate_vertex), 5 cascade deletions of variables the sweep orphaned
+(wp_next, time, weaponp, debrisp, beam shipp).
+
+E5: all 102 overloaded-virtual were ONE line -- UI_GADGET::hide(int)
+shadowed by no-arg hide() in UI_SLIDER2/UI_SCROLLBAR/UI_SLIDER.  Fixed
+with a forwarding override per class: "void hide(int n) override
+{ UI_GADGET::hide(n); }".  (First attempt used using-declarations --
+ambiguous against the base default argument; the override form keeps
+no-arg hide() resolution unchanged.)  Virtual dispatch through UI_GADGET*
+now reaches the derived classes' intent, identically-behaving.
+
+THE FLAG LIST -- 15 warnings deliberately left, each a decision:
+- collideshipship.cc:1135 vol_scale: computed 1.0/0.7 shield-sound volume
+  never passed to snd_play_3d (which has a vol_scale=1.0f param).  Near-
+  certain forgotten argument; fixing changes audible behavior.
+- playercontrol.cc:360 ignore_pitch: set when bank-when-pressed consumes
+  the heading axis; the pitch-axis read below looks like it forgot the
+  guard.  Gameplay-affecting if fixed.
+- freespace.cc:793-794 old_r/old_g/old_b: static flash-color saves with
+  no delta comparison; retail has the same dead pattern twice.
+- controlsconfig.cc:436 shift/alt, cutscenes.cc:282 full_name,
+  readyroom.cc:1186 z, shipfx.cc:1925 debris_count,
+  missiongoals goal_changed (deleted; consumer commented):
+  all feed commented-out blocks -- their fate rides on the
+  commented-code policy decision (D leftover stock).
+- objcollide.cc:385 avg_time_to_next_check (live under #ifdef PAIR_STATS),
+  palman.cc:619 gi (live under #ifdef RGB_LIGHTING): config-dependent.
+- sexp_reader.cc:232 savep: parse position saved/nudged for an error path
+  that no longer exists.
+- tgautils.cc:537 xo/yo: TGA origin bits decoded then ignored -- an
+  unwired image flip, same in retail.
+
+Gate: 257 -> 15 fully accounted (240 removed: 138 unused-but-set + 102
+overloaded-virtual; 0 added), tests green, boot renders 74 frames.
+
+## Survey E COMPLETE (2026-07-29)
+
+E6: readyroom's 307-bucket hand-rolled hash -> std::unordered_set (128
+lines gone, lifetime coupling to Campaign_missions[] gone);
+cf_sort_filenames' twice-written Shell sort -> one std::stable_sort index
+permutation (objectsort.cc's twin untouched by decision).
+
+FINAL STATE: warnings 4756 (survey start) -> 15, every survivor a
+catalogued decision (see the E4+E5 flag list above).  The survey (A-F)
+is closed.  Parked stock: cf_get_file_list copy-paste dedup, commented-
+code policy (~2000 lines), D-leftovers (observer, EAX chain, MP button
+handlers), objectsort modernization (rejected: draw-order risk).
+
+## Crossroads: port line mothballed, godot line revived (2026-07-30)
+
+With the survey closed, four directions were weighed: (1) return to
+Godot with the gameplay as a GDExtension, (2) an art revamp, (3)
+continued incremental modernization, (4) a reference-point rewrite on a
+modern engine.  Decision: (1), with (3) as its method and (2) riding
+along.  In brief: a rewrite discards working gameplay to obtain an
+engine that GDExtension gets without the rewrite; chipping alone has no
+exit condition, and its remaining bulk (renderer, sound, platform glue)
+is exactly what any engine future discards; and the art revamp's cost is
+engine-dependent -- on Godot GLB is native and the glb2pof BSP boss
+fight never has to be fought.
+
+So: master is MOTHBALLED at this survey-complete milestone -- playable,
+warnings 4756 -> 15, every survivor catalogued above.  Not abandoned:
+fixes land here on their merits, and this branch remains the migration's
+authoritative retail reference -- the C++ the GDExtension compiles and
+the behavior its oracles diff against.  The `godot` branch is
+de-mothballed per its own mothball README's exit condition ("revival, if
+ever, goes GDExtension-first"); its README carries the revival plan.
+First task over there: reunification -- master's 32 post-divergence
+commits (the whole fix + survey campaign) merge in, shared sources
+resolving to master's side.
+
+Parked port-line stock stays parked (the E4+E5 flag list, the
+commented-code policy, cf_get_file_list dedup); the campaign playtest
+remains open as the port's own closing gate.

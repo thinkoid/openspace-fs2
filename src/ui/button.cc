@@ -15,14 +15,15 @@
 
 // ---------------------------------------------------------------------------------------
 // input:
-//                      do_repeat               =>              property of button, set to 1 to allow pressed events if mouse
-//                                                                              pointer is held over button with left mouse button down,
-//                                                                              otherwise 0 (useful for buttons that scroll items)
-//                      ignore_focus    =>              whether to allow Enter/Spacebar to affect pressed state when
-//                                                                              control has focus
+//       do_repeat      =>    property of button, set to 1 to allow pressed events if mouse
+//                            pointer is held over button with left mouse button down,
+//                            otherwise 0 (useful for buttons that scroll items)
+//       ignore_focus   =>    whether to allow Enter/Spacebar to affect pressed state when
+//                            control has focus
 //
 void
-UI_BUTTON::create(UI_WINDOW *wnd, char *_text, int _x, int _y, int _w, int _h,
+UI_BUTTON::create(UI_WINDOW *wnd, const char *_text, int _x, int _y, int _w,
+                  int _h,
                   int do_repeat, int ignore_focus)
 {
     text = NULL;

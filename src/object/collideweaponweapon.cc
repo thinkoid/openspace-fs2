@@ -14,7 +14,7 @@
 
 #ifndef NDEBUG
 //XSTR:OFF
-char *lTeamNames[3] = { "Hostile", "Friendly", "Unknown" };
+const char *lTeamNames[3] = { "Hostile", "Friendly", "Unknown" };
 //XSTR:ON
 #endif
 
@@ -32,16 +32,16 @@ collide_weapon_weapon(obj_pair *pair)
     Assert(A->type == OBJ_WEAPON);
     Assert(B->type == OBJ_WEAPON);
 
-    //  Don't allow ship to shoot down its own missile.
+    //   Don't allow ship to shoot down its own missile.
     if (A->parent_sig == B->parent_sig)
         return 1;
 
-    //  Only shoot down teammate's missile if not traveling in nearly same direction.
+    //   Only shoot down teammate's missile if not traveling in nearly same direction.
     if (Weapons[A->instance].team == Weapons[B->instance].team)
         if (vm_vec_dot(&A->orient.fvec, &B->orient.fvec) > 0.7f)
             return 1;
 
-    //  Ignore collisions involving a bomb if the bomb is not yet armed.
+    //   Ignore collisions involving a bomb if the bomb is not yet armed.
     weapon *wpA, *wpB;
     weapon_info *wipA, *wipB;
 
@@ -65,13 +65,9 @@ collide_weapon_weapon(obj_pair *pair)
             return 0;
     }
 
-    //  Rats, do collision detection.
+    //   Rats, do collision detection.
     if (collide_subdivide(&A->last_pos, &A->pos, A_radius, &B->last_pos, &B->pos,
                           B_radius)) {
-        ship *sap, *sbp;
-
-        sap = &Ships[Objects[A->parent].instance];
-        sbp = &Ships[Objects[B->parent].instance];
         // MWA -- commented out next line because it was too long for output window on occation.
         // Yes -- I should fix the output window, but I don't have time to do it now.
         //nprintf(("AI", "[%s] %s's missile %i shot down by [%s] %s's laser %i\n", lTeamNames[sbp->team], sbp->ship_name, B->instance, lTeamNames[sap->team], sap->ship_name, A->instance));

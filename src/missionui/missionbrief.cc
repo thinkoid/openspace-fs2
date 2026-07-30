@@ -49,10 +49,10 @@
 #include <mission/missionmessage.hh>
 
 /*
-#define OBJECTIVES_X    65
-#define OBJECTIVES_Y    137
-#define OBJECTIVES_W    508
-#define OBJECTIVES_H    233
+#define OBJECTIVES_X 65
+#define OBJECTIVES_Y 137
+#define OBJECTIVES_W 508
+#define OBJECTIVES_H 233
 */
 
 static int Brief_goals_coords[GR_NUM_RESOLUTIONS][4] = {
@@ -100,33 +100,19 @@ static int Closeup_coords[GR_NUM_RESOLUTIONS][4] = {
     }
 };
 
-static int Closeup_img_h[GR_NUM_RESOLUTIONS] = { {
-                                                     150 // GR_640
-                                                 },
-                                                 {
-                                                     150 // GR_1024
-                                                 } };
-
-static int Closeup_text_h[GR_NUM_RESOLUTIONS][4] = { {
-                                                         63 // GR_640
-                                                     },
-                                                     {
-                                                         63 // GR_1024
-                                                     } };
-
 static int Brief_infobox_coords[GR_NUM_RESOLUTIONS][2] = { { // GR_640
                                                              0, 391 },
                                                            { // GR_1024
                                                              0, 627 } };
 
-static char *Brief_infobox_filename[GR_NUM_RESOLUTIONS] = { "InfoBox",
+static const char *Brief_infobox_filename[GR_NUM_RESOLUTIONS] = { "InfoBox",
                                                             "2_Infobox" };
 
-static char *Brief_filename[GR_NUM_RESOLUTIONS] = { "Brief", "2_Brief" };
+static const char *Brief_filename[GR_NUM_RESOLUTIONS] = { "Brief", "2_Brief" };
 
-static char *Brief_mask_filename[GR_NUM_RESOLUTIONS] = { "Brief-m", "2_Brief-m" };
+static const char *Brief_mask_filename[GR_NUM_RESOLUTIONS] = { "Brief-m", "2_Brief-m" };
 
-static char *Brief_win_filename[GR_NUM_RESOLUTIONS] = { "Briefwin",
+static const char *Brief_win_filename[GR_NUM_RESOLUTIONS] = { "Briefwin",
                                                         "2_Briefwin" };
 
 // coordinate inidices
@@ -143,19 +129,19 @@ int Closeup_region[GR_NUM_RESOLUTIONS][4] = {
       337, 253, 345, 252 },
 };
 
-char *Closeup_background_filename[GR_NUM_RESOLUTIONS] = {
+const char *Closeup_background_filename[GR_NUM_RESOLUTIONS] = {
     NOX("BriefPop"), // GR_640
     NOX("2_BriefPop") // GR_1024
 };
 
-char *Closeup_button_filename[GR_NUM_RESOLUTIONS] = {
+const char *Closeup_button_filename[GR_NUM_RESOLUTIONS] = {
     NOX("BPB_00"), // GR_640
     NOX("2_BPB_00"), // GR_1024
 };
 
 int Closeup_button_hotspot = 14;
 
-//static int                    Closeup_button_coords[2] = {CLOSEUP_X+164,CLOSEUP_Y+227};
+//static int         Closeup_button_coords[2] = {CLOSEUP_X+164,CLOSEUP_Y+227};
 int Closeup_button_coords[GR_NUM_RESOLUTIONS][2] = {
     { 374, 316 }, // GR_640
     { 599, 506 } // GR_1024
@@ -196,7 +182,7 @@ int Brief_inited = FALSE;
 #define BRIEF_PAUSE_MASK 16
 
 //XSTR:OFF
-static char *Brief_mask_single[GR_NUM_RESOLUTIONS] = {
+static const char *Brief_mask_single[GR_NUM_RESOLUTIONS] = {
     "brief-m", // GR_640
     "2_brief-m" // GR_1024
 };
@@ -204,7 +190,7 @@ static char *Brief_mask_single[GR_NUM_RESOLUTIONS] = {
 
 struct brief_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y;
     int xt, yt;
     int hotspot;
@@ -212,7 +198,7 @@ struct brief_buttons
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    brief_buttons(char *name, int x1, int y1, int xt1, int yt1, int h, int r = 0)
+    brief_buttons(const char *name, int x1, int y1, int xt1, int yt1, int h, int r = 0)
         : filename(name)
         , x(x1)
         , y(y1)
@@ -348,11 +334,8 @@ brief_skip_training_pressed()
     }
 }
 
-#ifdef FS2_DEMO
-extern void demo_reset_trailer_timer();
-#endif
 // --------------------------------------------------------------------------------------
-//      brief_do_next_pressed()
+// brief_do_next_pressed()
 //
 //
 void
@@ -365,9 +348,6 @@ brief_do_next_pressed(int play_sound)
         return;
     }
 
-#ifdef FS2_DEMO
-    demo_reset_trailer_timer();
-#endif
 
     Current_brief_stage++;
     if (Current_brief_stage >= Num_brief_stages) {
@@ -386,7 +366,7 @@ brief_do_next_pressed(int play_sound)
 }
 
 // --------------------------------------------------------------------------------------
-//      brief_do_prev_pressed()
+// brief_do_prev_pressed()
 //
 //
 void
@@ -406,7 +386,7 @@ brief_do_prev_pressed()
 }
 
 // --------------------------------------------------------------------------------------
-//      brief_do_start_pressed()
+// brief_do_start_pressed()
 //
 //
 void
@@ -425,7 +405,7 @@ brief_do_start_pressed()
 }
 
 // --------------------------------------------------------------------------------------
-//      brief_do_end_pressed()
+// brief_do_end_pressed()
 //
 //
 void
@@ -593,7 +573,7 @@ brief_buttons_init()
     int i;
 
     //if ( Briefing->num_stages <= 0 )
-    //  return;
+    //   return;
 
     for (i = 0; i < NUM_BRIEF_BUTTONS; i++) {
         b = &Brief_buttons[gr_screen.res][i].button;
@@ -681,7 +661,7 @@ brief_buttons_init()
 }
 
 // --------------------------------------------------------------------------------------
-//      brief_get_closeup_icon()
+// brief_get_closeup_icon()
 //
 //
 uintptr_t
@@ -704,7 +684,7 @@ brief_turn_off_closeup_icon()
 }
 
 // --------------------------------------------------------------------------------------
-//      brief_load_bitmaps()
+// brief_load_bitmaps()
 //
 //
 void
@@ -719,7 +699,7 @@ brief_load_bitmaps()
 }
 
 // --------------------------------------------------------------------------------------
-//      brief_ui_init()
+// brief_ui_init()
 //
 //
 void
@@ -735,7 +715,7 @@ brief_ui_init()
 }
 
 // --------------------------------------------------------------------------------------
-//      brief_set_default_closeup()
+// brief_set_default_closeup()
 //
 //
 void
@@ -826,9 +806,6 @@ brief_init()
 {
     // Since first stage of briefing can take some time to arrive and play,
     // reset the trailer timer on briefing init.
-#ifdef FS2_DEMO
-    demo_reset_trailer_timer();
-#endif
 
     // Non standard briefing in red alert mission
     if (red_alert_mission()) {
@@ -874,12 +851,10 @@ brief_init()
     // init the scene-cut data
     brief_transition_reset();
 
-#ifndef FS2_DEMO
     hud_anim_init(&Fade_anim, Brief_static_coords[gr_screen.res][0],
                   Brief_static_coords[gr_screen.res][1],
                   Brief_static_name[gr_screen.res]);
     hud_anim_load(&Fade_anim);
-#endif
 
     nprintf(("Alan", "Entering brief_init()\n"));
     common_select_init();
@@ -982,34 +957,34 @@ void
 brief_render_closeup_text()
 {
     /*
-        brief_icon      *bi;
-        char                    line[MAX_ICON_TEXT_LINE_LEN];
-        int                     n_lines, i, render_x, render_y;
-        int                     n_chars[MAX_ICON_TEXT_LINES];
-        char                    *p_str[MAX_ICON_TEXT_LINES];
+   brief_icon  *bi;
+   char        line[MAX_ICON_TEXT_LINE_LEN];
+   int         n_lines, i, render_x, render_y;
+   int         n_chars[MAX_ICON_TEXT_LINES];
+   char        *p_str[MAX_ICON_TEXT_LINES];
 
-        if ( Closeup_icon == NULL ) {
-                Int3();
-                return;
-        }
+   if ( Closeup_icon == NULL ) {
+      Int3();
+      return;
+   }
 
-        bi = Closeup_icon;
+   bi = Closeup_icon;
 
-        render_x = Closeup_region[0];
-        render_y = Closeup_region[1] + CLOSEUP_IMG_H;
-        
-        gr_set_clip(render_x+CLOSEUP_TEXT_OFFSET, render_y, CLOSEUP_W,CLOSEUP_TEXT_H);
-        gr_set_color_fast(&Color_white);
+   render_x = Closeup_region[0];
+   render_y = Closeup_region[1] + CLOSEUP_IMG_H;
+   
+   gr_set_clip(render_x+CLOSEUP_TEXT_OFFSET, render_y, CLOSEUP_W,CLOSEUP_TEXT_H);
+   gr_set_color_fast(&Color_white);
 
-//      n_lines = split_str(bi->text, CLOSEUP_W - 2*CLOSEUP_TEXT_OFFSET, n_chars, p_str, MAX_ICON_TEXT_LINES);
-        Assert(n_lines != -1);
+// n_lines = split_str(bi->text, CLOSEUP_W - 2*CLOSEUP_TEXT_OFFSET, n_chars, p_str, MAX_ICON_TEXT_LINES);
+   Assert(n_lines != -1);
 
-        for ( i = 0; i < n_lines; i++ ) {
-                Assert(n_chars[i] < MAX_ICON_TEXT_LINE_LEN);
-                strncpy(line, p_str[i], n_chars[i]);
-                line[n_chars[i]] = 0;
-                gr_printf(0,0+i*Closeup_font_height,line);
-        }
+   for ( i = 0; i < n_lines; i++ ) {
+      Assert(n_chars[i] < MAX_ICON_TEXT_LINE_LEN);
+      strncpy(line, p_str[i], n_chars[i]);
+      line[n_chars[i]] = 0;
+      gr_printf(0,0+i*Closeup_font_height,line);
+   }
 */
 }
 
@@ -1081,7 +1056,7 @@ brief_render_closeup(int ship_class, float frametime)
     gr_set_color_fast(&Color_bright_white);
 
     gr_printf(0x8000, 2, Closeup_icon->closeup_label);
-    //  brief_render_closeup_text();
+    //   brief_render_closeup_text();
 
     Closeup_close_button.enable();
     Closeup_close_button.unhide();
@@ -1092,7 +1067,7 @@ brief_render_closeup(int ship_class, float frametime)
 // -------------------------------------------------------------------------------------
 // brief_render()
 //
-//      frametime is in seconds
+// frametime is in seconds
 void
 brief_render(float frametime)
 {
@@ -1236,8 +1211,8 @@ brief_truncate_label(char *src)
 // -------------------------------------------------------------------------------------
 // brief_setup_closeup()
 //
-// exit: 0      =>              set-up icon sucessfully
-//                      -1      =>              could not setup closeup icon
+// exit: 0  =>    set-up icon sucessfully
+//       -1 =>    could not setup closeup icon
 int
 brief_setup_closeup(brief_icon *bi)
 {
@@ -1256,20 +1231,18 @@ brief_setup_closeup(brief_icon *bi)
         Closeup_icon = NULL;
         return -1;
         /*
-                strcpy(pof_filename, NOX("planet.pof"));
-                strcpy(Closeup_icon->closeup_label, XSTR("planet",-1));
-                vm_vec_make(&Closeup_cam_pos, 0.0f, 0.0f, -8300.0f);
-                Closeup_zoom = 0.5f;
-                Closeup_one_revolution_time = ONE_REV_TIME * 3;
-                */
+      strcpy(pof_filename, NOX("planet.pof"));
+      strcpy(Closeup_icon->closeup_label, XSTR("planet",-1));
+      vm_vec_make(&Closeup_cam_pos, 0.0f, 0.0f, -8300.0f);
+      Closeup_zoom = 0.5f;
+      Closeup_one_revolution_time = ONE_REV_TIME * 3;
+      */
         break;
     case ICON_ASTEROID_FIELD:
-#ifndef FS2_DEMO
         strcpy(pof_filename, Asteroid_info[ASTEROID_TYPE_BIG].pof_files[0]);
         strcpy(Closeup_icon->closeup_label, XSTR("asteroid", 431));
         vm_vec_make(&Closeup_cam_pos, 0.0f, 0.0f, -334.0f);
         Closeup_zoom = 0.5f;
-#endif
         break;
     case ICON_JUMP_NODE:
         strcpy(pof_filename, NOX("subspacenode.pof"));
@@ -1304,7 +1277,7 @@ brief_setup_closeup(brief_icon *bi)
 
     if (Closeup_icon->modelnum == -1) {
         if (sip == NULL) {
-            Closeup_icon->modelnum = model_load(pof_filename, NULL, NULL);
+            Closeup_icon->modelnum = model_load(pof_filename, 0, NULL);
         }
         else {
             Closeup_icon->modelnum = model_load(sip->pof_file, sip->n_subsystems,
@@ -1334,8 +1307,8 @@ brief_setup_closeup(brief_icon *bi)
 // -------------------------------------------------------------------------------------
 // brief_update_closeup_icon()
 //
-//      input:  mode    =>              how to update the closeup view
-//                                                              0 -> disable
+// input:   mode  =>    how to update the closeup view
+//                      0 -> disable
 //
 void
 brief_update_closeup_icon(int mode)
@@ -1448,9 +1421,6 @@ brief_maybe_flash_button()
     if (common_flash_bright()) {
         if (Current_brief_stage == (Num_brief_stages - 1)) {
             // AL 4-4-98: Don't flash ship selection button on briefing in demo build
-#ifdef FS2_DEMO
-            return;
-#else
             // AL 30-3-98: Don't flash ship selection button if in a training mission,
             if (brief_only_allow_briefing()) {
                 return;
@@ -1458,7 +1428,6 @@ brief_maybe_flash_button()
 
             b = &Common_buttons[Current_screen - 1][gr_screen.res][1]
                      .button; // ship select button
-#endif
         }
         else {
             b = &Brief_buttons[gr_screen.res][1].button; // next stage button
@@ -1524,7 +1493,7 @@ brief_do_frame(float frametime)
 
                 ship_info *sip = &Ship_info[Closeup_icon->ship_class];
                 if (sip->modelnum < 0)
-                    sip->modelnum = model_load(sip->pof_file, NULL, NULL);
+                    sip->modelnum = model_load(sip->pof_file, 0, NULL);
 
                 mprintf(("Shiptype = %d (%s)\n", Closeup_icon->ship_class,
                          sip->name));
@@ -1541,7 +1510,7 @@ brief_do_frame(float frametime)
 
                 ship_info *sip = &Ship_info[Closeup_icon->ship_class];
                 if (sip->modelnum < 0)
-                    sip->modelnum = model_load(sip->pof_file, NULL, NULL);
+                    sip->modelnum = model_load(sip->pof_file, 0, NULL);
 
                 mprintf(("Shiptype = %d (%s)\n", Closeup_icon->ship_class,
                          sip->name));
@@ -1772,7 +1741,7 @@ brief_do_frame(float frametime)
 }
 
 // --------------------------------------------------------------------------------------
-//      brief_unload_bitmaps()
+// brief_unload_bitmaps()
 //
 //
 void
@@ -1820,9 +1789,7 @@ brief_close()
     // unload the audio streams used for voice playback
     brief_voice_unload_all();
 
-#ifndef FS2_DEMO
     hud_anim_release(&Fade_anim);
-#endif
 
     // done mask bitmap, so unlock it
     bm_unlock(BriefingMaskBitmap);
@@ -1883,18 +1850,6 @@ void
 brief_maybe_blit_scene_cut(float frametime)
 {
     if (Start_fade_up_anim) {
-#ifdef FS2_DEMO
-        Fade_anim.time_elapsed = 0.0f;
-        Start_fade_up_anim = 0;
-        Start_fade_down_anim = 1;
-        Current_brief_stage = Quick_transition_stage;
-
-        if (Current_brief_stage < 0) {
-            brief_transition_reset();
-            Current_brief_stage = Last_brief_stage;
-        }
-        goto Fade_down_anim_start;
-#else
         int framenum;
 
         Fade_anim.time_elapsed += frametime;
@@ -1930,17 +1885,10 @@ brief_maybe_blit_scene_cut(float frametime)
         // Blit the bitmap for this frame
         gr_set_bitmap(Fade_anim.first_frame + framenum);
         gr_bitmap(Fade_anim.sx, Fade_anim.sy);
-#endif
     }
 
 Fade_down_anim_start:
     if (Start_fade_down_anim) {
-#ifdef FS2_DEMO
-        Fade_anim.time_elapsed = 0.0f;
-        Start_fade_up_anim = 0;
-        Start_fade_down_anim = 0;
-        return;
-#else
 
         int framenum;
 
@@ -1966,7 +1914,6 @@ Fade_down_anim_start:
                       framenum);
         gr_bitmap(Fade_anim.sx, Fade_anim.sy);
 
-#endif
     }
 }
 

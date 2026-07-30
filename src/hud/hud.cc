@@ -94,7 +94,7 @@ int Hud_text_flash_coords[GR_NUM_RESOLUTIONS][2] = { { // GR_640
                                                      { // GR_1024
                                                        -1, 275 } };
 void hud_init_text_flash_gauge();
-void hud_start_text_flash(char *txt, int t);
+void hud_start_text_flash(const char *txt, int t);
 void hud_maybe_show_text_flash_icon();
 
 // redalert downloading new orders text
@@ -221,7 +221,7 @@ char Support_fname[GR_NUM_RESOLUTIONS][MAX_FILENAME_LEN] = { "support1",
 #define NUM_DAMAGE_GAUGES 3
 static hud_frames Damage_gauges[NUM_DAMAGE_GAUGES];
 static int Damage_gauges_loaded = 0;
-char *Damage_gauge_fnames[GR_NUM_RESOLUTIONS][NUM_DAMAGE_GAUGES] = {
+const char *Damage_gauge_fnames[GR_NUM_RESOLUTIONS][NUM_DAMAGE_GAUGES] = {
     //XSTR:OFF
     {
         // GR_640
@@ -349,7 +349,7 @@ void hud_show_kills_gauge();
 int hud_maybe_render_emp_icon();
 void hud_init_emp_icon();
 
-//      Saturate a value in minv..maxv.
+// Saturate a value in minv..maxv.
 void
 saturate(int *i, int minv, int maxv)
 {
@@ -813,8 +813,8 @@ HUD_render_3d(float frametime)
                          VM_WARP_CHASE | VM_PADLOCK_ANY))) {
         hud_show_common_3d_gauges(frametime, 1);
 
-        //      Show all homing missiles locked onto the player.
-        //      Currently not supporting a way to toggle this as I'm not sure we'll stick wtih this gauge. -- MK, 3/17/97.
+        //  Show all homing missiles locked onto the player.
+        //  Currently not supporting a way to toggle this as I'm not sure we'll stick wtih this gauge. -- MK, 3/17/97.
         if (hud_gauge_active(HUD_MISSILE_WARNING_ARROW)) {
             hud_show_homing_missiles();
         }
@@ -1017,11 +1017,11 @@ HUD_render_2d(float frametime)
     HUD_reset_clip();
 
     /*
-        // show some scoring debug stuff
-        {
-                extern char Scoring_debug_text[];
-                gr_string( 10, 40, Scoring_debug_text );
-        }
+   // show some scoring debug stuff
+   {
+      extern char Scoring_debug_text[];
+      gr_string( 10, 40, Scoring_debug_text );
+   }
 */
     if (hud_disabled()) {
         return;
@@ -1057,22 +1057,22 @@ HUD_render_2d(float frametime)
         hud_show_reticle();
 
         /*
-                // why is this here twice?
-                // display Energy Transfer System gauges
-                if ( hud_gauge_active(HUD_ETS_GAUGE) ) {
-                        show_gauge_flag=1;
-                        // is gauge configured as a popup?
-                        if ( hud_gauge_is_popup(HUD_ETS_GAUGE) ) {
-                                if ( !hud_gauge_popup_active(HUD_ETS_GAUGE) ) {
-                                        show_gauge_flag=0;
-                                }
-                        }
-                        
-                        if ( show_gauge_flag ) {
-                                hud_show_ets();
-                        }
-                }
-                */
+      // why is this here twice?
+      // display Energy Transfer System gauges
+      if ( hud_gauge_active(HUD_ETS_GAUGE) ) {
+         show_gauge_flag=1;
+         // is gauge configured as a popup?
+         if ( hud_gauge_is_popup(HUD_ETS_GAUGE) ) {
+            if ( !hud_gauge_popup_active(HUD_ETS_GAUGE) ) {
+               show_gauge_flag=0;
+            }
+         }
+         
+         if ( show_gauge_flag ) {
+            hud_show_ets();
+         }
+      }
+      */
 
         // display info on the ships in the escort list
         if (hud_gauge_active(HUD_ESCORT_VIEW)) {
@@ -1221,7 +1221,7 @@ update_throttle_sound()
 {
     // determine what engine sound to play
     float percent_throttle;
-    //  int     throttle_pitch;
+    //   int   throttle_pitch;
 
     if (timestamp_elapsed(throttle_sound_check_id)) {
         throttle_sound_check_id = timestamp(THROTTLE_SOUND_CHECK_INTERVAL);
@@ -1264,10 +1264,10 @@ update_throttle_sound()
                 }
             }
 
-            //                  throttle_pitch = snd_get_pitch(Player_engine_snd_loop);
-            //                  if ( percent_throttle > 0.5 ) {
-            //                          snd_set_pitch(Player_engine_snd_loop, fl2i(22050 + (percent_throttle-0.5f)*1000));
-            //                  }
+            //       throttle_pitch = snd_get_pitch(Player_engine_snd_loop);
+            //       if ( percent_throttle > 0.5 ) {
+            //          snd_set_pitch(Player_engine_snd_loop, fl2i(22050 + (percent_throttle-0.5f)*1000));
+            //       }
 
         } // end if (percent_throttle != last_percent_throttle)
 
@@ -1316,7 +1316,6 @@ hud_show_damage_popup()
 {
     model_subsystem *psub;
     ship_subsys *pss;
-    ship_info *sip;
     int sx, sy, bx, by, w, h, screen_integrity, num, best_str, best_index;
     float strength, shield, integrity;
     char buf[128];
@@ -1330,7 +1329,6 @@ hud_show_damage_popup()
         return;
     }
 
-    sip = &Ship_info[Player_ship->ship_info_index];
     hud_get_target_strength(Player_obj, &shield, &integrity);
     screen_integrity = fl2i(integrity * 100);
 
@@ -1494,7 +1492,7 @@ hud_show_damage_popup()
 
 // init the members of the hud_anim struct to default values
 void
-hud_anim_init(hud_anim *ha, int sx, int sy, char *filename)
+hud_anim_init(hud_anim *ha, int sx, int sy, const char *filename)
 {
     ha->first_frame = -1;
     ha->num_frames = 0;
@@ -1534,12 +1532,12 @@ hud_anim_load(hud_anim *ha)
 
 // render out a frame of the targetbox static animation, based on how much time has
 // elapsed
-// input:       ha                              =>      pointer to hud anim info
-//                              frametime       =>      seconds elapsed since last frame
-//                              draw_alpha      =>      draw bitmap as alpha-bitmap (default 0)
-//                              loop                    =>      anim should loop (default 1)
-//                              hold_last       =>      should last frame be held (default 0)
-//                              reverse         =>      play animation in reverse (default 0)
+// input:   ha          => pointer to hud anim info
+//          frametime   => seconds elapsed since last frame
+//          draw_alpha  => draw bitmap as alpha-bitmap (default 0)
+//          loop        => anim should loop (default 1)
+//          hold_last   => should last frame be held (default 0)
+//          reverse     => play animation in reverse (default 0)
 int
 hud_anim_render(hud_anim *ha, float frametime, int draw_alpha, int loop,
                 int hold_last, int reverse)
@@ -1609,7 +1607,7 @@ hud_init_text_flash_gauge()
 { }
 
 void
-hud_start_text_flash(char *txt, int t)
+hud_start_text_flash(const char *txt, int t)
 {
     // bogus
     if (txt == NULL) {
@@ -1754,7 +1752,7 @@ hud_support_view_init()
 }
 
 // start displaying the support view pop-up.  This will remain up until hud_support_view_stop is called.
-// input:       objnum  =>              object number for the support ship
+// input:   objnum   =>    object number for the support ship
 void
 hud_support_view_start()
 {
@@ -1792,7 +1790,7 @@ hud_support_view_abort()
 // mwa made this function more general purpose
 //
 // NOTE: This function is pretty stupid now.  It just assumes the player is sitting still, and
-//                 the support ship is moving directly to the player.
+//       the support ship is moving directly to the player.
 int
 hud_support_get_dock_time(int objnum)
 {
@@ -1810,7 +1808,7 @@ hud_support_get_dock_time(int objnum)
 
     // get the dockee object pointer
     if (aip->goal_objnum == -1) {
-        Int3(); //      Shouldn't happen, but let's recover gracefully.
+        Int3(); //   Shouldn't happen, but let's recover gracefully.
         return 0;
     }
 
@@ -1837,26 +1835,26 @@ hud_support_get_dock_time(int objnum)
         if (rel_speed < 20.0f)
             rel_speed = 20.0f;
 
-        //      When faraway, use max speed, not current speed.  Might not have sped up yet.
+        //  When faraway, use max speed, not current speed.  Might not have sped up yet.
         if (d > 100.0f) {
             time += (d - 100.0f) / support_objp->phys_info.max_vel.z;
         }
 
-        //      For mid-range, use current speed.
+        //  For mid-range, use current speed.
         if (d > 60.0f) {
             d1 = min(d, 100.0f);
 
             time += (d1 - 60.0f) / rel_speed;
         }
 
-        //      For nearby, ship will have to slow down a bit for docking maneuver.
+        //  For nearby, ship will have to slow down a bit for docking maneuver.
         if (d > 30.0f) {
             d1 = min(d, 60.0f);
 
             time += (d1 - 30.0f) / 5.0f;
         }
 
-        //      For very nearby, ship moves quite slowly.
+        //  For very nearby, ship moves quite slowly.
         d1 = min(d, 30.0f);
         time += d1 / 7.5f;
 
@@ -2078,15 +2076,15 @@ hud_set_dim_color()
 
 // hud_set_iff_color() will set the color to the IFF color based on the team
 //
-// input:       team                    =>              team to base color on
-//                              is_bright       =>              default parameter (value 0) which uses bright version of IFF color
+// input:   team        =>    team to base color on
+//          is_bright   =>    default parameter (value 0) which uses bright version of IFF color
 void
 hud_set_iff_color(object *objp, int is_bright)
 {
-    // AL 12-26-97:     it seems IFF color needs to be set relative to the player team.  If
-    //                                          the team in question is the same as the player, then it should be
-    //                                          drawn friendly.  If the team is different than the players, then draw the
-    //                                          appropriate IFF.
+    // AL 12-26-97:  it seems IFF color needs to be set relative to the player team.  If
+    //                  the team in question is the same as the player, then it should be
+    //                  drawn friendly.  If the team is different than the players, then draw the
+    //                  appropriate IFF.
     int team;
     team = obj_team(objp);
 
@@ -2119,10 +2117,10 @@ hud_set_iff_color(object *objp, int is_bright)
 
 // Determine if ship team should be ignored, based on
 // team filter
-// input:       team_filter     =>      team mask used to select friendly or hostile ships
-//                              ship_team       =>      team of the ship in question
-// exit:                1                               =>      ship_team matches filter from player perspective
-//                              0                               =>      ship_team does match team filter
+// input:   team_filter => team mask used to select friendly or hostile ships
+//          ship_team   => team of the ship in question
+// exit:    1           => ship_team matches filter from player perspective
+//          0           => ship_team does match team filter
 int
 hud_team_matches_filter(int team_filter, int ship_team)
 {
@@ -2291,9 +2289,9 @@ hud_set_gauge_color(int gauge_index, int bright_index)
 }
 
 // set the color for a gauge that may be flashing
-// exit:        -1      =>      gauge is not flashing
-//                      0       =>      gauge is flashing, draw dim
-//                      1       =>      gauge is flashing, draw bright
+// exit: -1 => gauge is not flashing
+//       0  => gauge is flashing, draw dim
+//       1  => gauge is flashing, draw bright
 int
 hud_gauge_maybe_flash(int gauge_index)
 {
@@ -2336,13 +2334,13 @@ hud_objective_message_init()
 }
 
 // Display objective status on the HUD
-// input:       type                    =>      type of goal, one of:   PRIMARY_GOAL
-//                                                                                                                                      SECONDARY_GOAL
-//                                                                                                                                      BONUS_GOAL
+// input:   type        => type of goal, one of:   PRIMARY_GOAL
+//                                                 SECONDARY_GOAL
+//                                                 BONUS_GOAL
 //
-//                              status          => status of goal, one of:      GOAL_FAILED
-//                                                                                                                                      GOAL_COMPLETE
-//                                                                                                                                      GOAL_INCOMPLETE
+//          status      => status of goal, one of: GOAL_FAILED
+//                                                 GOAL_COMPLETE
+//                                                 GOAL_INCOMPLETE
 //
 void
 hud_add_objective_messsage(int type, int status)
@@ -2570,7 +2568,7 @@ hud_wing_index_from_ship(int shipnum)
 
     shipp = &Ships[shipnum];
 
-    int wing_num = 0, wing_slot = 0;
+    int wing_slot = 0;
 
     for (i = 0; i < 3; i++) {
         if (Starting_wings[i] < 0) {
@@ -2578,7 +2576,6 @@ hud_wing_index_from_ship(int shipnum)
         }
 
         if (shipp->wingnum == Starting_wings[i]) {
-            wing_num = i;
             break;
         }
     }

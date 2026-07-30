@@ -124,11 +124,11 @@ UI_XSTR Medals_text[GR_NUM_RESOLUTIONS][MEDALS_NUM_TEXT] = {
     },
 };
 
-static char *Medals_background_filename[GR_NUM_RESOLUTIONS] = {
+static const char *Medals_background_filename[GR_NUM_RESOLUTIONS] = {
     "MedalsDisplayEmpty", "2_MedalsDisplayEmpty"
 };
 
-static char *Medals_mask_filename[GR_NUM_RESOLUTIONS] = { "Medals-m",
+static const char *Medals_mask_filename[GR_NUM_RESOLUTIONS] = { "Medals-m",
                                                           "2_Medals-m" };
 
 static int Medals_callsign_y[GR_NUM_RESOLUTIONS] = { 54, 89 };
@@ -146,7 +146,6 @@ player *Medals_player;
 
 static bitmap *Medals_mask;
 int Medals_mask_w, Medals_mask_h;
-static int Medal_palette; // Medal palette bitmap
 static int Medals_bitmap_mask; // the mask for the medal case
 static int Medals_bitmap; // the medal case itself
 static int Medal_bitmaps[NUM_MEDALS]; // bitmaps for the individual medals
@@ -157,22 +156,22 @@ static MENU_REGION Medal_regions
 
 static UI_WINDOW Medals_window;
 
-//#define MAX_MEDALS_BUTTONS                                            1
-//#define MEDAL_BUTTON_EXIT                                             0
+//#define MAX_MEDALS_BUTTONS                 1
+//#define MEDAL_BUTTON_EXIT                  0
 //static UI_BUTTON Medal_buttons[MAX_MEDALS_BUTTONS];
 
 /*static char *Medal_button_names[MAX_MEDALS_BUTTONS] = {
 //XSTR:OFF
-        "MX_17"
+   "MX_17"
 //XSTR:ON
 };
 */
 /*
 static int Medal_button_coords[MAX_MEDALS_BUTTONS][2] = {
-        {561,411}
+   {561,411}
 };
 static int Medal_button_masks[MAX_MEDALS_BUTTONS] = {
-        17
+   17
 };
 */
 
@@ -402,7 +401,7 @@ void
 blit_label(char *label, int *coords, int num)
 {
     int x, y, sw;
-    char text[256];
+    char text[300];
 
     gr_set_color_fast(&Color_bright);
 
@@ -552,12 +551,12 @@ medal_main_close()
 /*
 void init_medal_palette()
 {
-        Medal_palette = bm_load("MedalsPalette.pcx");
-        if(Medal_palette > -1){
+   Medal_palette = bm_load("MedalsPalette.pcx");
+   if(Medal_palette > -1){
 #ifndef HARDWARE_ONLY
-                palette_use_bm_palette(Medal_palette);
+      palette_use_bm_palette(Medal_palette);
 #endif
-        }
+   }
 }
 */
 
@@ -575,7 +574,7 @@ init_medal_bitmaps()
         Medal_bitmaps[idx] = -1;
         if (Player_score->medals[idx] > 0) {
             int num_medals;
-            char filename[NAME_LENGTH], base[NAME_LENGTH];
+            char filename[NAME_LENGTH + 4], base[NAME_LENGTH];
 
             // possibly load a different filename that is specified by the bitmap filename
             // for this medal.  if the player has > 1 of these types of medals, then determien
@@ -592,7 +591,8 @@ init_medal_bitmaps()
             if (num_medals > 1) {
                 // append the proper character onto the end of the medal filename.  Base version
                 // has no character. next version is a, then b, etc.
-                sprintf(base, "%s%c", base, (num_medals - 2) + 'a');
+                // (was sprintf(base, "%s%c", base, ...) -- src == dst is UB)
+                sprintf(base + strlen(base), "%c", (num_medals - 2) + 'a');
             }
 
             // hi-res support
@@ -610,7 +610,7 @@ init_medal_bitmaps()
 
     // load up rank insignia
     if (gr_screen.res == GR_1024) {
-        char filename[NAME_LENGTH];
+        char filename[NAME_LENGTH + 4];
         sprintf(filename, "2_%s", Ranks[Player_score->rank].bitmap);
         Rank_bm = bm_load(filename);
     }

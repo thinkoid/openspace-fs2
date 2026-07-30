@@ -23,14 +23,14 @@ int DS3D_inited = FALSE;
 // ---------------------------------------------------------------------------------------
 // ds3d_update_buffer()
 //
-//      parameters:             channel => identifies the 3D sound to update
-//                                              min             =>      the distance at which sound doesn't get any louder
-//                                              max             =>      the distance at which sound doesn't attenuate any further
-//                                              pos             => world position of sound
-//                                              vel             => velocity of the objects producing the sound
+// parameters:    channel  => identifies the 3D sound to update
+//                min      => the distance at which sound doesn't get any louder
+//                max      => the distance at which sound doesn't attenuate any further
+//                pos      => world position of sound
+//                vel      => velocity of the objects producing the sound
 //
-//      returns:                0               =>              success
-//                                      -1              =>              failure
+// returns:    0     =>    success
+//             -1    =>    failure
 //
 //
 int
@@ -79,8 +79,8 @@ ds3d_update_buffer(int channel, float min, float max, vector *pos, vector *vel)
 // ---------------------------------------------------------------------------------------
 // ds3d_update_listener()
 //
-//      returns:                0               =>              success
-//                                      -1              =>              failure
+// returns:    0     =>    success
+//             -1    =>    failure
 //
 int
 ds3d_update_listener(vector *pos, vector *vel, matrix *orient)
@@ -112,8 +112,8 @@ ds3d_update_listener(vector *pos, vector *vel, matrix *orient)
 // ---------------------------------------------------------------------------------------
 // ds3d_set_sound_cone()
 //
-//      returns:                0               =>              success
-//                                      -1              =>              failure
+// returns:    0     =>    success
+//             -1    =>    failure
 //
 int
 ds3d_set_sound_cone(int channel, int inner_angle, int outer_angle, int vol)
@@ -136,8 +136,8 @@ ds3d_set_sound_cone(int channel, int inner_angle, int outer_angle, int vol)
 //
 // Initialize the positional sound system.
 //
-// returns:     -1      => init failed
-//              0               => success
+// returns:     -1   => init failed
+//              0    => success
 int
 ds3d_init(int voice_manager_required)
 {

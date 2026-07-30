@@ -122,17 +122,17 @@ void
 model_level_post_init()
 {
     /*
-        int idx;
+   int idx;
 
-        // reset lighting stuff 
-        for(idx=0; idx<MAX_MODEL_LIGHTING_SAVE; idx++){
-                Interp_lighting_save[idx].objnum = -1;
-                Interp_lighting_save[idx].skip = 0;
-        }
+   // reset lighting stuff 
+   for(idx=0; idx<MAX_MODEL_LIGHTING_SAVE; idx++){
+      Interp_lighting_save[idx].objnum = -1;
+      Interp_lighting_save[idx].skip = 0;
+   }
 
-        // saved lighting is not full
-        Interp_saved_lighting_full = 0;
-        */
+   // saved lighting is not full
+   Interp_saved_lighting_full = 0;
+   */
 }
 
 // call to select an object for using "saved" lighting
@@ -140,73 +140,73 @@ void
 model_set_saved_lighting(int objnum, int skip_max)
 {
     /*
-        int idx;
+   int idx;
 
-        // always set to not using saved light to start with
-        Interp_use_saved_lighting = 0;
-        Interp_lighting = &Interp_lighting_temp;
+   // always set to not using saved light to start with
+   Interp_use_saved_lighting = 0;
+   Interp_lighting = &Interp_lighting_temp;
 
-        // if he passed a -1 for either value, no saved lighting
-        if((objnum == -1) || (skip_max == -1)){
-                return;
-        }
+   // if he passed a -1 for either value, no saved lighting
+   if((objnum == -1) || (skip_max == -1)){
+      return;
+   }
 
-        // see if the object is already on the list
-        for(idx=0; idx<MAX_MODEL_LIGHTING_SAVE; idx++){
-                // ahha, he is on the list
-                if(Interp_lighting_save[idx].objnum == objnum){
-                        // if he's entered a new skip max
-                        if(Interp_lighting_save[idx].skip_max != skip_max){
-                                Interp_lighting_save[idx].skip = 0;
-                                Interp_lighting_save[idx].skip_max = skip_max;
-                                Interp_use_saved_lighting = 0;
-                                Interp_lighting = &Interp_lighting_save[idx];
-                        } 
-                        // if we're reached the "skip" frame, re-render lighting for this guy
-                        else if(Interp_lighting_save[idx].skip == Interp_lighting_save[idx].skip_max){
-                                Interp_lighting_save[idx].skip = 0;
-                                Interp_use_saved_lighting = 0;
-                                Interp_lighting = &Interp_lighting_save[idx];
-                        }
-                        // otherwise, use his saved lighting values
-                        else {
-                                Interp_lighting_save[idx].skip++;
-                                Interp_use_saved_lighting = 1;
-                                Interp_lighting = &Interp_lighting_save[idx];
-                        }
+   // see if the object is already on the list
+   for(idx=0; idx<MAX_MODEL_LIGHTING_SAVE; idx++){
+      // ahha, he is on the list
+      if(Interp_lighting_save[idx].objnum == objnum){
+         // if he's entered a new skip max
+         if(Interp_lighting_save[idx].skip_max != skip_max){
+            Interp_lighting_save[idx].skip = 0;
+            Interp_lighting_save[idx].skip_max = skip_max;
+            Interp_use_saved_lighting = 0;
+            Interp_lighting = &Interp_lighting_save[idx];
+         } 
+         // if we're reached the "skip" frame, re-render lighting for this guy
+         else if(Interp_lighting_save[idx].skip == Interp_lighting_save[idx].skip_max){
+            Interp_lighting_save[idx].skip = 0;
+            Interp_use_saved_lighting = 0;
+            Interp_lighting = &Interp_lighting_save[idx];
+         }
+         // otherwise, use his saved lighting values
+         else {
+            Interp_lighting_save[idx].skip++;
+            Interp_use_saved_lighting = 1;
+            Interp_lighting = &Interp_lighting_save[idx];
+         }
 
-                        // duh
-                        return;
-                }
-        }
+         // duh
+         return;
+      }
+   }
 
-        // no free saved lighting slots
-        if(Interp_saved_lighting_full){
-                return;
-        }
-        
-        // find a free slot
-        int found = 0;
-        for(idx=0; idx<MAX_MODEL_LIGHTING_SAVE; idx++){
-                // got one
-                if(Interp_lighting_save[idx].objnum == -1){
-                        Interp_lighting_save[idx].objnum = objnum;
-                        Interp_lighting_save[idx].skip = 0;
-                        Interp_lighting_save[idx].skip_max = skip_max;
+   // no free saved lighting slots
+   if(Interp_saved_lighting_full){
+      return;
+   }
+   
+   // find a free slot
+   int found = 0;
+   for(idx=0; idx<MAX_MODEL_LIGHTING_SAVE; idx++){
+      // got one
+      if(Interp_lighting_save[idx].objnum == -1){
+         Interp_lighting_save[idx].objnum = objnum;
+         Interp_lighting_save[idx].skip = 0;
+         Interp_lighting_save[idx].skip_max = skip_max;
 
-                        Interp_use_saved_lighting = 0;
-                        Interp_lighting = &Interp_lighting_save[idx];
+         Interp_use_saved_lighting = 0;
+         Interp_lighting = &Interp_lighting_save[idx];
 
-                        found = 1;
-                        break;
-                }
-        }
+         found = 1;
+         break;
+      }
+   }
 
-        // oops. out of free slots
-        if(!found){
-                Interp_saved_lighting_full = 1;
-        }
-        */
+   // oops. out of free slots
+   if(!found){
+      Interp_saved_lighting_full = 1;
+   }
+   */
 }
 
 // notify the model system that a ship has died
@@ -214,18 +214,18 @@ void
 model_notify_dead_ship(int objnum)
 {
     /*
-        int idx;
+   int idx;
 
-        // see if this guy was on the lighting list
-        for(idx=0; idx<MAX_MODEL_LIGHTING_SAVE; idx++){
-                // free him up
-                if(objnum == Interp_lighting_save[idx].objnum){
-                        Interp_lighting_save[idx].objnum = -1;
-                        Interp_saved_lighting_full = 0;
-                        return;
-                }
-        }
-        */
+   // see if this guy was on the lighting list
+   for(idx=0; idx<MAX_MODEL_LIGHTING_SAVE; idx++){
+      // free him up
+      if(objnum == Interp_lighting_save[idx].objnum){
+         Interp_lighting_save[idx].objnum = -1;
+         Interp_saved_lighting_full = 0;
+         return;
+      }
+   }
+   */
 }
 
 void
@@ -301,20 +301,20 @@ model_interp_defpoints(ubyte *p, polymodel *pm, bsp_info *sm)
 #endif
 
     /*
-        static int Max_vecs = 0;
-        static int Max_norms = 0;
+   static int Max_vecs = 0;
+   static int Max_norms = 0;
 
-        if ( Max_vecs < nverts )        {
-                Max_vecs = nverts;
-                mprintf(( "MAX NORMS = %d\n", Max_norms ));
-                mprintf(( "MAX VECS = %d\n", Max_vecs ));
-        }
+   if ( Max_vecs < nverts )   {
+      Max_vecs = nverts;
+      mprintf(( "MAX NORMS = %d\n", Max_norms ));
+      mprintf(( "MAX VECS = %d\n", Max_vecs ));
+   }
 
-        if ( Max_norms < nnorms )       {
-                Max_norms = nnorms;
-                mprintf(( "MAX NORMS = %d\n", Max_norms ));
-                mprintf(( "MAX VECS = %d\n", Max_vecs ));
-        }
+   if ( Max_norms < nnorms )  {
+      Max_norms = nnorms;
+      mprintf(( "MAX NORMS = %d\n", Max_norms ));
+      mprintf(( "MAX VECS = %d\n", Max_vecs ));
+   }
 */
 
     if (Interp_thrust_scale_subobj) {
@@ -363,27 +363,27 @@ model_interp_defpoints(ubyte *p, polymodel *pm, bsp_info *sm)
             Interp_verts[n] = src;
 
             /*
-                        vector tmp = *src;
-                        // TEST
-                        if(Interp_thrust_twist > 0.0f){
-                                float theta;
-                                float st, ct;
+         vector tmp = *src;
+         // TEST
+         if(Interp_thrust_twist > 0.0f){
+            float theta;
+            float st, ct;
 
-                                // determine theta for this vertex                              
-                                theta = fl_radian(20.0f + Interp_thrust_twist2);                                
-                                st = sin(theta);
-                                ct = cos(theta);
+            // determine theta for this vertex           
+            theta = fl_radian(20.0f + Interp_thrust_twist2);            
+            st = sin(theta);
+            ct = cos(theta);
 
-                                // twist
-                                tmp.z = (src->z * ct) - (src->y * st);
-                                tmp.y = (src->z * st) + (src->y * ct);
+            // twist
+            tmp.z = (src->z * ct) - (src->y * st);
+            tmp.y = (src->z * st) + (src->y * ct);
 
-                                // scale the z a bit
-                                tmp.z += Interp_thrust_twist;
-                        }                       
-        
-                        g3_rotate_vertex(dest, &tmp);
-                        */
+            // scale the z a bit
+            tmp.z += Interp_thrust_twist;
+         }        
+   
+         g3_rotate_vertex(dest, &tmp);
+         */
 
             g3_rotate_vertex(dest, src);
 
@@ -409,22 +409,22 @@ vector *Interp_pos;
 /*
 void interp_compute_environment_mapping( vector *nrm, vertex * pnt, vector *vert)
 {
-        vector R;
-        float a;
-        matrix * m = &View_matrix;
+   vector R;
+   float a;
+   matrix * m = &View_matrix;
 
-        vm_vec_rotate( &R, nrm, &View_matrix ); 
-        vm_vec_normalize(&R);
+   vm_vec_rotate( &R, nrm, &View_matrix );   
+   vm_vec_normalize(&R);
 
-        a = 2.0f * R.z;
-        R.x = a * R.x;  // reflected R = 2N(N.E) -E;  E = eye
-        R.y = a * R.y;
-        R.z = a * R.z;
-        vm_vec_normalize(&R);
-        a = (float)fl_sqrt( 1.0f - R.y * R.y);
-        pnt->u = (float)atan2( R.x, -R.z) / (2.0f * 3.14159f);
-        if (pnt->u < 0.0) pnt->u += 1.0f;
-        pnt->v = 1.0f - (float)atan2( a, R.y) / 3.14159f;
+   a = 2.0f * R.z;
+   R.x = a * R.x; // reflected R = 2N(N.E) -E;  E = eye
+   R.y = a * R.y;
+   R.z = a * R.z;
+   vm_vec_normalize(&R);
+   a = (float)fl_sqrt( 1.0f - R.y * R.y);
+   pnt->u = (float)atan2( R.x, -R.z) / (2.0f * 3.14159f);
+   if (pnt->u < 0.0) pnt->u += 1.0f;
+   pnt->v = 1.0f - (float)atan2( a, R.y) / 3.14159f;
 }
 */
 
@@ -549,7 +549,7 @@ model_interp_tmappoly(ubyte *p, polymodel *pm)
 
     nv = w(p + 36);
 
-    //  Tmap_show_layers = 1;
+    //   Tmap_show_layers = 1;
 
 #ifndef NDEBUG
     modelstats_num_polys++;
@@ -578,12 +578,12 @@ model_interp_tmappoly(ubyte *p, polymodel *pm)
             Interp_list[i]->b = Interp_subspace_b;
         }
         else {
-            //          if ( !(pm->flags & PM_FLAG_ALLOW_TILING) )      {
-            //                  Assert(verts[i].u <= 1.0f );
-            //                  Assert(verts[i].v <= 1.0f );
-            //          }
+            //    if ( !(pm->flags & PM_FLAG_ALLOW_TILING) )   {
+            //       Assert(verts[i].u <= 1.0f );
+            //       Assert(verts[i].v <= 1.0f );
+            //    }
 
-            //          Assert( verts[i].normnum == verts[i].vertnum );
+            //    Assert( verts[i].normnum == verts[i].vertnum );
 
             if (Interp_flags & MR_NO_LIGHTING) {
                 Interp_list[i]->b = 191;
@@ -634,8 +634,8 @@ model_interp_tmappoly(ubyte *p, polymodel *pm)
             }
         }
 
-        //              Assert(verts[i].u >= 0.0f );
-        //              Assert(verts[i].v >= 0.0f );
+        //     Assert(verts[i].u >= 0.0f );
+        //     Assert(verts[i].v >= 0.0f );
     }
 
 #ifndef NDEBUG
@@ -648,13 +648,12 @@ model_interp_tmappoly(ubyte *p, polymodel *pm)
             g3_draw_poly(nv, Interp_list, 0);
         }
         else if (Interp_thrust_scale_subobj) {
-            if ((Interp_thrust_bitmap > -1) && (Interp_thrust_scale > 0.0f) &&
-                !Pofview_running) {
+            if ((Interp_thrust_bitmap > -1) && (Interp_thrust_scale > 0.0f)) {
                 gr_set_bitmap(Interp_thrust_bitmap, GR_ALPHABLEND_FILTER,
                               GR_BITBLT_MODE_NORMAL, 1.2f);
                 g3_draw_poly(nv, Interp_list, TMAP_FLAG_TEXTURED);
             }
-            else if (!Pofview_running) {
+            else {
                 if (!(Interp_flags & MR_SHOW_OUTLINE_PRESET)) {
                     gr_set_color(128, 128, 255);
                 }
@@ -726,38 +725,38 @@ void
 interp_draw_box(vector *min, vector *max)
 {
     /*
-        int i;
-        vector bounding_box[8];
-        vertex pts[8];
-        vertex *l[4];
+   int i;
+   vector bounding_box[8];
+   vertex pts[8];
+   vertex *l[4];
 
-        model_calc_bound_box(bounding_box,min,max);
+   model_calc_bound_box(bounding_box,min,max);
 
-        for (i=0; i<8; i++ )    {
-                g3_rotate_vertex( &pts[i], &bounding_box[i] );
-        }
+   for (i=0; i<8; i++ ) {
+      g3_rotate_vertex( &pts[i], &bounding_box[i] );
+   }
 
-        gr_set_color(128,0,0);
+   gr_set_color(128,0,0);
 
-        Tmap_show_layers = 1;
+   Tmap_show_layers = 1;
 
-        l[3] = &pts[0];  l[2] = &pts[1]; l[1] = &pts[2];  l[0] = &pts[3];
-        g3_draw_poly( 4, l, 0 );
+   l[3] = &pts[0];  l[2] = &pts[1]; l[1] = &pts[2];  l[0] = &pts[3];
+   g3_draw_poly( 4, l, 0 );
 
-        l[3] = &pts[3];  l[2] = &pts[2]; l[1] = &pts[6];  l[0] = &pts[7];
-        g3_draw_poly( 4, l, 0 );
+   l[3] = &pts[3];  l[2] = &pts[2]; l[1] = &pts[6];  l[0] = &pts[7];
+   g3_draw_poly( 4, l, 0 );
 
-        l[3] = &pts[2];  l[2] = &pts[1]; l[1] = &pts[5];  l[0] = &pts[6];
-        g3_draw_poly( 4, l, 0 );
+   l[3] = &pts[2];  l[2] = &pts[1]; l[1] = &pts[5];  l[0] = &pts[6];
+   g3_draw_poly( 4, l, 0 );
 
-        l[3] = &pts[1];  l[2] = &pts[0]; l[1] = &pts[4];  l[0] = &pts[5];
-        g3_draw_poly( 4, l, 0 );
+   l[3] = &pts[1];  l[2] = &pts[0]; l[1] = &pts[4];  l[0] = &pts[5];
+   g3_draw_poly( 4, l, 0 );
 
-        l[3] = &pts[0];  l[2] = &pts[3]; l[1] = &pts[7];  l[0] = &pts[4];
-        g3_draw_poly( 4, l, 0 );
+   l[3] = &pts[0];  l[2] = &pts[3]; l[1] = &pts[7];  l[0] = &pts[4];
+   g3_draw_poly( 4, l, 0 );
 
-        l[3] = &pts[4];  l[2] = &pts[7]; l[1] = &pts[6];  l[0] = &pts[5];
-        g3_draw_poly( 4, l, 0 );
+   l[3] = &pts[4];  l[2] = &pts[7]; l[1] = &pts[6];  l[0] = &pts[5];
+   g3_draw_poly( 4, l, 0 );
 */
 }
 
@@ -779,7 +778,7 @@ model_interp_sortnorm(ubyte *p, polymodel *pm, bsp_info *sm, int do_box_check)
     modelstats_num_sortnorms++;
 #endif
 
-    //  Assert( w(p+4) == 56 );
+    //   Assert( w(p+4) == 56 );
 
     int frontlist = w(p + 36);
     int backlist = w(p + 40);
@@ -789,7 +788,7 @@ model_interp_sortnorm(ubyte *p, polymodel *pm, bsp_info *sm, int do_box_check)
 
     // min =
     // max =
-    //  light_filter_push_box( vp(p+56), vp(p+68) );
+    //   light_filter_push_box( vp(p+56), vp(p+68) );
 
 #if 1 //def BACK_TO_FRONT
 
@@ -859,7 +858,7 @@ model_interp_sortnorm(ubyte *p, polymodel *pm, bsp_info *sm, int do_box_check)
         model_interp_sub(p + prelist, pm, sm, do_box_check); // prelist
 #endif
 
-    //  light_filter_pop();
+    //   light_filter_pop();
 }
 
 void
@@ -870,10 +869,10 @@ model_draw_debug_points(polymodel *pm, bsp_info *submodel)
     }
 
     // Draw the brown "core" mass
-    //  if ( submodel && (submodel->parent==-1) )       {
-    //          gr_set_color(128,128,0);
-    //          g3_draw_sphere_ez( &vmd_zero_vector, pm->core_radius );
-    //  }
+    //   if ( submodel && (submodel->parent==-1) ) {
+    //      gr_set_color(128,128,0);
+    //      g3_draw_sphere_ez( &vmd_zero_vector, pm->core_radius );
+    //   }
 
     // Draw a red pivot point
     gr_set_color(128, 0, 0);
@@ -916,8 +915,8 @@ model_draw_debug_points(polymodel *pm, bsp_info *submodel)
         g3_draw_line(&pts[3], &pts[7]);
     }
     else {
-        //for (i=0; i<8; i++ )  {
-        //      g3_rotate_vertex( &pts[i], &pm->bounding_box[i] );
+        //for (i=0; i<8; i++ )   {
+        //  g3_rotate_vertex( &pts[i], &pm->bounding_box[i] );
         //}
         gr_set_color(0, 255, 0);
 
@@ -989,7 +988,7 @@ model_draw_paths(int model_num)
                     gr_set_color(255, 0, 0);
                 }
 
-                //                              g3_draw_sphere( &tmp, pm->paths[i].verts[j].radius );
+                //            g3_draw_sphere( &tmp, pm->paths[i].verts[j].radius );
                 g3_draw_sphere(&tmp, 0.5f);
 
                 gr_set_color(255, 0, 0);
@@ -1054,33 +1053,33 @@ model_draw_bay_paths(int model_num)
 /*
 // struct that holds the indicies into path information associated with a fighter bay on a capital ship
 // NOTE: Fighter bay paths are identified by the path_name $bayN (where N is numbered from 1).
-//                      Capital ships only have ONE fighter bay on the entire ship
-#define MAX_SHIP_BAY_PATHS              10
+//       Capital ships only have ONE fighter bay on the entire ship
+#define MAX_SHIP_BAY_PATHS    10
 typedef struct ship_bay {
-        int     num_paths;                                                      // how many paths are associated with the model's fighter bay
-        int     paths[MAX_SHIP_BAY_PATHS];              // index into polymodel->paths[] array
-        int     arrive_flags;   // bitfield, set to 1 when that path number is reserved for an arrival
-        int     depart_flags;   // bitfield, set to 1 when that path number is reserved for a departure
+   int   num_paths;                    // how many paths are associated with the model's fighter bay
+   int   paths[MAX_SHIP_BAY_PATHS];    // index into polymodel->paths[] array
+   int   arrive_flags;  // bitfield, set to 1 when that path number is reserved for an arrival
+   int   depart_flags;  // bitfield, set to 1 when that path number is reserved for a departure
 } ship_bay;
 
   typedef struct mp_vert {
-        vector          pos;                            // xyz coordinates of vertex in object's frame of reference
-        int                     nturrets;               // number of turrets guarding this vertex
-        int                     *turret_ids;    // array of indices into ship_subsys linked list (can't index using [] though)
-        float                   radius;                 // How far the closest obstruction is from this vertex
+   vector      pos;           // xyz coordinates of vertex in object's frame of reference
+   int         nturrets;      // number of turrets guarding this vertex
+   int         *turret_ids;   // array of indices into ship_subsys linked list (can't index using [] though)
+   float       radius;        // How far the closest obstruction is from this vertex
 } mp_vert;
 
 typedef struct model_path {
-        char                    name[MAX_NAME_LEN];                                     // name of the subsystem.  Probably displayed on HUD
-        char                    parent_name[MAX_NAME_LEN];                      // parent name of submodel that path is linked to in POF
-        int                     parent_submodel;
-        int                     nverts;
-        mp_vert         *verts;
-        int                     goal;                   // Which of the verts is the one closest to the goal of this path
-        int                     type;                   // What this path takes you to... See MP_TYPE_??? defines above for details
-        int                     value;          // This depends on the type.
-                                                                        // For MP_TYPE_UNUSED, this means nothing.
-                                                                        // For MP_TYPE_SUBSYS, this is the subsystem number this path takes you to.
+   char        name[MAX_NAME_LEN];              // name of the subsystem.  Probably displayed on HUD
+   char        parent_name[MAX_NAME_LEN];       // parent name of submodel that path is linked to in POF
+   int         parent_submodel;
+   int         nverts;
+   mp_vert     *verts;
+   int         goal;       // Which of the verts is the one closest to the goal of this path
+   int         type;       // What this path takes you to... See MP_TYPE_??? defines above for details
+   int         value;      // This depends on the type.
+                           // For MP_TYPE_UNUSED, this means nothing.
+                           // For MP_TYPE_SUBSYS, this is the subsystem number this path takes you to.
 } model_path;
 */
 
@@ -1135,8 +1134,8 @@ interp_render_lightning(polymodel *pm, bsp_info *sm)
     if (!Interp_lightning)
         return;
 
-    //  if ( keyd_pressed[KEY_LSHIFT] ) return;
-    //  if ( rad < 3.0f ) return;
+    //   if ( keyd_pressed[KEY_LSHIFT] ) return;
+    //   if ( rad < 3.0f ) return;
 
     for (i = 0; i < sm->num_arcs; i++) {
         // pick a color based upon arc type
@@ -1182,8 +1181,8 @@ model_interp_subcall(polymodel *pm, int mn, int detail_level)
     Assert(mn >= 0);
     Assert(mn < pm->n_models);
 
-    //  mprintf(( "Name = '%s'\n", pm->submodel[mn].name ));
-    //  char * p = pm->submodel[mn].name;
+    //   mprintf(( "Name = '%s'\n", pm->submodel[mn].name ));
+    //   char * p = pm->submodel[mn].name;
 
     if (pm->submodel[mn].blown_off) {
         return;
@@ -1281,10 +1280,10 @@ interp_box_offscreen(vector *min, vector *max)
         ubyte codes = g3_rotate_vertex(&tmp, &v[i]);
         // Early out which we cannot do because we want to differentiate btwn
         // IBOX_SOME_ON_SOME_OFF and IBOX_ALL_ON
-        //              if ( !codes )   {
-        //                      //mprintf(( "A point is inside, so render it.\n" ));
-        //                      return 0;               // this point is in, so return 0
-        //              }
+        //     if ( !codes )  {
+        //        //mprintf(( "A point is inside, so render it.\n" ));
+        //        return 0;      // this point is in, so return 0
+        //     }
         or_codes |= codes;
         and_codes &= codes;
     }
@@ -1319,7 +1318,7 @@ model_interp_sub(void *model_ptr, polymodel *pm, bsp_info *sm, int do_box_check)
     chunk_size = w(p + 4);
 
     while (chunk_type != OP_EOF) {
-        //              mprintf(( "Processing chunk type %d, len=%d\n", chunk_type, chunk_size ));
+        //     mprintf(( "Processing chunk type %d, len=%d\n", chunk_type, chunk_size ));
 
         switch (chunk_type) {
         case OP_EOF:
@@ -1411,14 +1410,14 @@ model_render_shields(polymodel *pm)
 
     gr_set_color(0, 0, 200);
 
-    //  Scan all the triangles in the mesh.
+    //   Scan all the triangles in the mesh.
     for (i = 0; i < pm->shield.ntris; i++) {
         tri = &pm->shield.tris[i];
 
         if (g3_check_normal_facing(&pm->shield.verts[tri->verts[0]].pos,
                                    &tri->norm)) {
-            //  Process the vertices.
-            //  Note this rotates each vertex each time it's needed, very dumb.
+            // Process the vertices.
+            // Note this rotates each vertex each time it's needed, very dumb.
             for (j = 0; j < 3; j++) {
                 g3_rotate_vertex(&tmp, &pm->shield.verts[tri->verts[j]].pos);
 
@@ -1506,7 +1505,7 @@ MONITOR(NumLowModelsRend);
 typedef struct model_cache
 {
     int model_num;
-    //matrix    orient;
+    //matrix   orient;
     vector pos;
     int num_lights;
 
@@ -1527,7 +1526,7 @@ typedef struct model_cache
     int thrust_glow_bitmap;
     float thrust_glow_noise;
 
-    int last_frame_rendered; // last frame in which this model was rendered not from the cache
+    int last_frame_rendered; //  last frame in which this model was rendered not from the cache
 } model_cache;
 
 #define MAX_MODEL_CACHE MAX_OBJECTS
@@ -1589,7 +1588,7 @@ model_get_rotated_bitmap_points(vertex *pnt, float angle, float rad, vertex *v)
 
     Assert(G3_count == 1);
 
-    //  angle = 0.0f;
+    //   angle = 0.0f;
 
     sa = (float)sin(angle);
     ca = (float)cos(angle);
@@ -1718,7 +1717,7 @@ void model_try_cache_render(int model_num, matrix *orient, vector *pos,
 // Compare it to 999.75f at R = 64.0f
 //               0.0000f at R = 4.0f
 
-//float cmp_val = 999.75f;              // old
+//float cmp_val = 999.75f;    // old
 
 // Return a number from 'min' to 'max' where it is
 // 'v' is between v1 and v2.
@@ -1879,399 +1878,399 @@ model_try_cache_render(int model_num, matrix *orient, vector *pos, uint flags,
 {
     model_really_render(model_num, orient, pos, flags, objnum);
     /*
-        int i;
+   int i;
 
-        model_cache *mc = NULL;
-        
-        if ( (objnum>-1) && (objnum<MAX_MODEL_CACHE) )  {
-                mc = &Model_cache[objnum];
-        }
-        
-        if ( (!mc) || (!Model_caching) || (!Model_cache_inited) || (flags & MR_ALWAYS_REDRAW) || (Detail.object_caching > 3) )  {
-                if ( mc )       {
-                        mc->cached_valid = 0;
-                }
-                model_really_render(model_num, orient, pos, flags, objnum );
-                return;
-        }
+   model_cache *mc = NULL;
+   
+   if ( (objnum>-1) && (objnum<MAX_MODEL_CACHE) )  {
+      mc = &Model_cache[objnum];
+   }
+   
+   if ( (!mc) || (!Model_caching) || (!Model_cache_inited) || (flags & MR_ALWAYS_REDRAW) || (Detail.object_caching > 3) )  {
+      if ( mc )   {
+         mc->cached_valid = 0;
+      }
+      model_really_render(model_num, orient, pos, flags, objnum );
+      return;
+   }
 
-        Assert( mc != NULL );
+   Assert( mc != NULL );
 
-        // Fake the detail level based on framerate.
-        if ( 1.0f / flFrametime < Mc_framerate_lo[Model_object_caching_tmp] )   {
-                Model_object_caching_tmp--;
-                //      mprintf(( "Model cache level bumped down to %d\n", Model_object_caching ));
-        } else if ( 1.0f / flFrametime > Mc_framerate_hi[Model_object_caching_tmp] )    {
-                Model_object_caching_tmp++;
-                //      mprintf(( "Model cache level bumped up to %d\n", Model_object_caching ));
-        }
+   // Fake the detail level based on framerate.
+   if ( 1.0f / flFrametime < Mc_framerate_lo[Model_object_caching_tmp] )   {
+      Model_object_caching_tmp--;
+      // mprintf(( "Model cache level bumped down to %d\n", Model_object_caching ));
+   } else if ( 1.0f / flFrametime > Mc_framerate_hi[Model_object_caching_tmp] )  {
+      Model_object_caching_tmp++;
+      // mprintf(( "Model cache level bumped up to %d\n", Model_object_caching ));
+   }
 
-        int tmp_detail_level = Model_object_caching_tmp + Mc_detail_add[Detail.object_caching];
+   int tmp_detail_level = Model_object_caching_tmp + Mc_detail_add[Detail.object_caching];
 
-        if ( tmp_detail_level < 0 )     {
-                tmp_detail_level = 0;
-        } else if (tmp_detail_level > MAX_DETAIL_LEVEL )  {
-                tmp_detail_level = MAX_DETAIL_LEVEL;
-        }
+   if ( tmp_detail_level < 0 )   {
+      tmp_detail_level = 0;
+   } else if (tmp_detail_level > MAX_DETAIL_LEVEL )  {
+      tmp_detail_level = MAX_DETAIL_LEVEL;
+   }
 
-        if ( tmp_detail_level > 3 )     {
-                if ( mc )       {
-                        mc->cached_valid = 0;
-                }
-                model_really_render(model_num, orient, pos, flags, objnum );
-                return;
-        }
+   if ( tmp_detail_level > 3 )   {
+      if ( mc )   {
+         mc->cached_valid = 0;
+      }
+      model_really_render(model_num, orient, pos, flags, objnum );
+      return;
+   }
 
-        
-//      static int last_one = -1;
-//      if ( last_one != tmp_detail_level )     {
-//              last_one = tmp_detail_level;
-//              mprintf(( "Detail level %d\n", tmp_detail_level ));
-//      }
+   
+// static int last_one = -1;
+// if ( last_one != tmp_detail_level ) {
+//    last_one = tmp_detail_level;
+//    mprintf(( "Detail level %d\n", tmp_detail_level ));
+// }
 
-//      if ( keyd_pressed[KEY_LSHIFT] ) {
-//              mc->cached_valid = 0;
-//              model_really_render(model_num, orient, pos, flags, objnum );
-//              return;
-//      }
-
-
-//      mprintf(( "Rendering cache model\n" ));
-
-        polymodel *pm = model_get(model_num);
-        vertex v[4];
-        vertex *vertlist[4] = { &v[0], &v[1], &v[2], &v[3] };
-        float cx, cy, cr;
-        vertex pt;
-        ubyte ccflags;
-
-        matrix tempm, tempm2;
-        angles new_angles;
-
-        vm_copy_transpose_matrix(&tempm2,orient);
-        vm_matrix_x_matrix(&tempm,&tempm2,&Eye_matrix);
-        vm_extract_angles_matrix(&new_angles, &tempm );
-        
-        if ( !model_cache_calc_coords(pos,pm->rad, &cx, &cy, &cr) )     {
-                // Not onscreen, do a real render and exit
-                mc->cached_valid = 0;
-                model_really_render(model_num, orient, pos, flags, objnum );
-                return;
-        }
-
-        // A bunch of checks to see if we need to redraw the model or not
-
-        
-        vector ship_to_eye;
-
-        vm_vec_sub( &ship_to_eye, &Eye_position, pos );
-        vm_vec_normalize_safe(&ship_to_eye);
-        float this_dot = vm_vec_dot( &ship_to_eye, &orient->fvec );
-        this_dot += vm_vec_dot( &ship_to_eye, &orient->rvec );
-
-        float diff = 0.0f;
-        
-        if ( !mc->cached_valid )        {
-                // Nothing cached
-                goto RedrawIt;
-        }
-
-        Assert( mc->data != NULL );
-
-        if (Framecount - mc->last_frame_rendered > 1 + 2*(MAX_DETAIL_LEVEL - Detail.object_caching - 1)) {
-                goto RedrawIt;
-        }
-
-        diff = fl_abs( this_dot - mc->last_dot );
-
-        if ( diff > Mc_viewer_pos_factor[tmp_detail_level] )    {
-//              mprintf(( "Redraw!!! %.4f\n", diff ));
-                goto RedrawIt;
-        }
-
-//      if ( keyd_pressed[KEY_LSHIFT] ) {
-//              goto RedrawIt;
-//      }
-
-        if (tmp_detail_level > 2)       {
-                if ( mc->thrust_glow_bitmap != Interp_thrust_glow_bitmap )      {
-                        // Engline glow bitmap changed
-                        //      mprintf(( "MC: Glow bitmap changed! %d -> %d\n", mc->thrust_glow_bitmap, Interp_thrust_glow_bitmap ));
-                        goto RedrawIt;
-                }
-        }
-
-        if (tmp_detail_level > 2)       {
-                if ( cr > 4.0f ) {
-                        float diff = fl_abs( mc->thrust_scale - Interp_thrust_scale );
-
-                        if ( diff > 0.1f )      {
-                                // Thruster size has changed
-                                //mprintf(( "MC: Thruster size changed! %.2f -> %.2f\n", mc->thrust_scale, Interp_thrust_scale ));
-                                goto RedrawIt;
-                        }
-                }
-        }
-
-//              if (0) {
-//                      float diff = fl_abs( mc->thrust_glow_noise - Interp_thrust_glow_noise );
-
-//                      if ( diff > 0.1f )      {
-                                // Glow noise has changed
-                                //mprintf(( "MC: Thruster glow changed! %.2f -> %.2f\n", mc->thrust_glow_noise, Interp_thrust_glow_noise ));
-//                              goto RedrawIt;
-//                      }
-//              }
+// if ( keyd_pressed[KEY_LSHIFT] )  {
+//    mc->cached_valid = 0;
+//    model_really_render(model_num, orient, pos, flags, objnum );
+//    return;
+// }
 
 
-        if ( mc->model_num != model_num )       {
-                // Model changed
-                goto RedrawIt;
-        }
+// mprintf(( "Rendering cache model\n" ));
 
-        if ( cr>mc->cr*Mc_size_factor[tmp_detail_level] )       {
-                // Scaling up too far
-                goto RedrawIt;
-        }
-                
-        if (tmp_detail_level > 2)       {
-                if ( cr > 4.0f )        {
-                        if ( !(Interp_flags & MR_NO_LIGHTING ) )        {
-                                if (mc->num_lights != num_lights)       {
-                                        // Lighting changed
-                                        goto RedrawIt;
-                                }
-                        }
-                }
-        }
+   polymodel *pm = model_get(model_num);
+   vertex v[4];
+   vertex *vertlist[4] = { &v[0], &v[1], &v[2], &v[3] };
+   float cx, cy, cr;
+   vertex pt;
+   ubyte ccflags;
 
-                // This method is correct, but rotating ship makes things redraw which is too slow.
-        #if 0
-                if ( cr > 4.0f )        {
-                        // Check orientation
-                        float angle_error = max( fl_abs( mc->angs.p-new_angles.p ),fl_abs( mc->angs.h-new_angles.h ));
+   matrix tempm, tempm2;
+   angles new_angles;
 
-                        // Exact
-                        //if ( angle_error > 0.075f  )  {       
+   vm_copy_transpose_matrix(&tempm2,orient);
+   vm_matrix_x_matrix(&tempm,&tempm2,&Eye_matrix);
+   vm_extract_angles_matrix(&new_angles, &tempm );
+   
+   if ( !model_cache_calc_coords(pos,pm->rad, &cx, &cy, &cr) ) {
+      // Not onscreen, do a real render and exit
+      mc->cached_valid = 0;
+      model_really_render(model_num, orient, pos, flags, objnum );
+      return;
+   }
 
-                        // Rough
-                        if ( angle_error > 0.40f  )     {       
-                                // Ship/view turned too much
-                                //mprintf(( "Ship/view turned too much %.4f\n", angle_error ));
+   // A bunch of checks to see if we need to redraw the model or not
 
-                                goto RedrawIt;
-                        }
-                }
-        #endif
+   
+   vector ship_to_eye;
+
+   vm_vec_sub( &ship_to_eye, &Eye_position, pos );
+   vm_vec_normalize_safe(&ship_to_eye);
+   float this_dot = vm_vec_dot( &ship_to_eye, &orient->fvec );
+   this_dot += vm_vec_dot( &ship_to_eye, &orient->rvec );
+
+   float diff = 0.0f;
+   
+   if ( !mc->cached_valid )   {
+      // Nothing cached
+      goto RedrawIt;
+   }
+
+   Assert( mc->data != NULL );
+
+   if (Framecount - mc->last_frame_rendered > 1 + 2*(MAX_DETAIL_LEVEL - Detail.object_caching - 1)) {
+      goto RedrawIt;
+   }
+
+   diff = fl_abs( this_dot - mc->last_dot );
+
+   if ( diff > Mc_viewer_pos_factor[tmp_detail_level] )  {
+//    mprintf(( "Redraw!!! %.4f\n", diff ));
+      goto RedrawIt;
+   }
+
+// if ( keyd_pressed[KEY_LSHIFT] )  {
+//    goto RedrawIt;
+// }
+
+   if (tmp_detail_level > 2)  {
+      if ( mc->thrust_glow_bitmap != Interp_thrust_glow_bitmap )  {
+         // Engline glow bitmap changed
+         // mprintf(( "MC: Glow bitmap changed! %d -> %d\n", mc->thrust_glow_bitmap, Interp_thrust_glow_bitmap ));
+         goto RedrawIt;
+      }
+   }
+
+   if (tmp_detail_level > 2)  {
+      if ( cr > 4.0f ) {
+         float diff = fl_abs( mc->thrust_scale - Interp_thrust_scale );
+
+         if ( diff > 0.1f )   {
+            // Thruster size has changed
+            //mprintf(( "MC: Thruster size changed! %.2f -> %.2f\n", mc->thrust_scale, Interp_thrust_scale ));
+            goto RedrawIt;
+         }
+      }
+   }
+
+//    if (0) {
+//       float diff = fl_abs( mc->thrust_glow_noise - Interp_thrust_glow_noise );
+
+//       if ( diff > 0.1f )   {
+            // Glow noise has changed
+            //mprintf(( "MC: Thruster glow changed! %.2f -> %.2f\n", mc->thrust_glow_noise, Interp_thrust_glow_noise ));
+//          goto RedrawIt;
+//       }
+//    }
 
 
-//              mprintf(( "Dot = %.5f\n", dot ));
+   if ( mc->model_num != model_num )   {
+      // Model changed
+      goto RedrawIt;
+   }
+
+   if ( cr>mc->cr*Mc_size_factor[tmp_detail_level] )  {
+      // Scaling up too far
+      goto RedrawIt;
+   }
+      
+   if (tmp_detail_level > 2)  {
+      if ( cr > 4.0f )  {
+         if ( !(Interp_flags & MR_NO_LIGHTING ) )  {
+            if (mc->num_lights != num_lights)   {
+               // Lighting changed
+               goto RedrawIt;
+            }
+         }
+      }
+   }
+
+      // This method is correct, but rotating ship makes things redraw which is too slow.
+   #if 0
+      if ( cr > 4.0f )  {
+         // Check orientation
+         float angle_error = max( fl_abs( mc->angs.p-new_angles.p ),fl_abs( mc->angs.h-new_angles.h ));
+
+         // Exact
+         //if ( angle_error > 0.075f  )   {  
+
+         // Rough
+         if ( angle_error > 0.40f  )   {  
+            // Ship/view turned too much
+            //mprintf(( "Ship/view turned too much %.4f\n", angle_error ));
+
+            goto RedrawIt;
+         }
+      }
+   #endif
+
+
+//    mprintf(( "Dot = %.5f\n", dot ));
 
 #if 0
-        if (0) {
-                float dx, dy, dz;
+   if (0) {
+      float dx, dy, dz;
 
-                dx = vm_vec_dot( &orient->rvec, &mc->orient.rvec )+1.0f;
-                dy = vm_vec_dot( &orient->uvec, &mc->orient.uvec )+1.0f;
-                dz = vm_vec_dot( &orient->fvec, &mc->orient.fvec )+1.0f;
-                        
-                float angle_error = (dx+dy+dz)*1000.0f/6.0f;            
+      dx = vm_vec_dot( &orient->rvec, &mc->orient.rvec )+1.0f;
+      dy = vm_vec_dot( &orient->uvec, &mc->orient.uvec )+1.0f;
+      dz = vm_vec_dot( &orient->fvec, &mc->orient.fvec )+1.0f;
+         
+      float angle_error = (dx+dy+dz)*1000.0f/6.0f;    
 
-                //mprintf(( "Angle_error = %.4f\n", angle_error ));
+      //mprintf(( "Angle_error = %.4f\n", angle_error ));
 
-                // Compare it to 999.75f at R = 64.0f
-                //               0.0000f at R = 0.0f
-                
-                float cmp_val = 999.75f;                // old
-//                      if ( is_asteroid )      {
-//                              cmp_val = scale_it( 0.0f, 999.75f, cr, 0.0f, 64.0f );
-//                      }
-                                                                                        
-                if ( angle_error < cmp_val ) {
-                        // Ship turned too much
-                        goto RedrawIt;
-                }
-        }       
+      // Compare it to 999.75f at R = 64.0f
+      //               0.0000f at R = 0.0f
+      
+      float cmp_val = 999.75f;      // old
+//       if ( is_asteroid )   {
+//          cmp_val = scale_it( 0.0f, 999.75f, cr, 0.0f, 64.0f );
+//       }
+                                 
+      if ( angle_error < cmp_val ) {
+         // Ship turned too much
+         goto RedrawIt;
+      }
+   }  
 #endif
 
 
-        // Have a valid cache entry, mc
-        ccflags = g3_rotate_vertex(&pt,pos);
+   // Have a valid cache entry, mc
+   ccflags = g3_rotate_vertex(&pt,pos);
 
-        if ( ccflags )  {
-                // offscreen            
-                goto RedrawIt;
-        }
+   if ( ccflags ) {
+      // offscreen      
+      goto RedrawIt;
+   }
 
-        if ( model_get_rotated_bitmap_points(&pt,mc->angs.b - new_angles.b, pm->rad, v ))       {
-                // offscreen            
-                goto RedrawIt;
-        }
-
-
-        gr_set_bitmap( mc->bitmap_id );
-
-        Tmap_scan_read = 2;
-        g3_draw_poly(4, vertlist, TMAP_FLAG_TEXTURED ); 
-        Tmap_scan_read = 0;
-
-        //      if ( keyd_pressed[KEY_LSHIFT] ) {
-        //      gr_set_color( 255, 0, 0 );
-        //      gr_pixel( fl2i(v[0].sx), fl2i(v[0].sy) );
-        //      }
-
-        //if ( keyd_pressed[KEY_RSHIFT] )       {
-        //      gr_line( fl2i(v[0].sx), fl2i(v[0].sy), fl2i(v[1].sx), fl2i(v[1].sy) );
-        //      gr_line( fl2i(v[1].sx), fl2i(v[1].sy), fl2i(v[2].sx), fl2i(v[2].sy) );
-        //      gr_line( fl2i(v[2].sx), fl2i(v[2].sy), fl2i(v[3].sx), fl2i(v[3].sy) );
-        //      gr_line( fl2i(v[3].sx), fl2i(v[3].sy), fl2i(v[0].sx), fl2i(v[0].sy) );
-        //}
+   if ( model_get_rotated_bitmap_points(&pt,mc->angs.b - new_angles.b, pm->rad, v ))   {
+      // offscreen      
+      goto RedrawIt;
+   }
 
 
-        return;
+   gr_set_bitmap( mc->bitmap_id );
+
+   Tmap_scan_read = 2;
+   g3_draw_poly(4, vertlist, TMAP_FLAG_TEXTURED ); 
+   Tmap_scan_read = 0;
+
+   // if ( keyd_pressed[KEY_LSHIFT] )  {
+   // gr_set_color( 255, 0, 0 );
+   // gr_pixel( fl2i(v[0].sx), fl2i(v[0].sy) );
+   // }
+
+   //if ( keyd_pressed[KEY_RSHIFT] )   {
+   // gr_line( fl2i(v[0].sx), fl2i(v[0].sy), fl2i(v[1].sx), fl2i(v[1].sy) );
+   // gr_line( fl2i(v[1].sx), fl2i(v[1].sy), fl2i(v[2].sx), fl2i(v[2].sy) );
+   // gr_line( fl2i(v[2].sx), fl2i(v[2].sy), fl2i(v[3].sx), fl2i(v[3].sy) );
+   // gr_line( fl2i(v[3].sx), fl2i(v[3].sy), fl2i(v[0].sx), fl2i(v[0].sy) );
+   //}
 
 
-        // Cache is bad for model, so draw it and save it
+   return;
+
+
+   // Cache is bad for model, so draw it and save it
 RedrawIt:
 
 
-//      if ( mc->data != NULL ) {
-//              free(mc->data);
-//              mc->data = NULL;
-//      }
+// if ( mc->data != NULL ) {
+//    free(mc->data);
+//    mc->data = NULL;
+// }
 
-        if ( mc->bitmap_id != -1 )      {
-                bm_release(mc->bitmap_id);
-                mc->bitmap_id = -1;
-        }
+   if ( mc->bitmap_id != -1 ) {
+      bm_release(mc->bitmap_id);
+      mc->bitmap_id = -1;
+   }
 
-        mc->cached_valid = 0;
-        mc->model_num = model_num;
-        mc->pos = *pos;
-        //mc->orient = *orient;
-        mc->cr = cr;
-        mc->angs = new_angles;  //-Physics_viewer_bank;
+   mc->cached_valid = 0;
+   mc->model_num = model_num;
+   mc->pos = *pos;
+   //mc->orient = *orient;
+   mc->cr = cr;
+   mc->angs = new_angles;  //-Physics_viewer_bank;
 
-        mc->thrust_scale = Interp_thrust_scale;
-        mc->thrust_bitmap = Interp_thrust_bitmap;
-        mc->thrust_glow_bitmap = Interp_thrust_glow_bitmap;
-        mc->thrust_glow_noise = Interp_thrust_glow_noise;
+   mc->thrust_scale = Interp_thrust_scale;
+   mc->thrust_bitmap = Interp_thrust_bitmap;
+   mc->thrust_glow_bitmap = Interp_thrust_glow_bitmap;
+   mc->thrust_glow_noise = Interp_thrust_glow_noise;
 
-        mc->last_dot = this_dot;
+   mc->last_dot = this_dot;
 
-        if ( cr > MODEL_MAX_BITMAP_SIZE/2-1 )   
-                goto JustDrawIt;
+   if ( cr > MODEL_MAX_BITMAP_SIZE/2-1 )  
+      goto JustDrawIt;
 
-        //Physics_viewer_bank
+   //Physics_viewer_bank
 
-        ccflags = g3_rotate_vertex(&pt,pos);
+   ccflags = g3_rotate_vertex(&pt,pos);
 
-        if ( ccflags ) {
-                goto JustDrawIt;
-        }
+   if ( ccflags ) {
+      goto JustDrawIt;
+   }
 
-        model_get_rotated_bitmap_points(&pt,0.0f, pm->rad, v );
-                                
-        int x1, y1, x2, y2, w, h;
+   model_get_rotated_bitmap_points(&pt,0.0f, pm->rad, v );
+            
+   int x1, y1, x2, y2, w, h;
 
-        x1 = fl_round_2048( v[0].sx );
-        y1 = fl_round_2048( v[0].sy );
+   x1 = fl_round_2048( v[0].sx );
+   y1 = fl_round_2048( v[0].sy );
 
-        x2 = fl_round_2048( v[2].sx );  //+0.5f );
-        y2 = fl_round_2048( v[2].sy );  //+0.5f );
+   x2 = fl_round_2048( v[2].sx );   //+0.5f );
+   y2 = fl_round_2048( v[2].sy );   //+0.5f );
 
-        if ( x1 < gr_screen.clip_left)  
-                goto JustDrawIt;
-        
-        if ( y1 < gr_screen.clip_top )
-                goto JustDrawIt;
-        
-        if ( x2 > gr_screen.clip_right)
-                goto JustDrawIt;
+   if ( x1 < gr_screen.clip_left)   
+      goto JustDrawIt;
+   
+   if ( y1 < gr_screen.clip_top )
+      goto JustDrawIt;
+   
+   if ( x2 > gr_screen.clip_right)
+      goto JustDrawIt;
 
-        if ( y2 > gr_screen.clip_bottom) 
-                goto JustDrawIt;
+   if ( y2 > gr_screen.clip_bottom) 
+      goto JustDrawIt;
 
-        w = x2 - x1 + 1;        
-        if ( w < 0 )
-                Int3();
+   w = x2 - x1 + 1;  
+   if ( w < 0 )
+      Int3();
 
-        if ( w < 2 ) 
-                w = 2;
+   if ( w < 2 ) 
+      w = 2;
 
-        h = y2 - y1 + 1;        
+   h = y2 - y1 + 1;  
 
-        if ( h < 0 )
-                Int3();
+   if ( h < 0 )
+      Int3();
 
-        if ( h < 2 ) 
-                h = 2;
+   if ( h < 2 ) 
+      h = 2;
 
-        if ( w > MODEL_MAX_BITMAP_SIZE )
-                goto JustDrawIt;
-                
-        if ( h > MODEL_MAX_BITMAP_SIZE )
-                goto JustDrawIt;
+   if ( w > MODEL_MAX_BITMAP_SIZE )
+      goto JustDrawIt;
+      
+   if ( h > MODEL_MAX_BITMAP_SIZE )
+      goto JustDrawIt;
 
-        mc->w = w;
-        mc->h = h;
+   mc->w = w;
+   mc->h = h;
 
-//      mprintf(( "Mallocing a %dx%d bitmap\n", w, h ));
+// mprintf(( "Mallocing a %dx%d bitmap\n", w, h ));
 
-        if ( mc->data == NULL ) {
-                mc->data = (ubyte *)malloc( MODEL_MAX_BITMAP_SIZE * MODEL_MAX_BITMAP_SIZE );
-        }
+   if ( mc->data == NULL ) {
+      mc->data = (ubyte *)malloc( MODEL_MAX_BITMAP_SIZE * MODEL_MAX_BITMAP_SIZE );
+   }
 
-//      mprintf(( "Done mallocing a %dx%d bitmap\n", w, h ));
+// mprintf(( "Done mallocing a %dx%d bitmap\n", w, h ));
 
-        if ( mc->data == NULL ) {
-                goto JustDrawIt;
-        }
-        for (i = 0; i < w*h; i++)       {
-                mc->data[i] = 255;
-        }
+   if ( mc->data == NULL ) {
+      goto JustDrawIt;
+   }
+   for (i = 0; i < w*h; i++)  {
+      mc->data[i] = 255;
+   }
 
 
-        mc->bitmap_id = bm_create( 8, mc->w, mc->h, mc->data, 0 );
+   mc->bitmap_id = bm_create( 8, mc->w, mc->h, mc->data, 0 );
 
-        if ( mc->bitmap_id < 0 )        {
-                goto JustDrawIt;
-        }
+   if ( mc->bitmap_id < 0 )   {
+      goto JustDrawIt;
+   }
 
-        // Save stars and stuff on screen
-        mc_get_bmp( tmp_bitmap, x1, y1, w, h );
+   // Save stars and stuff on screen
+   mc_get_bmp( tmp_bitmap, x1, y1, w, h );
 
-        mc->num_lights = num_lights;
+   mc->num_lights = num_lights;
 
-        // Didn't render a cached one... so render it and then save it in the cache
+   // Didn't render a cached one... so render it and then save it in the cache
 
-        // Turn on stippling
-        model_really_render(model_num, orient, pos, flags, objnum );
+   // Turn on stippling
+   model_really_render(model_num, orient, pos, flags, objnum );
 
-        // Save screen to bitmap 
-        gr_set_bitmap( mc->bitmap_id );
-        Tmap_scan_read = 1;
-        g3_draw_poly(4, vertlist, TMAP_FLAG_TEXTURED ); 
-        Tmap_scan_read = 0;
+   // Save screen to bitmap 
+   gr_set_bitmap( mc->bitmap_id );
+   Tmap_scan_read = 1;
+   g3_draw_poly(4, vertlist, TMAP_FLAG_TEXTURED ); 
+   Tmap_scan_read = 0;
 
-        // Restore stars and stuff to screen
-        mc_put_bmp( tmp_bitmap, x1, y1, w, h );
+   // Restore stars and stuff to screen
+   mc_put_bmp( tmp_bitmap, x1, y1, w, h );
 
-        // Draw the model
-        gr_set_bitmap( mc->bitmap_id );
-        Tmap_scan_read = 2;
-        g3_draw_poly(4, vertlist, TMAP_FLAG_TEXTURED ); 
-        Tmap_scan_read = 0;
+   // Draw the model
+   gr_set_bitmap( mc->bitmap_id );
+   Tmap_scan_read = 2;
+   g3_draw_poly(4, vertlist, TMAP_FLAG_TEXTURED ); 
+   Tmap_scan_read = 0;
 
-        mc->cached_valid = 1;
-        mc->last_frame_rendered = Framecount;
-        return;
-        
+   mc->cached_valid = 1;
+   mc->last_frame_rendered = Framecount;
+   return;
+   
 JustDrawIt:
 
-        // Too big to save
-        model_really_render(model_num, orient, pos, flags, objnum );
-        */
+   // Too big to save
+   model_really_render(model_num, orient, pos, flags, objnum );
+   */
 }
 
 // Find the distance from p0 to the closest point on a box.
@@ -2367,9 +2366,9 @@ model_really_render(int model_num, matrix *orient, vector *pos, uint flags,
 
     int tmp_detail_level = Game_detail_level;
 
-    //  Tmap_show_layers = 1;
-    //  model_set_detail_level(0);
-    //  flags |= MR_LOCK_DETAIL|MR_NO_TEXTURING|MR_NO_LIGHTING;         //MR_LOCK_DETAIL |      |MR_NO_LIGHTING|MR_NO_SMOOTHINGMR_NO_TEXTURING |
+    //   Tmap_show_layers = 1;
+    //   model_set_detail_level(0);
+    //   flags |= MR_LOCK_DETAIL|MR_NO_TEXTURING|MR_NO_LIGHTING;     //MR_LOCK_DETAIL |   |MR_NO_LIGHTING|MR_NO_SMOOTHINGMR_NO_TEXTURING |
 
     // Turn off engine effect
     Interp_thrust_scale_subobj = 0;
@@ -2537,7 +2536,7 @@ model_really_render(int model_num, matrix *orient, vector *pos, uint flags,
     }
 
     if (pm->submodel[pm->detail[detail_level]].num_children > 0) {
-        // zbuf_mode |= GR_ZBUFF_WRITE;         // write only
+        // zbuf_mode |= GR_ZBUFF_WRITE;      // write only
         zbuf_mode = GR_ZBUFF_FULL;
     }
 

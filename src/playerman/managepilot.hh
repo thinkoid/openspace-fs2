@@ -27,15 +27,7 @@ extern char *Pilot_squad_image_names[MAX_PILOT_IMAGES];
 extern int Num_pilot_squad_images;
 
 // low-level read/writes to files
-int read_int(CFILE *file);
 short read_short(CFILE *file);
-ubyte read_byte(CFILE *file);
-void write_int(int i, CFILE *file);
-void write_short(short s, CFILE *file);
-void write_byte(ubyte i, CFILE *file);
-
-void read_string(char *s, CFILE *f);
-void write_string(char *s, CFILE *f);
 
 // two ways of determining if a given pilot is multiplayer
 // note, that the first version of this function can possibly return -1 if the file is invalid, etc.

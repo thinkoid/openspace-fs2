@@ -198,11 +198,6 @@ stars_init()
                 bm->bitmap = bm_load(bm->filename);
                 Assert(bm->bitmap != -1);
 
-                // if fred is running we should lock the bitmap now
-                if (Fred_running && (bm->bitmap >= 0)) {
-                    bm_lock(bm->bitmap, 8, BMP_TEX_OTHER);
-                    bm_unlock(bm->bitmap);
-                }
             }
         }
         // green xparency bitmap
@@ -215,11 +210,6 @@ stars_init()
                 bm->bitmap = bm_load(bm->filename);
                 Assert(bm->bitmap != -1);
 
-                // if fred is running we should lock as a 0, 255, 0 bitmap now
-                if (Fred_running && (bm->bitmap >= 0)) {
-                    bm_lock(bm->bitmap, 8, BMP_TEX_XPARENT);
-                    bm_unlock(bm->bitmap);
-                }
             }
         }
     }
@@ -256,16 +246,6 @@ stars_init()
                 bm->i = i;
 
                 // if fred is running we should lock the bitmap now
-                if (Fred_running) {
-                    if (bm->bitmap >= 0) {
-                        bm_lock(bm->bitmap, 8, BMP_TEX_OTHER);
-                        bm_unlock(bm->bitmap);
-                    }
-                    if (bm->glow_bitmap >= 0) {
-                        bm_lock(bm->glow_bitmap, 8, BMP_TEX_OTHER);
-                        bm_unlock(bm->glow_bitmap);
-                    }
-                }
             }
         }
     }
@@ -531,7 +511,7 @@ stars_camera_cut()
     reload_old_debris = 1;
 }
 
-//#define TIME_STAR_CODE                // enable to time star code
+//#define TIME_STAR_CODE      // enable to time star code
 
 extern int Sun_drew;
 extern float Viewer_zoom;
@@ -677,39 +657,27 @@ stars_draw_bitmaps(int show_bitmaps)
         }
 
         // set the bitmap
-        if (Fred_running) {
+        if (Starfield_bitmaps[star_index].xparent) {
+            gr_set_bitmap(Starfield_bitmaps[star_index].bitmap);
+            g3_draw_perspective_bitmap(
+                &Starfield_bitmap_instance[idx].ang,
+                Starfield_bitmap_instance[idx].scale_x,
+                Starfield_bitmap_instance[idx].scale_y,
+                Starfield_bitmap_instance[idx].div_x,
+                Starfield_bitmap_instance[idx].div_y,
+                TMAP_FLAG_TEXTURED | TMAP_FLAG_CORRECT | TMAP_FLAG_XPARENT);
+        }
+        else {
             gr_set_bitmap(Starfield_bitmaps[star_index].bitmap,
-                          GR_ALPHABLEND_FILTER, GR_BITBLT_MODE_NORMAL, 0.9999f);
+                          GR_ALPHABLEND_FILTER, GR_BITBLT_MODE_NORMAL,
+                          0.9999f);
             g3_draw_perspective_bitmap(&Starfield_bitmap_instance[idx].ang,
                                        Starfield_bitmap_instance[idx].scale_x,
                                        Starfield_bitmap_instance[idx].scale_y,
                                        Starfield_bitmap_instance[idx].div_x,
                                        Starfield_bitmap_instance[idx].div_y,
-                                       TMAP_FLAG_TEXTURED | TMAP_FLAG_CORRECT);
-        }
-        else {
-            if (Starfield_bitmaps[star_index].xparent) {
-                gr_set_bitmap(Starfield_bitmaps[star_index].bitmap);
-                g3_draw_perspective_bitmap(
-                    &Starfield_bitmap_instance[idx].ang,
-                    Starfield_bitmap_instance[idx].scale_x,
-                    Starfield_bitmap_instance[idx].scale_y,
-                    Starfield_bitmap_instance[idx].div_x,
-                    Starfield_bitmap_instance[idx].div_y,
-                    TMAP_FLAG_TEXTURED | TMAP_FLAG_CORRECT | TMAP_FLAG_XPARENT);
-            }
-            else {
-                gr_set_bitmap(Starfield_bitmaps[star_index].bitmap,
-                              GR_ALPHABLEND_FILTER, GR_BITBLT_MODE_NORMAL,
-                              0.9999f);
-                g3_draw_perspective_bitmap(&Starfield_bitmap_instance[idx].ang,
-                                           Starfield_bitmap_instance[idx].scale_x,
-                                           Starfield_bitmap_instance[idx].scale_y,
-                                           Starfield_bitmap_instance[idx].div_x,
-                                           Starfield_bitmap_instance[idx].div_y,
-                                           TMAP_FLAG_TEXTURED |
-                                               TMAP_FLAG_CORRECT);
-            }
+                                       TMAP_FLAG_TEXTURED |
+                                           TMAP_FLAG_CORRECT);
         }
     }
 }
@@ -717,43 +685,43 @@ stars_draw_bitmaps(int show_bitmaps)
 /*
 void calculate_bitmap_matrix(starfield_bitmaps *bm, vector *v)
 {
-        vm_vector_2_matrix(&bm->m, v, NULL, NULL);
-        vm_orthogonalize_matrix(&bm->m);
+   vm_vector_2_matrix(&bm->m, v, NULL, NULL);
+   vm_orthogonalize_matrix(&bm->m);
 }
 
 void calculate_bitmap_points(starfield_bitmaps *bm, float bank)
 {
-        int i;
-        vector fvec, uvec, rvec, tmp;
-        angles tangles;
+   int i;
+   vector fvec, uvec, rvec, tmp;
+   angles tangles;
 
-        vm_orthogonalize_matrix(&bm->m);
-        if (bank) {
-                tangles.p = tangles.h = 0.0f;
-                tangles.b = bank;
-                vm_rotate_matrix_by_angles(&bm->m, &tangles);
-        }
+   vm_orthogonalize_matrix(&bm->m);
+   if (bank) {
+      tangles.p = tangles.h = 0.0f;
+      tangles.b = bank;
+      vm_rotate_matrix_by_angles(&bm->m, &tangles);
+   }
 
-        fvec = bm->m.fvec;
-        vm_vec_scale(&fvec, bm->dist );
-        uvec = bm->m.uvec;
-        rvec = bm->m.rvec;
+   fvec = bm->m.fvec;
+   vm_vec_scale(&fvec, bm->dist );
+   uvec = bm->m.uvec;
+   rvec = bm->m.rvec;
 
-        vm_vec_sub(&tmp, &fvec, &uvec);
-        vm_vec_sub(&bm->points[3], &tmp, &rvec);
+   vm_vec_sub(&tmp, &fvec, &uvec);
+   vm_vec_sub(&bm->points[3], &tmp, &rvec);
 
-        vm_vec_sub(&tmp, &fvec, &uvec);
-        vm_vec_add(&bm->points[2], &tmp, &rvec);
+   vm_vec_sub(&tmp, &fvec, &uvec);
+   vm_vec_add(&bm->points[2], &tmp, &rvec);
 
-        vm_vec_add(&tmp, &fvec, &uvec);
-        vm_vec_add(&bm->points[1], &tmp, &rvec);
+   vm_vec_add(&tmp, &fvec, &uvec);
+   vm_vec_add(&bm->points[1], &tmp, &rvec);
 
-        vm_vec_add(&tmp, &fvec, &uvec);
-        vm_vec_sub(&bm->points[0], &tmp, &rvec);
+   vm_vec_add(&tmp, &fvec, &uvec);
+   vm_vec_sub(&bm->points[0], &tmp, &rvec);
 
-        for (i=0; i<4; i++){
-                vm_vec_normalize(&bm->points[i]);
-        }
+   for (i=0; i<4; i++){
+      vm_vec_normalize(&bm->points[i]);
+   }
 }
 */
 
@@ -823,12 +791,12 @@ void
 subspace_render()
 {
     if (Subspace_model_inner == -1) {
-        Subspace_model_inner = model_load("subspace_small.pof", NULL, NULL);
+        Subspace_model_inner = model_load("subspace_small.pof", 0, NULL);
         Assert(Subspace_model_inner > -1);
     }
 
     if (Subspace_model_outer == -1) {
-        Subspace_model_outer = model_load("subspace_big.pof", NULL, NULL);
+        Subspace_model_outer = model_load("subspace_big.pof", 0, NULL);
         Assert(Subspace_model_outer > -1);
     }
 
@@ -1067,7 +1035,7 @@ stars_draw(int show_stars, int show_suns, int show_nebulas, int show_subspace)
     mprintf(("Stars: %d\n", xt2 - xt1));
 #endif
 
-    if ((Game_detail_flags & DETAIL_FLAG_MOTION) && (!Fred_running) &&
+    if ((Game_detail_flags & DETAIL_FLAG_MOTION) &&
         (supernova_active() < 3)) {
         gr_set_color(0, 0, 0);
 
@@ -1089,7 +1057,7 @@ stars_draw(int show_stars, int show_suns, int show_nebulas, int show_subspace)
 
                 vm_vec_scale(&d->pos, MAX_DIST);
                 vm_vec_add2(&d->pos, &Eye_position);
-                //                              vm_vec_add2(&d->pos, &Player_obj->pos );
+                //            vm_vec_add2(&d->pos, &Player_obj->pos );
                 d->active = 1;
                 d->vclip = i % MAX_DEBRIS_VCLIPS; //rand()
 
@@ -1142,11 +1110,11 @@ stars_draw(int show_stars, int show_suns, int show_nebulas, int show_subspace)
             else if (vdist < MIN_DIST_RANGE)
                 d->active = 0;
 
-            //          vector tmp;
-            //          vm_vec_sub( &tmp, &d->pos, &Player_obj->pos );
-            //          vdist = vm_vec_dot( &tmp, &Player_obj->orient.fvec );
-            //          if ( vdist < 0.0f )
-            //                  d->active = 0;
+            //    vector tmp;
+            //    vm_vec_sub( &tmp, &d->pos, &Player_obj->pos );
+            //    vdist = vm_vec_dot( &tmp, &Player_obj->orient.fvec );
+            //    if ( vdist < 0.0f )
+            //       d->active = 0;
         }
 
         reload_old_debris = 0;
@@ -1166,9 +1134,9 @@ stars_page_in()
     // Initialize the subspace stuff
 
     if (Game_subspace_effect) {
-        Subspace_model_inner = model_load("subspace_small.pof", NULL, NULL);
+        Subspace_model_inner = model_load("subspace_small.pof", 0, NULL);
         Assert(Subspace_model_inner > -1);
-        Subspace_model_outer = model_load("subspace_big.pof", NULL, NULL);
+        Subspace_model_outer = model_load("subspace_big.pof", 0, NULL);
         Assert(Subspace_model_outer > -1);
 
         polymodel *pm;
@@ -1258,7 +1226,7 @@ stars_draw_background()
 
 // call this to set a specific model as the background model
 void
-stars_set_background_model(char *model_name, char *texture_name)
+stars_set_background_model(const char *model_name, const char *texture_name)
 {
     Nmodel_num = model_load(model_name, 0, NULL);
     Nmodel_bitmap = bm_load(texture_name);

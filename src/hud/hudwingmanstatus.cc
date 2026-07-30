@@ -25,7 +25,7 @@
 #define WINGMAN_STATUS_DOTS 3
 #define WINGMAN_STATUS_NAMES 4
 
-static char *Wingman_status_filenames[GR_NUM_RESOLUTIONS]
+static const char *Wingman_status_filenames[GR_NUM_RESOLUTIONS]
                                      [HUD_WINGMAN_STATUS_NUM_FRAMES] = {
                                          //XSTR:OFF
                                          {
@@ -360,18 +360,18 @@ void
 hud_wingman_status_init_late_wings()
 {
     /*
-        int i, j, wing_index;
+   int i, j, wing_index;
 
-        for ( i = 0; i < num_wings; i++ ) {
-                wing_index = hud_wingman_status_wing_index(Wings[i].name);
+   for ( i = 0; i < num_wings; i++ ) {
+      wing_index = hud_wingman_status_wing_index(Wings[i].name);
 
-                if ( (wing_index >= 0) && (Wings[i].total_arrived_count == 0) ) {
-                        HUD_wingman_status[wing_index].used = 1;
-                        for (j = 0; j < Wings[i].wave_count; j++) {
-                                HUD_wingman_status[wing_index].status[j] = HUD_WINGMAN_STATUS_NOT_HERE;
-                        }
-                }
-        }
+      if ( (wing_index >= 0) && (Wings[i].total_arrived_count == 0) ) {
+         HUD_wingman_status[wing_index].used = 1;
+         for (j = 0; j < Wings[i].wave_count; j++) {
+            HUD_wingman_status[wing_index].status[j] = HUD_WINGMAN_STATUS_NOT_HERE;
+         }
+      }
+   }
 */
 }
 
@@ -528,8 +528,6 @@ hud_wingman_status_blit_dots(int wing_index, int screen_index,
                              int num_wings_to_draw)
 {
     int i, sx, sy, is_bright, bitmap = -1, screen_pos;
-
-    Wingman_status_frames[WINGMAN_STATUS_DOTS].first_frame;
 
     if (Wingman_status_frames[WINGMAN_STATUS_DOTS].first_frame < 0) {
         return;
@@ -712,8 +710,8 @@ hud_wingman_status_start_flash(int wing_index, int wing_pos)
 }
 
 // set the color for flashing dot
-// exit:        1 =>    set bright color
-//                      0 =>    set default color
+// exit: 1 =>  set bright color
+//       0 =>  set default color
 int
 hud_wingman_status_maybe_flash(int wing_index, int wing_pos)
 {

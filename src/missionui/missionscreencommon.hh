@@ -32,7 +32,7 @@
 
 struct brief_common_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y;
     int xt, yt;
     int hotspot;
@@ -40,7 +40,7 @@ struct brief_common_buttons
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    brief_common_buttons(char *name, int x1, int y1, int xt1, int yt1, int h,
+    brief_common_buttons(const char *name, int x1, int y1, int xt1, int yt1, int h,
                          int r = 0)
         : filename(name)
         , x(x1)
@@ -70,7 +70,7 @@ extern int Mouse_down_last_frame;
 extern int Wing_slot_empty_bitmap;
 extern int Wing_slot_disabled_bitmap;
 
-extern int Flash_timer; //      timestamp used to start flashing
+extern int Flash_timer; // timestamp used to start flashing
 extern int Flash_toggle; // timestamp used to toggle flashing
 extern int Flash_bright; // state of button to flash
 
@@ -96,10 +96,10 @@ void common_maybe_clear_focus();
 void ship_select_common_init();
 
 void
-common_set_interface_palette(char *filename = NULL); // set the interface palette
+common_set_interface_palette(const char *filename = NULL); // set the interface palette
 void common_free_interface_palette(); // restore game palette
 
-void load_wing_icons(char *filename);
+void load_wing_icons(const char *filename);
 void unload_wing_icons();
 
 void common_flash_button_init();

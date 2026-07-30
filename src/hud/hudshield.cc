@@ -394,16 +394,16 @@ hud_shield_equalize(object *objp, player *pl)
 // hud_augment_shield_quadrant()
 //
 // Transfer shield energy to a shield quadrant from the three other
-//      quadrants.  Works by trying to transfer a fixed amount of shield
-//      energy from the other three quadrants, taking the same percentage
+// quadrants.  Works by trying to transfer a fixed amount of shield
+// energy from the other three quadrants, taking the same percentage
 // from each quadrant.
 //
-//      input:  objp                    =>              object to perform shield transfer on
-//                              direction       =>              which quadrant to augment:
-//                                                                              0 - right
-//                                                                              1 - top
-//                                                                              2 - bottom
-//                                                                              3 - left
+// input:   objp        =>    object to perform shield transfer on
+//          direction   =>    which quadrant to augment:
+//                            0 - right
+//                            1 - top
+//                            2 - bottom
+//                            3 - left
 //
 void
 hud_augment_shield_quadrant(object *objp, int direction)
@@ -540,9 +540,6 @@ hud_shield_show_mini(object *objp, int x_force, int y_force, int x_hull_offset,
     int sx, sy, i;
     ship *sp;
     ship_info *sip;
-    shield_hit_info *shi;
-
-    shi = &Shield_hit_data[SHIELD_HIT_TARGET];
 
     if (objp->type != OBJ_SHIP) {
         return;
@@ -634,9 +631,9 @@ shield_info_reset(shield_hit_info *shi)
 //
 // This needs to be called whenever the player selects a new target
 //
-// input:       player  =>      optional parameter (default value 0).  This is to indicate that player shield hit
-//                                                              info should be reset.  This is normally not the case.
-//                                                              is for the player's current target
+// input:   player   => optional parameter (default value 0).  This is to indicate that player shield hit
+//                      info should be reset.  This is normally not the case.
+//                      is for the player's current target
 void
 hud_shield_hit_reset(int player)
 {
@@ -677,8 +674,8 @@ hud_shield_hit_update()
 // as flashing
 //
 // input:
-//                              objp            =>      object pointer for ship that has been hit
-//                              quadrant        => quadrant of shield getting hit (-1 if no shield is present)
+//          objp     => object pointer for ship that has been hit
+//          quadrant => quadrant of shield getting hit (-1 if no shield is present)
 void
 hud_shield_quadrant_hit(object *objp, int quadrant)
 {

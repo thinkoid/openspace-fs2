@@ -10,24 +10,15 @@
 #ifndef _PSTYPES_H
 #define _PSTYPES_H
 
-// Build defines.  Comment in/out for whatever build is necessary:
-// #define OEM_BUILD                                            // enable for OEM builds
-// #define MULTIPLAYER_BETA_BUILD                               // enable for multiplayer beta build
-// #define E3_BUILD                                                     // enable for 3dfx E3 build
-// #define PRESS_TOUR_BUILD                     // enable for press tour build
-// #define FS2_DEMO                                     // enable demo build for FS2
-// #define PD_BUILD                                             // fred documentation/evaluation build
-//      #define FRENCH_BUILD                            // build for French (obsolete)
-// #define GERMAN_BUILD                         // build for German (this is now used)
-// this means that it is an actual release candidate, not just an optimized/release build
-#define RELEASE_REAL
+// Build defines.  The retail demo/OEM/E3/press-tour/PD/beta configurations
+// and the RELEASE_REAL knob were collapsed out 2026-07-29 -- the shipping
+// retail configuration is the only build.  Localization remains a knob:
+// #define GERMAN_BUILD          // build for German (this is now used)
 
 // uncomment this #define for DVD version (makes popups say DVD instead of CD 2 or whatever): JCF 5/10/2000
 // #define DVD_MESSAGE_HACK
 
-#if defined(MULTIPLAYER_BETA_BUILD) || defined(E3_BUILD) || defined(RELEASE_REAL)
 #define GAME_CD_CHECK
-#endif
 
 #include <ctype.h>
 #include <math.h>
@@ -88,11 +79,7 @@ long filelength(int fd);
 // value to represent an uninitialized state in any int or uint
 #define UNINITIALIZED 0x7f8e6d9c
 
-#if defined(DEMO) || defined(OEM_BUILD) // no change for FS2_DEMO
-#define MAX_PLAYERS 1
-#else
 #define MAX_PLAYERS 12
-#endif
 
 #define MAX_TEAMS 3
 
@@ -106,6 +93,16 @@ typedef long fix;
 typedef unsigned char ubyte;
 typedef unsigned short ushort;
 typedef unsigned int uint;
+
+// 4-byte file/chunk magics are read from disk as a little-endian int and
+// compared against these constants; spell the id as the byte sequence that
+// appears in the file (retail spelled them as reversed multichar literals,
+// whose type is int -- returning int keeps the comparisons' signedness)
+constexpr int fourcc(const char (&s)[5])
+{
+    return int(uint(ubyte(s[0])) | uint(ubyte(s[1])) << 8 |
+               uint(ubyte(s[2])) << 16 | uint(ubyte(s[3])) << 24);
+}
 
 // HARDWARE_ONLY undefined: this build IS the software renderer
 
@@ -305,9 +302,13 @@ max(A a, B b)
 #define PI2 (3.141592654f * 2.0f)
 #define ANG_TO_RAD(x) ((x) * PI / 180)
 
-extern int Fred_running; // Is Fred running, or FreeSpace?
-extern int Pofview_running;
-extern int Nebedit_running;
+// The editor's parse mode, resurrected for the offline extraction tools
+// (mission2tres, shiptbl2tres): every mission object created at parse time,
+// authored delay values kept, no bitmap loads. The game never sets it; only
+// the parse/creation/table chain still tests it (the editor-UI sites stayed
+// folded when survey D removed FRED).
+extern int Fred_running;
+
 
 // Debug console stuff
 
@@ -317,17 +318,17 @@ extern int Nebedit_running;
 /*
 DCF(toggle_it,"description")
 {
-        if (Dc_command) {
-                This_var = !This_var;
-        }
+   if (Dc_command)   {
+      This_var = !This_var;
+   }
 
-        if (Dc_help)    {
-                dc_printf( "Usage: sample\nToggles This_var on/off.\n" );
-        }
+   if (Dc_help)   {
+      dc_printf( "Usage: sample\nToggles This_var on/off.\n" );
+   }
 
-        if (Dc_status)  {
-                dc_printf( "The status is %d.\n", This_var );
-        }
+   if (Dc_status) {
+      dc_printf( "The status is %d.\n", This_var );
+   }
 */
 
 class debug_command
@@ -591,17 +592,7 @@ int vm_init(int min_heap_size);
 // Allocates some RAM.
 void *vm_malloc(int size);
 
-//
-char *vm_strdup(const char *ptr);
-
 // Frees some RAM.
 void vm_free(void *ptr);
-
-// Frees all RAM.
-void vm_free_all();
-
-// Easy to use macros
-#define VM_MALLOC(size) vm_malloc(size)
-#define VM_FREE(ptr) vm_free(ptr)
 
 #endif // PS_TYPES_H

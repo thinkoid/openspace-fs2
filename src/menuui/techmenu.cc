@@ -63,8 +63,8 @@
 #define OPTIONS_BUTTON 14
 #define EXIT_BUTTON 15
 
-//#define PREV_ENTRY_BUTTON2                            16
-//#define NEXT_ENTRY_BUTTON2                            17
+//#define PREV_ENTRY_BUTTON2           16
+//#define NEXT_ENTRY_BUTTON2           17
 
 #define REPEAT (1 << 0)
 #define NO_MOUSE_OVER_SOUND (1 << 1)
@@ -77,11 +77,11 @@
 
 // background filename for species
 // note weapon filename is now same as ship filename
-char *Tech_background_filename[GR_NUM_RESOLUTIONS] = { "TechShipData",
+const char *Tech_background_filename[GR_NUM_RESOLUTIONS] = { "TechShipData",
                                                        "2_TechShipData" };
-char *Tech_mask_filename[GR_NUM_RESOLUTIONS] = { "TechShipData-M",
+const char *Tech_mask_filename[GR_NUM_RESOLUTIONS] = { "TechShipData-M",
                                                  "2_TechShipData-M" };
-char *Tech_slider_filename[GR_NUM_RESOLUTIONS] = { "slider", "2_slider" };
+const char *Tech_slider_filename[GR_NUM_RESOLUTIONS] = { "slider", "2_slider" };
 
 int Tech_list_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
                                                   27, 98, 161, 234 },
@@ -104,12 +104,12 @@ int Tech_ani_coords[GR_NUM_RESOLUTIONS][2] = { { // GR_640
                                                  449, 245 } };
 
 /*int Tech_desc_coords[GR_NUM_RESOLUTIONS][4] = {
-        { // GR_640
-                24, 139, 376, 281
-        },
-        { // GR_1024
-                24, 182, 638, 528
-        }
+   { // GR_640
+      24, 139, 376, 281
+   },
+   { // GR_1024
+      24, 182, 638, 528
+   }
 };*/
 
 int Tech_slider_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
@@ -126,7 +126,7 @@ int Tech_texture_backup;
 
 struct techroom_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y, xt, yt;
     int hotspot;
     int tab;
@@ -134,7 +134,7 @@ struct techroom_buttons
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    techroom_buttons(char *name, int x1, int y1, int xt1, int yt1, int h, int t,
+    techroom_buttons(const char *name, int x1, int y1, int xt1, int yt1, int h, int t,
                      int f = 0)
         : filename(name)
         , x(x1)
@@ -165,8 +165,8 @@ static techroom_buttons Buttons[GR_NUM_RESOLUTIONS][NUM_BUTTONS] = {
                          REPEAT), // prev data entry
         techroom_buttons("TDB_10", 1, 447, -1, -1, 10, SHIPS_DATA_MODE,
                          REPEAT), // next data entry
-        //techroom_buttons("TDB_11",    558,    272,    -1,     -1,     11,     WEAPONS_SPECIES_DATA_MODE),             // prev data entry
-        //techroom_buttons("TDB_12",    606,    272,    -1,     -1,     12,     WEAPONS_SPECIES_DATA_MODE),             // next data entry
+        //techroom_buttons("TDB_11",   558,  272,  -1,   -1,   11,   WEAPONS_SPECIES_DATA_MODE),      // prev data entry
+        //techroom_buttons("TDB_12",   606,  272,  -1,   -1,   12,   WEAPONS_SPECIES_DATA_MODE),      // next data entry
         techroom_buttons("TDB_11a", 559, 323, -1, -1, 11, SHIPS_DATA_MODE,
                          REPEAT), // prev data entry
         techroom_buttons("TDB_12a", 609, 323, -1, -1, 12, SHIPS_DATA_MODE,
@@ -196,8 +196,8 @@ static techroom_buttons Buttons[GR_NUM_RESOLUTIONS][NUM_BUTTONS] = {
                          REPEAT), // prev data entry
         techroom_buttons("2_TDB_10", 1, 716, -1, -1, 10, SHIPS_DATA_MODE,
                          REPEAT), // next data entry
-        //techroom_buttons("2_TDB_11",  893,    436,    -1,     -1,     11,     WEAPONS_SPECIES_DATA_MODE),     // prev data entry
-        //techroom_buttons("2_TDB_12",  970,    436,    -1,     -1,     12,     WEAPONS_SPECIES_DATA_MODE),     // next data entry
+        //techroom_buttons("2_TDB_11", 893,  436,  -1,   -1,   11,   WEAPONS_SPECIES_DATA_MODE),   // prev data entry
+        //techroom_buttons("2_TDB_12", 970,  436,  -1,   -1,   12,   WEAPONS_SPECIES_DATA_MODE),   // next data entry
         techroom_buttons("2_TDB_11a", 895, 518, -1, -1, 11, SHIPS_DATA_MODE,
                          REPEAT), // prev data entry
         techroom_buttons("2_TDB_12a", 974, 518, -1, -1, 12, SHIPS_DATA_MODE,
@@ -212,12 +212,10 @@ static UI_WINDOW Ui_window;
 static UI_BUTTON View_window;
 //static int Background_bitmap;
 static int Tech_background_bitmap;
-static int Intel_bg_bitmap;
 static int Tab = 0;
 // static int List_size;
 static int List_offset;
 static int Select_tease_line;
-static int Limit;
 static int Trackball_mode = 1;
 static int Trackball_active = 0;
 static matrix Techroom_ship_orient = IDENTITY_MATRIX;
@@ -243,7 +241,6 @@ static int Palette_bmp;
 //static int ShipWin03;
 //static int ShipWin04;
 static ubyte Palette[768];
-static char Palette_name[128];
 
 static int Ships_loaded = 0;
 static int Weapons_loaded = 0;
@@ -274,10 +271,10 @@ static UI_SLIDER2 Tech_slider;
 
 //XSTR:OFF
 /*
-static char *Intel_anim_filenames[MAX_INTEL_ENTRIES] = {
-        "tech_tpilot.ani",
-        "tech_vasudan.ani",
-        "tech_shivan.ani",
+static const char *Intel_anim_filenames[MAX_INTEL_ENTRIES] = {
+   "tech_tpilot.ani",
+   "tech_vasudan.ani",
+   "tech_shivan.ani",
 };
 */
 //XSTR:ON
@@ -321,32 +318,18 @@ techroom_select_new_entry()
     if (Tab == SHIPS_DATA_TAB) {
         ship_info *sip = &Ship_info[Cur_entry_index];
 
-#ifdef MULTIPLAYER_BETA_BUILD
-        // don't load supercaps in the beta
-        if ((sip->flags & SIF_SUPERCAP) || (sip->flags & SIF_DRYDOCK)) {
-            Techroom_ship_modelnum = -1;
-        }
-        else {
-            Techroom_ship_modelnum = model_load(sip->pof_file, sip->n_subsystems,
-                                                &sip->subsystems[0]);
-        }
-
-        // page in ship textures properly (takes care of nondimming pixels)
-        model_page_in_textures(Techroom_ship_modelnum, Cur_entry_index);
-#else
         Techroom_ship_modelnum = model_load(sip->pof_file, sip->n_subsystems,
                                             &sip->subsystems[0]);
 
         // page in ship textures properly (takes care of nondimming pixels)
         model_page_in_textures(Techroom_ship_modelnum, Cur_entry_index);
-#endif
     }
     else {
         Techroom_ship_modelnum = -1;
         Trackball_mode = 0;
     }
 
-    //  Techroom_ship_rot = PI;
+    //   Techroom_ship_rot = PI;
 
     techroom_init_desc(Current_list[Cur_entry].desc,
                        Tech_desc_coords[gr_screen.res][SHIP_W_COORD]);
@@ -519,7 +502,7 @@ techroom_ships_render(float frametime)
     // turn off fogging
     gr_fog_set(GR_FOGMODE_NONE, 0, 0, 0);
 
-    //  reorient ship
+    //   reorient ship
     if (Trackball_active) {
         int dx, dy;
         matrix mat1, mat2;
@@ -552,37 +535,6 @@ techroom_ships_render(float frametime)
                 Tech_ship_display_coords[gr_screen.res][SHIP_H_COORD]);
 
     // render the ship
-#ifdef MULTIPLAYER_BETA_BUILD
-    if ((sip->flags & SIF_SUPERCAP) || (sip->flags & SIF_DRYDOCK)) {
-        gr_set_color_fast(&Color_bright);
-        gr_string(Tech_ship_display_coords[gr_screen.res][SHIP_X_COORD],
-                  Tech_ship_display_coords[gr_screen.res][SHIP_Y_COORD] + 50,
-                  NOX("No soup for you!"));
-    }
-    else {
-        g3_start_frame(1);
-
-        g3_set_view_matrix(&sip->closeup_pos, &vmd_identity_matrix,
-                           sip->closeup_zoom * 1.3f);
-
-        // lighting for techroom
-        light_reset();
-        vector light_dir = vmd_zero_vector;
-        light_dir.y = 1.0f;
-        light_add_directional(&light_dir, 0.85f, 1.0f, 1.0f, 1.0f);
-        // light_filter_reset();
-        light_rotate_all();
-        // lighting for techroom
-
-        model_clear_instance(Techroom_ship_modelnum);
-        model_set_detail_level(0);
-        model_render(Techroom_ship_modelnum, &Techroom_ship_orient,
-                     &vmd_zero_vector,
-                     MR_NO_LIGHTING | MR_LOCK_DETAIL | MR_AUTOCENTER);
-
-        g3_end_frame();
-    }
-#else
     g3_start_frame(1);
 
     g3_set_view_matrix(&sip->closeup_pos, &vmd_identity_matrix,
@@ -603,7 +555,6 @@ techroom_ships_render(float frametime)
                  MR_LOCK_DETAIL | MR_AUTOCENTER);
 
     g3_end_frame();
-#endif
 
     gr_reset_clip();
 }
@@ -1021,31 +972,19 @@ techroom_button_pressed(int num)
         break;
 
     case SIMULATOR_TAB:
-#if !defined(E3_BUILD) && !defined(PD_BUILD)
         gamesnd_play_iface(SND_SWITCH_SCREENS);
         gameseq_post_event(GS_EVENT_SIMULATOR_ROOM);
         return 1;
-#else
-        return 0;
-#endif
 
     case CUTSCENES_TAB:
-#if !defined(E3_BUILD) && !defined(PD_BUILD)
         gamesnd_play_iface(SND_SWITCH_SCREENS);
         gameseq_post_event(GS_EVENT_GOTO_VIEW_CUTSCENES_SCREEN);
         return 1;
-#else
-        return 0;
-#endif
 
     case CREDITS_TAB:
-#if !defined(E3_BUILD) && !defined(PD_BUILD)
         gamesnd_play_iface(SND_SWITCH_SCREENS);
         gameseq_post_event(GS_EVENT_CREDITS);
         return 1;
-#else
-        return 0;
-#endif
 
     case PREV_ENTRY_BUTTON:
         tech_prev_entry();
@@ -1211,11 +1150,11 @@ techroom_init()
     Detail.hardware_textures = MAX_DETAIL_LEVEL;
 
     /*
-        Palette_bmp = bm_load("TechDataPalette");
-        Assert(Palette_bmp);
-        bm_get_palette(Palette_bmp, Palette, Palette_name);  // get the palette for this bitmap
-        gr_set_palette(Palette_name, Palette, 1);
-        */
+   Palette_bmp = bm_load("TechDataPalette");
+   Assert(Palette_bmp);
+   bm_get_palette(Palette_bmp, Palette, Palette_name);  // get the palette for this bitmap
+   gr_set_palette(Palette_name, Palette, 1);
+   */
 
     // unflag fullneb
     The_mission.flags &= ~MISSION_FLAG_FULLNEB;
@@ -1238,9 +1177,9 @@ techroom_init()
         // set up callback for when a mouse first goes over a button
         if (b->filename) {
             b->button.set_bmaps(b->filename);
-            //                  if ( !(b->flags & NO_MOUSE_OVER_SOUND) ) {
+            //       if ( !(b->flags & NO_MOUSE_OVER_SOUND) ) {
             b->button.set_highlight_action(common_play_highlight_sound);
-            //                  }
+            //       }
         }
         else {
             b->button.hide();
@@ -1289,8 +1228,8 @@ techroom_init()
     // common help/options/commit text
 
     // NK: removed these two text labels on Tech screen update 4/26/99
-    //  Ui_window.add_XSTR("Help", 928, Buttons[gr_screen.res][HELP_BUTTON].xt,  Buttons[gr_screen.res][HELP_BUTTON].yt, &Buttons[gr_screen.res][HELP_BUTTON].button, UI_XSTR_COLOR_GREEN);
-    //  Ui_window.add_XSTR("Options", 1036, Buttons[gr_screen.res][OPTIONS_BUTTON].xt,  Buttons[gr_screen.res][OPTIONS_BUTTON].yt, &Buttons[gr_screen.res][OPTIONS_BUTTON].button, UI_XSTR_COLOR_GREEN);
+    //   Ui_window.add_XSTR("Help", 928, Buttons[gr_screen.res][HELP_BUTTON].xt,  Buttons[gr_screen.res][HELP_BUTTON].yt, &Buttons[gr_screen.res][HELP_BUTTON].button, UI_XSTR_COLOR_GREEN);
+    //   Ui_window.add_XSTR("Options", 1036, Buttons[gr_screen.res][OPTIONS_BUTTON].xt,  Buttons[gr_screen.res][OPTIONS_BUTTON].yt, &Buttons[gr_screen.res][OPTIONS_BUTTON].button, UI_XSTR_COLOR_GREEN);
     Ui_window.add_XSTR("Exit", 1418, Buttons[gr_screen.res][EXIT_BUTTON].xt,
                        Buttons[gr_screen.res][EXIT_BUTTON].yt,
                        &Buttons[gr_screen.res][EXIT_BUTTON].button,
@@ -1322,11 +1261,11 @@ techroom_init()
     View_window.hide();
 
     /*
-        ShipWin01 = bm_load(NOX("ShipWin01"));
-        ShipWin02 = bm_load(NOX("ShipWin02"));
-        ShipWin03 = bm_load(NOX("ShipWin03"));
-        ShipWin04 = bm_load(NOX("ShipWin04"));
-        */
+   ShipWin01 = bm_load(NOX("ShipWin01"));
+   ShipWin02 = bm_load(NOX("ShipWin02"));
+   ShipWin03 = bm_load(NOX("ShipWin03"));
+   ShipWin04 = bm_load(NOX("ShipWin04"));
+   */
 
     Buttons[gr_screen.res][HELP_BUTTON].button.set_hotkey(KEY_F1);
     Buttons[gr_screen.res][EXIT_BUTTON].button.set_hotkey(KEY_CTRLED | KEY_ENTER);
@@ -1395,19 +1334,19 @@ techroom_close()
     Intel_loaded = 0;
 
     /*
-        if (ShipWin01){
-                bm_unload(ShipWin01);
-        }
-        if (ShipWin02){
-                bm_unload(ShipWin02);
-        }
-        if (ShipWin03){
-                bm_unload(ShipWin03);
-        }
-        if (ShipWin04){
-                bm_unload(ShipWin04);
-        }
-        */
+   if (ShipWin01){
+      bm_unload(ShipWin01);
+   }
+   if (ShipWin02){
+      bm_unload(ShipWin02);
+   }
+   if (ShipWin03){
+      bm_unload(ShipWin03);
+   }
+   if (ShipWin04){
+      bm_unload(ShipWin04);
+   }
+   */
 
     if (Tech_background_bitmap) {
         bm_unload(Tech_background_bitmap);
@@ -1487,13 +1426,13 @@ techroom_do_frame(float frametime)
         techroom_button_pressed(CREDITS_TAB);
         break;
         /*
-                case KEY_UP:
-                        tech_prev_entry();
-                        break;
+      case KEY_UP:
+         tech_prev_entry();
+         break;
 
-                case KEY_DOWN:
-                        tech_next_entry();
-                        break;
+      case KEY_DOWN:
+         tech_next_entry();
+         break;
 */
     case KEY_CTRLED | KEY_ENTER:
     case KEY_ESC:
@@ -1546,26 +1485,26 @@ techroom_do_frame(float frametime)
         techroom_ships_render(frametime);
 
         /*
-                        if (ShipWin01) {
-                                gr_set_bitmap(ShipWin01);
-                                gr_bitmap(223, 104);
-                        }
+         if (ShipWin01) {
+            gr_set_bitmap(ShipWin01);
+            gr_bitmap(223, 104);
+         }
 
-                        if (ShipWin02) {
-                                gr_set_bitmap(ShipWin02);
-                                gr_bitmap(621, 124);
-                        }
+         if (ShipWin02) {
+            gr_set_bitmap(ShipWin02);
+            gr_bitmap(621, 124);
+         }
 
-                        if (ShipWin03) {
-                                gr_set_bitmap(ShipWin03);
-                                gr_bitmap(223, 338);
-                        }
+         if (ShipWin03) {
+            gr_set_bitmap(ShipWin03);
+            gr_bitmap(223, 338);
+         }
 
-                        if (ShipWin04) {
-                                gr_set_bitmap(ShipWin04);
-                                gr_bitmap(218, 124);
-                        }
-                        */
+         if (ShipWin04) {
+            gr_set_bitmap(ShipWin04);
+            gr_bitmap(218, 124);
+         }
+         */
 
         break;
 

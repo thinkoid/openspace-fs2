@@ -24,26 +24,14 @@
 #define FS_CAMPAIGN_FILE_EXT NOX(".fc2")
 
 // CDROM volume names
-#ifdef MULTIPLAYER_BETA_BUILD
-#define FS_CDROM_VOLUME_1 NOX("FS2_BETA")
-#define FS_CDROM_VOLUME_2 NOX("FS2_BETA")
-#elif defined(E3_BUILD)
-#define FS_CDROM_VOLUME_1 NOX("FS2_E3DEMO")
-#define FS_CDROM_VOLUME_2 NOX("FS2_E3DEMO")
-#elif defined(OEM_BUILD)
-#define FS_CDROM_VOLUME_1 NOX("FS2_OEM")
-#define FS_CDROM_VOLUME_2 NOX("FS2_OEM")
-#define FS_CDROM_VOLUME_3 NOX("FS2_OEM")
-#else
 #define FS_CDROM_VOLUME_1 NOX("FREESPACE2_1")
 #define FS_CDROM_VOLUME_2 NOX("FREESPACE2_2")
 #define FS_CDROM_VOLUME_3 NOX("FREESPACE2_3")
 
 // old volume names
-// #define FS_CDROM_VOLUME_1                                    NOX("FREESPACE_1")
-// #define FS_CDROM_VOLUME_2                                    NOX("FREESPACE_2")
-// #define FS_CDROM_VOLUME_3                                    NOX("FREESPACE_3")
-#endif
+// #define FS_CDROM_VOLUME_1              NOX("FREESPACE_1")
+// #define FS_CDROM_VOLUME_2              NOX("FREESPACE_2")
+// #define FS_CDROM_VOLUME_3              NOX("FREESPACE_3")
 
 // frametime/missiontime variables
 extern fix Frametime;
@@ -191,7 +179,7 @@ void game_shudder_apply(int time, float intensity);
 
 // make sure a CD is in the drive before continuing (returns 1 to continue, otherwise 0).
 int game_do_cd_check(char *volume_name = NULL);
-int game_do_cd_check_specific(char *volume_name, int cdnum);
+int game_do_cd_check_specific(const char *volume_name, int cdnum);
 int find_freespace_cd(char *volume_name = NULL);
 int set_cdrom_path(int drive_num);
 int game_do_cd_mission_check(char *filename);
@@ -199,7 +187,7 @@ int game_do_cd_mission_check(char *filename);
 // Used to tell the player that a feature isn't available in the demo version of FreeSpace
 void game_feature_not_in_demo_popup();
 
-//      Return version string for demo or full version, depending on build.
+// Return version string for demo or full version, depending on build.
 void get_version_string(char *str);
 
 // format the specified time (fixed point) into a nice string

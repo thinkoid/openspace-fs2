@@ -437,20 +437,20 @@ neb2_skip_render(object *objp, float z_depth)
     // any fireball over the fog limit for small ships
     case OBJ_FIREBALL:
         /*
-                if(z_depth >= fog_far){
-                        return 1;
-                }
-                */
+      if(z_depth >= fog_far){
+         return 1;
+      }
+      */
         return 0;
         break;
 
     // any debris over the fog limit for small ships
     case OBJ_DEBRIS:
         /*
-                if(z_depth >= fog_far){
-                        return 1;
-                }
-                */
+      if(z_depth >= fog_far){
+         return 1;
+      }
+      */
         return 0;
         break;
 
@@ -819,12 +819,6 @@ neb2_render_player()
     vector eye_pos;
     matrix eye_orient;
 
-#ifndef NDEBUG
-    float this_area;
-    float frame_area = max_area;
-    float total_area = 0.0f;
-#endif
-
     // if the mission is not a fullneb mission, skip
     if (!(The_mission.flags & MISSION_FLAG_FULLNEB)) {
         return;
@@ -966,11 +960,9 @@ neb2_render_player()
                               alpha + Neb2_cubes[idx1][idx2][idx3].flash);
 
 #ifndef NDEBUG
-                this_area = g3_draw_rotated_bitmap_area(
+                g3_draw_rotated_bitmap_area(
                     &p, fl_radian(Neb2_cubes[idx1][idx2][idx3].rot), Nd->prad,
                     TMAP_FLAG_TEXTURED, max_area);
-                total_area += this_area;
-                frame_area -= this_area;
                 frame_rendered++;
 #else
                 g3_draw_rotated_bitmap(
@@ -1554,32 +1546,32 @@ DCF(neb2_fog_vals, "")
 /* Obsolete !?
 DCF(neb2_create, "create a basic nebula")
 {
-        int points = 0;
-        float rad1 = 0.0f;
-        float rad2 = 0.0f;
-        
-        dc_get_arg(ARG_INT);
-        if(Dc_arg_type & ARG_INT){
-                points = Dc_arg_int;
-        }
-        dc_get_arg(ARG_FLOAT);
-        if(Dc_arg_type & ARG_FLOAT){
-                rad1 = Dc_arg_float;
-        }
-        dc_get_arg(ARG_FLOAT);
-        if(Dc_arg_type & ARG_FLOAT){
-                rad2 = Dc_arg_float;
-        }
-        neb2_create(&vmd_zero_vector, points, rad1, -1.0f, rad2);
+   int points = 0;
+   float rad1 = 0.0f;
+   float rad2 = 0.0f;
+   
+   dc_get_arg(ARG_INT);
+   if(Dc_arg_type & ARG_INT){
+      points = Dc_arg_int;
+   }
+   dc_get_arg(ARG_FLOAT);
+   if(Dc_arg_type & ARG_FLOAT){
+      rad1 = Dc_arg_float;
+   }
+   dc_get_arg(ARG_FLOAT);
+   if(Dc_arg_type & ARG_FLOAT){
+      rad2 = Dc_arg_float;
+   }
+   neb2_create(&vmd_zero_vector, points, rad1, -1.0f, rad2);
 }
 
 DCF(neb2_del, "delete existing nebulae")
 {
-        for(int idx=0; idx<MAX_OBJECTS; idx++){
-                if(Objects[idx].type == OBJ_NEB2){
-                        obj_delete(idx);                        
-                }
-        }
+   for(int idx=0; idx<MAX_OBJECTS; idx++){
+      if(Objects[idx].type == OBJ_NEB2){
+         obj_delete(idx);        
+      }
+   }
 }
 
 int magic0 = 15;
@@ -1588,72 +1580,72 @@ float magic2 = -1.0f;
 float magic3 = 700.0f;
 DCF(neb2_def, "create a default nebula")
 {
-        vector a,b,c,d,e,f;
-        vm_vec_make(&a, 0.0f, 0.0f, 0.0f);
-        vm_vec_make(&b, 3600.0f, 700.0f, 0.0f);
-        vm_vec_make(&c, -3000.0f, 20.0f, 480.0f);
-        vm_vec_make(&d, -4000.0f, 100.0f, 100.0f);
-        vm_vec_make(&e, 0.0f, 3000.0f, -400.0f);
-        vm_vec_make(&f, 670.0f, -2500.0f, -1600.0f);
+   vector a,b,c,d,e,f;
+   vm_vec_make(&a, 0.0f, 0.0f, 0.0f);
+   vm_vec_make(&b, 3600.0f, 700.0f, 0.0f);
+   vm_vec_make(&c, -3000.0f, 20.0f, 480.0f);
+   vm_vec_make(&d, -4000.0f, 100.0f, 100.0f);
+   vm_vec_make(&e, 0.0f, 3000.0f, -400.0f);
+   vm_vec_make(&f, 670.0f, -2500.0f, -1600.0f);
 
-        neb2_create(&a, magic0, magic1, magic2, magic3);
-        neb2_create(&b, magic0, magic1, magic2, magic3);
-        neb2_create(&c, magic0, magic1, magic2, magic3);
-        neb2_create(&d, magic0, magic1, magic2, magic3);
-        neb2_create(&e, magic0, magic1, magic2, magic3);
-        neb2_create(&f, magic0, magic1, magic2, magic3);
+   neb2_create(&a, magic0, magic1, magic2, magic3);
+   neb2_create(&b, magic0, magic1, magic2, magic3);
+   neb2_create(&c, magic0, magic1, magic2, magic3);
+   neb2_create(&d, magic0, magic1, magic2, magic3);
+   neb2_create(&e, magic0, magic1, magic2, magic3);
+   neb2_create(&f, magic0, magic1, magic2, magic3);
 }
 
 DCF(neb2_plr, "regenerate the player's nebula")
 {
-        Neb2_regen = 0;
+   Neb2_regen = 0;
 }
 
 DCF(neb2_stats, "display info about the nebula rendering")
 {
-        dc_printf("Player poofs tried : %d\n", pneb_tried);
-        dc_printf("Player poofs tossed (alpha): %d\n", pneb_tossed_alpha);
-        dc_printf("Player poofs tossed (dot): %d\n", pneb_tossed_dot);
-        dc_printf("Player poofs tossed (off): %d\n", pneb_tossed_off);
+   dc_printf("Player poofs tried : %d\n", pneb_tried);
+   dc_printf("Player poofs tossed (alpha): %d\n", pneb_tossed_alpha);
+   dc_printf("Player poofs tossed (dot): %d\n", pneb_tossed_dot);
+   dc_printf("Player poofs tossed (off): %d\n", pneb_tossed_off);
 
-        dc_printf("Poofs tried : %d\n", neb_tried);
-        dc_printf("Poofs tossed (alpha): %d\n", neb_tossed_alpha);
-        dc_printf("Poofs tossed (dot): %d\n", neb_tossed_dot);
-        dc_printf("Poofs tossed (count): %d\n", neb_tossed_count);
+   dc_printf("Poofs tried : %d\n", neb_tried);
+   dc_printf("Poofs tossed (alpha): %d\n", neb_tossed_alpha);
+   dc_printf("Poofs tossed (dot): %d\n", neb_tossed_dot);
+   dc_printf("Poofs tossed (count): %d\n", neb_tossed_count);
 
-        dc_printf("Avg poofs/frame: %f\n", frame_avg);
+   dc_printf("Avg poofs/frame: %f\n", frame_avg);
 }
 
 // create a nebula object, return objnum of the nebula or -1 on fail
 // NOTE : in most cases you will want to pass -1.0f for outer_radius. Trust me on this
 int neb2_create(vector *offset, int num_poofs, float inner_radius, float outer_radius, float max_poof_radius)
-{       
-        Int3();
-        return -1;
+{  
+   Int3();
+   return -1;
 }
 
 // delete a nebula object
 void neb2_delete(object *objp)
-{       
-        Int3();
+{  
+   Int3();
 }
 
 // renders a nebula object
 void neb2_render(object *objp)
-{       
-        Int3();
+{  
+   Int3();
 }
 
 // preprocess the nebula object before simulation
 void neb2_process_pre(object *objp)
 {
-        Int3();
+   Int3();
 }
 
 // process the nebula object after simulating, but before rendering
 void neb2_process_post(object *objp)
-{       
-        Int3();
+{  
+   Int3();
 }
 */
 
@@ -1662,34 +1654,34 @@ void neb2_process_post(object *objp)
 // if orient and ang are specified, generate the poofs so that they are "visible" around
 // the orient fvec in a cone of ang degrees
 void neb2_add_inner(neb2 *neb, int num_poofs, matrix *orient, float ang)
-{       
-        int idx;
-        vector pt, pt2, pt3;
-        int final_index = (neb->num_poofs + num_poofs) > neb->max_poofs ? neb->max_poofs : (neb->num_poofs + num_poofs);
+{  
+   int idx;
+   vector pt, pt2, pt3;
+   int final_index = (neb->num_poofs + num_poofs) > neb->max_poofs ? neb->max_poofs : (neb->num_poofs + num_poofs);
 
-        // add the points a pick a random bitmap
-        for(idx=neb->num_poofs; idx<final_index; idx++){
-                if(orient != NULL){
-                        // put a point directly in front of the player, between 0 and inner_radius distance away
-                        vm_vec_copy_scale(&pt, &orient->fvec, frand_range(neb->magic_num, neb->inner_radius));
+   // add the points a pick a random bitmap
+   for(idx=neb->num_poofs; idx<final_index; idx++){
+      if(orient != NULL){
+         // put a point directly in front of the player, between 0 and inner_radius distance away
+         vm_vec_copy_scale(&pt, &orient->fvec, frand_range(neb->magic_num, neb->inner_radius));
 
-                        // rotate the point by -ang <-> ang around the up vector
-                        vm_rot_point_around_line(&pt2, &pt, fl_radian(frand_range(-ang, ang)), &vmd_zero_vector, &orient->uvec);
+         // rotate the point by -ang <-> ang around the up vector
+         vm_rot_point_around_line(&pt2, &pt, fl_radian(frand_range(-ang, ang)), &vmd_zero_vector, &orient->uvec);
 
-                        // rotate the point by -ang <-> ang around the right vector
-                        vm_rot_point_around_line(&pt3, &pt2, fl_radian(frand_range(-ang, ang)), &vmd_zero_vector, &orient->rvec);
+         // rotate the point by -ang <-> ang around the right vector
+         vm_rot_point_around_line(&pt3, &pt2, fl_radian(frand_range(-ang, ang)), &vmd_zero_vector, &orient->rvec);
 
-                        // now add in the center of the nebula so its placed properly (ie, not around the origin)
-                        vm_vec_add(&neb->pts[idx], &pt3, &Objects[neb->objnum].pos);
-                } else {
-                        neb->pts[idx].x = frand_range(-1.0f * neb->inner_radius, neb->inner_radius) + Objects[neb->objnum].pos.x;
-                        neb->pts[idx].y = frand_range(-1.0f * neb->inner_radius, neb->inner_radius) + Objects[neb->objnum].pos.y;
-                        neb->pts[idx].z = frand_range(-1.0f * neb->inner_radius, neb->inner_radius) + Objects[neb->objnum].pos.z;
-                }
+         // now add in the center of the nebula so its placed properly (ie, not around the origin)
+         vm_vec_add(&neb->pts[idx], &pt3, &Objects[neb->objnum].pos);
+      } else {
+         neb->pts[idx].x = frand_range(-1.0f * neb->inner_radius, neb->inner_radius) + Objects[neb->objnum].pos.x;
+         neb->pts[idx].y = frand_range(-1.0f * neb->inner_radius, neb->inner_radius) + Objects[neb->objnum].pos.y;
+         neb->pts[idx].z = frand_range(-1.0f * neb->inner_radius, neb->inner_radius) + Objects[neb->objnum].pos.z;
+      }
 
-                neb->bmaps[idx] = (int)frand_range(0.0f, (float)2);
-                neb->num_poofs++;
-        }
+      neb->bmaps[idx] = (int)frand_range(0.0f, (float)2);
+      neb->num_poofs++;
+   }
 }
 
 // add N poofs to the outer shell of the nebula
@@ -1697,68 +1689,68 @@ void neb2_add_inner(neb2 *neb, int num_poofs, matrix *orient, float ang)
 // the orient fvec in a cone of ang degrees
 void neb2_add_outer(neb2 *neb, int num_poofs, matrix *orient, float ang)
 {
-        int idx;
-        float phi, theta;
-        vector pt, pt2, pt3;
-        int final_index = (neb->num_poofs + num_poofs) > neb->max_poofs ? neb->max_poofs : (neb->num_poofs + num_poofs);
+   int idx;
+   float phi, theta;
+   vector pt, pt2, pt3;
+   int final_index = (neb->num_poofs + num_poofs) > neb->max_poofs ? neb->max_poofs : (neb->num_poofs + num_poofs);
 
-        // add the points a pick a random bitmap
-        for(idx=neb->num_poofs; idx<final_index; idx++){
-                if(orient != NULL){
-                        // put a point directly in front of the player, at outer_radius distance away
-                        vm_vec_copy_scale(&pt, &orient->fvec, neb->outer_radius);
+   // add the points a pick a random bitmap
+   for(idx=neb->num_poofs; idx<final_index; idx++){
+      if(orient != NULL){
+         // put a point directly in front of the player, at outer_radius distance away
+         vm_vec_copy_scale(&pt, &orient->fvec, neb->outer_radius);
 
-                        // rotate the point by -ang <-> ang around the up vector
-                        vm_rot_point_around_line(&pt2, &pt, fl_radian(frand_range(-ang, ang)), &vmd_zero_vector, &orient->uvec);
+         // rotate the point by -ang <-> ang around the up vector
+         vm_rot_point_around_line(&pt2, &pt, fl_radian(frand_range(-ang, ang)), &vmd_zero_vector, &orient->uvec);
 
-                        // rotate the point by -ang <-> ang around the right vector
-                        vm_rot_point_around_line(&pt3, &pt2, fl_radian(frand_range(-ang, ang)), &vmd_zero_vector, &orient->rvec);
+         // rotate the point by -ang <-> ang around the right vector
+         vm_rot_point_around_line(&pt3, &pt2, fl_radian(frand_range(-ang, ang)), &vmd_zero_vector, &orient->rvec);
 
-                        // now add in the center of the nebula so its placed properly (ie, not around the origin)
-                        vm_vec_add(&neb->pts[idx], &pt, &Objects[neb->objnum].pos);
-                } else {
-                        // get a random point on the very outer radius, using spherical coords
-                        phi = fl_radian(frand_range(0.0f, 360.0f));
-                        theta = fl_radian(frand_range(0.0f, 360.f));
-        
-                        neb->pts[idx].x = neb->outer_radius * (float)sin(phi) * (float)cos(theta);
-                        neb->pts[idx].y = neb->outer_radius * (float)sin(phi) * (float)sin(theta);
-                        neb->pts[idx].z = neb->outer_radius * (float)cos(phi);                  
-                }
+         // now add in the center of the nebula so its placed properly (ie, not around the origin)
+         vm_vec_add(&neb->pts[idx], &pt, &Objects[neb->objnum].pos);
+      } else {
+         // get a random point on the very outer radius, using spherical coords
+         phi = fl_radian(frand_range(0.0f, 360.0f));
+         theta = fl_radian(frand_range(0.0f, 360.f));
+   
+         neb->pts[idx].x = neb->outer_radius * (float)sin(phi) * (float)cos(theta);
+         neb->pts[idx].y = neb->outer_radius * (float)sin(phi) * (float)sin(theta);
+         neb->pts[idx].z = neb->outer_radius * (float)cos(phi);         
+      }
 
-                // pick a random bitmap and increment the # of poofs
-                neb->bmaps[idx] = (int)frand_range(0.0f, (float)2);
-                neb->num_poofs++;
-        }
+      // pick a random bitmap and increment the # of poofs
+      neb->bmaps[idx] = (int)frand_range(0.0f, (float)2);
+      neb->num_poofs++;
+   }
 }
 
 // return the alpha the passed poof should be rendered with, for a 1 shell nebula
 float neb2_get_alpha_1shell(neb2 *neb, int poof_index)
 {
-        float dist;
-        float alpha;
-        vector eye_pos;
+   float dist;
+   float alpha;
+   vector eye_pos;
 
-        // get the eye position
-        neb2_get_eye_pos(&eye_pos);
-        
-        // determine what alpha to draw this bitmap with
-        // higher alpha the closer the bitmap gets to the eye
-        dist = vm_vec_dist_quick(&eye_pos, &neb->pts[poof_index]);
-        
-        // at poof radius or greater, alpha should be 1.0
-        // scale from 0.0 to 1.0 between radius and magic
-        if(dist >= neb->max_poof_radius){
-                return max_alpha - 0.0001f;
-        } else if(dist > neb->magic_num){
-                // alpha per meter between the magic # and the max radius
-                alpha = max_alpha / (neb->max_poof_radius - neb->magic_num);
+   // get the eye position
+   neb2_get_eye_pos(&eye_pos);
+   
+   // determine what alpha to draw this bitmap with
+   // higher alpha the closer the bitmap gets to the eye
+   dist = vm_vec_dist_quick(&eye_pos, &neb->pts[poof_index]);
+   
+   // at poof radius or greater, alpha should be 1.0
+   // scale from 0.0 to 1.0 between radius and magic
+   if(dist >= neb->max_poof_radius){
+      return max_alpha - 0.0001f;
+   } else if(dist > neb->magic_num){
+      // alpha per meter between the magic # and the max radius
+      alpha = max_alpha / (neb->max_poof_radius - neb->magic_num);
 
-                // above value times the # of meters away we are
-                return alpha * (dist - neb->magic_num);
-        }       
-        
-        // otherwise transparent
-        return 0.0f;
+      // above value times the # of meters away we are
+      return alpha * (dist - neb->magic_num);
+   }  
+   
+   // otherwise transparent
+   return 0.0f;
 }
 */

@@ -23,8 +23,8 @@ int check_inside_radius_for_big_ships(object *ship, object *weapon,
 float estimate_ship_speed_upper_limit(object *ship, float time);
 extern float flFrametime;
 
-//      If weapon_obj is likely to hit ship_obj sooner than current aip->danger_weapon_objnum,
-//      then update danger_weapon_objnum.
+// If weapon_obj is likely to hit ship_obj sooner than current aip->danger_weapon_objnum,
+// then update danger_weapon_objnum.
 void
 update_danger_weapon(object *ship_obj, object *weapon_obj)
 {
@@ -120,15 +120,15 @@ ship_weapon_check_collision(object *ship_obj, object *weapon_obj,
 
     // if one object is a capital, only check player and player weapons with
     // the capital -- too slow for now otherwise.
-    //  if ( Polygon_models[Ships[num].modelnum].use_grid && !( (other_obj == Player_obj) || (&Objects[other_obj->parent] == Player_obj)) )
-    //          return 0;
+    //   if ( Polygon_models[Ships[num].modelnum].use_grid && !( (other_obj == Player_obj) || (&Objects[other_obj->parent] == Player_obj)) )
+    //      return 0;
 
-    //  If either of these objects doesn't get collision checks, abort.
+    //   If either of these objects doesn't get collision checks, abort.
     if (!(Ship_info[shipp->ship_info_index].flags & SIF_DO_COLLISION_CHECK))
         return 0;
 
-    //  Return information for AI to detect incoming fire.
-    //  Could perhaps be done elsewhere at lower cost --MK, 11/7/97
+    //   Return information for AI to detect incoming fire.
+    //   Could perhaps be done elsewhere at lower cost --MK, 11/7/97
     float dist = vm_vec_dist_quick(&ship_obj->pos, &weapon_obj->pos);
     if (dist < weapon_obj->phys_info.speed) {
         update_danger_weapon(ship_obj, weapon_obj);
@@ -140,7 +140,7 @@ ship_weapon_check_collision(object *ship_obj, object *weapon_obj,
     int do_model_check = 1; // Assume we need to check the model
     int quadrant_num = -1;
 
-    //  total time is flFrametime + time_limit (time_limit used to predict collisions into the future)
+    //   total time is flFrametime + time_limit (time_limit used to predict collisions into the future)
     vector weapon_end_pos;
     vm_vec_scale_add(&weapon_end_pos, &weapon_obj->pos,
                      &weapon_obj->phys_info.vel, time_limit);
@@ -166,22 +166,22 @@ ship_weapon_check_collision(object *ship_obj, object *weapon_obj,
 
         if (model_collide(&mc)) {
             quadrant_num = get_quadrant(&mc.hit_point);
-            //  Note: This code is obviously stupid. We want to add the shield point if there is shield to hit, but:
-            //          1. We want the size/color of the hit effect to indicate shield damage done.  (Ie, for already-weak shield, smaller effect.)
-            //          2. Currently (8/9/97), apply_damage_to_shield() passes lefer damage to hull, which might not make sense.  If
-            //                  wouldn't have collided with hull, shouldn't do damage.  Once this is fixed, the code below needs to cast the
-            //                  vector through to the hull if there is leftover damage.
+            // Note: This code is obviously stupid. We want to add the shield point if there is shield to hit, but:
+            //    1. We want the size/color of the hit effect to indicate shield damage done.  (Ie, for already-weak shield, smaller effect.)
+            //    2. Currently (8/9/97), apply_damage_to_shield() passes lefer damage to hull, which might not make sense.  If
+            //       wouldn't have collided with hull, shouldn't do damage.  Once this is fixed, the code below needs to cast the
+            //       vector through to the hull if there is leftover damage.
             if (!(shipp->flags & SF_DYING) &&
                 ship_is_shield_up(ship_obj, quadrant_num)) {
                 // AL 1-14-97: "Puncture" doesn't mean penetrate shield anymore, it means that it punctures
-                //                                      hull do inflict maximum subsystem damage
+                //               hull do inflict maximum subsystem damage
                 /*
-                                if ( Weapon_info[Weapons[other_obj->instance].weapon_info_index].wi_flags & WIF_PUNCTURE )      {
-                                        // If this weapon punctures the shield, then do
-                                        // the hit effect, but act like a shield collision never occurred.
-                                        quadrant_num = -1;      // ignore shield hit
-                                        add_shield_point(obj-Objects, mc.shield_hit_tri, &mc.hit_point);
-                                } else {
+            if ( Weapon_info[Weapons[other_obj->instance].weapon_info_index].wi_flags & WIF_PUNCTURE )   {
+               // If this weapon punctures the shield, then do
+               // the hit effect, but act like a shield collision never occurred.
+               quadrant_num = -1;   // ignore shield hit
+               add_shield_point(obj-Objects, mc.shield_hit_tri, &mc.hit_point);
+            } else {
 */
                 valid_hit_occured = 1;
                 // shield effect
@@ -274,7 +274,7 @@ collide_ship_weapon(obj_pair *pair)
          (SIF_BIG_SHIP | SIF_HUGE_SHIP)) &&
         (Weapon_info[Weapons[weapon->instance].weapon_info_index].subtype ==
          WP_LASER)) {
-        //      if (  (ship->radius > 50) && (Weapon_info[Weapons[weapon->instance].weapon_info_index].subtype == WP_LASER) ) {
+        //  if (  (ship->radius > 50) && (Weapon_info[Weapons[weapon->instance].weapon_info_index].subtype == WP_LASER) ) {
         // Check when within ~1.1 radii.
         // This allows good transition between sphere checking (leaving the laser about 200 ms from radius) and checking
         // within the sphere with little time between.  There may be some time for "small" big ships
@@ -284,9 +284,9 @@ collide_ship_weapon(obj_pair *pair)
         }
     }
 
-    //  demo_do_rand_test();
+    //   demo_do_rand_test();
     did_hit = ship_weapon_check_collision(ship, weapon);
-    //  demo_do_rand_test();
+    //   demo_do_rand_test();
     if (!did_hit) {
         // Since we didn't hit, check to see if we can disable all future collisions
         // between these two.

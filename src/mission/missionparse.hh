@@ -40,7 +40,7 @@
 
 // maximum number of starting wings for the player
 #define MAX_STARTING_WINGS 3
-extern char *Starting_wing_names[MAX_STARTING_WINGS + 1];
+extern const char *Starting_wing_names[MAX_STARTING_WINGS + 1];
 
 // used by Fred to tell ship_index in a wing points to a player
 #define WING_PLAYER_BASE 0x80000
@@ -155,32 +155,28 @@ extern int Mission_alt_type_count;
 #define SPECIES_SHIVAN 2
 #define SPECIES_NONE 3
 
-#ifdef FS2_DEMO
-#define MAX_SUBSYS_STATUS 125
-#else
 #define MAX_SUBSYS_STATUS 250
-#endif
 
 #define MAX_SPECIAL_ARRIVAL_ANCHORS 6
-extern char *Special_arrival_anchor_names[MAX_SPECIAL_ARRIVAL_ANCHORS];
+extern const char *Special_arrival_anchor_names[MAX_SPECIAL_ARRIVAL_ANCHORS];
 
 extern char *Ship_class_names[MAX_SHIP_TYPES];
-extern char *Iff_names[MAX_IFF];
-extern char *Ai_behavior_names[MAX_AI_BEHAVIORS];
-extern char *Formation_names[MAX_FORMATION_NAMES];
-extern char *Team_names[MAX_TEAM_NAMES];
+extern const char *Iff_names[MAX_IFF];
+extern const char *Ai_behavior_names[MAX_AI_BEHAVIORS];
+extern const char *Formation_names[MAX_FORMATION_NAMES];
+extern const char *Team_names[MAX_TEAM_NAMES];
 extern int Team_names_index_xlate[MAX_TEAM_NAMES_INDEX + 1];
-extern char *Status_desc_names[MAX_STATUS_NAMES];
-extern char *Status_type_names[MAX_STATUS_NAMES];
-extern char *Status_target_names[MAX_STATUS_NAMES];
-extern char *Arrival_location_names[MAX_ARRIVAL_NAMES];
-extern char *Departure_location_names[MAX_ARRIVAL_NAMES];
-extern char *Goal_type_names[MAX_GOAL_TYPE_NAMES];
-extern char *Species_names[MAX_SPECIES_NAMES];
-extern char *Reinforcement_type_names[];
-extern char *Object_flags[];
-extern char *Parse_object_flags[];
-extern char *Icon_names[];
+extern const char *Status_desc_names[MAX_STATUS_NAMES];
+extern const char *Status_type_names[MAX_STATUS_NAMES];
+extern const char *Status_target_names[MAX_STATUS_NAMES];
+extern const char *Arrival_location_names[MAX_ARRIVAL_NAMES];
+extern const char *Departure_location_names[MAX_ARRIVAL_NAMES];
+extern const char *Goal_type_names[MAX_GOAL_TYPE_NAMES];
+extern const char *Species_names[MAX_SPECIES_NAMES];
+extern const char *Reinforcement_type_names[];
+extern const char *Object_flags[];
+extern const char *Parse_object_flags[];
+extern const char *Icon_names[];
 
 extern char *Cargo_names[MAX_CARGO];
 extern char Cargo_names_buf[MAX_CARGO][NAME_LENGTH];
@@ -216,8 +212,8 @@ typedef struct subsys_status
     int subsys_cargo_name;
 } subsys_status;
 
-//      a parse object
-//      information from a $OBJECT: definition is read into this struct to
+// a parse object
+// information from a $OBJECT: definition is read into this struct to
 // be copied into the real object, ship, etc. structs
 typedef struct p_object
 {
@@ -248,7 +244,7 @@ typedef struct p_object
 
     int departure_location;
     int departure_anchor;
-    int departure_cue; //       Index in Sexp_nodes of this sexp.
+    int departure_cue; //  Index in Sexp_nodes of this sexp.
     int departure_delay;
 
     char misc[NAME_LENGTH];
@@ -321,15 +317,10 @@ typedef struct p_object
 
 extern p_object ship_arrival_list; // used by sexpression parser
 
-#ifdef FS2_DEMO
-#define MAX_SHIP_ARRIVALS 45
-#define MAX_WING_ARRIVALS 10
-#else
 // maximum of 90 objects can arrive later
 #define MAX_SHIP_ARRIVALS 90
 // maximum of 20 wings can arrive later
 #define MAX_WING_ARRIVALS 20
-#endif
 
 extern p_object ship_arrivals[MAX_SHIP_ARRIVALS];
 extern int num_ship_arrivals;
@@ -372,13 +363,14 @@ extern p_object Player_start_pobject;
 extern int Mission_palette; // index of palette file to use for mission
 extern int
     Nebula_index; // index into Nebula_filenames[] of nebula to use in mission.
-extern char *Nebula_filenames[NUM_NEBULAS];
-extern char *Nebula_colors[NUM_NEBULA_COLORS];
+extern const char *Nebula_filenames[NUM_NEBULAS];
+extern const char *Nebula_colors[NUM_NEBULA_COLORS];
 extern p_object *Arriving_support_ship;
 
 extern char Neb2_texture_name[MAX_FILENAME_LEN];
 
 int parse_main(char *mission_name, int flags = 0);
+int is_training_mission();
 int mission_parse_ship_arrived(char *shipname);
 p_object *mission_parse_get_arrival_ship(char *name);
 int parse_create_object(p_object *objp);

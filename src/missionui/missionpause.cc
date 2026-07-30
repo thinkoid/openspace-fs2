@@ -27,7 +27,7 @@
 //
 
 // pause bitmap name
-char *Pause_bmp_name[GR_NUM_RESOLUTIONS] = { "PleaseWait", "2_PleaseWait" };
+const char *Pause_bmp_name[GR_NUM_RESOLUTIONS] = { "PleaseWait", "2_PleaseWait" };
 
 // pause bitmap display stuff
 int Please_wait_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
@@ -104,7 +104,7 @@ pause_do()
     char *pause_str = XSTR("Paused", 767);
     int str_w, str_h;
 
-    //  RENDER A GAME FRAME HERE AS THE BACKGROUND
+    //   RENDER A GAME FRAME HERE AS THE BACKGROUND
     gr_restore_screen(Pause_saved_screen);
     if (Pause_background_bitmap >= 0) {
         gr_set_bitmap(Pause_background_bitmap);
@@ -243,7 +243,7 @@ pause_debug_do()
     }
 
     if (Pause_continue.pressed() ||
-        (key == KEY_PAUSE)) { //        Changed, MK, 11/9/97, only Pause break pause.
+        (key == KEY_PAUSE)) { // Changed, MK, 11/9/97, only Pause break pause.
         gameseq_post_event(GS_EVENT_PREVIOUS_STATE);
     }
 

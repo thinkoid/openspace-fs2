@@ -198,9 +198,6 @@ ets_init_ship(object *obj)
     ship *sp;
 
     // fred should bail here
-    if (Fred_running) {
-        return;
-    }
 
     Assert(obj->type == OBJ_SHIP);
     sp = &Ships[obj->instance];
@@ -238,7 +235,7 @@ update_ets(object *objp, float fl_frametime)
         return;
     }
 
-    //  new_energy = fl_frametime * sinfo_p->power_output;
+    //   new_energy = fl_frametime * sinfo_p->power_output;
 
     // update weapon energy
     max_new_weapon_energy = fl_frametime * MAX_WEAPON_REGEN_PER_SECOND *
@@ -311,10 +308,10 @@ update_ets(object *objp, float fl_frametime)
     }
 
     // AL 11-15-97: Rules for engine strength affecting max speed:
-    //                                          1. if strength >= 0.5 no affect
-    //                                          2. if strength < 0.5 then max_speed = sqrt(strength)
+    //                  1. if strength >= 0.5 no affect
+    //                  2. if strength < 0.5 then max_speed = sqrt(strength)
     //
-    //                                   This will translate to 71% max speed at 50% engines, and 31% max speed at 10% engines
+    //                This will translate to 71% max speed at 50% engines, and 31% max speed at 10% engines
     //
     float strength = ship_get_subsystem_strength(ship_p, SUBSYSTEM_ENGINE);
 
@@ -383,7 +380,7 @@ ai_manage_ets(object *obj)
                                 ship_info_p->max_weapon_reserve;
 
     // maximum level check
-    //  MK, changed these, might as well let them go up to 100% if nothing else needs the recharge ability.
+    //   MK, changed these, might as well let them go up to 100% if nothing else needs the recharge ability.
     if (weapon_left_percent == 1.0f) {
         decrease_recharge_rate(obj, WEAPONS);
     }

@@ -34,7 +34,7 @@ typedef struct debris
     int fire_timeout; // timestamp that holds time for fireballs to stop appearing
     int sound_delay; // timestamp to signal when sound should start
     fix time_started; // time when debris was created
-    int next_distance_check; // timestamp to determine whether to delete this piece of debris.
+    int next_distance_check; //  timestamp to determine whether to delete this piece of debris.
 
     vector arc_pts[MAX_DEBRIS_ARCS][2]; // The endpoints of each arc
     int arc_timestamp
@@ -48,11 +48,7 @@ typedef struct debris
 // debris can expire (ie hull chunks from small ships)
 #define DEBRIS_EXPIRE (1 << 1)
 
-#ifdef FS2_DEMO
-#define MAX_DEBRIS_PIECES 48
-#else
 #define MAX_DEBRIS_PIECES 64
-#endif
 
 extern debris Debris[MAX_DEBRIS_PIECES];
 

@@ -31,7 +31,7 @@
 #define WRT_LASER 1
 #define WRT_POF 2
 
-//      Bitflags controlling weapon behavior
+// Bitflags controlling weapon behavior
 // Maximum number of different bit flags legal to specify in a single weapons.tbl Flags line
 #define MAX_WEAPON_FLAGS 18
 
@@ -49,7 +49,7 @@
 #define WIF_PUNCTURE (1 << 5)
 #define WIF_SUPERCAP                                                             \
     (1                                                                           \
-     << 6) //   This is a weapon which does supercap class damage (meaning, it applies real damage to supercap ships)
+     << 6) //  This is a weapon which does supercap class damage (meaning, it applies real damage to supercap ships)
 // Explosion has an area effect
 #define WIF_AREA_EFFECT (1 << 7)
 // Explosion has a shockwave
@@ -66,7 +66,7 @@
 #define WIF_BIG_ONLY (1 << 12)
 #define WIF_CHILD                                                                \
     (1                                                                           \
-     << 13) //  No ship can have this weapon.  It gets created by weapon detonations.
+     << 13) // No ship can have this weapon.  It gets created by weapon detonations.
 // Bomb-type missile, can be targeted
 #define WIF_BOMB (1 << 14)
 // Huge damage (generally 500+), probably only fired at huge ships.
@@ -80,7 +80,7 @@
 #define WIF_PLAYER_ALLOWED (1 << 19)
 #define WIF_BOMBER_PLUS                                                          \
     (1                                                                           \
-     << 20) //  Fire this missile only at a bomber or big ship.  But not a fighter.
+     << 20) // Fire this missile only at a bomber or big ship.  But not a fighter.
 
 // corkscrew style missile
 #define WIF_CORKSCREW (1 << 21)
@@ -141,10 +141,10 @@ typedef struct weapon
     float lifeleft; // life left on this weapon
     int target_num; //  Object index of target
     int target_sig; //  So we know if the target is the same one we've been tracking
-    float nearest_dist; //      nearest distance yet attained to target
-    fix creation_time; //       time at which created, stuffed Missiontime
-    int weapon_flags; //        bit flags defining behavior, see WF_xxxx
-    object *homing_object; //   object this weapon is homing on.
+    float nearest_dist; // nearest distance yet attained to target
+    fix creation_time; //  time at which created, stuffed Missiontime
+    int weapon_flags; //   bit flags defining behavior, see WF_xxxx
+    object *homing_object; // object this weapon is homing on.
     ship_subsys *homing_subsys; // subsystem this weapon is homing on
     vector homing_pos; // world position missile is homing on
     short swarm_index; // index into swarm missile info, -1 if not WIF_SWARM
@@ -161,11 +161,11 @@ typedef struct weapon
     float thruster_glow_frame; // Used to keep track of which frame the engine glow animation should be on.
     float thruster_glow_noise; // Noise for current frame
 
-    int pick_big_attack_point_timestamp; //     Timestamp at which to pick a new point to attack.
-    vector big_attack_point; // Target-relative location of attack point.
+    int pick_big_attack_point_timestamp; //  Timestamp at which to pick a new point to attack.
+    vector big_attack_point; //  Target-relative location of attack point.
 
-    int cmeasure_ignore_objnum; //      Ignoring this countermeasure.  It's failed to attract this weapon.
-    int cmeasure_chase_objnum; //       Chasing this countermeasure.  Don't maybe ignore in future.
+    int cmeasure_ignore_objnum; //  Ignoring this countermeasure.  It's failed to attract this weapon.
+    int cmeasure_chase_objnum; //   Chasing this countermeasure.  Don't maybe ignore in future.
 
     // corkscrew info (taken out for now)
     short cscrew_index; // corkscrew info index
@@ -177,12 +177,8 @@ typedef struct weapon
     short flak_index; // flak info index
 } weapon;
 
-#ifdef FS2_DEMO
-#define MAX_WEAPONS 100
-#else
 // upped 5/6/98 from 200 - DB
 #define MAX_WEAPONS 350
-#endif
 
 // info specific to beam weapons
 #define MAX_BEAM_SECTIONS 5
@@ -251,34 +247,34 @@ typedef struct weapon_info
     float mass; // mass of the weapon
     float fire_wait; // fire rate -- amount of time before you can refire the weapon
     float blast_force; // force this weapon exhibits when hitting an object
-    float damage; //    damage of weapon (for missile, damage within inner radius)
+    float damage; // damage of weapon (for missile, damage within inner radius)
     float inner_radius,
         outer_radius; // damage radii for missiles (0 means impact only)
     float shockwave_speed; // speed of shockwave ( 0 means none )
     float armor_factor, shield_factor,
-        subsystem_factor; //    in 0.0..2.0, scale of damage done to type of thing
+        subsystem_factor; //  in 0.0..2.0, scale of damage done to type of thing
     float lifetime; //  How long this thing lives.
     float energy_consumed; // Energy used up when weapon is fired
-    int wi_flags; //    bit flags defining behavior, see WIF_xxxx
+    int wi_flags; // bit flags defining behavior, see WIF_xxxx
     float turn_time;
     float cargo_size; // cargo space taken up by individual weapon (missiles only)
     float rearm_rate; // rate per second at which secondary weapons are loaded during rearming
     float weapon_range; // max range weapon can be effectively fired.  (May be less than life * speed)
 
     // spawn weapons
-    short spawn_type; //        Type of weapon to spawn when detonated.
-    short spawn_count; //       Number of weapons of spawn_type to spawn.
+    short spawn_type; //   Type of weapon to spawn when detonated.
+    short spawn_count; //  Number of weapons of spawn_type to spawn.
 
     // swarm count
     short swarm_count; // how many swarm missiles are fired for this weapon
 
-    //  Specific to ASPECT homing missiles.
+    //   Specific to ASPECT homing missiles.
     float min_lock_time; // minimum time (in seconds) to achieve lock
     int lock_pixels_per_sec; // pixels/sec moved while locking
     int catchup_pixels_per_sec; // pixels/sec moved while catching-up for a lock
     int catchup_pixel_penalty; // number of extra pixels to move while locking as a penalty for catching up for a lock
 
-    //  Specific to HEAT homing missiles.
+    //   Specific to HEAT homing missiles.
     float fov;
 
     int launch_snd;
@@ -339,7 +335,7 @@ extern char *Weapon_names[MAX_WEAPON_TYPES];
 #define WEAPON_INDEX(wp) (wp - Weapons)
 #define WEAPON_INFO_INDEX(wip) (wip - Weapon_info)
 
-int weapon_info_lookup(char *name);
+int weapon_info_lookup(const char *name);
 void weapon_init(); // called at game startup
 void weapon_level_init(); // called before the start of each level
 void weapon_render(object *obj);

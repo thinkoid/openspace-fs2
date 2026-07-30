@@ -33,7 +33,7 @@
 // names read in for builtin message radio bits to see what message to play.  These are
 // generic names, meaning that there will be the same message type for a number of different
 // personas
-char *Builtin_message_types[MAX_BUILTIN_MESSAGE_TYPES] = {
+const char *Builtin_message_types[MAX_BUILTIN_MESSAGE_TYPES] = {
     //XSTR:OFF
     "Arrive Enemy",
     "Attack Target",
@@ -92,13 +92,8 @@ message_extra Message_waves[MAX_MESSAGE_WAVES];
 
 #define MAX_PLAYING_MESSAGES 2
 
-#ifdef FS2_DEMO
-#define MAX_WINGMAN_HEADS 1
-#define MAX_COMMAND_HEADS 1
-#else
 #define MAX_WINGMAN_HEADS 2
 #define MAX_COMMAND_HEADS 3
-#endif
 
 //XSTR:OFF
 #define HEAD_PREFIX_STRING "head-"
@@ -165,7 +160,7 @@ int MessageQ_num; // keeps track of number of entries on the queue.
 int Num_personas;
 Persona Personas[MAX_PERSONAS];
 
-char *Persona_type_names[MAX_PERSONA_TYPES] = {
+const char *Persona_type_names[MAX_PERSONA_TYPES] = {
     //XSTR:OFF
     "wingman",
     "support",
@@ -226,7 +221,7 @@ persona_parse()
 
             // save the Terran Command persona in a global
             if (Personas[Num_personas].flags & PERSONA_FLAG_COMMAND) {
-                //                              Assert ( Command_persona == -1 );
+                //            Assert ( Command_persona == -1 );
                 Command_persona = Num_personas;
             }
 
@@ -476,8 +471,8 @@ message_mission_shutdown()
 
 // functions to deal with queuing messages to the message system.
 
-//      Compare function for system qsort() for sorting message queue entries based on priority.
-//      Return values set to sort array in _decreasing_ order.  If priorities equal, sort based
+// Compare function for system qsort() for sorting message queue entries based on priority.
+// Return values set to sort array in _decreasing_ order.  If priorities equal, sort based
 // on time added into queue
 int
 message_queue_priority_compare(const void *a, const void *b)
@@ -692,7 +687,7 @@ message_load_wave(int index, const char *filename)
 }
 
 // Play wave file associated with message
-// input: m             =>              pointer to message description
+// input: m    =>    pointer to message description
 //
 // note: changes Messave_wave_duration, Playing_messages[].wave, and Message_waves[].num
 void
@@ -762,9 +757,9 @@ message_play_wave(message_q *q)
 }
 
 // Determine the starting frame for the animation
-// input:       time    =>              time of voice clip, in ms
-//                              ani     =>              pointer to anim data
-//                              reverse =>      flag to indicate that the start should be time ms from the end (used for death screams)
+// input:   time  =>    time of voice clip, in ms
+//          ani   =>    pointer to anim data
+//          reverse  => flag to indicate that the start should be time ms from the end (used for death screams)
 int
 message_calc_anim_start_frame(int time, anim *ani, int reverse)
 {
@@ -807,8 +802,8 @@ message_calc_anim_start_frame(int time, anim *ani, int reverse)
 }
 
 // Play animation associated with message
-// input:       m               =>              pointer to message description
-//                              q               =>              message queue data
+// input:   m     =>    pointer to message description
+//          q     =>    message queue data
 //
 // note: changes Messave_wave_duration, Playing_messages[].wave, and Message_waves[].num
 void
@@ -865,7 +860,7 @@ message_play_anim(message_q *q)
             else {
                 rand_index = (Missiontime % MAX_WINGMAN_HEADS);
             }
-            sprintf(ani_name, "%s%c", ani_name, 'a' + rand_index);
+            sprintf(ani_name + strlen(ani_name), "%c", 'a' + rand_index);
             subhead_selected = TRUE;
         }
         else if ((persona_index >= 0) &&
@@ -873,13 +868,13 @@ message_play_anim(message_q *q)
                   (PERSONA_FLAG_COMMAND | PERSONA_FLAG_LARGE))) {
             // get a random head -- it's one of two.
             rand_index = (Missiontime % MAX_COMMAND_HEADS);
-            sprintf(ani_name, "%s%c", ani_name, 'a' + rand_index);
+            sprintf(ani_name + strlen(ani_name), "%c", 'a' + rand_index);
             subhead_selected = TRUE;
         }
         if (!subhead_selected) {
             // choose between a and b
             rand_index = (Missiontime % MAX_WINGMAN_HEADS);
-            sprintf(ani_name, "%s%c", ani_name, 'a' + rand_index);
+            sprintf(ani_name + strlen(ani_name), "%c", 'a' + rand_index);
             mprintf((
                 "message '%s' with invalid head.  Fix by assigning persona to the message.\n",
                 m->name));
@@ -962,7 +957,7 @@ message_queue_process()
 
             wave_done = 1;
 
-            //                  if ( (Playing_messages[i].wave != -1) && snd_is_playing(Playing_messages[i].wave) )
+            //       if ( (Playing_messages[i].wave != -1) && snd_is_playing(Playing_messages[i].wave) )
             if ((Playing_messages[i].wave != -1) &&
                 (snd_time_remaining(Playing_messages[i].wave) > 250))
                 wave_done = 0;
@@ -1209,7 +1204,7 @@ message_queue_process()
         goto all_done;
     }
 
-    //  Don't play death scream unless a small ship.
+    //   Don't play death scream unless a small ship.
     if (q->builtin_type == MESSAGE_WINGMAN_SCREAM) {
         int t = Ship_info[Ships[Message_shipnum].ship_info_index].flags;
         int t2 = SIF_SMALL_SHIP;
@@ -1223,9 +1218,7 @@ message_queue_process()
     message_play_wave(q);
 
 // play animation for head
-#ifndef DEMO // do we want this for FS2_DEMO
     message_play_anim(q);
-#endif
 
     // distort the message if comms system is damaged
     message_maybe_distort_text(buf);
@@ -1251,7 +1244,8 @@ all_done:
 
 // queues up a message to display to the player
 void
-message_queue_message(int message_num, int priority, int timing, char *who_from,
+message_queue_message(int message_num, int priority, int timing,
+                      const char *who_from,
                       int source, int group, int delay, int builtin_type)
 {
     int i, m_persona;
@@ -1454,7 +1448,7 @@ message_send_unique_to_player(char *id, void *data, int m_source, int priority,
                               int group, int delay)
 {
     int i, source;
-    char *who_from;
+    const char *who_from;
 
     source = 0;
     who_from = NULL;
@@ -1469,7 +1463,7 @@ message_send_unique_to_player(char *id, void *data, int m_source, int priority,
                 source = HUD_SOURCE_TERRAN_CMD;
             }
             else if (m_source == MESSAGE_SOURCE_SPECIAL) {
-                who_from = (char *)data;
+                who_from = (const char *)data;
                 source = HUD_SOURCE_TERRAN_CMD;
             }
             else if (m_source == MESSAGE_SOURCE_WINGMAN) {
@@ -1559,7 +1553,8 @@ message_send_builtin_to_player(int type, ship *shipp, int priority, int timing,
     // persona if we can't find the right message for the given persona
     do {
         for (i = 0; i < Num_builtin_messages; i++) {
-            char *name, *who_from;
+            const char *name;
+            const char *who_from;
 
             name = Builtin_message_types[type];
 
@@ -1691,11 +1686,11 @@ message_maybe_distort()
 // if the player communications systems are heavily damaged, distort incoming messages.
 //
 // first case: Message_wave_duration == 0 (this occurs when there is no associated voice playback)
-//                                      Blank out random runs of characters in the message
+//             Blank out random runs of characters in the message
 //
 // second case: Message_wave_duration > 0 (occurs when voice playback accompainies message)
-//                                       Blank out portions of the sound based on Distort_num, this this is that same
-//                                       data that will be used to blank out portions of the audio playback
+//              Blank out portions of the sound based on Distort_num, this this is that same
+//              data that will be used to blank out portions of the audio playback
 //
 void
 message_maybe_distort_text(char *text)

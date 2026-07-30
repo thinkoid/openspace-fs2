@@ -435,7 +435,7 @@ ai_get_subsystem_type(char *subsystem)
     }
     else { // If unrecognized type, set to engine so artist can continue working...
         if (!Fred_running) {
-            //                  Int3();                                                 // illegal subsystem type -- find allender
+            //       Int3();                    // illegal subsystem type -- find allender
         }
 
         return SUBSYSTEM_UNKNOWN;
@@ -787,7 +787,7 @@ ai_add_goal_sub_sexp(int sexp, int type, ai_goal *aigp)
         aigp->ai_mode = AI_GOAL_WARP;
         aigp->ship_name = ai_get_goal_ship_name(
             CTEXT(CDR(node)), &aigp->ship_name_index); // waypoint path name;
-        //aigp->wp_index = atoi( CTEXT(CDR(node)) );            // this is the index into the warp points
+        //aigp->wp_index = atoi( CTEXT(CDR(node)) );     // this is the index into the warp points
         aigp->wp_index = -1;
         aigp->priority = atoi(CTEXT(CDR(CDR(node))));
         break;
@@ -1047,7 +1047,6 @@ int
 ai_mission_goal_achievable(int objnum, ai_goal *aigp)
 {
     int status;
-    char *ai_shipname;
     int return_val;
     object *objp;
     ai_info *aip;
@@ -1092,7 +1091,6 @@ ai_mission_goal_achievable(int objnum, ai_goal *aigp)
 
     objp = &Objects[objnum];
     Assert(objp->instance != -1);
-    ai_shipname = Ships[objp->instance].ship_name;
     aip = &Ai_info[Ships[objp->instance].ai_index];
 
     return_val = AI_GOAL_SATISFIED;
@@ -1295,8 +1293,8 @@ ai_mission_goal_achievable(int objnum, ai_goal *aigp)
 
         // if the ship that I am supposed to dock with is docked with something else, then I need to put my
         // goal on hold
-        //      [MK, 4/23/98: With Mark, we believe this fixes the problem of Comet refusing to warp out after docking with Omega.
-        //      This bug occurred only when mission goals were validated in the frame in which Comet docked, which happened about
+        //  [MK, 4/23/98: With Mark, we believe this fixes the problem of Comet refusing to warp out after docking with Omega.
+        //  This bug occurred only when mission goals were validated in the frame in which Comet docked, which happened about
         // once in 10-20 tries.]
         if (Ai_info[Ships[shipnum].ai_index].ai_flags & AIF_DOCKED)
             if (aip->dock_objnum != Ships[shipnum].objnum)
@@ -1438,8 +1436,8 @@ ai_mission_goal_achievable(int objnum, ai_goal *aigp)
     return AI_GOAL_NOT_KNOWN;
 }
 
-//      Compare function for system qsort() for sorting ai_goals based on priority.
-//      Return values set to sort array in _decreasing_ order.
+// Compare function for system qsort() for sorting ai_goals based on priority.
+// Return values set to sort array in _decreasing_ order.
 int
 ai_goal_priority_compare(const void *a, const void *b)
 {
@@ -1476,27 +1474,27 @@ ai_goal_priority_compare(const void *a, const void *b)
     else {
         if (ga->time > gb->time)
             return -1;
-        else // if ( ga->time < gb->time )                      // this way prevents element swapping if times happen to be equal (which they should not)
+        else // if ( ga->time < gb->time )         // this way prevents element swapping if times happen to be equal (which they should not)
             return 1;
     }
 }
 
-//      Prioritize goal list.
-//      First sort on priority.
-//      Then sort on time for goals of equivalent priority.
-//      objnum  The object number to act upon.  Redundant with *aip.
-//      *aip            The AI info to act upon.  Goals are stored at aip->goals
+// Prioritize goal list.
+// First sort on priority.
+// Then sort on time for goals of equivalent priority.
+// objnum   The object number to act upon.  Redundant with *aip.
+// *aip     The AI info to act upon.  Goals are stored at aip->goals
 void
 prioritize_goals(int objnum, ai_info *aip)
 {
-    //  First sort based on priority field.
+    //   First sort based on priority field.
     qsort(aip->goals, MAX_AI_GOALS, sizeof(ai_goal), ai_goal_priority_compare);
 }
 
-//      Scan the list of goals at aip->goals.
-//      Remove obsolete goals.
-//      objnum  Object of interest.  Redundant with *aip.
-//      *aip            contains goals at aip->goals.
+// Scan the list of goals at aip->goals.
+// Remove obsolete goals.
+// objnum   Object of interest.  Redundant with *aip.
+// *aip     contains goals at aip->goals.
 void
 validate_mission_goals(int objnum, ai_info *aip)
 {
@@ -1560,13 +1558,7 @@ validate_mission_goals(int objnum, ai_info *aip)
     }
 }
 
-//XSTR:OFF
-static char *Goal_text[5] = {
-    "EVENT_SHIP", "EVENT_WING", "PLAYER_SHIP", "PLAYER_WING", "DYNAMIC",
-};
-//XSTR:ON
-
-extern char *Mode_text[MAX_AI_BEHAVIORS];
+extern const char *Mode_text[MAX_AI_BEHAVIORS];
 
 // code to process ai "orders".  Orders include those determined from the mission file and those
 // given by the player to a ship that is under his control.  This function gets called for every
@@ -1580,39 +1572,39 @@ ai_process_mission_orders(int objnum, ai_info *aip)
     int wingnum, shipnum;
     int original_signature;
 
-    /*  if (!stricmp(Ships[objp->instance].ship_name, "gtt comet")) {
-                for (int i=0; i<MAX_AI_GOALS; i++) {
-                        if (aip->goals[i].signature != -1) {
-                                nprintf(("AI", "%6.1f: mode=%s, type=%s, ship=%s\n", f2fl(Missiontime), Mode_text[aip->goals[i].ai_mode], Goal_text[aip->goals[i].type], aip->goals[i].ship_name));
-                        }
-                }
-                nprintf(("AI", "\n"));
-        }
+    /*   if (!stricmp(Ships[objp->instance].ship_name, "gtt comet")) {
+      for (int i=0; i<MAX_AI_GOALS; i++) {
+         if (aip->goals[i].signature != -1) {
+            nprintf(("AI", "%6.1f: mode=%s, type=%s, ship=%s\n", f2fl(Missiontime), Mode_text[aip->goals[i].ai_mode], Goal_text[aip->goals[i].type], aip->goals[i].ship_name));
+         }
+      }
+      nprintf(("AI", "\n"));
+   }
 */
 
     // AL 12-12-97: If a ship is entering/leaving a docking bay, wait until path
-    //                                   following is finished before pursuing goals.
+    //                following is finished before pursuing goals.
     if (aip->mode == AIM_BAY_EMERGE || aip->mode == AIM_BAY_DEPART) {
         return;
     }
 
-    //  Goal #0 is always the active goal, as we maintain a sorted list.
-    //  Get the signature to see if sorting it again changes it.
+    //   Goal #0 is always the active goal, as we maintain a sorted list.
+    //   Get the signature to see if sorting it again changes it.
     original_signature = aip->goals[0].signature;
 
     validate_mission_goals(objnum, aip);
 
-    //  Sort the goal array by priority and other factors.
+    //   Sort the goal array by priority and other factors.
     prioritize_goals(objnum, aip);
 
-    //  Make sure there's a goal to pursue, else return.
+    //   Make sure there's a goal to pursue, else return.
     if (aip->goals[0].signature == -1) {
         if (aip->mode == AIM_NONE)
             ai_do_default_behavior(objp);
         return;
     }
 
-    //  If goal didn't change, return.
+    //   If goal didn't change, return.
     if ((aip->active_goal != -1) &&
         (aip->goals[0].signature == original_signature))
         return;
@@ -1622,8 +1614,8 @@ ai_process_mission_orders(int objnum, ai_info *aip)
     if (aip->goals[0].flags & AIGF_GOAL_ON_HOLD)
         return;
 
-    //  Kind of a hack for now.  active_goal means the goal currently being pursued.
-    //  It will always be #0 since the list is prioritized.
+    //   Kind of a hack for now.  active_goal means the goal currently being pursued.
+    //   It will always be #0 since the list is prioritized.
     aip->active_goal = 0;
 
     //nprintf(("AI", "New goal for %s = %i\n", Ships[objp->instance].ship_name, aip->goals[0].ai_mode));
@@ -1652,8 +1644,8 @@ ai_process_mission_orders(int objnum, ai_info *aip)
             other_obj =
                 NULL; // we get this case when we tell ship to engage enemy!
 
-        //      Mike -- debug code!
-        //      If a ship has a subobject on it, attack that instead of the main ship!
+        //  Mike -- debug code!
+        //  If a ship has a subobject on it, attack that instead of the main ship!
         ai_attack_object(objp, other_obj, current_goal->priority, NULL);
         break;
 
@@ -1746,13 +1738,13 @@ ai_process_mission_orders(int objnum, ai_info *aip)
             objp, current_goal->ai_submode); // submode stored the subsystem type
         if (current_goal->ai_mode != AI_GOAL_DESTROY_SUBSYSTEM) {
             if (aip->target_objnum != -1) {
-                //      Only protect if _not_ a capital ship.  We don't want the Lucifer accidentally getting protected.
+                //   Only protect if _not_ a capital ship.  We don't want the Lucifer accidentally getting protected.
                 if (!(Ship_info[Ships[shipnum].ship_info_index].flags &
                       SIF_HUGE_SHIP))
                     Objects[aip->target_objnum].flags |= OF_PROTECTED;
             }
         }
-        else // Just in case this ship had been protected, unprotect it.
+        else //   Just in case this ship had been protected, unprotect it.
             if (aip->target_objnum != -1)
                 Objects[aip->target_objnum].flags &= ~OF_PROTECTED;
 
@@ -1768,13 +1760,9 @@ ai_process_mission_orders(int objnum, ai_info *aip)
         ai_attack_object(objp, NULL, current_goal->priority, NULL);
         break;
 
-    case AI_GOAL_WARP: {
-        int index;
-
-        index = current_goal->wp_index;
+    case AI_GOAL_WARP:
         ai_set_mode_warp_out(objp, aip);
         break;
-    }
 
     case AI_GOAL_EVADE_SHIP:
         shipnum = ship_name_lookup(current_goal->ship_name);

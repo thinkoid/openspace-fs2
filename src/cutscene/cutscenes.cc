@@ -21,9 +21,9 @@
 #include <globalincs/alphacolors.hh>
 #include <localization/localize.hh>
 
-char *Cutscene_bitmap_name[GR_NUM_RESOLUTIONS] = { "ViewFootage",
+const char *Cutscene_bitmap_name[GR_NUM_RESOLUTIONS] = { "ViewFootage",
                                                    "2_ViewFootage" };
-char *Cutscene_mask_name[GR_NUM_RESOLUTIONS] = { "ViewFootage-m",
+const char *Cutscene_mask_name[GR_NUM_RESOLUTIONS] = { "ViewFootage-m",
                                                  "2_ViewFootage-m" };
 
 int Num_cutscenes;
@@ -32,7 +32,7 @@ int Description_index;
 cutscene_info Cutscenes[MAX_CUTSCENES];
 
 extern int
-    All_movies_enabled; //      If set, all movies may be viewed.  Keyed off cheat code.
+    All_movies_enabled; // If set, all movies may be viewed.  Keyed off cheat code.
 
 // initialization stuff for cutscenes
 void
@@ -85,9 +85,6 @@ cutscene_init()
 int
 cutscenes_get_cd_num(char *filename)
 {
-#if defined(OEM_BUILD)
-    return 0; // only 1 cd for OEM
-#else
     int i;
 
     for (i = 0; i < Num_cutscenes; i++) {
@@ -97,7 +94,6 @@ cutscenes_get_cd_num(char *filename)
     }
 
     return -1;
-#endif // defined(OEM_BUILD)
 }
 
 // marks a cutscene as viewable
@@ -128,7 +124,6 @@ cutscene_mark_viewable(char *filename)
 
 static int Num_files;
 static int Cutscene_list[MAX_CUTSCENES];
-static int Stats_scroll_offset;
 static int Selected_line = 0; // line that is currently selected for binding
 static int Scroll_offset;
 static int Background_bitmap;
@@ -226,9 +221,7 @@ cutscenes_validate_cd(char *mve_name, int prompt_for_cd)
     int cd_mve_is_on;
     char volume_name[128];
 
-#ifdef RELEASE_REAL
     int num_attempts = 0;
-#endif
 
     while (1) {
         int path_set_ok;
@@ -239,11 +232,7 @@ cutscenes_validate_cd(char *mve_name, int prompt_for_cd)
             break;
         }
 
-#if defined(OEM_BUILD)
-        sprintf(volume_name, NOX("FS2_OEM"));
-#else
         sprintf(volume_name, NOX("FREESPACE2_%c"), '1' + cd_mve_is_on);
-#endif
 
         cd_drive_num = find_freespace_cd(volume_name);
         path_set_ok = set_cdrom_path(cd_drive_num);
@@ -253,7 +242,6 @@ cutscenes_validate_cd(char *mve_name, int prompt_for_cd)
             break;
         }
 
-#ifdef RELEASE_REAL
         if (!prompt_for_cd) {
             cd_present = 0;
             break;
@@ -283,10 +271,6 @@ cutscenes_validate_cd(char *mve_name, int prompt_for_cd)
             cd_present = 0;
             break;
         }
-#else
-        cd_present = 0;
-        break;
-#endif
     }
 
     return cd_present;
@@ -306,14 +290,14 @@ cutscenes_screen_play()
 
     // no soup for you!
     /*
-        int rval = movie_play(full_name);
-        if ( !rval ) {
-                char str[256];
+   int rval = movie_play(full_name);
+   if ( !rval ) {
+      char str[256];
 
-                sprintf(str, XSTR( "Unable to play movie %s.", 204), Cutscenes[which_cutscene].name );
-                popup(0, 1, POPUP_OK, str );
-        }
-        */
+      sprintf(str, XSTR( "Unable to play movie %s.", 204), Cutscenes[which_cutscene].name );
+      popup(0, 1, POPUP_OK, str );
+   }
+   */
 }
 
 void
@@ -472,11 +456,11 @@ cutscenes_screen_init()
 
     // when doing a debug version, just put all of the movie files here.
 #ifndef NDEBUG
-    //Cutscenes_viewable = 0xffffffff;                  // makes all cutscenes viewble.
+    //Cutscenes_viewable = 0xffffffff;       // makes all cutscenes viewble.
 #endif
 
     if (All_movies_enabled)
-        Cutscenes_viewable = 0xffffffff; //     Cheat code enables all movies.
+        Cutscenes_viewable = 0xffffffff; //  Cheat code enables all movies.
 
     Num_files = 0;
     for (i = 0; i < Num_cutscenes; i++) {

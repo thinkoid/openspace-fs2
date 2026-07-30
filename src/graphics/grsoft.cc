@@ -305,13 +305,30 @@ grx_sdl_present()
         SDL_LockSurface(ws);
 
     Assert(ws->format->BytesPerPixel == 4);
-    int w = min(Soft_buffer_w, ws->w);
-    int h = min(Soft_buffer_h, ws->h);
+    int s = max(gr_screen.window_scale, 1);
+    int w = min(Soft_buffer_w, ws->w / s);
+    int h = min(Soft_buffer_h, ws->h / s);
     for (int y = 0; y < h; y++) {
         ubyte *src = Soft_buffer + y * Soft_buffer_w;
-        uint *dst = (uint *)((ubyte *)ws->pixels + y * ws->pitch);
-        for (int x = 0; x < w; x++) {
-            dst[x] = Soft_lut[src[x]];
+        uint *dst = (uint *)((ubyte *)ws->pixels + y * s * ws->pitch);
+
+        if (s == 1) {
+            for (int x = 0; x < w; x++) {
+                dst[x] = Soft_lut[src[x]];
+            }
+        }
+        else {
+            // magnify each canvas pixel into an s x s block: expand one row,
+            // then replicate it downward
+            for (int x = 0; x < w; x++) {
+                uint c = Soft_lut[src[x]];
+                for (int i = 0; i < s; i++) {
+                    dst[x * s + i] = c;
+                }
+            }
+            for (int i = 1; i < s; i++) {
+                memcpy((ubyte *)dst + i * ws->pitch, dst, w * s * sizeof(uint));
+            }
         }
     }
 
@@ -391,12 +408,12 @@ grx_flip()
 
     gr_reset_clip();
 
-    //  if (0) {
-    //          int i;
-    //          for (i=0; i<gr_screen.max_h; i++ )      {
-    //                  memset( gr_screen.row_data[i], i & 255, abs(gr_screen.rowsize) );
-    //          }
-    //  }
+    //   if (0) {
+    //      int i;
+    //      for (i=0; i<gr_screen.max_h; i++ )  {
+    //         memset( gr_screen.row_data[i], i & 255, abs(gr_screen.rowsize) );
+    //      }
+    //   }
 
     int mx, my;
 
@@ -687,7 +704,8 @@ void
 gr8_flush_frame_dump()
 {
     ubyte *buffer[480];
-    char filename[MAX_PATH_LEN], *movie_path = "";
+    char filename[MAX_PATH_LEN];
+    const char *movie_path = "";
 
     int i;
     for (i = 0; i < Gr8_dump_frame_count; i++) {
@@ -823,12 +841,12 @@ gr8_set_gamma(float gamma)
 void
 gr_soft_init()
 {
-    //  int i;
+    //   int i;
     // retail gated software to 640x480 here (hi-res was hardware-only);
     // the rasterizer is resolution-parametric — FRED ran it at window
     // size — so both retail resolutions are allowed through
 
-    os_create_window(gr_screen.max_w, gr_screen.max_h);
+    os_create_window(gr_screen.window_w, gr_screen.window_h);
 
     Palette_flashed = 0;
     Palette_flashed_last_frame = 0;
@@ -900,7 +918,6 @@ gr_soft_init()
     gr_screen.gf_aaline = gr8_aaline;
     gr_screen.gf_pixel = gr8_pixel;
     gr_screen.gf_scaler = gr8_scaler;
-    gr_screen.gf_aascaler = gr8_aascaler;
     gr_screen.gf_tmapper = grx_tmapper;
 
     gr_screen.gf_gradient = gr8_gradient;

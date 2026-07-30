@@ -7,10 +7,10 @@
  *
 */
 
-//      Parse a symbolic expression.
-//      These are identical to Lisp functions.
-//      It uses a very baggy format, allocating 16 characters per token, regardless
-//      of how many are used.
+// Parse a symbolic expression.
+// These are identical to Lisp functions.
+// It uses a very baggy format, allocating 16 characters per token, regardless
+// of how many are used.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1028,7 +1028,7 @@ sexp_ai_goal_link Sexp_ai_goal_links[] = {
     { AI_GOAL_PLAY_DEAD, OP_AI_PLAY_DEAD },
 };
 
-char *HUD_gauge_text[NUM_HUD_GAUGES] = { "LEAD_INDICATOR",
+const char *HUD_gauge_text[NUM_HUD_GAUGES] = { "LEAD_INDICATOR",
                                          "ORIENTATION_TEE",
                                          "HOSTILE_TRIANGLE",
                                          "TARGET_TRIANGLE",
@@ -1443,7 +1443,7 @@ identify_operator(char *token)
 }
 
 int
-find_operator(char *token)
+find_operator(const char *token)
 {
     int i;
 
@@ -1639,8 +1639,7 @@ check_sexp_syntax(int index, int return_type, int recursive, int *bad_index,
             }
 
             if (ship_name_lookup(CTEXT(index), 0) < 0) {
-                if (Fred_running ||
-                    mission_parse_ship_arrived(
+                if (mission_parse_ship_arrived(
                         CTEXT(index))) { // == 0 when still on arrival list
                     return SEXP_CHECK_INVALID_SHIP;
                 }
@@ -1655,8 +1654,7 @@ check_sexp_syntax(int index, int return_type, int recursive, int *bad_index,
             }
 
             if (ship_name_lookup(CTEXT(index), 1) < 0) {
-                if (Fred_running ||
-                    mission_parse_ship_arrived(
+                if (mission_parse_ship_arrived(
                         CTEXT(index))) { // == 0 when still on arrival list
                     if (type ==
                         OPF_SHIP) { // return invalid ship if not also looking for point
@@ -1693,8 +1691,7 @@ check_sexp_syntax(int index, int return_type, int recursive, int *bad_index,
 
             if ((ship_name_lookup(CTEXT(index), 1) < 0) &&
                 (wing_name_lookup(CTEXT(index), 1) < 0)) {
-                if (Fred_running ||
-                    mission_parse_ship_arrived(
+                if (mission_parse_ship_arrived(
                         CTEXT(index))) { // == 0 when still on arrival list
                     if (type !=
                         OPF_SHIP_WING_POINT) { // return invalid if not also looking for point
@@ -1787,13 +1784,6 @@ check_sexp_syntax(int index, int return_type, int recursive, int *bad_index,
             }
 
             // if we're checking for an AWACS subsystem and this is not an awacs subsystem
-            if (Fred_running) {
-                if ((type == OPF_AWACS_SUBSYSTEM) &&
-                    !(Ship_info[ship_class].subsystems[i].flags &
-                      MSS_FLAG_AWACS)) {
-                    return SEXP_CHECK_INVALID_SUBSYS;
-                }
-            }
 
             break;
         }
@@ -1856,46 +1846,6 @@ check_sexp_syntax(int index, int return_type, int recursive, int *bad_index,
                 return SEXP_CHECK_TYPE_MISMATCH;
             }
 
-            if (Fred_running) {
-                int ship_num, ship2, i, w = 0, z;
-
-                ship_num = ship_name_lookup(CTEXT(Sexp_nodes[op_index].rest));
-                if (ship_num < 0) {
-                    w = wing_name_lookup(CTEXT(Sexp_nodes[op_index].rest));
-                    if (w < 0) {
-                        if (bad_index) {
-                            *bad_index = Sexp_nodes[op_index].rest;
-                        }
-
-                        return SEXP_CHECK_INVALID_SHIP; // should have already been caught earlier, but just in case..
-                    }
-                }
-
-                Assert(Sexp_nodes[index].subtype == SEXP_ATOM_LIST);
-                z = Sexp_nodes[index].first;
-                Assert(Sexp_nodes[z].subtype != SEXP_ATOM_LIST);
-                z = find_operator(CTEXT(z));
-                if (ship_num >= 0) {
-                    if (!query_sexp_ai_goal_valid(z, ship_num)) {
-                        return SEXP_CHECK_ORDER_NOT_ALLOWED;
-                    }
-                }
-                else {
-                    for (i = 0; i < Wings[w].wave_count; i++) {
-                        if (!query_sexp_ai_goal_valid(z,
-                                                      Wings[w].ship_index[i])) {
-                            return SEXP_CHECK_ORDER_NOT_ALLOWED;
-                        }
-                    }
-                }
-
-                if ((z == OP_AI_DOCK) && (Sexp_nodes[index].rest >= 0)) {
-                    ship2 = ship_name_lookup(CTEXT(Sexp_nodes[index].rest));
-                    if ((ship_num < 0) || !ship_docking_valid(ship_num, ship2)) {
-                        return SEXP_CHECK_DOCKING_NOT_ALLOWED;
-                    }
-                }
-            }
 
             // we should check the syntax of the actual goal!!!!
             z = Sexp_nodes[index].first;
@@ -1941,14 +1891,6 @@ check_sexp_syntax(int index, int return_type, int recursive, int *bad_index,
             if (type2 != SEXP_ATOM_STRING)
                 return SEXP_CHECK_TYPE_MISMATCH;
 
-            if (Fred_running) {
-                for (i = 0; i < Num_messages; i++)
-                    if (!stricmp(Messages[i].name, CTEXT(index)))
-                        break;
-
-                if (i == Num_messages)
-                    return SEXP_CHECK_UNKNOWN_MESSAGE;
-            }
 
             break;
 
@@ -1959,16 +1901,6 @@ check_sexp_syntax(int index, int return_type, int recursive, int *bad_index,
             if (type2 != SEXP_ATOM_STRING)
                 return SEXP_CHECK_TYPE_MISMATCH;
 
-            if (Fred_running) { // should still check in Fred though..
-                char *name;
-
-                name = CTEXT(index);
-                if (!stricmp(name, "low") || !stricmp(name, "normal") ||
-                    !stricmp(name, "high"))
-                    break;
-
-                return SEXP_CHECK_INVALID_PRIORITY;
-            }
 
             break;
         }
@@ -1977,37 +1909,6 @@ check_sexp_syntax(int index, int return_type, int recursive, int *bad_index,
             if (type2 != SEXP_ATOM_STRING)
                 return SEXP_CHECK_TYPE_MISMATCH;
 
-            if (Fred_running) {
-                if (mode == SEXP_MODE_CAMPAIGN) {
-                    for (i = 0; i < Campaign.num_missions; i++)
-                        if (!stricmp(CTEXT(index), Campaign.missions[i].name)) {
-                            if ((i != Sexp_useful_number) &&
-                                (Campaign.missions[i].level >=
-                                 Campaign.missions[Sexp_useful_number].level))
-                                return SEXP_CHECK_INVALID_LEVEL;
-
-                            break;
-                        }
-
-                    if (i == Campaign.num_missions)
-                        return SEXP_CHECK_INVALID_MISSION_NAME;
-                }
-                else {
-                    // mwa -- put the following if statement to prevent Fred errors for possibly valid
-                    // conditions.  We should do something else here!!!
-                    if ((Operators[op].value == OP_PREVIOUS_EVENT_TRUE) ||
-                        (Operators[op].value == OP_PREVIOUS_EVENT_FALSE) ||
-                        (Operators[op].value == OP_PREVIOUS_EVENT_INCOMPLETE) ||
-                        (Operators[op].value == OP_PREVIOUS_GOAL_TRUE) ||
-                        (Operators[op].value == OP_PREVIOUS_GOAL_FALSE) ||
-                        (Operators[op].value == OP_PREVIOUS_GOAL_INCOMPLETE))
-                        break;
-
-                    if (!(*Mission_filename) ||
-                        stricmp(Mission_filename, CTEXT(index)))
-                        return SEXP_CHECK_INVALID_MISSION_NAME;
-                }
-            }
 
             break;
 
@@ -2015,48 +1916,21 @@ check_sexp_syntax(int index, int return_type, int recursive, int *bad_index,
             if (type2 != SEXP_ATOM_STRING)
                 return SEXP_CHECK_TYPE_MISMATCH;
 
-            // we only need to check the campaign list if running in Fred and are in campaign mode.
-            // otherwise, check the set of current goals
-            if (Fred_running && (mode == SEXP_MODE_CAMPAIGN)) {
-                z = find_parent_operator(index);
-                Assert(z >= 0);
-                z = Sexp_nodes[z]
-                        .rest; // first argument of operator should be mission name
-                Assert(z >= 0);
-                for (i = 0; i < Campaign.num_missions; i++)
-                    if (!stricmp(CTEXT(z), Campaign.missions[i].name))
-                        break;
+            // check the set of current goals (the campaign-list variant of
+            // this check was FRED-only)
 
-                // read the goal/event list from the mission file if both num_goals and num_events
-                // are < 0
-                if ((Campaign.missions[i].num_goals <= 0) &&
-                    (Campaign.missions[i].num_events <= 0))
-                    read_mission_goal_list(i);
+            // MWA -- short circuit evaluation of these things for now.
+            if ((Operators[op].value == OP_PREVIOUS_GOAL_TRUE) ||
+                (Operators[op].value == OP_PREVIOUS_GOAL_FALSE) ||
+                (Operators[op].value == OP_PREVIOUS_GOAL_INCOMPLETE))
+                break;
 
-                if (i < Campaign.num_missions) {
-                    for (t = 0; t < Campaign.missions[i].num_goals; t++)
-                        if (!stricmp(CTEXT(index),
-                                     Campaign.missions[i].goals[t].name))
-                            break;
-
-                    if (t == Campaign.missions[i].num_goals)
-                        return SEXP_CHECK_INVALID_GOAL_NAME;
-                }
-            }
-            else {
-                // MWA -- short circuit evaluation of these things for now.
-                if ((Operators[op].value == OP_PREVIOUS_GOAL_TRUE) ||
-                    (Operators[op].value == OP_PREVIOUS_GOAL_FALSE) ||
-                    (Operators[op].value == OP_PREVIOUS_GOAL_INCOMPLETE))
+            for (i = 0; i < Num_goals; i++)
+                if (!stricmp(CTEXT(index), Mission_goals[i].name))
                     break;
 
-                for (i = 0; i < Num_goals; i++)
-                    if (!stricmp(CTEXT(index), Mission_goals[i].name))
-                        break;
-
-                if (i == Num_goals)
-                    return SEXP_CHECK_INVALID_GOAL_NAME;
-            }
+            if (i == Num_goals)
+                return SEXP_CHECK_INVALID_GOAL_NAME;
 
             break;
 
@@ -2066,73 +1940,25 @@ check_sexp_syntax(int index, int return_type, int recursive, int *bad_index,
 
             // like above checking for goals, check events in the campaign only if in Fred
             // and only if in campaign mode.  Otherwise, check the current set of events
-            if (Fred_running && (mode == SEXP_MODE_CAMPAIGN)) {
-                z = find_parent_operator(index);
-                Assert(z >= 0);
-                z = Sexp_nodes[z]
-                        .rest; // first argument of operator should be mission name
-                Assert(z >= 0);
-                for (i = 0; i < Campaign.num_missions; i++)
-                    if (!stricmp(CTEXT(z), Campaign.missions[i].name))
-                        break;
+            // MWA -- short circuit evaluation of these things for now.
+            if ((Operators[op].value == OP_PREVIOUS_EVENT_TRUE) ||
+                (Operators[op].value == OP_PREVIOUS_EVENT_FALSE) ||
+                (Operators[op].value == OP_PREVIOUS_EVENT_INCOMPLETE))
+                break;
 
-                // read the goal/event list from the mission file if both num_goals and num_events
-                // are < 0
-                if ((Campaign.missions[i].num_goals <= 0) &&
-                    (Campaign.missions[i].num_events <= 0))
-                    read_mission_goal_list(i);
-
-                if (i < Campaign.num_missions) {
-                    for (t = 0; t < Campaign.missions[i].num_events; t++)
-                        if (!stricmp(CTEXT(index),
-                                     Campaign.missions[i].events[t].name))
-                            break;
-
-                    if (t == Campaign.missions[i].num_events)
-                        return SEXP_CHECK_INVALID_EVENT_NAME;
-                }
-            }
-            else {
-                // MWA -- short circuit evaluation of these things for now.
-                if ((Operators[op].value == OP_PREVIOUS_EVENT_TRUE) ||
-                    (Operators[op].value == OP_PREVIOUS_EVENT_FALSE) ||
-                    (Operators[op].value == OP_PREVIOUS_EVENT_INCOMPLETE))
+            for (i = 0; i < Num_mission_events; i++) {
+                if (!stricmp(CTEXT(index), Mission_events[i].name))
                     break;
-
-                for (i = 0; i < Num_mission_events; i++) {
-                    if (!stricmp(CTEXT(index), Mission_events[i].name))
-                        break;
-                }
-                if (i == Num_mission_events)
-                    return SEXP_CHECK_INVALID_EVENT_NAME;
             }
+            if (i == Num_mission_events)
+                return SEXP_CHECK_INVALID_EVENT_NAME;
+
             break;
 
         case OPF_DOCKER_POINT:
             if (type2 != SEXP_ATOM_STRING)
                 return SEXP_CHECK_TYPE_MISMATCH;
 
-            if (Fred_running) {
-                int ship_num, model, i, z;
-
-                z = find_parent_operator(op_index);
-                ship_num = ship_name_lookup(CTEXT(Sexp_nodes[z].rest));
-                if (ship_num < 0) {
-                    if (bad_index)
-                        *bad_index = Sexp_nodes[z].rest;
-
-                    return SEXP_CHECK_INVALID_SHIP; // should have already been caught earlier, but just in case..
-                }
-
-                model = Ships[ship_num].modelnum;
-                z = model_get_num_dock_points(model);
-                for (i = 0; i < z; i++)
-                    if (!stricmp(CTEXT(index), model_get_dock_name(model, i)))
-                        break;
-
-                if (i == z)
-                    return SEXP_CHECK_INVALID_DOCKER_POINT;
-            }
 
             break;
 
@@ -2140,26 +1966,6 @@ check_sexp_syntax(int index, int return_type, int recursive, int *bad_index,
             if (type2 != SEXP_ATOM_STRING)
                 return SEXP_CHECK_TYPE_MISMATCH;
 
-            if (Fred_running) {
-                int ship_num, model, i, z;
-
-                ship_num = ship_name_lookup(CTEXT(Sexp_nodes[op_index].rest));
-                if (ship_num < 0) {
-                    if (bad_index)
-                        *bad_index = Sexp_nodes[op_index].rest;
-
-                    return SEXP_CHECK_INVALID_SHIP; // should have already been caught earlier, but just in case..
-                }
-
-                model = Ships[ship_num].modelnum;
-                z = model_get_num_dock_points(model);
-                for (i = 0; i < z; i++)
-                    if (!stricmp(CTEXT(index), model_get_dock_name(model, i)))
-                        break;
-
-                if (i == z)
-                    return SEXP_CHECK_INVALID_DOCKEE_POINT;
-            }
 
             break;
 
@@ -2169,15 +1975,14 @@ check_sexp_syntax(int index, int return_type, int recursive, int *bad_index,
 
             if (*CTEXT(index) != '#') { // not a manual source?
                 //if ( !stricmp(CTEXT(index), "<any allied>") )
-                //      return SEXP_CHECK_INVALID_MSG_SOURCE;
+                //   return SEXP_CHECK_INVALID_MSG_SOURCE;
 
                 if (stricmp(CTEXT(index),
                             "<any wingman>")) // not a special token?
                     if ((ship_name_lookup(CTEXT(index)) < 0) &&
                         (wing_name_lookup(CTEXT(index), 1) <
                          0)) // is it in the mission?
-                        if (Fred_running ||
-                            mission_parse_ship_arrived(
+                        if (mission_parse_ship_arrived(
                                 CTEXT(index))) // == 0 when still on arrival list
                             return SEXP_CHECK_INVALID_MSG_SOURCE;
             }
@@ -2279,11 +2084,6 @@ check_sexp_syntax(int index, int return_type, int recursive, int *bad_index,
             break;
 
         case OPF_VARIABLE_NAME:
-            if (Fred_running) {
-                if (get_index_sexp_variable_name(Sexp_nodes[index].text) == -1) {
-                    return SEXP_CHECK_INVALID_VARIABLE;
-                }
-            }
             // if Fred not running anything goes
             break;
 
@@ -2303,8 +2103,8 @@ check_sexp_syntax(int index, int return_type, int recursive, int *bad_index,
     return 0;
 }
 
-//      Stuff a string (" chars ") in *str, return length.
-//      Updates Mp.
+// Stuff a string (" chars ") in *str, return length.
+// Updates Mp.
 int
 get_string(char *str)
 {
@@ -2318,9 +2118,8 @@ get_string(char *str)
     return len;
 }
 
-// get text to stuff into Sexp_node in case of variable
-// if Fred_running - stuff Sexp_variables[].variable_name
-// otherwise - stuff index into Sexp_variables array.
+// get text to stuff into Sexp_node in case of variable:
+// stuff index into Sexp_variables array (FRED stuffed the variable name).
 void
 get_sexp_text_for_variable(char *text, char *token)
 {
@@ -2436,15 +2235,9 @@ build_sexp_text_string(char *buffer, int node, int mode)
 
             // Error check - can be Fred or Freespace
             if (mode == SEXP_ERROR_CHECK_MODE) {
-                if (Fred_running) {
-                    sprintf(buffer, "%s[%s] ", Sexp_nodes[node].text,
-                            Sexp_variables[sexp_variables_index].text);
-                }
-                else {
-                    sprintf(buffer, "%s[%s] ",
-                            Sexp_variables[sexp_variables_index].variable_name,
-                            Sexp_variables[sexp_variables_index].text);
-                }
+                sprintf(buffer, "%s[%s] ",
+                        Sexp_variables[sexp_variables_index].variable_name,
+                        Sexp_variables[sexp_variables_index].text);
             }
             else {
                 // Save as string - only  Fred
@@ -2461,15 +2254,8 @@ build_sexp_text_string(char *buffer, int node, int mode)
 
             // Error check - can be Fred or Freespace
             if (mode == SEXP_ERROR_CHECK_MODE) {
-                if (Fred_running) {
-                    sprintf(buffer, "%s[%s] ",
-                            Sexp_variables[sexp_variables_index].variable_name,
-                            Sexp_variables[sexp_variables_index].text);
-                }
-                else {
-                    sprintf(buffer, "%s[%s] ", Sexp_nodes[node].text,
-                            Sexp_variables[sexp_variables_index].text);
-                }
+                sprintf(buffer, "%s[%s] ", Sexp_nodes[node].text,
+                        Sexp_variables[sexp_variables_index].text);
             }
             else {
                 // Save as string - only Fred
@@ -2737,11 +2523,11 @@ rand_sexp(int n, int multiple = 0)
         }
         else {
             // get low
-            //                  if (Sexp_nodes[n].first != -1) {
-            //                          low = eval_sexp(Sexp_nodes[n].first);
-            //                  } else {
-            //                          low = atoi(CTEXT(n));
-            //                  }
+            //       if (Sexp_nodes[n].first != -1) {
+            //          low = eval_sexp(Sexp_nodes[n].first);
+            //       } else {
+            //          low = atoi(CTEXT(n));
+            //       }
             low = num_eval(n);
 
             // get high
@@ -2785,7 +2571,7 @@ sexp_or(int n)
 
         // don't return on true value -- keep evaluating for mission log purposes
         //if ( result )
-        //      return result;
+        //  return result;
 
         while (Sexp_nodes[n].rest != -1) {
             result |= eval_sexp(Sexp_nodes[n].rest);
@@ -2797,7 +2583,7 @@ sexp_or(int n)
             n = Sexp_nodes[n].rest;
             // don't return on true value -- keep evaluating for mission log purposes
             //if ( result )
-            //  return result;
+            // return result;
         }
     }
 
@@ -2831,7 +2617,7 @@ sexp_and(int n)
 
         // don't short circuit -- evaluate everything for purposes of marking mission log
         //if ( !result )
-        //      return result;
+        //  return result;
 
         while (Sexp_nodes[n].rest != -1) {
             int new_result;
@@ -3007,7 +2793,7 @@ sexp_equal(int n)
 }
 
 // Evaluate if given ship is destroyed.
-//      Return true if the ship in the expression has been destroyed.
+// Return true if the ship in the expression has been destroyed.
 int
 sexp_is_destroyed(int n, fix *latest_time)
 {
@@ -5017,7 +4803,7 @@ sexp_send_one_message(char *name, char *who_from, char *priority, int group,
         return;
     }
     else if (!stricmp(who_from, "<any allied>")) {
-        //Int3();                       // no longer supported
+        //Int3();       // no longer supported
         return;
     }
     else if ((num = wing_name_lookup(who_from)) != -1) {
@@ -5589,11 +5375,10 @@ void
 sexp_jettison_cargo(int n)
 {
     char *shipname;
-    int jettison_delay, ship_index;
+    int ship_index;
 
     // get some data
     shipname = CTEXT(n);
-    jettison_delay = atoi(CTEXT(CDR(n)));
 
     // lookup the ship
     ship_index = ship_name_lookup(shipname);
@@ -6754,8 +6539,8 @@ sexp_send_training_message(int node)
         message_training_que(CTEXT(CDR(node)), timestamp(delay), t);
     }
 
-    //  if (Training_msg_method)
-    //          gameseq_post_event(GS_EVENT_TRAINING_PAUSE);
+    //   if (Training_msg_method)
+    //      gameseq_post_event(GS_EVENT_TRAINING_PAUSE);
 }
 
 int
@@ -7286,7 +7071,6 @@ sexp_add_remove_escort(int node)
 {
     int sindex;
     int flag;
-    char *whee;
 
     // get the firing ship
     sindex = ship_name_lookup(CTEXT(node));
@@ -7298,7 +7082,6 @@ sexp_add_remove_escort(int node)
     }
 
     // determine whether to add or remove it
-    whee = CTEXT(CDR(node));
     flag = atoi(CTEXT(CDR(node)));
 
     // add/remove
@@ -7609,7 +7392,7 @@ sexp_is_primary_selected(int node)
 #define LEFT_QUAD 3
 #define REAR_QUAD 2
 
-//      Return SEXP_TRUE if quadrant quadnum is near max.
+// Return SEXP_TRUE if quadrant quadnum is near max.
 int
 shield_quad_near_max(int quadnum)
 {
@@ -7632,13 +7415,13 @@ shield_quad_near_max(int quadnum)
     }
 }
 
-//      Return truth value for special SEXP.
-//      Used in training#5, perhaps in other missions.
+// Return truth value for special SEXP.
+// Used in training#5, perhaps in other missions.
 int
 process_special_sexps(int index)
 {
     switch (index) {
-    case 0: //  Ship "Freighter 1" is aspect locked by player.
+    case 0: // Ship "Freighter 1" is aspect locked by player.
         if (Player_ai->target_objnum != -1) {
             if (!(stricmp(
                     Ships[Objects[Player_ai->target_objnum].instance].ship_name,
@@ -7649,7 +7432,7 @@ process_special_sexps(int index)
         }
         return SEXP_FALSE;
         break;
-    case 1: //  Fired Interceptors
+    case 1: // Fired Interceptors
         object *objp;
         for (objp = GET_FIRST(&obj_used_list);
              objp != END_OF_LIST(&obj_used_list); objp = GET_NEXT(objp)) {
@@ -7670,7 +7453,7 @@ process_special_sexps(int index)
             }
         }
         return SEXP_FALSE;
-    case 2: //  Ship "Freighter 1", subsystem "Weapons" is aspect locked by player.
+    case 2: // Ship "Freighter 1", subsystem "Weapons" is aspect locked by player.
         if (Player_ai->target_objnum != -1) {
             if (!(stricmp(
                     Ships[Objects[Player_ai->target_objnum].instance].ship_name,
@@ -7685,12 +7468,12 @@ process_special_sexps(int index)
         }
         return SEXP_FALSE;
         break;
-    case 3: //  Player ship suffering shield damage on front.
+    case 3: // Player ship suffering shield damage on front.
         apply_damage_to_shield(Player_obj, FRONT_QUAD, 10.0f);
         hud_shield_quadrant_hit(Player_obj, FRONT_QUAD);
         return SEXP_TRUE;
         break;
-    case 4: //  Player ship suffering much damage.
+    case 4: // Player ship suffering much damage.
         nprintf(("AI", "Frame %i\n", Framecount));
         apply_damage_to_shield(Player_obj, FRONT_QUAD, 10.0f);
         hud_shield_quadrant_hit(Player_obj, FRONT_QUAD);
@@ -7699,7 +7482,7 @@ process_special_sexps(int index)
         else
             return SEXP_FALSE;
         break;
-    case 5: //  Player's shield is quick repaired
+    case 5: // Player's shield is quick repaired
         nprintf(("AI", "Frame %i, recharged to %7.3f\n", Framecount,
                  Player_obj->shields[FRONT_QUAD]));
 
@@ -7717,35 +7500,35 @@ process_special_sexps(int index)
         else
             return SEXP_FALSE;
         break;
-    case 6: //  3 of player's shield quadrants are reduced to 0.
+    case 6: // 3 of player's shield quadrants are reduced to 0.
         Player_obj->shields[1] = 1.0f;
         Player_obj->shields[2] = 1.0f;
         Player_obj->shields[3] = 1.0f;
         //apply_damage_to_shield(Player_obj, FRONT_QUAD, 1.0f);
         hud_shield_quadrant_hit(Player_obj, FRONT_QUAD);
         return SEXP_TRUE;
-    case 7: //  Make sure front quadrant has been maximized, or close to it.
+    case 7: // Make sure front quadrant has been maximized, or close to it.
         if (shield_quad_near_max(FRONT_QUAD))
             return SEXP_TRUE;
         else
             return SEXP_FALSE;
         break;
 
-    case 8: //  Make sure rear quadrant has been maximized, or close to it.
+    case 8: // Make sure rear quadrant has been maximized, or close to it.
         if (shield_quad_near_max(REAR_QUAD))
             return SEXP_TRUE;
         else
             return SEXP_FALSE;
         break;
 
-    case 9: //  Zero left and right quadrants in preparation for maximizing rear quadrant.
+    case 9: // Zero left and right quadrants in preparation for maximizing rear quadrant.
         Player_obj->shields[LEFT_QUAD] = 0.0f;
         Player_obj->shields[RIGHT_QUAD] = 0.0f;
         hud_shield_quadrant_hit(Player_obj, LEFT_QUAD);
         return SEXP_TRUE;
         break;
 
-    case 10: // Return true if player is low on Interceptors.
+    case 10: //   Return true if player is low on Interceptors.
         if (Player_ship->weapons.secondary_bank_ammo[0] +
                 Player_ship->weapons.secondary_bank_ammo[1] <
             8)
@@ -7754,7 +7537,7 @@ process_special_sexps(int index)
             return SEXP_FALSE;
         break;
 
-    case 11: // Return true if player has plenty of Interceptors.
+    case 11: //   Return true if player has plenty of Interceptors.
         if (Player_ship->weapons.secondary_bank_ammo[0] +
                 Player_ship->weapons.secondary_bank_ammo[1] >=
             8)
@@ -7763,7 +7546,7 @@ process_special_sexps(int index)
             return SEXP_FALSE;
         break;
 
-    case 12: // Return true if player is low on Interceptors.
+    case 12: //   Return true if player is low on Interceptors.
         if (Player_ship->weapons.secondary_bank_ammo[0] +
                 Player_ship->weapons.secondary_bank_ammo[1] <
             4)
@@ -7778,14 +7561,14 @@ process_special_sexps(int index)
         return SEXP_TRUE;
         break;
 
-    case 100: //        Return true if player is out of countermeasures.
+    case 100: //  Return true if player is out of countermeasures.
         if (Player_ship->cmeasure_count <= 0)
             return SEXP_TRUE;
         else
             return SEXP_FALSE;
 
     default:
-        Int3(); //      Unsupported node type.
+        Int3(); //   Unsupported node type.
     }
 
     return SEXP_FALSE;
@@ -9704,81 +9487,6 @@ update_sexp_references(char *old_name, char *new_name, int format, int node)
 }
 
 int
-query_referenced_in_sexp(int mode, char *name, int *node)
-{
-    int i, n, j;
-
-    for (n = 0; n < MAX_SEXP_NODES; n++) {
-        if ((SEXP_NODE_TYPE(n) == SEXP_ATOM) &&
-            (Sexp_nodes[n].subtype == SEXP_ATOM_STRING)) {
-            if (!stricmp(CTEXT(n), name)) {
-                break;
-            }
-        }
-    }
-
-    if (n == MAX_SEXP_NODES) {
-        return 0;
-    }
-
-    if (node) {
-        *node = n;
-    }
-
-    // so we know it's being used somewhere..  Time to find out where..
-    for (i = 0; i < MAX_SHIPS; i++)
-        if (Ships[i].objnum >= 0) {
-            if (query_node_in_sexp(n, Ships[i].arrival_cue)) {
-                return i | SRC_SHIP_ARRIVAL;
-            }
-            if (query_node_in_sexp(n, Ships[i].departure_cue)) {
-                return i | SRC_SHIP_DEPARTURE;
-            }
-        }
-
-    for (i = 0; i < MAX_WINGS; i++) {
-        if (Wings[i].wave_count) {
-            if (query_node_in_sexp(n, Wings[i].arrival_cue)) {
-                return i | SRC_WING_ARRIVAL;
-            }
-            if (query_node_in_sexp(n, Wings[i].departure_cue)) {
-                return i | SRC_WING_DEPARTURE;
-            }
-        }
-    }
-
-    for (i = 0; i < Num_mission_events; i++) {
-        if (query_node_in_sexp(n, Mission_events[i].formula)) {
-            return i | SRC_EVENT;
-        }
-    }
-
-    for (i = 0; i < Num_goals; i++) {
-        if (query_node_in_sexp(n, Mission_goals[i].formula)) {
-            return i | SRC_MISSION_GOAL;
-        }
-    }
-
-    for (j = 0; j < Num_teams; j++) {
-        for (i = 0; i < Debriefings[j].num_stages; i++) {
-            if (query_node_in_sexp(n, Debriefings[j].stages[i].formula)) {
-                return i | SRC_DEBRIEFING;
-            }
-        }
-    }
-
-    for (j = 0; j < Num_teams; j++) {
-        for (i = 0; i < Briefings[j].num_stages; i++) {
-            if (query_node_in_sexp(n, Briefings[j].stages[i].formula)) {
-                return i | SRC_BRIEFING;
-            }
-        }
-    }
-
-    return SRC_UNKNOWN;
-}
-
-int
 verify_vector(char *text)
 {
     char *str;
@@ -9887,31 +9595,7 @@ validate_float(char **str)
     return 0;
 }
 
-// check if operator return type opr is a valid match for operator argument type opf
-int
-sexp_query_type_match(int opf, int opr)
-{
-    switch (opf) {
-    case OPF_NUMBER:
-        return ((opr == OPR_NUMBER) || (opr == OPR_POSITIVE));
-
-    case OPF_POSITIVE:
-        return (opr == OPR_POSITIVE);
-
-    case OPF_BOOL:
-        return (opr == OPR_BOOL);
-
-    case OPF_NULL:
-        return (opr == OPR_NULL);
-
-    case OPF_AI_GOAL:
-        return (opr == OPR_AI_GOAL);
-    }
-
-    return 0;
-}
-
-char *
+const char *
 sexp_error_message(int num)
 {
     switch (num) {
@@ -10073,15 +9757,8 @@ CTEXT(int n)
 {
     if (Sexp_nodes[n].type & SEXP_FLAG_VARIABLE) {
         int sexp_variable_index;
-        if (Fred_running) {
-            sexp_variable_index = get_index_sexp_variable_name(
-                Sexp_nodes[n].text);
-            Assert(sexp_variable_index != -1);
-        }
-        else {
-            //                  sexp_variable_index = extract_sexp_variable_index(n);
-            sexp_variable_index = atoi(Sexp_nodes[n].text);
-        }
+        //       sexp_variable_index = extract_sexp_variable_index(n);
+        sexp_variable_index = atoi(Sexp_nodes[n].text);
         // Reference a Sexp_variable
         // string format -- "Sexp_variables[xx]=number" or "Sexp_variables[xx]=string", where xx is the index
 
@@ -10101,8 +9778,8 @@ void
 init_sexp_vars()
 {
     for (int i = 0; i < MAX_SEXP_VARIABLES; i++) {
-        //              if ( !(Sexp_nodes[i].type & SEXP_FLAG_PERSISTENT) )
-        //                      Sexp_nodes[i].type = SEXP_NOT_USED;
+        //     if ( !(Sexp_nodes[i].type & SEXP_FLAG_PERSISTENT) )
+        //        Sexp_nodes[i].type = SEXP_NOT_USED;
         Sexp_variables[i].type = SEXP_VARIABLE_NOT_USED;
     }
 }
@@ -10152,7 +9829,7 @@ sexp_modify_variable(int n)
 {
     int sexp_variable_index;
     int new_number;
-    //  char *new_char_var;
+    //   char *new_char_var;
     char number_as_str[TOKEN_LENGTH];
 
     if (n != -1) {
@@ -10179,21 +9856,6 @@ sexp_modify_variable(int n)
             sexp_modify_variable(new_text, sexp_variable_index);
         }
     }
-}
-
-// Different type needed for Fred (1) allow modification of type (2) no callback required
-void
-sexp_fred_modify_variable(const char *text, const char *var_name, int index,
-                          int type)
-{
-    Assert(index >= 0 && index < MAX_SEXP_VARIABLES);
-    Assert(Sexp_variables[index].type & SEXP_VARIABLE_SET);
-    Assert((type & SEXP_VARIABLE_NUMBER) || (type & SEXP_VARIABLE_STRING));
-
-    strcpy(Sexp_variables[index].text, text);
-    strcpy(Sexp_variables[index].variable_name, var_name);
-    Sexp_variables[index].type = (SEXP_VARIABLE_SET | SEXP_VARIABLE_MODIFIED |
-                                  type);
 }
 
 // return index of sexp_variable_name, -1 if not found
@@ -10227,15 +9889,6 @@ sexp_variable_count()
     }
 
     return count;
-}
-
-// deletes sexp_variable from active
-void
-sexp_variable_delete(int index)
-{
-    Assert(Sexp_variables[index].type & SEXP_VARIABLE_SET);
-
-    Sexp_variables[index].type = SEXP_VARIABLE_NOT_USED;
 }
 
 int
@@ -10287,43 +9940,6 @@ sexp_variable_sort()
           sizeof(sexp_variable), sexp_var_compare);
 }
 
-int
-sexp_variable_allocate_block(const char *block_name, int block_type)
-{
-    int num_blocks, block_count, var_count, start;
-    block_count = sexp_variable_block_count();
-    var_count = sexp_variable_count();
-
-    if (block_type & SEXP_VARIABLE_BLOCK_EXP) {
-        num_blocks = BLOCK_EXP_SIZE;
-    }
-    else {
-        Int3(); // add new block type here with size
-        return -1;
-    }
-
-    if (block_count + var_count > (MAX_SEXP_VARIABLES - num_blocks)) {
-        // not enough free space
-        return -1;
-    }
-
-    // squeeze all variables to front of array
-    sexp_variable_sort();
-
-    // squeeze all block to end of array
-    sexp_variable_condense_block();
-
-    start = MAX_SEXP_VARIABLES - block_count - num_blocks;
-
-    for (int idx = start; idx < start + num_blocks; idx++) {
-        Assert(Sexp_variables[idx].type == SEXP_VARIABLE_NOT_USED);
-        Sexp_variables[idx].type = SEXP_VARIABLE_BLOCK | block_type;
-        strcpy(Sexp_variables[idx].variable_name, block_name);
-    }
-
-    return start;
-}
-
 // squeeze all blocks to top of array
 void
 sexp_variable_condense_block()
@@ -10342,30 +9958,6 @@ sexp_variable_condense_block()
             temp_idx--;
         }
     }
-}
-
-void
-sexp_variable_block_free(const char *ship_name, int start_index, int block_type)
-{
-    int num_blocks;
-
-    if (block_type & SEXP_VARIABLE_BLOCK_EXP) {
-        num_blocks = BLOCK_EXP_SIZE;
-    }
-    else {
-        Int3(); // new type of block
-        return;
-    }
-
-    for (int i = start_index; i < (start_index + num_blocks); i++) {
-        Assert(!stricmp(Sexp_variables[i].variable_name, ship_name));
-
-        Assert(Sexp_variables[i].type & block_type);
-
-        Sexp_variables[i].type = SEXP_VARIABLE_NOT_USED;
-    }
-
-    sexp_variable_condense_block();
 }
 
 // evaluate number which may result from an operator or may be text

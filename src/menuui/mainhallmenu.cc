@@ -95,7 +95,7 @@ typedef struct main_hall_defines
     // Time until we will next play a given misc animation, min delay, and max delay
     int misc_anim_delay[MAX_MISC_ANIMATIONS][3];
 
-    //  coords of where to play the misc anim
+    //   coords of where to play the misc anim
     int misc_anim_coords[MAX_MISC_ANIMATIONS][2];
 
     // misc anim play modes (see MISC_ANIM_MODE_* above)
@@ -535,14 +535,14 @@ main_hall_init(int main_hall_num)
     }
 
     /*
-        if(Player_select_very_first_pilot) {                            
-                Main_hall_help_stamp = timestamp(MAIN_HALL_HELP_TIME);
-                
-                // don't display the "press f1" message more than once
-                Player_select_very_first_pilot = 0;
-        } else {
-                Main_hall_help_stamp = -1;
-        }
+   if(Player_select_very_first_pilot) {            
+      Main_hall_help_stamp = timestamp(MAIN_HALL_HELP_TIME);
+      
+      // don't display the "press f1" message more than once
+      Player_select_very_first_pilot = 0;
+   } else {
+      Main_hall_help_stamp = -1;
+   }
 */
     Main_hall_region_linger_stamp = -1;
 
@@ -682,9 +682,6 @@ main_hall_do(float frametime)
 
         // clicked on the readyroom region
         case READY_ROOM_REGION:
-#if defined(E3_BUILD) || defined(PRESS_TOUR_BUILD)
-            gameseq_post_event(GS_EVENT_NEW_CAMPAIGN);
-#else
             if (strlen(Main_hall_campaign_cheat)) {
                 gameseq_post_event(GS_EVENT_CAMPAIGN_CHEAT);
             }
@@ -692,18 +689,12 @@ main_hall_do(float frametime)
                 gameseq_post_event(GS_EVENT_NEW_CAMPAIGN);
             }
             gamesnd_play_iface(SND_IFACE_MOUSE_CLICK);
-#endif
             break;
 
         // clicked on the tech room region
         case TECH_ROOM_REGION:
-#if defined(FS2_DEMO)
-            gamesnd_play_iface(SND_IFACE_MOUSE_CLICK);
-            game_feature_not_in_demo_popup();
-#else
             gamesnd_play_iface(SND_IFACE_MOUSE_CLICK);
             gameseq_post_event(GS_EVENT_TECH_MENU);
-#endif
             break;
 
         // clicked on the options region
@@ -714,29 +705,10 @@ main_hall_do(float frametime)
 
         // clicked on the campaign toom region
         case CAMPAIGN_ROOM_REGION:
-#if !defined(E3_BUILD) && !defined(PRESS_TOUR_BUILD)
 
-#ifdef FS2_DEMO
-            gamesnd_play_iface(SND_IFACE_MOUSE_CLICK);
-            {
-                //game_feature_not_in_demo_popup();
-                int reset_campaign = popup(
-                    PF_USE_AFFIRMATIVE_ICON | PF_BODY_BIG, 2, "Exit",
-                    "Restart Campaign",
-                    "Campaign Room only available in full version. However, you may restart the campaign.");
-                if (reset_campaign == 1) {
-                    mission_campaign_savefile_delete(Campaign.filename);
-                    mission_campaign_load(Campaign.filename);
-                    mission_campaign_next_mission();
-                }
-            }
-
-#else
             gamesnd_play_iface(SND_IFACE_MOUSE_CLICK);
             gameseq_post_event(GS_EVENT_CAMPAIGN_ROOM);
-#endif
 
-#endif
             break;
 
         // multiplayer door: excised
@@ -745,25 +717,11 @@ main_hall_do(float frametime)
 
         // load mission key was pressed
         case LOAD_MISSION_REGION:
-#ifdef RELEASE_REAL
-#else
-#if !defined(FS2_DEMO)
-//#if !defined(NDEBUG) || defined(INTERPLAYQA)
-#ifdef GAME_CD_CHECK
-            // if ( !game_do_cd_check() ) {
-            // break;
-            // }
-#endif
-            gamesnd_play_iface(SND_IFACE_MOUSE_CLICK);
-            gameseq_post_event(GS_EVENT_LOAD_MISSION_MENU);
-//#endif
-#endif
-#endif
             break;
 
         // quick start a game region
         case QUICK_START_REGION:
-#if !defined(NDEBUG) && !defined(FS2_DEMO)
+#ifndef NDEBUG
             if (Num_recent_missions > 0) {
                 strncpy(Game_current_mission_filename, Recent_missions[0],
                         MAX_FILENAME_LEN);

@@ -55,14 +55,14 @@ int G3_frame_count = 0;
 //start the frame
 // Pass true for zbuffer_flag to turn on zbuffering
 void
-g3_start_frame_func(int zbuffer_flag, char *filename, int lineno)
+g3_start_frame_func(int zbuffer_flag, const char *filename, int lineno)
 {
     float s;
     int width, height;
     float aspect;
 
     //Uncomment this to figure out who called g3_start_frame without calling g3_end_frame.
-    //  mprintf(( "g3_start_frame called from %s, line %d\n", filename, lineno ));
+    //   mprintf(( "g3_start_frame called from %s, line %d\n", filename, lineno ));
 
     Assert(G3_count == 0);
     G3_count++;
@@ -107,7 +107,7 @@ g3_start_frame_func(int zbuffer_flag, char *filename, int lineno)
 
     G3_frame_count++;
 
-    //init_interface_vars_to_assembler();               //for the texture-mapper
+    //init_interface_vars_to_assembler();    //for the texture-mapper
 }
 
 //this doesn't do anything, but is here for completeness
@@ -118,7 +118,7 @@ g3_end_frame(void)
     Assert(G3_count == 0);
 
     free_point_num = 0;
-    //  Assert(free_point_num==0);
+    //   Assert(free_point_num==0);
 }
 
 void scale_matrix(void);
@@ -322,9 +322,9 @@ g3_start_user_clip_plane(vector *plane_point, vector *plane_normal)
     }
 
     G3_user_clip = 1;
-    //  G3_user_clip_normal = *plane_normal;
-    //  G3_user_clip_point = *plane_point;
-    //  return;
+    //   G3_user_clip_normal = *plane_normal;
+    //   G3_user_clip_point = *plane_point;
+    //   return;
 
     vm_vec_rotate(&G3_user_clip_normal, plane_normal, &View_matrix);
     vm_vec_normalize(&G3_user_clip_normal);

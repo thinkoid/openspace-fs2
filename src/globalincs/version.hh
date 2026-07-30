@@ -17,55 +17,31 @@
 // keep this defined to build a standalone only executable
 // STANDALONE_ONLY
 // #define STANDALONE_ONLY_BUILD
-// #define STANDALONE_ONLY_RELEASE_VERSION              0
+// #define STANDALONE_ONLY_RELEASE_VERSION      0
 
 // Here are the version defines.
-//      Gets displayed as MAJOR.MINOR, or 1.21 if MAJOR = 1, MINOR = 21.
-//      Prior to release, MAJOR should be zero.  After release, it should be 1.  Probably never increase to 2 as that could
-//      cause confusion with a sequel.
-//      MINOR should increase by 1 for each minor upgrade and by 10 for major upgrades.
-//      With each rev we send, we should increase MINOR.
+// Gets displayed as MAJOR.MINOR, or 1.21 if MAJOR = 1, MINOR = 21.
+// Prior to release, MAJOR should be zero.  After release, it should be 1.  Probably never increase to 2 as that could
+// cause confusion with a sequel.
+// MINOR should increase by 1 for each minor upgrade and by 10 for major upgrades.
+// With each rev we send, we should increase MINOR.
 // Version history (full version):
-//              1.0     Initial US/UK release
-//              1.01    Patch for Win95 volume label bug
-//              1.20    German release version
+//    1.0   Initial US/UK release
+//    1.01  Patch for Win95 volume label bug
+//    1.20  German release version
 
-#if defined(FS2_DEMO)
-// Major is 0 for pre-release and 1 for 1.0 release
-#define FS_VERSION_MAJOR 01
-// Increase by 1 for minor revs, 10 for major.
-#define FS_VERSION_MINOR 10
-// Build version
-#define FS_VERSION_BUILD 00
-#elif defined(OEM_BUILD)
-// Major is 0 for pre-release and 1 for 1.0 release
-#define FS_VERSION_MAJOR 01
-// Increase by 1 for minor revs, 10 for major.
-#define FS_VERSION_MINOR 00
-// Build version
-#define FS_VERSION_BUILD 00
-#else
 // Major is 0 for pre-release and 1 for 1.0 release
 #define FS_VERSION_MAJOR 01
 // Increase by 1 for minor revs, 10 for major.
 #define FS_VERSION_MINOR 20
 // Build version
 #define FS_VERSION_BUILD 00
-#endif
 
 #define VERSION_LOC_FNAME "version.nfo"
 #define MOTD_LOC_FNAME "motd.txt"
 
-#ifdef MULTIPLAYER_BETA_BUILD
-#define MOTD_URL "http://www.pxo.net/files/fs2beta/motd.txt"
-#define VERSION_URL "http://www.pxo.net/files/fs2beta/version.nfo"
-#elif defined(FS2_DEMO)
-#define MOTD_URL "http://www.pxo.net/files/fs2demo/motd.txt"
-#define VERSION_URL "http://www.pxo.net/files/fs2demo/version.nfo"
-#else
 #define MOTD_URL "http://www.pxo.net/files/fs2/motd.txt"
 #define VERSION_URL "http://www.pxo.net/files/fs2/version.nfo"
-#endif
 
 #define VERSION_FILE_COMMENT_CHAR ';'
 #define NO_VERSION_IN_REGISTRY -2

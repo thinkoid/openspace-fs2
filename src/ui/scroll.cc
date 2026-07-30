@@ -33,8 +33,8 @@ UI_SCROLLBAR::link_hotspot(int up_button_num, int down_button_num)
 // We also need to get the dimensions of the bitmap button so we can update
 // the dimensions of the scrollbar.
 //
-// returns:             -1 ==> error
-//                                       0 ==> success
+// returns:    -1 ==> error
+//              0 ==> success
 //
 int
 UI_SCROLLBAR::set_bmaps(char *up_button_fname, char *down_button_fname,
@@ -81,8 +81,8 @@ void
 UI_SCROLLBAR::create(UI_WINDOW *wnd, int _x, int _y, int _h, int _start,
                      int _stop, int _position, int _window_size)
 {
-    char *up = "^";
-    char *down = "v";
+    const char *up = "^";
+    const char *down = "v";
     int bw = 20;
 
     base_create(wnd, UI_KIND_SCROLLBAR, _x, _y + bw, bw, _h - bw * 2);
@@ -155,9 +155,9 @@ UI_SCROLLBAR::draw()
             gr_set_color_fast(&CGRAY);
 
         /*
-                ui_rect( 0, 0, w-1, bar_position-1 );
-                ui_rect( 0, bar_position+bar_size, w-1, h-1);
-        */
+      ui_rect( 0, 0, w-1, bar_position-1 );
+      ui_rect( 0, bar_position+bar_size, w-1, h-1);
+   */
         ui_rect(0, 0, w - 1, h - 1);
         ui_draw_box_out(0, bar_position, w - 1, bar_position + bar_size - 1);
     }
@@ -167,7 +167,7 @@ void
 UI_SCROLLBAR::process(int focus)
 {
     int OnMe, OnSlider;
-    int oldpos, op;
+    int op;
 
     moved = 0;
     if (disabled_flag) {
@@ -187,7 +187,6 @@ UI_SCROLLBAR::process(int focus)
     }
 
     op = position;
-    oldpos = bar_position;
 
     if (up_button.pressed()) {
         position--;
@@ -200,22 +199,22 @@ UI_SCROLLBAR::process(int focus)
         set_focus();
     }
     /*
-        if ( (up_button.position != 0) || (focus && keyd_pressed[KEY_UP]) ) {
-                if ( (timer_get_milliseconds() > last_scrolled + 50) || up_button.just_pressed() ) {
-                        if ( up_button.just_pressed() ) {
-                                last_scrolled = timer_get_milliseconds() + 300;
-                        } else
-                                last_scrolled = timer_get_milliseconds();
+   if ( (up_button.position != 0) || (focus && keyd_pressed[KEY_UP]) ) {
+      if ( (timer_get_milliseconds() > last_scrolled + 50) || up_button.just_pressed() ) {
+         if ( up_button.just_pressed() ) {
+            last_scrolled = timer_get_milliseconds() + 300;
+         } else
+            last_scrolled = timer_get_milliseconds();
 
-                        position--;
-                        if (position < start)
-                                position = start;
+         position--;
+         if (position < start)
+            position = start;
 
-                        bar_position = position - start;
-                        bar_position *= h - bar_size;
-                        bar_position /= stop - start;
-                }
-        }*/
+         bar_position = position - start;
+         bar_position *= h - bar_size;
+         bar_position /= stop - start;
+      }
+   }*/
 
     if (down_button.pressed()) {
         position++;
@@ -228,22 +227,22 @@ UI_SCROLLBAR::process(int focus)
         set_focus();
     }
 
-    /*  if ( down_button.position || (keyfocus && keyd_pressed[KEY_DOWN]) ) {
-                if ( (timer_get_milliseconds() > last_scrolled + 50) || down_button.just_pressed() ) {
-                        if ( down_button.just_pressed() )
-                                last_scrolled = timer_get_milliseconds() + 300;
-                        else
-                                last_scrolled = timer_get_milliseconds();
+    /*   if ( down_button.position || (keyfocus && keyd_pressed[KEY_DOWN]) ) {
+      if ( (timer_get_milliseconds() > last_scrolled + 50) || down_button.just_pressed() ) {
+         if ( down_button.just_pressed() )
+            last_scrolled = timer_get_milliseconds() + 300;
+         else
+            last_scrolled = timer_get_milliseconds();
 
-                        position++;
-                        if (position > stop )
-                                position = stop;
+         position++;
+         if (position > stop )
+            position = stop;
 
-                        bar_position = position-start;
-                        bar_position *= h-bar_size;
-                        bar_position /= (stop-start);
-                }
-        }*/
+         bar_position = position-start;
+         bar_position *= h-bar_size;
+         bar_position /= (stop-start);
+      }
+   }*/
 
     OnMe = is_mouse_on();
 

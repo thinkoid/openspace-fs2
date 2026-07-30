@@ -33,18 +33,10 @@ static char szCompanyName[128];
 static char szAppName[128];
 static char szAppVersion[128];
 
-char *Osreg_company_name = "Volition";
-char *Osreg_class_name = "Freespace2Class";
-#if defined(FS2_DEMO)
-char *Osreg_app_name = "FreeSpace2Demo";
-char *Osreg_title = "Freespace 2 Demo";
-#elif defined(OEM_BUILD)
-char *Osreg_app_name = "FreeSpace2OEM";
-char *Osreg_title = "Freespace 2 OEM";
-#else
-char *Osreg_app_name = "FreeSpace2";
-char *Osreg_title = "Freespace 2";
-#endif
+const char *Osreg_company_name = "Volition";
+const char *Osreg_class_name = "Freespace2Class";
+const char *Osreg_app_name = "FreeSpace2";
+const char *Osreg_title = "Freespace 2";
 
 int Os_reg_inited = 0;
 
@@ -72,7 +64,7 @@ config_file_name()
 
 // build the "Section/Name" key of an entry
 static std::string
-config_key(char *section, char *name)
+config_key(const char *section, const char *name)
 {
     std::string key = section ? section : "Default";
 
@@ -136,7 +128,7 @@ config_save()
 
 // initialize the registry. setup default keys to use
 void
-os_init_registry_stuff(char *company, char *app, char *version)
+os_init_registry_stuff(const char *company, const char *app, const char *version)
 {
     if (company) {
         strcpy(szCompanyName, company);
@@ -165,7 +157,7 @@ os_init_registry_stuff(char *company, char *app, char *version)
 // Removes a value from to the INI file.  Passing
 // name=NULL will delete the section.
 void
-os_config_remove(char *section, char *name)
+os_config_remove(const char *section, const char *name)
 {
     if (!Os_reg_inited) {
         return;
@@ -197,7 +189,7 @@ os_config_remove(char *section, char *name)
 // removes the string. Writing a NULL value to a NULL name will delete
 // the section.
 void
-os_config_write_string(char *section, char *name, char *value)
+os_config_write_string(const char *section, const char *name, const char *value)
 {
     if (!Os_reg_inited) {
         return;
@@ -220,14 +212,15 @@ os_config_write_string(char *section, char *name, char *value)
 // same as previous function except we don't use the application name to build up the keyname
 // (with a single per-user config file the distinction is gone)
 void
-os_config_write_string2(char *section, char *name, char *value)
+os_config_write_string2(const char *section, const char *name,
+                        const char *value)
 {
     os_config_write_string(section, name, value);
 }
 
 // Writes an unsigned int to the INI file.
 void
-os_config_write_uint(char *section, char *name, uint value)
+os_config_write_uint(const char *section, const char *name, uint value)
 {
     char tmp[32];
 
@@ -252,8 +245,9 @@ os_config_write_uint(char *section, char *name, uint value)
 // calling os_read_string again, because it might reuse the
 // same buffer.
 static char tmp_string_data[1024];
-char *
-os_config_read_string(char *section, char *name, char *default_value)
+const char *
+os_config_read_string(const char *section, const char *name,
+                      const char *default_value)
 {
     if (!Os_reg_inited) {
         return NULL;
@@ -277,8 +271,9 @@ os_config_read_string(char *section, char *name, char *default_value)
 }
 
 // same as previous function except we don't use the application name to build up the keyname
-char *
-os_config_read_string2(char *section, char *name, char *default_value)
+const char *
+os_config_read_string2(const char *section, const char *name,
+                       const char *default_value)
 {
     return os_config_read_string(section, name, default_value);
 }
@@ -286,7 +281,7 @@ os_config_read_string2(char *section, char *name, char *default_value)
 // Reads a string from the INI file.  Default_value must
 // be passed, and if 'name' isn't found, then returns default_value
 uint
-os_config_read_uint(char *section, char *name, uint default_value)
+os_config_read_uint(const char *section, const char *name, uint default_value)
 {
     if (!Os_reg_inited) {
         return 0;
@@ -308,8 +303,9 @@ os_config_read_uint(char *section, char *name, uint default_value)
 
 // uses Ex versions of Windows registry functions - here the explicit keyname
 // is simply used as the section
-char *
-os_config_read_string_ex(char *keyname, char *name, char *default_value)
+const char *
+os_config_read_string_ex(const char *keyname, const char *name,
+                         const char *default_value)
 {
     if (!name) {
         return default_value;

@@ -42,7 +42,7 @@
 
 int Popup_max_display[GR_NUM_RESOLUTIONS] = { 11, 19 };
 
-char *Popup_slider_name[GR_NUM_RESOLUTIONS] = { "slider", "2_slider" };
+const char *Popup_slider_name[GR_NUM_RESOLUTIONS] = { "slider", "2_slider" };
 
 int Popup_slider_coords[GR_NUM_RESOLUTIONS][4] = { { // GR_640
                                                      121, 109, 15, 105 },
@@ -101,7 +101,7 @@ int Popup_input_text_y_offset[GR_NUM_RESOLUTIONS] = { 30, 30 };
 
 typedef struct popup_background
 {
-    char *filename; // filename for background
+    const char *filename; // filename for background
     int coords[2]; // coords to draw background at
 } popup_background;
 
@@ -120,7 +120,7 @@ static int Title_coords[GR_NUM_RESOLUTIONS][5] = { {
                                                        137, // x-left
                                                        106, // y-top
                                                        343, // width
-                                                       26, //   height
+                                                       26, //  height
                                                        308 // center
                                                    },
                                                    {
@@ -128,7 +128,7 @@ static int Title_coords[GR_NUM_RESOLUTIONS][5] = { {
                                                        220, // x-left
                                                        169, // y-top
                                                        553, // width
-                                                       26, //   height
+                                                       26, //  height
                                                        496 // center
                                                    } };
 
@@ -178,7 +178,7 @@ static popup_background Popup_background[GR_NUM_RESOLUTIONS][4] = {
 #define BUTTON_GENERIC_FIRST 2
 #define BUTTON_GENERIC_SECOND 3
 #define BUTTON_GENERIC_THIRD 4
-static char *Popup_button_filenames[GR_NUM_RESOLUTIONS][2][5] = {
+static const char *Popup_button_filenames[GR_NUM_RESOLUTIONS][2][5] = {
     {
         // GR_640
         { "Pop_00", // negative
@@ -213,8 +213,8 @@ int Popup_running_state;
 int Popup_default_choice; // which choice is highlighted (ie what gets choosen when enter is pressed)
 
 // see if any popup buttons have been pressed
-// exit: POPUP_NOCHANGE         => no buttons pressed
-//                      >=0                                     =>      button index that was pressed
+// exit: POPUP_NOCHANGE    => no buttons pressed
+//       >=0               => button index that was pressed
 int
 popup_check_buttons(popup_info *pi)
 {
@@ -271,12 +271,12 @@ popup_play_default_change_sound(popup_info *pi)
 }
 
 // do any key processing here
-// input:       pi                                      =>      data about the popup
-//                              k                                       => key that was pressed
+// input:   pi             => data about the popup
+//          k              => key that was pressed
 //
-// exit: 0 .. nchoices-1        => choice selected through keypress
-//                      POPUP_ABORT                     =>      abort the popup
-//                      POPUP_NOCHANGE          => nothing happenned
+// exit: 0 .. nchoices-1   => choice selected through keypress
+//       POPUP_ABORT       => abort the popup
+//       POPUP_NOCHANGE    => nothing happenned
 int
 popup_process_keys(popup_info *pi, int k, int flags)
 {
@@ -332,7 +332,11 @@ popup_process_keys(popup_info *pi, int k, int flags)
     } // end switch
 
     masked_k = k & ~KEY_CTRLED; // take out CTRL modifier only
-    if ((PF_ALLOW_DEAD_KEYS) && (Game_mode & GM_IN_MISSION)) {
+    // retail tested the bare macro (always true), so EVERY in-mission popup
+    // processed the dead-key set; no caller ever passes the flag, so the
+    // intended test makes this block dead (fs2open reached the same verdict
+    // and deleted both)
+    if ((flags & PF_ALLOW_DEAD_KEYS) && (Game_mode & GM_IN_MISSION)) {
         process_set_of_keys(masked_k, Dead_key_set_size, Dead_key_set);
         button_info_do(
             &Player->bi); // call functions based on status of button_info bit vectors
@@ -383,10 +387,10 @@ popup_split_lines(popup_info *pi, int flags)
 }
 
 // figure out what filename to use for the button icon
-char *
+const char *
 popup_get_button_filename(popup_info *pi, int i, int flags)
 {
-    char *fname = NULL;
+    const char *fname = NULL;
     int is_tiny = 0;
 
     // check for special button texts and if found, use specialized buttons for them.
@@ -480,7 +484,7 @@ popup_init(popup_info *pi, int flags)
     int i;
     UI_BUTTON *b;
     popup_background *pbg;
-    char *fname;
+    const char *fname;
 
     if (pi->nchoices == 0) {
         pbg = &Popup_background[gr_screen.res][0];
@@ -873,8 +877,8 @@ popup_force_draw_buttons(popup_info *pi)
     }
 }
 
-// exit: -1                                             =>      error
-//                      0..nchoices-1           => choice
+// exit: -1                => error
+//       0..nchoices-1     => choice
 int
 popup_do(popup_info *pi, int flags)
 {
@@ -994,9 +998,9 @@ popup_do_with_condition(popup_info *pi, int flags, int (*condition)())
 }
 
 // maybe assign a keyboard shortcut to this button
-// input:       pi              =>      popup information so far
-//                              i               =>      number of choice
-//                              str     => string for button press
+// input:   pi    => popup information so far
+//          i     => number of choice
+//          str   => string for button press
 void
 popup_maybe_assign_keypress(popup_info *pi, int n, char *str)
 {
@@ -1031,19 +1035,19 @@ popup_maybe_assign_keypress(popup_info *pi, int n, char *str)
     }
 }
 
-// input:       flags                   =>              flags                   =>              formatting specificatons (PF_...)
-//                              nchoices                =>              number of choices popup has
-//                              text_1          =>              text for first button
-//                              ...                     =>
-//                              text_n          =>              text for last button
-//                              msg text                =>              text msg for popup (can be of form "%s",pl->text)
+// input:   flags       =>    flags       =>    formatting specificatons (PF_...)
+//          nchoices    =>    number of choices popup has
+//          text_1      =>    text for first button
+//          ...         =>
+//          text_n      =>    text for last button
+//          msg text    =>    text msg for popup (can be of form "%s",pl->text)
 //
 // exit: choice selected (0..nchoices-1)
-//                      will return -1 if there was an error or popup was aborted
+//       will return -1 if there was an error or popup was aborted
 //
 // typical usage:
 //
-//      rval = popup(0, 2, POPUP_OK, POPUP_CANCEL, "Sorry %s, try again", pl->callsign);
+// rval = popup(0, 2, POPUP_OK, POPUP_CANCEL, "Sorry %s, try again", pl->callsign);
 int
 popup(int flags, int nchoices, ...)
 {

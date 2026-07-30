@@ -153,12 +153,12 @@ int Barracks_squad_number_coords[GR_NUM_RESOLUTIONS][2] = { { // GR_640
 
 //XSTR:OFF
 // bitmaps defs
-static char *Barracks_bitmap_fname[GR_NUM_RESOLUTIONS] = {
+static const char *Barracks_bitmap_fname[GR_NUM_RESOLUTIONS] = {
     "Barracks", // GR_640
     "2_Barracks" // GR_1024
 };
 
-static char *Barracks_bitmap_mask_fname[GR_NUM_RESOLUTIONS] = {
+static const char *Barracks_bitmap_mask_fname[GR_NUM_RESOLUTIONS] = {
     "Barracks-M", // GR_640
     "2_Barracks-M" // GR_1024
 };
@@ -169,14 +169,14 @@ static char *Barracks_bitmap_mask_fname[GR_NUM_RESOLUTIONS] = {
 
 struct barracks_bitmaps
 {
-    char *filename;
+    const char *filename;
     int x, y;
     int b;
 };
 
 struct barracks_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y;
     int text_x, text_y; // this is where the text label is
     int hotspot;
@@ -184,7 +184,7 @@ struct barracks_buttons
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    barracks_buttons(char *name, int x1, int y1, int x2, int y2, int h, int r = 0)
+    barracks_buttons(const char *name, int x1, int y1, int x2, int y2, int h, int r = 0)
         : filename(name)
         , x(x1)
         , y(y1)
@@ -610,7 +610,7 @@ barracks_pilot_accepted()
     // set his image
     player_set_squad_bitmap(Cur_pilot, Cur_pilot->squad_filename);
 
-    //  Skill_level = get_default_skill_level();
+    //   Skill_level = get_default_skill_level();
 
     // MWA -- I think that we should be writing Cur_pilot here.
     write_pilot_file(Cur_pilot);
@@ -1004,12 +1004,8 @@ barracks_button_pressed(int n)
         break;
 
     case B_STATS_MEDAL_BUTTON:
-#ifdef FS2_DEMO
-        game_feature_not_in_demo_popup();
-#else
         gamesnd_play_iface(SND_SWITCH_SCREENS);
         gameseq_post_event(GS_EVENT_VIEW_MEDALS);
-#endif
         break;
 
     case B_PILOT_DELETE_BUTTON:
@@ -1383,18 +1379,8 @@ barracks_init()
     barracks_init_stats(&Cur_pilot->stats);
 
     // disable some buttons for the e3 build
-#if defined(E3_BUILD) || defined(PRESS_TOUR_BUILD)
-    Buttons[gr_screen.res][B_PILOT_CLONE_BUTTON].button.hide();
-    Buttons[gr_screen.res][B_PILOT_CONVERT_BUTTON].button.hide();
-    Buttons[gr_screen.res][B_PILOT_CLONE_BUTTON].button.disable();
-    Buttons[gr_screen.res][B_PILOT_CONVERT_BUTTON].button.disable();
-#endif
 
     // e3 build
-#if defined(E3_BUILD) || defined(PRESS_TOUR_BUILD)
-    Buttons[gr_screen.res][B_PILOT_MULTI_MODE_BUTTON].button.hide();
-    Buttons[gr_screen.res][B_PILOT_MULTI_MODE_BUTTON].button.disable();
-#endif
 
     barracks_init_player_stuff(PLAYER_SELECT_MODE_SINGLE);
 }

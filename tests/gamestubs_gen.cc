@@ -10,10 +10,12 @@
 #include <globalincs/pstypes.hh>
 
 
-static void oracle_trap(const char *sym)
+// currently caller-less (every trapped subsystem has ported); kept for the
+// next regeneration
+[[maybe_unused]] static void oracle_trap(const char *sym)
 {
-        fprintf(stderr, "oracle strayed into unported code: %s\n", sym);
-        abort();
+   fprintf(stderr, "oracle strayed into unported code: %s\n", sym);
+   abort();
 }
 
 void debug_console(void (*)())

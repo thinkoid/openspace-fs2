@@ -20,7 +20,7 @@ typedef struct grid
     matrix gmatrix;
     physics_info physics;
     float square_size;
-    float planeD; //    D component of plane equation (A, B, C are uvec in gmatrix)
+    float planeD; // D component of plane equation (A, B, C are uvec in gmatrix)
     vector
         gpoints1[MAX_GRIDLINE_POINTS]; // 1 -4 are edge gridpoints for small grid.
     vector gpoints2[MAX_GRIDLINE_POINTS];
@@ -32,24 +32,11 @@ typedef struct grid
     vector gpoints8[MAX_GRIDLINE_POINTS];
 } grid;
 
-typedef struct tline
-{
-    int istart, iend, color;
-} tline;
-
+// The FRED grid implementation is gone (missiongrid.cc, removed with the
+// Fred_running fold); the briefing map keeps its own brief_* grid code in
+// missionbriefcommon.cc, which owns these globals now.
 extern grid Global_grid;
 extern grid *The_grid;
 extern int double_fine_gridlines;
-
-void grid_read_camera_controls(control_info *ci, float frametime);
-void maybe_create_new_grid(grid *gridp, vector *pos, matrix *orient,
-                           int force = 0);
-grid *create_grid(grid *gridp, vector *forward, vector *right, vector *center,
-                  int nrows, int ncols, float square_size);
-grid *create_default_grid(void);
-void render_grid(grid *gridp);
-void modify_grid(grid *gridp);
-void rpd_line(vector *v0, vector *v1);
-void grid_render_elevation_line(vector *pos, grid *gridp);
 
 #endif

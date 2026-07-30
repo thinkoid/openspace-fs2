@@ -292,7 +292,7 @@ mission_log_add_entry(int type, char *pname, char *sname, int info_index)
                 if (index == -1) {
                     index = ship_find_exited_ship_by_name(sname);
                     if (index == -1) {
-                        //      Int3();         // get allender.  name of object who killed ship appears to be bogus!!!
+                        // Int3();     // get allender.  name of object who killed ship appears to be bogus!!!
                         break;
                     }
                     team = Ships_exited[index].team;
@@ -455,7 +455,7 @@ mission_log_get_time(int type, char *pname, char *sname, fix *time)
 }
 
 void
-message_log_add_seg(int n, int x, int color, char *text, int flags = 0)
+message_log_add_seg(int n, int x, int color, const char *text, int flags = 0)
 {
     log_text_seg *seg, **parent;
 

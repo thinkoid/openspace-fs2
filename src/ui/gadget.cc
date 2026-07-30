@@ -54,7 +54,7 @@ UI_GADGET::link_hotspot(int num)
 // with a default value of zero.
 //
 // NOTE:  The bitmaps stored in a .ani file.  What each frame is used for
-//                       is left up to the component to decide.
+//        is left up to the component to decide.
 //
 
 // loads nframes bitmaps, starting at index start_frame.
@@ -62,7 +62,7 @@ UI_GADGET::link_hotspot(int num)
 // this keeps the loading code from trying to load bitmaps which don't exist
 // and taking an unnecessary disk hit.
 int
-UI_GADGET::set_bmaps(char *ani_fname, int nframes, int start_frame)
+UI_GADGET::set_bmaps(const char *ani_fname, int nframes, int start_frame)
 {
     int first_frame, i;
     char full_name[MAX_FILENAME_LEN] = "";
@@ -155,7 +155,7 @@ UI_GADGET::draw()
     }
 }
 
-//      Free up bitmaps used by the gadget, and call children to destroy themselves as well.
+// Free up bitmaps used by the gadget, and call children to destroy themselves as well.
 //
 void
 UI_GADGET::destroy()
@@ -538,29 +538,29 @@ int
 UI_GADGET::check_move()
 {
 #if 0
-                if ( parent != NULL ) return base_dragging;
+      if ( parent != NULL ) return base_dragging;
 
-                if ( !base_dragging )   {
+      if ( !base_dragging )   {
 
-                        if ( B2_JUST_PRESSED )  {
-                                if ( is_mouse_on() || is_mouse_on_children() ) {
-                                        start_drag_with_children();
-                                        base_drag_x = ui_mouse.x;
-                                        base_drag_y = ui_mouse.y;
-                                        return 1;
-                                } else {
-                                        return 0;
-                                }
-                        } else 
-                                return 0;
-                } else {
-                        drag_with_children(ui_mouse.x - base_drag_x,ui_mouse.y - base_drag_y);
-                        nprintf(( "UI", "UI: X=%d, Y=%d, Delta=(%d,%d)\n", x, y, (ui_mouse.x - base_drag_x), (ui_mouse.y - base_drag_y) ));
-                        if (B2_RELEASED)        {
-                                stop_drag_with_children();
-                        }
-                        return 1;
-                }
+         if ( B2_JUST_PRESSED )  {
+            if ( is_mouse_on() || is_mouse_on_children() ) {
+               start_drag_with_children();
+               base_drag_x = ui_mouse.x;
+               base_drag_y = ui_mouse.y;
+               return 1;
+            } else {
+               return 0;
+            }
+         } else 
+            return 0;
+      } else {
+         drag_with_children(ui_mouse.x - base_drag_x,ui_mouse.y - base_drag_y);
+         nprintf(( "UI", "UI: X=%d, Y=%d, Delta=(%d,%d)\n", x, y, (ui_mouse.x - base_drag_x), (ui_mouse.y - base_drag_y) ));
+         if (B2_RELEASED)  {
+            stop_drag_with_children();
+         }
+         return 1;
+      }
 #endif
     return 0;
 }

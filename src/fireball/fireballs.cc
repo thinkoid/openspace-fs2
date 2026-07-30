@@ -176,8 +176,9 @@ fireball_parse_tbl()
                 break;
             }
 
-            sprintf(Fireball_info[ntypes].lod[idx].filename, "%s_%d",
-                    base_filename, idx);
+            // bounded: filename is MAX_FILENAME_LEN, the table name may not be
+            sprintf(Fireball_info[ntypes].lod[idx].filename, "%.*s_%d",
+                    MAX_FILENAME_LEN - 4, base_filename, idx);
         }
 
         ntypes++;
@@ -249,20 +250,18 @@ fireball_render(object *obj)
     int num;
     vertex p;
     fireball *fb;
-    fireball_info *fd;
 
     MONITOR_INC(NumFireballsRend, 1);
 
     num = obj->instance;
     fb = &Fireballs[num];
-    fd = &Fireball_info[fb->fireball_info_index];
 
     if (Fireballs[num].current_bitmap < 0)
         return;
 
-    //  gr_set_color( 0, 100, 0 );
-    //  g3_draw_sphere_ez( &obj->pos, obj->radius );
-    //  return;
+    //   gr_set_color( 0, 100, 0 );
+    //   g3_draw_sphere_ez( &obj->pos, obj->radius );
+    //   return;
 
     // turn off fogging
     if (The_mission.flags & MISSION_FLAG_FULLNEB) {
@@ -324,9 +323,9 @@ fireball_render(object *obj)
 }
 
 // -----------------------------------------------------------------
-//      fireball_delete()
+// fireball_delete()
 //
-//      Delete a fireball.  Called by object_delete() code... do not call
+// Delete a fireball.  Called by object_delete() code... do not call
 // directly.
 //
 void
@@ -346,9 +345,9 @@ fireball_delete(object *obj)
 }
 
 // -----------------------------------------------------------------
-//      fireball_delete_all()
+// fireball_delete_all()
 //
-//      Delete all active fireballs, by calling obj_delete directly.
+// Delete all active fireballs, by calling obj_delete directly.
 //
 void
 fireball_delete_all()
@@ -378,7 +377,7 @@ fireball_set_framenum(int num)
     // valid lod?
     fl = NULL;
     if ((fb->lod >= 0) && (fb->lod < fd->lod_count)) {
-        fl = &Fireball_info[Fireballs[num].fireball_info_index].lod[fb->lod];
+        fl = &Fireball_info[Fireballs[num].fireball_info_index].lod[(int)fb->lod];
     }
     if (fl == NULL) {
         // argh
@@ -423,7 +422,7 @@ fireball_set_framenum(int num)
 int
 fireball_is_perishable(object *obj)
 {
-    //  return 1;
+    //   return 1;
     int num, objnum;
     fireball *fb;
 
@@ -447,9 +446,9 @@ fireball_is_perishable(object *obj)
 }
 
 // -----------------------------------------------------------------
-//      fireball_free_one()
+// fireball_free_one()
 //
-//      There are too many fireballs, so delete the oldest small one
+// There are too many fireballs, so delete the oldest small one
 // to free up a slot.  Returns the fireball slot freed.
 //
 int
@@ -681,7 +680,7 @@ fireball_get_lod(vector *pos, fireball_info *fd, float size)
     return min(ret_lod, fd->lod_count - 1);
 }
 
-//      Create a fireball, return object index.
+// Create a fireball, return object index.
 int
 fireball_create(vector *pos, int fireball_type, int parent_obj, float size,
                 int reverse, vector *velocity, float warp_lifetime,
@@ -709,8 +708,8 @@ fireball_create(vector *pos, int fireball_type, int parent_obj, float size,
         // who cares if we don't create a spark.
         // JAS - Should this code be in?  Is it better to remove an old spark
         // and start a new one, or just not start the new one?
-        //if ( fd->type == FIREBALL_TYPE_SMALL )        {
-        //      return -1;
+        //if ( fd->type == FIREBALL_TYPE_SMALL )   {
+        //  return -1;
         //}
 
         //mprintf(( "Out of fireball slots, trying to free one up!\n" ));
@@ -748,10 +747,10 @@ fireball_create(vector *pos, int fireball_type, int parent_obj, float size,
     // if this is a warpout fireball, never go higher than LOD 1
     if (fireball_type == FIREBALL_WARP_EFFECT) {
         /*
-                if(fb_lod > 1){
-                        fb_lod = 1;
-                }
-                */
+      if(fb_lod > 1){
+         fb_lod = 1;
+      }
+      */
         fb_lod = 0;
     }
     fl = &fd->lod[fb_lod];
@@ -849,9 +848,9 @@ fireball_create(vector *pos, int fireball_type, int parent_obj, float size,
 }
 
 // -----------------------------------------------------------------
-//      fireball_close()
+// fireball_close()
 //
-//      Called at game shutdown to clean up the fireball system
+// Called at game shutdown to clean up the fireball system
 //
 void
 fireball_close()
@@ -863,9 +862,9 @@ fireball_close()
 }
 
 // -----------------------------------------------------------------
-//      fireball_level_close()
+// fireball_level_close()
 //
-//      Called when a mission ends... frees up any animations that might
+// Called when a mission ends... frees up any animations that might
 // be partially played
 //
 void

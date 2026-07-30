@@ -162,18 +162,18 @@ awacs_update_all_levels()
     // spew all the info
 #ifndef NDEBUG
     /*
-        for(idx=0; idx<MAX_TEAMS; idx++){
-                nprintf(("General", "Team %d AWACS == %f\n", idx, Awacs_team[idx]));
-        }
-        nprintf(("General", "AWACS level == %f\n", Awacs_level));
-        */
+   for(idx=0; idx<MAX_TEAMS; idx++){
+      nprintf(("General", "Team %d AWACS == %f\n", idx, Awacs_team[idx]));
+   }
+   nprintf(("General", "AWACS level == %f\n", Awacs_level));
+   */
 #endif
 }
 
 // get the total AWACS level for target to viewer
-// < 0.0f               : untargetable
-// 0.0 - 1.0f   : marginally targetable
-// >= 1.0f                      : fully targetable as normal
+// < 0.0f      : untargetable
+// 0.0 - 1.0f  : marginally targetable
+// >= 1.0f        : fully targetable as normal
 float
 awacs_get_level(object *target, ship *viewer, int use_awacs)
 {

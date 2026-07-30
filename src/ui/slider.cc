@@ -19,8 +19,8 @@
 /// DOT_SLIDER class down here
 void
 UI_DOT_SLIDER_NEW::create(UI_WINDOW *wnd, int _x, int _y, int _num_pos,
-                          char *bm_slider, int slider_mask, char *bm_left,
-                          int left_mask, int left_x, int left_y, char *bm_right,
+                          const char *bm_slider, int slider_mask, const char *bm_left,
+                          int left_mask, int left_x, int left_y, const char *bm_right,
                           int right_mask, int right_x, int right_y,
                           int _dot_width)
 {
@@ -166,7 +166,7 @@ UI_DOT_SLIDER_NEW::process(int focus)
 
 /// DOT_SLIDER class down here
 void
-UI_DOT_SLIDER::create(UI_WINDOW *wnd, int _x, int _y, char *bm, int id,
+UI_DOT_SLIDER::create(UI_WINDOW *wnd, int _x, int _y, const char *bm, int id,
                       int end_buttons, int _num_pos)
 {
     char filename[MAX_PATH_LEN];
@@ -189,7 +189,7 @@ UI_DOT_SLIDER::create(UI_WINDOW *wnd, int _x, int _y, char *bm, int id,
 
     num_pos = _num_pos;
 
-    sprintf(filename, "%s%0.2d", bm, hotspot);
+    sprintf(filename, "%s%.2d", bm, hotspot);
     first_frame = bm_load_animation(filename, &total_frames);
     if (first_frame < 0) {
         Error(LOCATION, "Could not load %s.ani\n", filename);
@@ -213,7 +213,7 @@ UI_DOT_SLIDER::create(UI_WINDOW *wnd, int _x, int _y, char *bm, int id,
 
     if (has_end_buttons) {
         // Second button is the up (increase) button
-        sprintf(filename, "%s%0.2d", bm, id + 2);
+        sprintf(filename, "%s%.2d", bm, id + 2);
         up_button.create(wnd, "", _x + 216, _y, 22, 24, 1, 1);
         up_button.set_parent(this);
         up_button.set_highlight_action(common_play_highlight_sound);
@@ -221,7 +221,7 @@ UI_DOT_SLIDER::create(UI_WINDOW *wnd, int _x, int _y, char *bm, int id,
         up_button.link_hotspot(id + 2);
 
         // Third button is the down (decrease) button
-        sprintf(filename, "%s%0.2d", bm, id);
+        sprintf(filename, "%s%.2d", bm, id);
         down_button.create(wnd, "", _x, _y, 22, 24, 1, 1);
         down_button.set_parent(this);
         down_button.set_highlight_action(common_play_highlight_sound);
@@ -318,8 +318,8 @@ UI_DOT_SLIDER::process(int focus)
 //
 void UI_SLIDER::link_hotspot(int left_button_num, int right_button_num)
 {
-        left_button.link_hotspot(left_button_num);
-        right_button.link_hotspot(right_button_num);
+   left_button.link_hotspot(left_button_num);
+   right_button.link_hotspot(right_button_num);
 }
 
 // --------------------------------------------------------------------
@@ -332,220 +332,220 @@ void UI_SLIDER::link_hotspot(int left_button_num, int right_button_num)
 // We also need to get the dimensions of the bitmap button so we can update
 // the dimensions of the scrollbar.
 //
-// returns:             -1 ==> error
-//                                       0 ==> success
+// returns:    -1 ==> error
+//              0 ==> success
 //
 int UI_SLIDER::set_bmaps(char *left_button_fname, char *right_button_fname, char *bar_fname, char *marker_fname)
 {
-        int m_w,m_h;
+   int m_w,m_h;
 
-        left_button.set_bmaps(left_button_fname);
-        right_button.set_bmaps(right_button_fname);
-        
-        // set the bitmaps for the rectangle that is the scrollbar itself
-        ((UI_GADGET*)this)->set_bmaps(bar_fname);
-        ((UI_GADGET*)this)->set_bmaps(marker_fname,2);  // skip the first two bitmaps 
+   left_button.set_bmaps(left_button_fname);
+   right_button.set_bmaps(right_button_fname);
+   
+   // set the bitmaps for the rectangle that is the scrollbar itself
+   ((UI_GADGET*)this)->set_bmaps(bar_fname);
+   ((UI_GADGET*)this)->set_bmaps(marker_fname,2);  // skip the first two bitmaps 
 
-        bm_get_info( bmap_ids[SLIDER_MARKER_NORMAL], &m_w, &m_h, NULL );
-        // force the slider dimensions based on size of marker bitmap
-        w = n_positions * m_w;
-        marker_w = m_w;
-        marker_h = m_h;
-        pixel_range = w-marker_w;
-        increment = pixel_range / n_positions;
+   bm_get_info( bmap_ids[SLIDER_MARKER_NORMAL], &m_w, &m_h, NULL );
+   // force the slider dimensions based on size of marker bitmap
+   w = n_positions * m_w;
+   marker_w = m_w;
+   marker_h = m_h;
+   pixel_range = w-marker_w;
+   increment = pixel_range / n_positions;
 
-        right_button.update_dimensions(x+w, y, -1, -1);
+   right_button.update_dimensions(x+w, y, -1, -1);
 
-        uses_bmaps = 1;
+   uses_bmaps = 1;
 
-        return 0;
+   return 0;
 }
 
 void UI_SLIDER::hide()
 {
-        hidden = 1;
-        left_button.hide();
-        right_button.hide();
+   hidden = 1;
+   left_button.hide();
+   right_button.hide();
 }
 
 void UI_SLIDER::unhide()
 {
-        hidden = 0;
-        left_button.unhide();
-        right_button.unhide();
+   hidden = 0;
+   left_button.unhide();
+   right_button.unhide();
 }
 
 int UI_SLIDER::get_hidden()
 {
-        return hidden;
+   return hidden;
 }
 
 void UI_SLIDER::create(UI_WINDOW *wnd, int _x, int _y, int _w, int _h, float _start, float _stop, float _current, int _n_positions )
 {
-        char *up = "<";
-        char *down = ">";
-        int bw, bh, real_w;
-        bw=bh=_h;
-        real_w = _n_positions*bw;
-        base_create( wnd, UI_KIND_SLIDER, _x, _y, real_w, _h);
+   char *up = "<";
+   char *down = ">";
+   int bw, bh, real_w;
+   bw=bh=_h;
+   real_w = _n_positions*bw;
+   base_create( wnd, UI_KIND_SLIDER, _x, _y, real_w, _h);
 
-        left_button.create( wnd, up, _x-bw, _y, _h, _h );
-        left_button.set_parent(this);
+   left_button.create( wnd, up, _x-bw, _y, _h, _h );
+   left_button.set_parent(this);
 
-        right_button.create( wnd, down, _x+real_w, _y, bh, bh );
-        right_button.set_parent(this);
+   right_button.create( wnd, down, _x+real_w, _y, bh, bh );
+   right_button.set_parent(this);
 
-        horz = 0;
-        start = _start;
-        stop = _stop;
-        current = _current;
+   horz = 0;
+   start = _start;
+   stop = _stop;
+   current = _current;
 
-        Assert( _current >= _start );
-        Assert( _current <= _stop );
-        Assert( stop >= 0 );
+   Assert( _current >= _start );
+   Assert( _current <= _stop );
+   Assert( stop >= 0 );
 
-        n_positions = _n_positions;
+   n_positions = _n_positions;
 
-        dragging = 0;
-        last_scrolled = 0;
-        moved = 1;
+   dragging = 0;
+   last_scrolled = 0;
+   moved = 1;
 
-        marker_w = _h;
-        marker_h = _h;
+   marker_w = _h;
+   marker_h = _h;
 
-        pixel_range = w-marker_w;
-        marker_x = x + fl2i( ( (current - start)/(stop-start) * pixel_range ) );
-        increment = pixel_range / n_positions;
-        Assert(increment >= 1);
-        mouse_locked = 0;
+   pixel_range = w-marker_w;
+   marker_x = x + fl2i( ( (current - start)/(stop-start) * pixel_range ) );
+   increment = pixel_range / n_positions;
+   Assert(increment >= 1);
+   mouse_locked = 0;
 };
 
 void UI_SLIDER::draw()
 {
-        if ( uses_bmaps ) {
-                gr_reset_clip();
-                if ( disabled_flag ) {
-                        if ( bmap_ids[SLIDER_BAR_DISABLED] != -1 ) {
-                                gr_set_bitmap(bmap_ids[SLIDER_BAR_DISABLED]);
-                                gr_bitmap(x,y);
-                        }
+   if ( uses_bmaps ) {
+      gr_reset_clip();
+      if ( disabled_flag ) {
+         if ( bmap_ids[SLIDER_BAR_DISABLED] != -1 ) {
+            gr_set_bitmap(bmap_ids[SLIDER_BAR_DISABLED]);
+            gr_bitmap(x,y);
+         }
 
-                        if ( bmap_ids[SLIDER_MARKER_DISABLED] != -1 ) {
-                                gr_set_bitmap(bmap_ids[SLIDER_MARKER_DISABLED]);
-                                gr_bitmap(marker_x,marker_y);
-                        }
+         if ( bmap_ids[SLIDER_MARKER_DISABLED] != -1 ) {
+            gr_set_bitmap(bmap_ids[SLIDER_MARKER_DISABLED]);
+            gr_bitmap(marker_x,marker_y);
+         }
 
-                }
-                else {
-                        if ( bmap_ids[SLIDER_BAR_NORMAL] != -1 ) {
-                                gr_set_bitmap(bmap_ids[SLIDER_BAR_NORMAL]);
-                                gr_bitmap(x,y);
-                        }
+      }
+      else {
+         if ( bmap_ids[SLIDER_BAR_NORMAL] != -1 ) {
+            gr_set_bitmap(bmap_ids[SLIDER_BAR_NORMAL]);
+            gr_bitmap(x,y);
+         }
 
-                        if ( bmap_ids[SLIDER_MARKER_NORMAL] != -1 ) {
-                                gr_set_bitmap(bmap_ids[SLIDER_MARKER_NORMAL]);
-                                gr_bitmap(marker_x,marker_y);
-                        }
-                }
-        }
-        else {
-                gr_set_font(my_wnd->f_id);
-                gr_set_clip( x, y, w, h );
+         if ( bmap_ids[SLIDER_MARKER_NORMAL] != -1 ) {
+            gr_set_bitmap(bmap_ids[SLIDER_MARKER_NORMAL]);
+            gr_bitmap(marker_x,marker_y);
+         }
+      }
+   }
+   else {
+      gr_set_font(my_wnd->f_id);
+      gr_set_clip( x, y, w, h );
 
-                if (my_wnd->selected_gadget == this)
-                        gr_set_color_fast( &CBRIGHT_GREEN );
-                else
-                        gr_set_color_fast( &CGRAY );
+      if (my_wnd->selected_gadget == this)
+         gr_set_color_fast( &CBRIGHT_GREEN );
+      else
+         gr_set_color_fast( &CGRAY );
 
-                ui_rect( 0, 0, w-1, h-1 );
+      ui_rect( 0, 0, w-1, h-1 );
 
-                gr_set_clip( marker_x, marker_y, w, h );
-                ui_draw_box_out(0, 0, marker_w, marker_h);
-        }
+      gr_set_clip( marker_x, marker_y, w, h );
+      ui_draw_box_out(0, 0, marker_w, marker_h);
+   }
 }
 
 void UI_SLIDER::process(int focus)
 {
-        int OnMe, OnMarker, keyfocus;
-        int oldpos, op;
-        float percent;
-        moved = 0;
+   int OnMe, OnMarker, keyfocus;
+   int oldpos, op;
+   float percent;
+   moved = 0;
 
-        if (disabled_flag) {
-                return;
-        }
+   if (disabled_flag) {
+      return;
+   }
 
-        if (my_wnd->selected_gadget == this)
-                keyfocus = 1;
+   if (my_wnd->selected_gadget == this)
+      keyfocus = 1;
 
-        left_button.process(focus);
-        right_button.process(focus);
+   left_button.process(focus);
+   right_button.process(focus);
 
-        marker_y = y;
-        keyfocus = 0;
+   marker_y = y;
+   keyfocus = 0;
 
-        if (start == stop) {
-                marker_x = x;
-                return;
-        }
+   if (start == stop) {
+      marker_x = x;
+      return;
+   }
 
-        op = marker_x;
-        oldpos = fake_position;
+   op = marker_x;
+   oldpos = fake_position;
 
-        OnMarker = 0;
-        OnMe = is_mouse_on();
-        if ( OnMe ) {
-                if ( ui_mouse.x >= (marker_x ) && ui_mouse.x <= (marker_x+marker_w) ) {
-                        OnMarker = 1;
-                        if ( B1_PRESSED )
-                                mouse_locked = 1;
-                }
-        }
+   OnMarker = 0;
+   OnMe = is_mouse_on();
+   if ( OnMe ) {
+      if ( ui_mouse.x >= (marker_x ) && ui_mouse.x <= (marker_x+marker_w) ) {
+         OnMarker = 1;
+         if ( B1_PRESSED )
+            mouse_locked = 1;
+      }
+   }
 
-        if ( !B1_PRESSED) {
-                mouse_locked = 0;
-        }
+   if ( !B1_PRESSED) {
+      mouse_locked = 0;
+   }
 
-        if ( (left_button.position!=0) || (keyfocus && keyd_pressed[KEY_LEFT]) || ( OnMe && B1_PRESSED && ui_mouse.x < marker_x) || (mouse_locked && ui_mouse.x < marker_x ) )  {
-                if ( (timer_get_milliseconds() > last_scrolled+50) || left_button.just_pressed() || B1_JUST_PRESSED || mouse_locked || my_wnd->keypress == KEY_LEFT)    {
-                        if ( left_button.just_pressed() || B1_JUST_PRESSED || mouse_locked || my_wnd->keypress == KEY_LEFT )    {
-                                last_scrolled = timer_get_milliseconds() + 300;
-                        } else
-                                last_scrolled = timer_get_milliseconds();
-                        marker_x -= increment;
-                        if (marker_x < x )
-                                marker_x = x;
-                }
-        }
+   if ( (left_button.position!=0) || (keyfocus && keyd_pressed[KEY_LEFT]) || ( OnMe && B1_PRESSED && ui_mouse.x < marker_x) || (mouse_locked && ui_mouse.x < marker_x ) )  {
+      if ( (timer_get_milliseconds() > last_scrolled+50) || left_button.just_pressed() || B1_JUST_PRESSED || mouse_locked || my_wnd->keypress == KEY_LEFT)  {
+         if ( left_button.just_pressed() || B1_JUST_PRESSED || mouse_locked || my_wnd->keypress == KEY_LEFT )  {
+            last_scrolled = timer_get_milliseconds() + 300;
+         } else
+            last_scrolled = timer_get_milliseconds();
+         marker_x -= increment;
+         if (marker_x < x )
+            marker_x = x;
+      }
+   }
 
-        if ( (right_button.position!=0) || (keyfocus && keyd_pressed[KEY_RIGHT]) || ( OnMe && B1_PRESSED && ui_mouse.x > (marker_x+marker_w)) || (mouse_locked && ui_mouse.x > marker_x+marker_w) ) {
-                if ( (timer_get_milliseconds() > last_scrolled+50) || right_button.just_pressed() || B1_JUST_PRESSED || mouse_locked || my_wnd->keypress == KEY_RIGHT)  {
-                        if ( right_button.just_pressed() || B1_JUST_PRESSED || mouse_locked || my_wnd->keypress == KEY_RIGHT)   
-                                last_scrolled = timer_get_milliseconds() + 300;
-                        else
-                                last_scrolled = timer_get_milliseconds();
-                        marker_x += increment;
-                        if (marker_x > (x+n_positions*increment) )
-                                marker_x = x+n_positions*increment;
-                }
-        }
+   if ( (right_button.position!=0) || (keyfocus && keyd_pressed[KEY_RIGHT]) || ( OnMe && B1_PRESSED && ui_mouse.x > (marker_x+marker_w)) || (mouse_locked && ui_mouse.x > marker_x+marker_w) ) {
+      if ( (timer_get_milliseconds() > last_scrolled+50) || right_button.just_pressed() || B1_JUST_PRESSED || mouse_locked || my_wnd->keypress == KEY_RIGHT)   {
+         if ( right_button.just_pressed() || B1_JUST_PRESSED || mouse_locked || my_wnd->keypress == KEY_RIGHT) 
+            last_scrolled = timer_get_milliseconds() + 300;
+         else
+            last_scrolled = timer_get_milliseconds();
+         marker_x += increment;
+         if (marker_x > (x+n_positions*increment) )
+            marker_x = x+n_positions*increment;
+      }
+   }
 
-        percent = i2fl(marker_x - x)/i2fl(pixel_range);
-        current = percent * (stop - start);
+   percent = i2fl(marker_x - x)/i2fl(pixel_range);
+   current = percent * (stop - start);
 }
 
 int UI_SLIDER::getpos()
 {
-        return marker_x;
+   return marker_x;
 }
 
 float UI_SLIDER::getcurrent()
 {
-        return current;
+   return current;
 }
 
 int UI_SLIDER::changed()
 {
-        return moved;
+   return moved;
 }
 */

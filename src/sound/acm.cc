@@ -379,18 +379,18 @@ adpcm_parse_header(WAVEFORMATEX *pwfxSrc, adpcm_fmt_t *fmt)
 //
 // Convert an ADPCM wave file to a PCM wave file
 //
-// parameters:  *pwfxSrc   => address of WAVEFORMATEX structure describing the source wave
-//                              *src       => pointer to raw source wave data
-//                              src_len    => num bytes of source wave data
-//                              **dest     => pointer to pointer to dest buffer for wave data
-//                                                        (mem is allocated in this function if *dest is NULL)
-//                              max_dest_bytes   => Maximum memory allocated to dest
-//                              *dest_len        => returns num bytes of wave data in converted form (OUTPUT PARAMETER)
-//                              *src_bytes_used  =>     returns num bytes of src actually used in the conversion
-//                              dest_bps         => bits per sample that data should be uncompressed to
+// parameters: *pwfxSrc   => address of WAVEFORMATEX structure describing the source wave
+//          *src     => pointer to raw source wave data
+//          src_len    => num bytes of source wave data
+//          **dest     => pointer to pointer to dest buffer for wave data
+//                     (mem is allocated in this function if *dest is NULL)
+//          max_dest_bytes   => Maximum memory allocated to dest
+//          *dest_len        => returns num bytes of wave data in converted form (OUTPUT PARAMETER)
+//          *src_bytes_used  =>  returns num bytes of src actually used in the conversion
+//          dest_bps         => bits per sample that data should be uncompressed to
 //
-// returns:        0 => success
-//                         -1 => could not convert wav file
+// returns:    0 => success
+//          -1 => could not convert wav file
 //
 //
 // NOTES:

@@ -12,6 +12,9 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include <algorithm>
+#include <vector>
+
 #include <globalincs/pstypes.hh>
 #include <cfile/cfile.hh>
 //#include <osapi/outwnd.hh>
@@ -28,77 +31,53 @@
 void
 cf_sort_filenames(int n, char **list, int sort, file_list_info *info)
 {
-    int i, j, incr;
-    char *t;
-    file_list_info tt;
+    int i;
+
+    if (sort != CF_SORT_NAME && sort != CF_SORT_TIME) {
+        nprintf(
+            ("Error", "Unknown sorting method %d passed to cf_sort_filenames()\n",
+             sort));
+        return;
+    }
+
+    // list and info are parallel arrays (retail hand-swapped both through a
+    // twice-written Shell sort); sort an index permutation and apply it to
+    // each.  NAME is ascending case-insensitive, TIME is newest-first.
+    std::vector< int > order(n);
+    for (i = 0; i < n; i++)
+        order[i] = i;
 
     if (sort == CF_SORT_NAME) {
-        incr = n / 2;
-        while (incr > 0) {
-            for (i = incr; i < n; i++) {
-                j = i - incr;
-                while (j >= 0) {
-                    if (stricmp(list[j], list[j + incr]) > 0) {
-                        t = list[j];
-                        list[j] = list[j + incr];
-                        list[j + incr] = t;
-
-                        if (info) {
-                            tt = info[j];
-                            info[j] = info[j + incr];
-                            info[j + incr] = tt;
-                        }
-
-                        j -= incr;
-                    }
-                    else
-                        break;
-                }
-            }
-
-            incr /= 2;
-        }
-
-        return;
+        std::stable_sort(order.begin(), order.end(), [list](int a, int b) {
+            return stricmp(list[a], list[b]) < 0;
+        });
     }
-    else if (sort == CF_SORT_TIME) {
+    else {
         Assert(info);
-        incr = n / 2;
-        while (incr > 0) {
-            for (i = incr; i < n; i++) {
-                j = i - incr;
-                while (j >= 0) {
-                    if (info[j].write_time < info[j + incr].write_time) {
-                        t = list[j];
-                        list[j] = list[j + incr];
-                        list[j + incr] = t;
-
-                        tt = info[j];
-                        info[j] = info[j + incr];
-                        info[j + incr] = tt;
-                        j -= incr;
-                    }
-                    else
-                        break;
-                }
-            }
-
-            incr /= 2;
-        }
-
-        return;
+        std::stable_sort(order.begin(), order.end(), [info](int a, int b) {
+            return info[a].write_time > info[b].write_time;
+        });
     }
 
-    nprintf(("Error", "Unknown sorting method %d passed to cf_sort_filenames()\n",
-             sort));
+    std::vector< char * > sorted_list(n);
+    for (i = 0; i < n; i++)
+        sorted_list[i] = list[order[i]];
+    std::copy(sorted_list.begin(), sorted_list.end(), list);
+
+    if (info) {
+        std::vector< file_list_info > sorted_info(n);
+        for (i = 0; i < n; i++)
+            sorted_info[i] = info[order[i]];
+        std::copy(sorted_info.begin(), sorted_info.end(), info);
+    }
 }
 
-//      cf_compress - Do Run Length Compression on a block of data. Targa format.
+// cf_compress - Do Run Length Compression on a block of data. Targa format.
 //
-//      Usage:
-//                              out                     Buffer to write it out to
-//                              in                              Buffer to compress
-//                              bytecount       Number of bytes input
+// Usage:
+//          out         Buffer to write it out to
+//          in          Buffer to compress
+//          bytecount   Number of bytes input
 int
 cf_compress(char *out, char *in, int bytecount)
 {
@@ -158,13 +137,13 @@ cf_compress(char *out, char *in, int bytecount)
 
         // current pixel == match pixel?
         if (*inputpixel == *matchpixel) {
-            //  establishing a run of enough length to
-            //  save space by doing it
-            //          -- write the non-run length packet
-            //          -- start run-length packet
+            // establishing a run of enough length to
+            // save space by doing it
+            //    -- write the non-run length packet
+            //    -- start run-length packet
 
             if (++rlcount == rlthresh) {
-                //      close a non-run packet
+                //   close a non-run packet
 
                 if (pixcount > (rlcount + 1)) {
                     // write out length and do not set run flag
@@ -181,9 +160,9 @@ cf_compress(char *out, char *in, int bytecount)
         }
         else {
             // no match -- either break a run or continue without one
-            //  if a run exists break it:
-            //          write the bytes in the string (1+1)
-            //          start the next string
+            // if a run exists break it:
+            //    write the bytes in the string (1+1)
+            //    start the next string
 
             if (rlcount >= rlthresh) {
                 *flagbyte++ = (char)(0x80 | rlcount);
@@ -193,9 +172,9 @@ cf_compress(char *out, char *in, int bytecount)
                 continue;
             }
             else {
-                //      not a match and currently not a run
-                //              - save the current pixel
-                //              - reset the run-length flag
+                //   not a match and currently not a run
+                //      - save the current pixel
+                //      - reset the run-length flag
                 rlcount = 0;
                 matchpixel = inputpixel;
             }
@@ -220,12 +199,12 @@ cf_compress(char *out, char *in, int bytecount)
     return (flagbyte - out);
 }
 
-//      cf_decompress - Do Decompression on a run-length encoded block of data. Targa format.
+// cf_decompress - Do Decompression on a run-length encoded block of data. Targa format.
 //
-//      Usage:
-//                              out                     Buffer to write it out to
-//                              in                              Buffer to compress
-//                              bytecount       Number of bytes input
+// Usage:
+//          out         Buffer to write it out to
+//          in          Buffer to compress
+//          bytecount   Number of bytes input
 int
 cf_decompress(char *out, char *in)
 {
@@ -367,13 +346,13 @@ cfwrite_compressed(void *param_buf, int param_elsize, int param_nelem,
 
         // current pixel == match pixel?
         if (*inputpixel == *matchpixel) {
-            //  establishing a run of enough length to
-            //  save space by doing it
-            //          -- write the non-run length packet
-            //          -- start run-length packet
+            // establishing a run of enough length to
+            // save space by doing it
+            //    -- write the non-run length packet
+            //    -- start run-length packet
 
             if (++rlcount == rlthresh) {
-                //      close a non-run packet
+                //   close a non-run packet
 
                 if (pixcount > (rlcount + 1)) {
                     // write out length and do not set run flag
@@ -389,9 +368,9 @@ cfwrite_compressed(void *param_buf, int param_elsize, int param_nelem,
         }
         else {
             // no match -- either break a run or continue without one
-            //  if a run exists break it:
-            //          write the bytes in the string (1+1)
-            //          start the next string
+            // if a run exists break it:
+            //    write the bytes in the string (1+1)
+            //    start the next string
 
             if (rlcount >= rlthresh) {
                 ubyte code = (ubyte)(0x80 | rlcount);
@@ -401,9 +380,9 @@ cfwrite_compressed(void *param_buf, int param_elsize, int param_nelem,
                 continue;
             }
             else {
-                //      not a match and currently not a run
-                //              - save the current pixel
-                //              - reset the run-length flag
+                //   not a match and currently not a run
+                //      - save the current pixel
+                //      - reset the run-length flag
                 rlcount = 0;
                 matchpixel = inputpixel;
             }

@@ -115,14 +115,14 @@ int cfile_init(char *exe_dir, char *cdrom_dir = NULL);
 void cfile_refresh();
 
 // add an extension to a filename if it doesn't already have it
-char *cf_add_ext(char *filename, char *ext);
+char *cf_add_ext(const char *filename, const char *ext);
 
 // return CF_TYPE (directory location type) of a CFILE you called cfopen() successfully on.
 int cf_get_dir_type(CFILE *cfile);
 
 // Opens the file.  If no path is given, use the extension to look into the
 // default path.  If mode is NULL, delete the file.
-CFILE *cfopen(char *filename, char *mode, int type = CFILE_NORMAL,
+CFILE *cfopen(const char *filename, const char *mode, int type = CFILE_NORMAL,
               int dir_type = CF_TYPE_ANY, bool localize = false);
 
 // Flush the open file buffer
@@ -154,7 +154,7 @@ int cfilelength(CFILE *fp);
 int cfread(void *buf, int elsize, int nelem, CFILE *fp);
 
 // cfwrite() writes to the file
-int cfwrite(void *buf, int elsize, int nelem, CFILE *cfile);
+int cfwrite(const void *buf, int elsize, int nelem, CFILE *cfile);
 
 // Reads/writes RLE compressed data.
 int cfread_compressed(void *buf, int elsize, int nelem, CFILE *cfile);
@@ -171,7 +171,7 @@ int cftell(CFILE *fp);
 int cfputc(int c, CFILE *cfile);
 
 // cfputs() writes a string to a file
-int cfputs(char *str, CFILE *cfile);
+int cfputs(const char *str, CFILE *cfile);
 
 // cfgetc() reads a character to a file
 int cfgetc(CFILE *cfile);
@@ -212,8 +212,6 @@ unsigned long cf_add_chksum_long(unsigned long seed, char *buffer, int size);
 // convenient for misc checksumming purposes ------------------------------------------
 
 // High-level functions
-int
-cfexist(char *filename); // Returns true if file exists on disk (1) or in hog (2).
 
 // rename a file, utilizing the extension to determine where file is.
 // successfully renamed the file
@@ -265,16 +263,16 @@ int cfwrite_vector(vector *vec, CFILE *file);
 int cfwrite_angles(angles *ang, CFILE *file);
 
 // writes variable length, null-termined string.
-int cfwrite_string(char *buf, CFILE *file);
+int cfwrite_string(const char *buf, CFILE *file);
 
 // write a fixed length that is null-terminatedm, and has the length
 // stored in file
 int cfwrite_string_len(char *buf, CFILE *file);
 
-int cf_get_file_list(int max, char **list, int type, char *filter,
+int cf_get_file_list(int max, char **list, int type, const char *filter,
                      int sort = CF_SORT_NONE, file_list_info *info = NULL);
 int cf_get_file_list_preallocated(int max, char arr[][MAX_FILENAME_LEN],
-                                  char **list, int type, char *filter,
+                                  char **list, int type, const char *filter,
                                   int sort = CF_SORT_NONE,
                                   file_list_info *info = NULL);
 void cf_sort_filenames(int n, char **list, int sort, file_list_info *info = NULL);

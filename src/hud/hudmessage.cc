@@ -34,15 +34,15 @@
 #include <sound/audiostr.hh>
 
 /* replaced with those static ints that follow
-#define LIST_X          46
+#define LIST_X    46
 // second column x start position
 #define LIST_X2 108
-#define LIST_Y          60
+#define LIST_Y    60
 // total width including both columns
 #define LIST_W 558
 // width of second column
 #define LIST_W2 (LIST_W + LIST_X - LIST_X2)
-#define LIST_H          297
+#define LIST_H    297
 // applies only to objectives mode
 #define LIST_H_O 275
 */
@@ -107,28 +107,19 @@ static int Hud_mission_log_time2_coords[GR_NUM_RESOLUTIONS][2] = {
 #define HUD_MESSAGE_TOTAL_LIFE 14000
 
 #define HUD_MSG_LENGTH_MAX 2048
-//#define HUD_MSG_MAX_PIXEL_W   439     // maximum number of pixels wide message display area is
-//#define HUD_MSG_MAX_PIXEL_W   619     // maximum number of pixels wide message display area is
-
-static int Hud_mission_log_status_coords[GR_NUM_RESOLUTIONS][2] = {
-    {
-        170, 339 // GR_640
-    },
-    {
-        361, 542 // GR_1024
-    }
-};
+//#define HUD_MSG_MAX_PIXEL_W 439   // maximum number of pixels wide message display area is
+//#define HUD_MSG_MAX_PIXEL_W 619   // maximum number of pixels wide message display area is
 
 struct scrollback_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y;
     int xt, yt;
     int hotspot;
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    scrollback_buttons(char *name, int x1, int y1, int x2, int y2, int h)
+    scrollback_buttons(const char *name, int x1, int y1, int x2, int y2, int h)
         : filename(name)
         , x(x1)
         , y(y1)
@@ -173,9 +164,9 @@ line_node Msg_scrollback_used_list;
 
 typedef struct HUD_ft
 {
-    int end_time; //    Timestamp at which this message will go away.
-    char text[MAX_HUD_LINE_LEN]; //     Text to display.
-    int color; //       0rgb color, 8 bit fields.
+    int end_time; // Timestamp at which this message will go away.
+    char text[MAX_HUD_LINE_LEN]; // Text to display.
+    int color; // 0rgb color, 8 bit fields.
 } HUD_ft;
 
 HUD_ft HUD_fixed_text[MAX_HUD_FT];
@@ -184,22 +175,16 @@ static int Num_obj_lines;
 static int Scroll_offset;
 static int Scroll_max;
 static int Scrollback_mode = SCROLLBACK_MODE_OBJECTIVES;
-static int Selected_line;
 // static int Status_bitmap;
 static int Background_bitmap;
 static UI_WINDOW Ui_window;
 
-static char *Hud_mission_log_fname[GR_NUM_RESOLUTIONS] = {
+static const char *Hud_mission_log_fname[GR_NUM_RESOLUTIONS] = {
     "MissionLog", // GR_640
     "2_MissionLog" // GR_1024
 };
 
-static char *Hud_mission_log_status_fname[GR_NUM_RESOLUTIONS] = {
-    "MLStatus", // GR_640
-    "MLStatus" // GR_1024
-};
-
-static char *Hud_mission_log_mask_fname[GR_NUM_RESOLUTIONS] = {
+static const char *Hud_mission_log_mask_fname[GR_NUM_RESOLUTIONS] = {
     "MissionLog-m", // GR_640
     "2_MissionLog-m" // GR_1024
 };
@@ -270,7 +255,7 @@ hud_init_msg_window()
     h = gr_get_font_height();
 
     //ACTIVE_BUFFER_LINES = Players[Player_num].HUD_config.num_msg_window_lines;
-    //  ACTIVE_BUFFER_LINES = HUD_config.num_msg_window_lines;
+    //   ACTIVE_BUFFER_LINES = HUD_config.num_msg_window_lines;
     ACTIVE_BUFFER_LINES = 4;
 
     MSG_WINDOW_FONT_HEIGHT = h;
@@ -434,7 +419,7 @@ hud_show_fixed_text()
     }
 }
 
-//      Similar to HUD printf, but shows only one message at a time, at a fixed location.
+// Similar to HUD printf, but shows only one message at a time, at a fixed location.
 void
 HUD_fixed_printf(float duration, char *format, ...)
 {
@@ -448,7 +433,7 @@ HUD_fixed_printf(float duration, char *format, ...)
 
     msg_length = strlen(tmp);
     Assert(msg_length <
-           HUD_MSG_LENGTH_MAX); //      If greater than this, probably crashed anyway.
+           HUD_MSG_LENGTH_MAX); //  If greater than this, probably crashed anyway.
 
     if (!msg_length) {
         nprintf((
@@ -474,7 +459,7 @@ HUD_fixed_printf(float duration, char *format, ...)
     HUD_fixed_text[0].color = 0xff0000;
 }
 
-//      Clear all pending text.
+// Clear all pending text.
 void
 HUD_fixed_printf_reset()
 {
@@ -484,7 +469,7 @@ HUD_fixed_printf_reset()
 // --------------------------------------------------------------------------------------
 // HUD_printf_line()
 //
-//      Print a single line of text to the HUD.  We know that the text will fit on the screen,
+// Print a single line of text to the HUD.  We know that the text will fit on the screen,
 // since that was taken care of in HUD_printf();
 //
 void
@@ -547,7 +532,7 @@ HUD_get_team_source(int team)
 }
 
 void
-HUD_printf(char *format, ...)
+HUD_printf(const char *format, ...)
 {
     va_list args;
     char tmp[HUD_MSG_LENGTH_MAX];
@@ -559,7 +544,7 @@ HUD_printf(char *format, ...)
 
     len = strlen(tmp);
     Assert(len <
-           HUD_MSG_LENGTH_MAX); //      If greater than this, probably crashed anyway.
+           HUD_MSG_LENGTH_MAX); //  If greater than this, probably crashed anyway.
     hud_sourced_print(HUD_SOURCE_COMPUTER, tmp);
 }
 
@@ -580,7 +565,7 @@ HUD_ship_sent_printf(int sh, char *format, ...)
 
     len = strlen(tmp);
     Assert(len <
-           HUD_MSG_LENGTH_MAX); //      If greater than this, probably crashed anyway.
+           HUD_MSG_LENGTH_MAX); //  If greater than this, probably crashed anyway.
     hud_sourced_print(HUD_get_team_source(Ships[sh].team), tmp);
 }
 
@@ -592,7 +577,7 @@ HUD_ship_sent_printf(int sh, char *format, ...)
 // width.  'source' is used to indicate who send the message, and is used to color code text.
 //
 void
-HUD_sourced_printf(int source, char *format, ...)
+HUD_sourced_printf(int source, const char *format, ...)
 {
     va_list args;
     char tmp[HUD_MSG_LENGTH_MAX];
@@ -601,7 +586,7 @@ HUD_sourced_printf(int source, char *format, ...)
     vsprintf(tmp, format, args);
     va_end(args);
     Assert(strlen(tmp) <
-           HUD_MSG_LENGTH_MAX); //      If greater than this, probably crashed anyway.
+           HUD_MSG_LENGTH_MAX); //  If greater than this, probably crashed anyway.
     hud_sourced_print(source, tmp);
 }
 
@@ -611,7 +596,7 @@ hud_sourced_print(int source, char *msg)
     char *ptr, *str;
     //char *src_str, *msg_str;
     int sw, t, x, offset = 0;
-    //int fudge = (gr_screen.res == GR_640) ? 15 : 50;          // prevents string from running off screen
+    //int fudge = (gr_screen.res == GR_640) ? 15 : 50;      // prevents string from running off screen
 
     if (!strlen(msg)) {
         nprintf(("Warning",
@@ -733,11 +718,11 @@ hud_add_msg_to_scrollback(char *text, int source, int t)
         gr_get_string_size(&w, NULL, buf, ptr - buf);
     }
 
-    //  if (ptr) {
-    //          gr_get_string_size(&w, NULL, buf, ptr - buf + 2);
-    //          if (w < max_width - 20)
-    //                  offset = w;
-    //  }
+    //   if (ptr) {
+    //      gr_get_string_size(&w, NULL, buf, ptr - buf + 2);
+    //      if (w < max_width - 20)
+    //         offset = w;
+    //   }
 
     x = 0;
     str = buf;
@@ -1044,7 +1029,7 @@ hud_scrollback_close()
     if (Background_bitmap >= 0)
         bm_unload(Background_bitmap);
     //if (Status_bitmap >= 0)
-    //  bm_unload(Status_bitmap);
+    //   bm_unload(Status_bitmap);
 
     Ui_window.destroy();
     common_free_interface_palette(); // restore game palette
@@ -1138,11 +1123,11 @@ hud_scrollback_do_frame(float frametime)
     }
 
     /*
-        if ((Scrollback_mode == SCROLLBACK_MODE_OBJECTIVES) && (Status_bitmap >= 0)) {
-                gr_set_bitmap(Status_bitmap);
-                gr_bitmap(Hud_mission_log_status_coords[gr_screen.res][0], Hud_mission_log_status_coords[gr_screen.res][1]);
-        }
-        */
+   if ((Scrollback_mode == SCROLLBACK_MODE_OBJECTIVES) && (Status_bitmap >= 0)) {
+      gr_set_bitmap(Status_bitmap);
+      gr_bitmap(Hud_mission_log_status_coords[gr_screen.res][0], Hud_mission_log_status_coords[gr_screen.res][1]);
+   }
+   */
 
     // draw the objectives key at the bottom of the ingame objectives screen
     if (Scrollback_mode == SCROLLBACK_MODE_OBJECTIVES) {
@@ -1167,7 +1152,7 @@ hud_scrollback_do_frame(float frametime)
         line_node *node_ptr;
 
         Buttons[gr_screen.res][SHOW_MSGS_BUTTON].button.draw_forced(2);
-        //              y = ((LIST_H / font_height) - 1) * font_height;
+        //     y = ((LIST_H / font_height) - 1) * font_height;
         y = 0;
         if (!EMPTY(&Msg_scrollback_used_list) && HUD_msg_inited) {
             node_ptr = GET_FIRST(&Msg_scrollback_used_list);

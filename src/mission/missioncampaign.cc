@@ -51,7 +51,7 @@ char *Campaign_names[MAX_CAMPAIGNS];
 char *Campaign_file_names[MAX_CAMPAIGNS];
 int Num_campaigns;
 
-char *campaign_types[MAX_CAMPAIGN_TYPES] = {
+const char *campaign_types[MAX_CAMPAIGN_TYPES] = {
     //XSTR:OFF
     "single", "multi coop", "multi teams"
     //XSTR:ON
@@ -64,7 +64,6 @@ int Granted_ships[MAX_SHIP_TYPES];
 int Granted_weapons[MAX_WEAPON_TYPES];
 
 // variables to control the UI stuff for loading campaigns
-LOCAL int Campaign_ui_active = 0;
 LOCAL UI_WINDOW Campaign_window;
 LOCAL UI_LISTBOX Campaign_listbox;
 LOCAL UI_BUTTON Campaign_okb, Campaign_cancelb;
@@ -74,20 +73,22 @@ campaign Campaign;
 
 // variables with deal with the campaign save file
 #define CAMPAIGN_FILE_VERSION 12
-//#define CAMPAIGN_FILE_COMPATIBLE_VERSION              CAMPAIGN_INITIAL_RELEASE_FILE_VERSION
+//#define CAMPAIGN_FILE_COMPATIBLE_VERSION      CAMPAIGN_INITIAL_RELEASE_FILE_VERSION
 #define CAMPAIGN_FILE_COMPATIBLE_VERSION CAMPAIGN_FILE_VERSION
-#define CAMPAIGN_FILE_ID 0xbeefcafe
+// int-typed: compared against cfread_int results
+#define CAMPAIGN_FILE_ID int(0xbeefcafe)
 
 // variables with deal with the campaign stats save file
 #define CAMPAIGN_STATS_FILE_VERSION 1
 #define CAMPAIGN_STATS_FILE_COMPATIBLE_VERSION 1
-#define CAMPAIGN_STATS_FILE_ID 0xabbadaad
+#define CAMPAIGN_STATS_FILE_ID int(0xabbadaad)
 
 // mission_campaign_get_name returns a string (which is malloced in this routine) of the name
 // of the given freespace campaign file.  In the type field, we return if the campaign is a single
 // player or multiplayer campaign.  The type field will only be valid if the name returned is non-NULL
 int
-mission_campaign_get_info(char *filename, char *name, int *type, int *max_players,
+mission_campaign_get_info(const char *filename, char *name, int *type,
+                          int *max_players,
                           char **desc)
 {
     int rval, i;
@@ -210,7 +211,7 @@ mission_campaign_get_mission_list(char *filename, char **list, int max)
 }
 
 void
-mission_campaign_maybe_add(char *filename, int multiplayer)
+mission_campaign_maybe_add(const char *filename, int multiplayer)
 {
     char name[NAME_LENGTH];
     int type, max_players;
@@ -305,7 +306,7 @@ mission_campaign_get_sw_info()
 // this file.  If you change the format of the campaign file, you should be sure these related
 // functions work properly and update them if it breaks them.
 int
-mission_campaign_load(char *filename, int load_savefile)
+mission_campaign_load(const char *filename, int load_savefile)
 {
     int len, rval, i;
     char name[NAME_LENGTH], type[NAME_LENGTH];
@@ -335,9 +336,7 @@ mission_campaign_load(char *filename, int load_savefile)
 
         // only initialize the sexpression stuff when Fred isn't running.  It'll screw things up major
         // if it does
-        if (!Fred_running) {
-            init_sexp(); // must initialize the sexpression stuff
-        }
+        init_sexp(); // must initialize the sexpression stuff
 
         read_file_text(filename);
         reset_parse();
@@ -404,18 +403,8 @@ mission_campaign_load(char *filename, int load_savefile)
             cm->formula = -1;
             if (optional_string("+Formula:")) {
                 cm->formula = get_sexp_main();
-                if (!Fred_running) {
-                    Assert(cm->formula != -1);
-                    sexp_mark_persistent(cm->formula);
-                }
-                else {
-                    if (cm->formula == -1) {
-                        // close localization
-                        lcl_ext_close();
-
-                        return CAMPAIGN_ERROR_SEXP_EXHAUSTED;
-                    }
-                }
+                Assert(cm->formula != -1);
+                sexp_mark_persistent(cm->formula);
             }
 
             // Do misison looping stuff
@@ -445,18 +434,8 @@ mission_campaign_load(char *filename, int load_savefile)
             cm->mission_loop_formula = -1;
             if (optional_string("+Formula:")) {
                 cm->mission_loop_formula = get_sexp_main();
-                if (!Fred_running) {
-                    Assert(cm->mission_loop_formula != -1);
-                    sexp_mark_persistent(cm->mission_loop_formula);
-                }
-                else {
-                    if (cm->mission_loop_formula == -1) {
-                        // close localization
-                        lcl_ext_close();
-
-                        return CAMPAIGN_ERROR_SEXP_EXHAUSTED;
-                    }
-                }
+                Assert(cm->mission_loop_formula != -1);
+                sexp_mark_persistent(cm->mission_loop_formula);
             }
 
             if (optional_string("+Level:")) {
@@ -472,15 +451,8 @@ mission_campaign_load(char *filename, int load_savefile)
             else
                 Campaign.realign_required = 1;
 
-            if (Fred_running) {
-                cm->num_goals = -1;
-                cm->num_events = -1;
-                cm->notes = NULL;
-            }
-            else {
-                cm->num_goals = 0;
-                cm->num_events = 0;
-            }
+            cm->num_goals = 0;
+            cm->num_events = 0;
 
             cm->goals = NULL;
             cm->events = NULL;
@@ -498,8 +470,7 @@ mission_campaign_load(char *filename, int load_savefile)
 
     // loading the campaign will get us to the current and next mission that the player must fly
     // plus load all of the old goals that future missions might rely on.
-    if (!Fred_running && load_savefile &&
-        (Campaign.type == CAMPAIGN_TYPE_SINGLE)) {
+    if (load_savefile && (Campaign.type == CAMPAIGN_TYPE_SINGLE)) {
         mission_campaign_savefile_load(Campaign.filename);
     }
 
@@ -712,7 +683,7 @@ campaign_savefile_save(char *pname)
 void
 mission_campaign_savefile_delete(char *cfilename, int is_multi)
 {
-    char filename[_MAX_FNAME], base[_MAX_FNAME];
+    char filename[2 * _MAX_FNAME], base[_MAX_FNAME];
 
     _splitpath(cfilename, NULL, NULL, base, NULL);
 
@@ -739,7 +710,8 @@ void
 mission_campaign_delete_all_savefiles(char *pilot_name, int is_multi)
 {
     int dir_type, num_files, i;
-    char *names[MAX_CAMPAIGNS], spec[MAX_FILENAME_LEN + 2], *ext;
+    char *names[MAX_CAMPAIGNS], spec[MAX_FILENAME_LEN + 2];
+    const char *ext;
     char filename[1024];
     int (*filter_save)(char *filename);
 
@@ -772,7 +744,7 @@ mission_campaign_delete_all_savefiles(char *pilot_name, int is_multi)
 void
 mission_campaign_savefile_load(char *cfilename)
 {
-    char filename[_MAX_FNAME], base[_MAX_FNAME];
+    char filename[2 * _MAX_FNAME], base[_MAX_FNAME];
     int id, version, i, num, j, num_stats_blocks;
     int type_sig;
     CFILE *fp;
@@ -828,11 +800,11 @@ mission_campaign_savefile_load(char *cfilename)
     // we are reading data that really belongs to this campaign.  I think that this check
     // is redundant.
     cfread_string_len(filename, _MAX_FNAME, fp);
-    /*if ( stricmp( filename, cfilename) ) {    //      Used to be !stricmp.  How did this ever work? --MK, 11/9/97
-                Warning(LOCATION, "Campaign save file appears corrupt because of mismatching filenames.");
-                cfclose(fp);
-                return;
-        }*/
+    /*if ( stricmp( filename, cfilename) ) { // Used to be !stricmp.  How did this ever work? --MK, 11/9/97
+      Warning(LOCATION, "Campaign save file appears corrupt because of mismatching filenames.");
+      cfclose(fp);
+      return;
+   }*/
 
     Campaign.prev_mission = cfread_int(fp);
     Campaign.next_mission = cfread_int(fp);
@@ -891,8 +863,8 @@ mission_campaign_savefile_load(char *cfilename)
 
         // be sure to malloc out space for the events stuff, then zero the memory!!!  Don't do malloc
         // if there are no events
-        //              if (Campaign.missions[num].events < 0)
-        //                      Campaign.missions[num].events = 0;
+        //     if (Campaign.missions[num].events < 0)
+        //        Campaign.missions[num].events = 0;
         Campaign.missions[num].events = (mevent *)malloc(
             Campaign.missions[num].num_events * sizeof(mevent));
         if (Campaign.missions[num].num_events > 0) {
@@ -1024,125 +996,125 @@ mission_campaign_previous_mission()
 // DA 12/09/98 -- To allow for mission loops, need to maintain call with store stats
 int mission_campaign_eval_next_mission( int store_stats )
 {
-        char *name;
-        int cur, i;
-        cmission *mission;
+   char *name;
+   int cur, i;
+   cmission *mission;
 
-        Campaign.next_mission = -1;
-        cur = Campaign.current_mission;
-        name = Campaign.missions[cur].name;
+   Campaign.next_mission = -1;
+   cur = Campaign.current_mission;
+   name = Campaign.missions[cur].name;
 
-        mission = &Campaign.missions[cur];
+   mission = &Campaign.missions[cur];
 
-        // first we must save the status of the current missions goals in the campaign mission structure.
-        // After that, we can determine which mission is tagged as the next mission.  Finally, we
-        // can save the campaign save file
-        // we might have goal and event status if the player replayed a mission
-        if ( mission->num_goals > 0 ) {
-                free( mission->goals );
-        }
+   // first we must save the status of the current missions goals in the campaign mission structure.
+   // After that, we can determine which mission is tagged as the next mission.  Finally, we
+   // can save the campaign save file
+   // we might have goal and event status if the player replayed a mission
+   if ( mission->num_goals > 0 ) {
+      free( mission->goals );
+   }
 
-        mission->num_goals = Num_goals;
-        if ( mission->num_goals > 0 ) {
-                mission->goals = (mgoal *)malloc( sizeof(mgoal) * Num_goals );
-                Assert( mission->goals != NULL );
-        }
+   mission->num_goals = Num_goals;
+   if ( mission->num_goals > 0 ) {
+      mission->goals = (mgoal *)malloc( sizeof(mgoal) * Num_goals );
+      Assert( mission->goals != NULL );
+   }
 
-        // copy the needed info from the Mission_goal struct to our internal structure
-        for (i = 0; i < Num_goals; i++ ) {
-                if ( strlen(Mission_goals[i].name) == 0 ) {
-                        char name[NAME_LENGTH];
+   // copy the needed info from the Mission_goal struct to our internal structure
+   for (i = 0; i < Num_goals; i++ ) {
+      if ( strlen(Mission_goals[i].name) == 0 ) {
+         char name[NAME_LENGTH];
 
-                        sprintf(name, NOX("Goal #%d"), i);
-                        //Warning(LOCATION, "Mission goal in mission %s must have a +Name field! using %s for campaign save file\n", mission->name, name);
-                        strcpy( mission->goals[i].name, name);
-                } else
-                        strcpy( mission->goals[i].name, Mission_goals[i].name );
-                Assert ( Mission_goals[i].satisfied != GOAL_INCOMPLETE );               // should be true or false at this point!!!
-                mission->goals[i].status = (char)Mission_goals[i].satisfied;
-        }
+         sprintf(name, NOX("Goal #%d"), i);
+         //Warning(LOCATION, "Mission goal in mission %s must have a +Name field! using %s for campaign save file\n", mission->name, name);
+         strcpy( mission->goals[i].name, name);
+      } else
+         strcpy( mission->goals[i].name, Mission_goals[i].name );
+      Assert ( Mission_goals[i].satisfied != GOAL_INCOMPLETE );      // should be true or false at this point!!!
+      mission->goals[i].status = (char)Mission_goals[i].satisfied;
+   }
 
-        // do the same thing for events as we did for goals
-        // we might have goal and event status if the player replayed a mission
-        if ( mission->num_events > 0 ) {
-                free( mission->events );
-        }
+   // do the same thing for events as we did for goals
+   // we might have goal and event status if the player replayed a mission
+   if ( mission->num_events > 0 ) {
+      free( mission->events );
+   }
 
-        mission->num_events = Num_mission_events;
-        if ( mission->num_events > 0 ) {
-                mission->events = (mevent *)malloc( sizeof(mevent) * Num_mission_events );
-                Assert( mission->events != NULL );
-        }
+   mission->num_events = Num_mission_events;
+   if ( mission->num_events > 0 ) {
+      mission->events = (mevent *)malloc( sizeof(mevent) * Num_mission_events );
+      Assert( mission->events != NULL );
+   }
 
-        // copy the needed info from the Mission_goal struct to our internal structure
-        for (i = 0; i < Num_mission_events; i++ ) {
-                if ( strlen(Mission_events[i].name) == 0 ) {
-                        char name[NAME_LENGTH];
+   // copy the needed info from the Mission_goal struct to our internal structure
+   for (i = 0; i < Num_mission_events; i++ ) {
+      if ( strlen(Mission_events[i].name) == 0 ) {
+         char name[NAME_LENGTH];
 
-                        sprintf(name, NOX("Event #%d"), i);
-                        nprintf(("Warning", "Mission goal in mission %s must have a +Name field! using %s for campaign save file\n", mission->name, name));
-                        strcpy( mission->events[i].name, name);
-                } else
-                        strcpy( mission->events[i].name, Mission_events[i].name );
+         sprintf(name, NOX("Event #%d"), i);
+         nprintf(("Warning", "Mission goal in mission %s must have a +Name field! using %s for campaign save file\n", mission->name, name));
+         strcpy( mission->events[i].name, name);
+      } else
+         strcpy( mission->events[i].name, Mission_events[i].name );
 
-                // getting status for the events is a little different.  If the formula value for the event entry
-                // is -1, then we know the value of the result field will never change.  If the formula is
-                // not -1 (i.e. still being evaluated at mission end time), we will write "incomplete" for the
-                // event evaluation
-                if ( Mission_events[i].formula == -1 ) {
-                        if ( Mission_events[i].result )
-                                mission->events[i].status = EVENT_SATISFIED;
-                        else
-                                mission->events[i].status = EVENT_FAILED;
-                } else
-                        Int3();
-        }
+      // getting status for the events is a little different.  If the formula value for the event entry
+      // is -1, then we know the value of the result field will never change.  If the formula is
+      // not -1 (i.e. still being evaluated at mission end time), we will write "incomplete" for the
+      // event evaluation
+      if ( Mission_events[i].formula == -1 ) {
+         if ( Mission_events[i].result )
+            mission->events[i].status = EVENT_SATISFIED;
+         else
+            mission->events[i].status = EVENT_FAILED;
+      } else
+         Int3();
+   }
 
-        // maybe store the alltime stats which would be current at the end of this mission
-        if ( store_stats ) {
-                memcpy( &mission->stats, &Player->stats, sizeof(Player->stats) );
-                scoring_backout_accept( &mission->stats );
-        }
+   // maybe store the alltime stats which would be current at the end of this mission
+   if ( store_stats ) {
+      memcpy( &mission->stats, &Player->stats, sizeof(Player->stats) );
+      scoring_backout_accept( &mission->stats );
+   }
 
-        if ( store_stats ) {    // second (last) time through, so use choose loop_mission if chosen
-                if ( Campaign.loop_enabled ) {
-                        Campaign.next_mission = Campaign.loop_mission;
-                } else {
-                        // evaluate next mission (straight path)
-                        if (Campaign.missions[cur].formula != -1) {
-                                flush_sexp_tree(Campaign.missions[cur].formula);  // force formula to be re-evaluated
-                                eval_sexp(Campaign.missions[cur].formula);  // this should reset Campaign.next_mission to proper value
-                        }
-                }
-        } else {
+   if ( store_stats ) { // second (last) time through, so use choose loop_mission if chosen
+      if ( Campaign.loop_enabled ) {
+         Campaign.next_mission = Campaign.loop_mission;
+      } else {
+         // evaluate next mission (straight path)
+         if (Campaign.missions[cur].formula != -1) {
+            flush_sexp_tree(Campaign.missions[cur].formula);  // force formula to be re-evaluated
+            eval_sexp(Campaign.missions[cur].formula);  // this should reset Campaign.next_mission to proper value
+         }
+      }
+   } else {
 
-                // evaluate next mission (straight path)
-                if (Campaign.missions[cur].formula != -1) {
-                        flush_sexp_tree(Campaign.missions[cur].formula);  // force formula to be re-evaluated
-                        eval_sexp(Campaign.missions[cur].formula);  // this should reset Campaign.next_mission to proper value
-                }
+      // evaluate next mission (straight path)
+      if (Campaign.missions[cur].formula != -1) {
+         flush_sexp_tree(Campaign.missions[cur].formula);  // force formula to be re-evaluated
+         eval_sexp(Campaign.missions[cur].formula);  // this should reset Campaign.next_mission to proper value
+      }
 
-                // evaluate mission loop mission (if any) so it can be used if chosen
-                if ( Campaign.missions[cur].has_mission_loop ) {
-                        int copy_next_mission = Campaign.next_mission;
-                        // Set temporarily to -1 so we know if loop formula fails to assign
-                        Campaign.next_mission = -1;  // Cannot exit campaign from loop
-                        if (Campaign.missions[cur].mission_loop_formula != -1) {
-                                flush_sexp_tree(Campaign.missions[cur].mission_loop_formula);  // force formula to be re-evaluated
-                                eval_sexp(Campaign.missions[cur].mission_loop_formula);  // this should reset Campaign.next_mission to proper value
-                        }
+      // evaluate mission loop mission (if any) so it can be used if chosen
+      if ( Campaign.missions[cur].has_mission_loop ) {
+         int copy_next_mission = Campaign.next_mission;
+         // Set temporarily to -1 so we know if loop formula fails to assign
+         Campaign.next_mission = -1;  // Cannot exit campaign from loop
+         if (Campaign.missions[cur].mission_loop_formula != -1) {
+            flush_sexp_tree(Campaign.missions[cur].mission_loop_formula);  // force formula to be re-evaluated
+            eval_sexp(Campaign.missions[cur].mission_loop_formula);  // this should reset Campaign.next_mission to proper value
+         }
 
-                        Campaign.loop_mission = Campaign.next_mission;
-                        Campaign.next_mission = copy_next_mission;
-                }
-        }
+         Campaign.loop_mission = Campaign.next_mission;
+         Campaign.next_mission = copy_next_mission;
+      }
+   }
 
-        if (Campaign.next_mission == -1)
-                nprintf(("allender", "No next mission to proceed to.\n"));
-        else
-                nprintf(("allender", "Next mission is number %d [%s]\n", Campaign.next_mission, Campaign.missions[Campaign.next_mission].name));
+   if (Campaign.next_mission == -1)
+      nprintf(("allender", "No next mission to proceed to.\n"));
+   else
+      nprintf(("allender", "Next mission is number %d [%s]\n", Campaign.next_mission, Campaign.missions[Campaign.next_mission].name));
 
-        return Campaign.next_mission;
+   return Campaign.next_mission;
 } */
 
 // Evaluate next campaign mission - set as Campaign.next_mission.  Also set Campaign.loop_mission
@@ -1193,12 +1165,10 @@ mission_campaign_eval_next_mission()
 void
 mission_campaign_store_goals_and_events()
 {
-    char *name;
     int cur, i;
     cmission *mission;
 
     cur = Campaign.current_mission;
-    name = Campaign.missions[cur].name;
 
     mission = &Campaign.missions[cur];
 
@@ -1304,7 +1274,7 @@ mission_campaign_mission_over()
 
     // DKA 12/11/98 - Unneeded already evaluated and stored
     // determine what new mission we are moving to.
-    //  mission_campaign_eval_next_mission(1);
+    //   mission_campaign_eval_next_mission(1);
 
     // update campaign.mission stats (used to allow backout inRedAlert)
     memcpy(&mission->stats, &Player->stats, sizeof(Player->stats));
@@ -1376,11 +1346,9 @@ mission_campaign_close()
             free(Campaign.missions[i].events);
         }
 
-        if (!Fred_running) {
-            sexp_unmark_persistent(
-                Campaign.missions[i]
-                    .formula); // free any sexpression nodes used by campaign.
-        }
+        sexp_unmark_persistent(
+            Campaign.missions[i]
+                .formula); // free any sexpression nodes used by campaign.
 
         Campaign.missions[i].num_goals = 0;
         Campaign.missions[i].num_events = 0;
@@ -1389,9 +1357,9 @@ mission_campaign_close()
 
 // extract the mission filenames for a campaign.
 //
-// filename     =>      name of campaign file
-//      dest            => storage for the mission filename, must be already allocated
-// num          => output parameter for the number of mission filenames in the campaign
+// filename => name of campaign file
+// dest     => storage for the mission filename, must be already allocated
+// num      => output parameter for the number of mission filenames in the campaign
 //
 // note that dest should allocate at least dest[MAX_CAMPAIGN_MISSIONS][NAME_LENGTH]
 int
@@ -1423,116 +1391,6 @@ mission_campaign_get_filenames(char *filename, char dest[][NAME_LENGTH], int *nu
     }
 
     return 0;
-}
-
-// function to read the goals and events from a mission in a campaign file and store that information
-// in the campaign structure for use in the campaign editor, error checking, etc
-void
-read_mission_goal_list(int num)
-{
-    char *filename, notes[NOTES_LENGTH], goals[MAX_GOALS][NAME_LENGTH];
-    char events[MAX_MISSION_EVENTS][NAME_LENGTH];
-    int i, z, r, event_count, count = 0;
-
-    filename = Campaign.missions[num].name;
-    if ((r = setjmp(parse_abort)) > 0) {
-        Warning(LOCATION, "Error reading \"%s\" (code = %d)", filename, r);
-        return;
-    }
-
-    // open localization
-    lcl_ext_open();
-
-    read_file_text(filename);
-    init_parse();
-
-    // first, read the mission notes for this mission.  Used in campaign editor
-    if (skip_to_string("#Mission Info")) {
-        if (skip_to_string("$Notes:")) {
-            stuff_string(notes, F_NOTES, NULL);
-            if (Campaign.missions[num].notes) {
-                free(Campaign.missions[num].notes);
-            }
-
-            Campaign.missions[num].notes = (char *)malloc(strlen(notes) + 1);
-            strcpy(Campaign.missions[num].notes, notes);
-        }
-    }
-
-    event_count = 0;
-    // skip to events section in the mission file.  Events come before goals, so we process them first
-    if (skip_to_string("#Events")) {
-        while (1) {
-            if (skip_to_string("$Formula:", "#Goals") != 1) {
-                break;
-            }
-
-            z = skip_to_string("+Name:", "$Formula:");
-            if (!z) {
-                break;
-            }
-
-            if (z == 1) {
-                stuff_string(events[event_count], F_NAME, NULL);
-            }
-            else {
-                sprintf(events[event_count], NOX("Event #%d"), event_count + 1);
-            }
-
-            event_count++;
-            Assert(event_count < MAX_MISSION_EVENTS);
-        }
-    }
-
-    count = 0;
-    if (skip_to_string("#Goals")) {
-        while (1) {
-            if (skip_to_string("$Type:", "#End") != 1) {
-                break;
-            }
-
-            z = skip_to_string("+Name:", "$Type:");
-            if (!z) {
-                break;
-            }
-
-            if (z == 1) {
-                stuff_string(goals[count], F_NAME, NULL);
-            }
-            else {
-                sprintf(goals[count], NOX("Goal #%d"), count + 1);
-            }
-
-            count++;
-            Assert(count < MAX_GOALS);
-        }
-    }
-
-    Campaign.missions[num].num_goals = count;
-    if (count) {
-        Campaign.missions[num].goals = (mgoal *)malloc(count * sizeof(mgoal));
-        Assert(Campaign.missions[num].goals); // make sure we got the memory
-        memset(Campaign.missions[num].goals, 0, count * sizeof(mgoal));
-
-        for (i = 0; i < count; i++) {
-            strcpy(Campaign.missions[num].goals[i].name, goals[i]);
-        }
-    }
-    // copy the events
-    Campaign.missions[num].num_events = event_count;
-    if (event_count) {
-        Campaign.missions[num].events = (mevent *)malloc(event_count *
-                                                         sizeof(mevent));
-        Assert(Campaign.missions[num].events);
-        memset(Campaign.missions[num].events, 0, event_count * sizeof(mevent));
-
-        for (i = 0; i < event_count; i++) {
-            strcpy(Campaign.missions[num].events[i].name, events[i]);
-        }
-    }
-
-    // close localization
-    lcl_ext_close();
 }
 
 // function to return index into Campaign's list of missions of the mission with the given
@@ -1650,18 +1508,14 @@ mission_campaign_end_do()
     // did the supernova blow?
     if (Supernova_status == SUPERNOVA_HIT) {
         // no soup for you!
-        // movie_play_two("endpart1.mve", "endprt2b.mve");                      // good ending
+        // movie_play_two("endpart1.mve", "endprt2b.mve");        // good ending
     }
     else {
         // no soup for you!
-        // movie_play_two("endpart1.mve", "endprt2a.mve");                      // good ending
+        // movie_play_two("endpart1.mve", "endprt2a.mve");        // good ending
     }
 
-#ifdef FS2_DEMO
-    gameseq_post_event(GS_EVENT_END_DEMO);
-#else
     gameseq_post_event(GS_EVENT_MAIN_MENU);
-#endif
 }
 
 void

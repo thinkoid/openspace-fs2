@@ -100,7 +100,7 @@ get_char_width(ubyte c1, ubyte c2, int *width, int *spacing)
 }
 
 int
-get_centered_x(char *s)
+get_centered_x(const char *s)
 {
     int w, w2, s2;
 
@@ -132,13 +132,13 @@ gr_char_centered(int x, int y, char chr)
 void
 gr_print_timestamp(int x, int y, int timestamp)
 {
-    char h[2], m[3], s[3];
+    char h[4], m[4], s[4];
     int w, c;
 
     // format the time information into strings
-    sprintf(h, "%0.1d", (timestamp / 3600000) % 10);
-    sprintf(m, "%0.2d", (timestamp / 60000) % 60);
-    sprintf(s, "%0.2d", (timestamp / 1000) % 60);
+    sprintf(h, "%.1d", (timestamp / 3600000) % 10);
+    sprintf(m, "%.2d", (timestamp / 60000) % 60);
+    sprintf(s, "%.2d", (timestamp / 1000) % 60);
 
     gr_get_string_size(&w, NULL, "0");
     gr_get_string_size(&c, NULL, ":");
@@ -170,7 +170,7 @@ gr_get_font_height()
 }
 
 void
-gr_get_string_size(int *w1, int *h1, char *text, int len)
+gr_get_string_size(int *w1, int *h1, const char *text, int len)
 {
     int longest_width;
     int width, spacing;
@@ -230,64 +230,64 @@ MONITOR(FontChars);
 
 void gr8_char(int x,int y,int letter)
 {
-        font_char *ch;
-        
-        ch = &Current_font->char_data[letter];
+   font_char *ch;
+   
+   ch = &Current_font->char_data[letter];
 
-        gr_aabitmap_ex( x, y, ch->byte_width, Current_font->h, Current_font->u[letter], Current_font->v[letter] );
+   gr_aabitmap_ex( x, y, ch->byte_width, Current_font->h, Current_font->u[letter], Current_font->v[letter] );
 
-//      mprintf(( "String = %s\n", text ));
+// mprintf(( "String = %s\n", text ));
 }
 
 
-void gr8_string( int sx, int sy, char *s )
+void gr8_string( int sx, int sy, const char *s )
 {
-        int width, spacing, letter;
-        int x, y;
+   int width, spacing, letter;
+   int x, y;
 
-        if ( !Current_font ) return;
-        if ( !s ) return;
-        
-        gr_set_bitmap(Current_font->bitmap);
+   if ( !Current_font ) return;
+   if ( !s ) return;
+   
+   gr_set_bitmap(Current_font->bitmap);
 
-        x = sx;
-        y = sy;
+   x = sx;
+   y = sy;
 
-        if (sx==0x8000) {                       //centered
-                x = get_centered_x(s);
-        } else {
-                x = sx;
-        }
+   if (sx==0x8000) {       //centered
+      x = get_centered_x(s);
+   } else {
+      x = sx;
+   }
 
-        while (*s)      {
-                while (*s== '\n' )      {
-                        s++;
-                        y += Current_font->h;
-                        if (sx==0x8000) {                       //centered
-                                x = get_centered_x(s);
-                        } else {
-                                x = sx;
-                        }
-                }
-                if (*s == 0 ) break;
+   while (*s)  {
+      while (*s== '\n' )   {
+         s++;
+         y += Current_font->h;
+         if (sx==0x8000) {       //centered
+            x = get_centered_x(s);
+         } else {
+            x = sx;
+         }
+      }
+      if (*s == 0 ) break;
 
-                letter = get_char_width(s[0],s[1],&width,&spacing);
+      letter = get_char_width(s[0],s[1],&width,&spacing);
 
-                if (letter<0) { //not in font, draw as space
-                        x += spacing;
-                        s++;
-                        continue;
-                }
-                gr8_char( x, y, letter );
-        
-                x += spacing;
-                s++;
-        }
+      if (letter<0) {   //not in font, draw as space
+         x += spacing;
+         s++;
+         continue;
+      }
+      gr8_char( x, y, letter );
+   
+      x += spacing;
+      s++;
+   }
 }
 */
 
 void
-gr8_string(int sx, int sy, char *s)
+gr8_string(int sx, int sy, const char *s)
 {
     int row, width, spacing, letter;
     int x, y;
@@ -412,7 +412,7 @@ gr8_string(int sx, int sy, char *s)
 char grx_printf_text[2048];
 
 void _cdecl
-gr_printf(int x, int y, char *format, ...)
+gr_printf(int x, int y, const char *format, ...)
 {
     va_list args;
 
@@ -433,7 +433,7 @@ gr_font_close()
 // Returns -1 if couldn't init font, otherwise returns the
 // font id number.
 int
-gr_create_font(char *typeface)
+gr_create_font(const char *typeface)
 {
     CFILE *fp;
     font *fnt;
@@ -586,7 +586,7 @@ gr_font_init()
 // Returns -1 if couldn't init font, otherwise returns the
 // font id number.
 int
-gr_init_font(char *typeface)
+gr_init_font(const char *typeface)
 {
     int Loaded_fontnum;
 

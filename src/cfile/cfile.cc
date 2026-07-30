@@ -145,7 +145,7 @@ cfile_in_root_dir(char *exe_path)
 
 // cfile_init() initializes the cfile system.  Called once at application start.
 //
-//      returns:  success ==> 0
+// returns:  success ==> 0
 //           error   ==> non-zero
 //
 int
@@ -330,7 +330,7 @@ cfile_flush_dir(int dir_type)
 //    ext = extension to add.  Must start with the period
 //    Returns: new filename or filepath with extension.
 char *
-cf_add_ext(char *filename, char *ext)
+cf_add_ext(const char *filename, const char *ext)
 {
     int flen, elen;
     static char path[MAX_PATH_LEN];
@@ -491,28 +491,28 @@ extern int game_cd_changed();
 //                            passing NULL to mode deletes the file if it exists and returns NULL
 //               type     ==> one of:    CFILE_NORMAL
 //                                       CFILE_MEMORY_MAPPED
-//                                        dir_type      =>      override extension check, value is one of CF_TYPE* #defines
+//               dir_type  => override extension check, value is one of CF_TYPE* #defines
 //
 //               NOTE: type parameter is an optional parameter.  The default value is CFILE_NORMAL
 //
 //
-// returns:             success ==> address of CFILE structure
-//                                      error   ==> NULL
+// returns:    success ==> address of CFILE structure
+//             error   ==> NULL
 //
 
 CFILE *
-cfopen(char *file_path, char *mode, int type, int dir_type, bool localize)
+cfopen(const char *file_path, const char *mode, int type, int dir_type, bool localize)
 {
     char longname[_MAX_PATH];
 
-//      nprintf(("CFILE", "CFILE -- trying to open %s\n", file_path ));
+// nprintf(("CFILE", "CFILE -- trying to open %s\n", file_path ));
 // #if !defined(MULTIPLAYER_BETA_BUILD) && !defined(FS2_DEMO)
 
 // we no longer need to do this, and on machines with crappy-ass drivers it can slow things down horribly.
-#if 0   
-        if ( game_cd_changed() ) {
-                cfile_refresh();
-        }
+#if 0 
+   if ( game_cd_changed() ) {
+      cfile_refresh();
+   }
 #endif
 
     // Check that all the parameters make sense
@@ -602,8 +602,8 @@ cfopen(char *file_path, char *mode, int type, int dir_type, bool localize)
 // Open up a temporary file.  A unique name is automatically generated.  The
 // file will be automatically deleted when file is closed.
 //
-// return:              NULL                                    =>              tmp file could not be opened
-//                                      pointer to CFILE        =>              tmp file successfully opened
+// return:     NULL              =>    tmp file could not be opened
+//             pointer to CFILE  =>    tmp file successfully opened
 //
 CFILE *
 ctmpfile()
@@ -617,7 +617,7 @@ ctmpfile()
 }
 
 // cfget_cfile_block() will try to find an empty Cfile_block structure in the
-//      Cfile_block_list[] array and return the index.
+// Cfile_block_list[] array and return the index.
 //
 // returns:   success ==> index in Cfile_block_list[] array
 //            failure ==> -1
@@ -648,7 +648,7 @@ cfget_cfile_block()
 // cfclose() closes the file
 //
 // returns:   success ==> 0
-//                                failure ==> EOF
+//            failure ==> EOF
 //
 int
 cfclose(CFILE *cfile)
@@ -839,7 +839,7 @@ cfread_float(CFILE *file, int ver, float deflt)
     if (cfread(&f, sizeof(f), 1, file) != 1)
         return deflt;
 
-    //  i = INTEL_INT(i);                       //  hmm, not sure what to do here
+    //   i = INTEL_INT(i);       //  hmm, not sure what to do here
     return f;
 }
 
@@ -929,9 +929,9 @@ cfread_vector(vector *vec, CFILE *file, int ver, vector *deflt)
         return;
     }
 
-    vec->x = cfread_float(file, ver, deflt ? deflt->x : NULL);
-    vec->y = cfread_float(file, ver, deflt ? deflt->y : NULL);
-    vec->z = cfread_float(file, ver, deflt ? deflt->z : NULL);
+    vec->x = cfread_float(file, ver, deflt ? deflt->x : 0.0f);
+    vec->y = cfread_float(file, ver, deflt ? deflt->y : 0.0f);
+    vec->z = cfread_float(file, ver, deflt ? deflt->z : 0.0f);
 }
 
 void
@@ -946,9 +946,9 @@ cfread_angles(angles *ang, CFILE *file, int ver, angles *deflt)
         return;
     }
 
-    ang->p = cfread_float(file, ver, deflt ? deflt->p : NULL);
-    ang->b = cfread_float(file, ver, deflt ? deflt->b : NULL);
-    ang->h = cfread_float(file, ver, deflt ? deflt->h : NULL);
+    ang->p = cfread_float(file, ver, deflt ? deflt->p : 0.0f);
+    ang->b = cfread_float(file, ver, deflt ? deflt->b : 0.0f);
+    ang->h = cfread_float(file, ver, deflt ? deflt->h : 0.0f);
 }
 
 char
@@ -996,7 +996,7 @@ cfread_string_len(char *buf, int n, CFILE *file)
 int
 cfwrite_float(float f, CFILE *file)
 {
-    //  i = INTEL_INT(i);                       //  hmm, not sure what to do here
+    //   i = INTEL_INT(i);       //  hmm, not sure what to do here
     return cfwrite(&f, sizeof(f), 1, file);
 }
 
@@ -1065,7 +1065,7 @@ cfwrite_char(char b, CFILE *file)
 }
 
 int
-cfwrite_string(char *buf, CFILE *file)
+cfwrite_string(const char *buf, CFILE *file)
 {
     if ((!buf) || (buf && !buf[0])) {
         return cfwrite_char(0, file);
@@ -1116,7 +1116,7 @@ cfilelength(CFILE *cfile)
 //
 //
 int
-cfwrite(void *buf, int elsize, int nelem, CFILE *cfile)
+cfwrite(const void *buf, int elsize, int nelem, CFILE *cfile)
 {
     Assert(cfile != NULL);
     Assert(buf != NULL);
@@ -1142,7 +1142,7 @@ cfwrite(void *buf, int elsize, int nelem, CFILE *cfile)
 // cfputc() writes a character to a file
 //
 // returns:   success ==> returns character written
-//                                error   ==> EOF
+//            error   ==> EOF
 //
 int
 cfputc(int c, CFILE *cfile)
@@ -1167,7 +1167,7 @@ cfputc(int c, CFILE *cfile)
 // cfgetc() reads a character from a file
 //
 // returns:   success ==> returns character read
-//                                error   ==> EOF
+//            error   ==> EOF
 //
 int
 cfgetc(CFILE *cfile)
@@ -1190,7 +1190,7 @@ cfgetc(CFILE *cfile)
 // cfgets() reads a string from a file
 //
 // returns:   success ==> returns pointer to string
-//                                error   ==> NULL
+//            error   ==> NULL
 //
 char *
 cfgets(char *buf, int n, CFILE *cfile)
@@ -1230,10 +1230,10 @@ cfgets(char *buf, int n, CFILE *cfile)
 // cfputs() writes a string to a file
 //
 // returns:   success ==> non-negative value
-//                                error   ==> EOF
+//            error   ==> EOF
 //
 int
-cfputs(char *str, CFILE *cfile)
+cfputs(const char *str, CFILE *cfile)
 {
     Assert(cfile != NULL);
     Assert(str != NULL);
@@ -1488,7 +1488,7 @@ cf_chksum_long(CFILE *file, uint *chksum, int max_size)
 // Flush the open file buffer
 //
 // exit: 0 - success
-//                      1 - failure
+//       1 - failure
 int
 cflush(CFILE *cfile)
 {

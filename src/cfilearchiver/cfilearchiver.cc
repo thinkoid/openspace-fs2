@@ -130,7 +130,7 @@ pack_file(char *filespec, char *filename, int filesize, time_t time_write)
 
 // This function adds a directory marker to the header file
 void
-add_directory(char *dirname)
+add_directory(const char *dirname)
 {
     char path[256];
     char *pathptr = path;
@@ -155,19 +155,19 @@ pack_directory(char *filespec)
     char tmp[512];
 
     /*
-        char dir_name[512];
-        char *last_slash;
+   char dir_name[512];
+   char *last_slash;
 
-        last_slash = strrchr(filespec, '/');
-        if ( last_slash ) {
-                strcpy(dir_name, last_slash+1);
-        } else {
-                strcpy(dir_name, filespec);
-        }
+   last_slash = strrchr(filespec, '/');
+   if ( last_slash ) {
+      strcpy(dir_name, last_slash+1);
+   } else {
+      strcpy(dir_name, filespec);
+   }
 
-        if ( !stricmp(dir_name, "voice") ) {
-                return;
-        }
+   if ( !stricmp(dir_name, "voice") ) {
+      return;
+   }
 */
 
     add_directory(filespec);

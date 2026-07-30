@@ -13,34 +13,6 @@
 #include <globalincs/pstypes.hh>
 
 // --------------------------------------------------------------------------------------------------
-// OSAPI DEFINES/VARS
-//
-
-// set if running under MsDev - done after os_init(...) has returned
-extern int Os_debugger_running;
-
-// game-wide
-// #define THREADED
-
-#ifdef THREADED
-#define ENTER_CRITICAL_SECTION(csc)                                              \
-    do {                                                                         \
-        EnterCriticalSection(csc);                                               \
-    } while (0);
-#define LEAVE_CRITICAL_SECTION(csc)                                              \
-    do {                                                                         \
-        LeaveCriticalSection(csc);                                               \
-    } while (0);
-#else
-#define ENTER_CRITICAL_SECTION(csc)                                              \
-    do {                                                                         \
-    } while (0);
-#define LEAVE_CRITICAL_SECTION(csc)                                              \
-    do {                                                                         \
-    } while (0);
-#endif
-
-// --------------------------------------------------------------------------------------------------
 // OSAPI FUNCTIONS
 //
 
@@ -48,25 +20,19 @@ extern int Os_debugger_running;
 
 // If app_name is NULL or ommited, then TITLE is used
 // for the app name, which is where registry keys are stored.
-void os_init(char *wclass, char *title, char *app_name = NULL,
-             char *version_string = NULL);
+void os_init(const char *wclass, const char *title, const char *app_name = NULL,
+             const char *version_string = NULL);
 
 // set the main window title
-void os_set_title(char *title);
+void os_set_title(const char *title);
 
 // call at program end
 void os_cleanup();
 
 // window management ---------------------------------------------------------------
 
-// toggle window size between full screen and windowed
-void os_toggle_fullscreen();
-
 // Returns 1 if app is not the foreground app.
 int os_foreground();
-
-// Returns the handle to the main window
-uint os_get_window();
 
 // SDL2 window management.  osapi owns the SDL window; the graphics backend
 // renders into it.  Forward declared so this header doesn't drag SDL in.
@@ -82,16 +48,10 @@ int os_create_window(int w, int h, int use_opengl = 0);
 
 // process management --------------------------------------------------------------
 
-// call to process windows messages. only does something in non THREADED mode
+// drain pending SDL events and route them to key/mouse/focus/quit handling
 void os_poll();
 
 // Sleeps for n milliseconds or until app becomes active.
 void os_sleep(int ms);
-
-// Used to stop message processing
-void os_suspend();
-
-// resume message processing
-void os_resume();
 
 #endif

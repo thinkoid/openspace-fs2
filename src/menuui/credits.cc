@@ -46,10 +46,10 @@
 #define CREDITS_W_COORD 2
 #define CREDITS_H_COORD 3
 
-static char *Credits_bitmap_fname[GR_NUM_RESOLUTIONS] = { "Credits", // GR_640
+static const char *Credits_bitmap_fname[GR_NUM_RESOLUTIONS] = { "Credits", // GR_640
                                                           "2_Credits" };
 
-static char *Credits_bitmap_mask_fname[GR_NUM_RESOLUTIONS] = {
+static const char *Credits_bitmap_mask_fname[GR_NUM_RESOLUTIONS] = {
     "Credits-M", // GR_640
     "2_Credits-M"
 };
@@ -74,13 +74,13 @@ int Credits_text_coords[GR_NUM_RESOLUTIONS][4] = { {
 
 struct credits_screen_buttons
 {
-    char *filename;
+    const char *filename;
     int x, y, xt, yt;
     int hotspot;
     UI_BUTTON
         button; // because we have a class inside this struct, we need the constructor below..
 
-    credits_screen_buttons(char *name, int x1, int y1, int xt1, int yt1, int h)
+    credits_screen_buttons(const char *name, int x1, int y1, int xt1, int yt1, int h)
         : filename(name)
         , x(x1)
         , y(y1)
@@ -261,7 +261,9 @@ credits_init()
         lcl_ext_close();
     }
     else {
-        Credit_text = NOX("No credits available.\n");
+        // the no-credits fallback aliases a literal; nothing writes through
+        // Credit_text on this path (the writes happen in the malloc branch)
+        Credit_text = (char *)NOX("No credits available.\n");
     }
 
     int ch;
@@ -441,23 +443,23 @@ credits_close()
     int i;
 
     /*
-        if (CreditsWin01 != -1){
-                bm_unload(CreditsWin01);
-                CreditsWin01 = -1;
-        }
-        if (CreditsWin02 != -1){
-                bm_unload(CreditsWin02);
-                CreditsWin02 = -1;
-        }
-        if (CreditsWin03 != -1){
-                bm_unload(CreditsWin03);
-                CreditsWin03 = -1;
-        }
-        if (CreditsWin04 != -1){
-                bm_unload(CreditsWin04);
-                CreditsWin04 = -1;
-        }
-        */
+   if (CreditsWin01 != -1){
+      bm_unload(CreditsWin01);
+      CreditsWin01 = -1;
+   }
+   if (CreditsWin02 != -1){
+      bm_unload(CreditsWin02);
+      CreditsWin02 = -1;
+   }
+   if (CreditsWin03 != -1){
+      bm_unload(CreditsWin03);
+      CreditsWin03 = -1;
+   }
+   if (CreditsWin04 != -1){
+      bm_unload(CreditsWin04);
+      CreditsWin04 = -1;
+   }
+   */
 
     for (i = 0; i < NUM_IMAGES; i++) {
         if (Credits_bmps[i] >= 0) {
@@ -551,10 +553,10 @@ credits_do_frame(float frametime)
         char buf[40];
 
         if (gr_screen.res == GR_1024) {
-            sprintf(buf, NOX("2_CrIm%0.2d"), Credits_artwork_index);
+            sprintf(buf, NOX("2_CrIm%.2d"), Credits_artwork_index);
         }
         else {
-            sprintf(buf, NOX("CrIm%0.2d"), Credits_artwork_index);
+            sprintf(buf, NOX("CrIm%.2d"), Credits_artwork_index);
         }
         Credits_bmps[Credits_artwork_index] = bm_load(buf);
     }
@@ -563,10 +565,10 @@ credits_do_frame(float frametime)
         char buf[40];
 
         if (gr_screen.res == GR_1024) {
-            sprintf(buf, NOX("2_CrIm%0.2d"), Credits_artwork_index);
+            sprintf(buf, NOX("2_CrIm%.2d"), Credits_artwork_index);
         }
         else {
-            sprintf(buf, NOX("CrIm%0.2d"), next);
+            sprintf(buf, NOX("CrIm%.2d"), next);
         }
         Credits_bmps[next] = bm_load(buf);
     }
@@ -595,26 +597,26 @@ credits_do_frame(float frametime)
     }
 
     /*
-        if (CreditsWin01 != -1) {
-                gr_set_bitmap(CreditsWin01);
-                gr_bitmap(233, 5);
-        }
+   if (CreditsWin01 != -1) {
+      gr_set_bitmap(CreditsWin01);
+      gr_bitmap(233, 5);
+   }
 
-        if (CreditsWin02 != -1) {
-                gr_set_bitmap(CreditsWin02);
-                gr_bitmap(616, 8);
-        }
+   if (CreditsWin02 != -1) {
+      gr_set_bitmap(CreditsWin02);
+      gr_bitmap(616, 8);
+   }
 
-        if (CreditsWin03 != -1) {
-                gr_set_bitmap(CreditsWin03);
-                gr_bitmap(233, 299);
-        }
+   if (CreditsWin03 != -1) {
+      gr_set_bitmap(CreditsWin03);
+      gr_bitmap(233, 299);
+   }
 
-        if (CreditsWin04 != -1) {
-                gr_set_bitmap(CreditsWin04);
-                gr_bitmap(215, 8);
-        }
-        */
+   if (CreditsWin04 != -1) {
+      gr_set_bitmap(CreditsWin04);
+      gr_bitmap(215, 8);
+   }
+   */
 
     Ui_window.draw();
 

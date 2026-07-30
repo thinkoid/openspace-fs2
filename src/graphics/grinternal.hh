@@ -42,21 +42,7 @@ typedef struct alphacolor
     } table;
 } alphacolor;
 
-// for backwards fred aabitmap compatibility
-typedef struct alphacolor_old
-{
-    int used;
-    int r, g, b, alpha;
-    int type; // See AC_TYPE_??? define
-    color *clr;
-    union
-    {
-        ubyte lookup[16][256]; // For 8-bpp rendering modes
-    } table;
-} alphacolor_old;
-
 extern alphacolor *Current_alphacolor;
-void gr_init_alphacolors();
 
 extern char Gr_current_palette_name[128];
 
@@ -83,11 +69,6 @@ extern color_gun *Gr_current_red, *Gr_current_green, *Gr_current_blue,
     *Gr_current_alpha;
 
 // Translate the 768 byte 'src' palette into
-// the current screen format's palette.
-// The size of the dst array is assumed to be gr_screen.bpp
-// bytes per element.
-void gr_xlat_palette(void *dst, bitmap *bmp);
-
 // CPU identification variables
 extern int Gr_cpu; // What type of CPU.  5=Pentium, 6=Ppro/PII
 extern int Gr_mmx; // MMX capabilities?  0=No, 1=Yes

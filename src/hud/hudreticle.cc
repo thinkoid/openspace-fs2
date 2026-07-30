@@ -36,12 +36,12 @@ static int Reticle_inited = 0;
 #define RETICLE_LOCK_WARN 2
 #define RETICLE_LEFT_ARC 3
 #define RETICLE_RIGHT_ARC 4
-//#define RETICLE_ONE_PRIMARY           5
-//#define RETICLE_TWO_PRIMARY           6
-//#define RETICLE_ONE_SECONDARY         7
-//#define RETICLE_TWO_SECONDARY         8
-//#define RETICLE_THREE_SECONDARY       9
-// #define RETICLE_LAUNCH_LABEL         5
+//#define RETICLE_ONE_PRIMARY    5
+//#define RETICLE_TWO_PRIMARY    6
+//#define RETICLE_ONE_SECONDARY     7
+//#define RETICLE_TWO_SECONDARY     8
+//#define RETICLE_THREE_SECONDARY   9
+// #define RETICLE_LAUNCH_LABEL     5
 #define RETICLE_CENTER 5
 
 int Hud_throttle_frame_h[GR_NUM_RESOLUTIONS] = { 85, 136 };
@@ -68,12 +68,12 @@ char Reticle_frame_names[GR_NUM_RESOLUTIONS][NUM_RETICLE_ANIS][MAX_FILENAME_LEN]
         "toparc3",
         "leftarc",
         "rightarc1",
-        /*              "rightarc2",
-                "rightarc3",
-                "rightarc4",
-                "rightarc5",
-                "rightarc6",    
-                "toparc4",      */
+        /*     "rightarc2",
+      "rightarc3",
+      "rightarc4",
+      "rightarc5",
+      "rightarc6",   
+      "toparc4",  */
         "reticle1",
     },
     {
@@ -83,12 +83,12 @@ char Reticle_frame_names[GR_NUM_RESOLUTIONS][NUM_RETICLE_ANIS][MAX_FILENAME_LEN]
         "2_toparc3",
         "2_leftarc",
         "2_rightarc1",
-        /*              "2_rightarc2",
-                "2_rightarc3",
-                "2_rightarc4",
-                "2_rightarc5",
-                "2_rightarc6",  
-                "2_toparc4",    */
+        /*     "2_rightarc2",
+      "2_rightarc3",
+      "2_rightarc4",
+      "2_rightarc5",
+      "2_rightarc6", 
+      "2_toparc4",   */
         "2_reticle1",
     }
     //XSTR:ON
@@ -102,12 +102,12 @@ int Reticle_frame_coords[GR_NUM_RESOLUTIONS][NUM_RETICLE_ANIS][2] = {
       { 394, 261 },
       { 216, 168 },
       { 359, 168 },
-      //                {406, 253},
-      //                {406, 253},
-      //                {391, 276},
-      //                {391, 276},
-      //                {391, 276},
-      //                {297, 161},
+      //    {406, 253},
+      //    {406, 253},
+      //    {391, 276},
+      //    {391, 276},
+      //    {391, 276},
+      //    {297, 161},
       { 308, 235 } },
     { // GR_1024
       { 386, 219 },
@@ -115,12 +115,12 @@ int Reticle_frame_coords[GR_NUM_RESOLUTIONS][NUM_RETICLE_ANIS][2] = {
       { 631, 419 },
       { 346, 269 },
       { 574, 269 },
-      //                {649, 401},
-      //                {649, 401},
-      //                {625, 438},
-      //                {625, 438},
-      //                {625, 438},
-      //                {475, 258},
+      //    {649, 401},
+      //    {649, 401},
+      //    {625, 438},
+      //    {625, 438},
+      //    {625, 438},
+      //    {475, 258},
       { 493, 370 } }
 };
 
@@ -401,90 +401,90 @@ hud_show_throttle()
 // Draw the primary and secondary weapon indicators along the right arc of the reticle
 void hud_show_reticle_weapons()
 {
-        int                     gauge_index=0, frame_offset=0;
-        ship_weapon     *swp;
+   int         gauge_index=0, frame_offset=0;
+   ship_weapon *swp;
 
-        swp = &Player_ship->weapons;
+   swp = &Player_ship->weapons;
 
-        switch( swp->num_primary_banks ) {
-                case 0:
-                        gauge_index = -1;
-                        break;
+   switch( swp->num_primary_banks ) {
+      case 0:
+         gauge_index = -1;
+         break;
 
-                case 1:
-                        gauge_index = RETICLE_ONE_PRIMARY;
-                        if ( Player_ship->weapons.current_primary_bank == -1 ) {
-                                frame_offset = 0;       
-                        } else {
-                                frame_offset = 1;       
-                        }
-                        break;
+      case 1:
+         gauge_index = RETICLE_ONE_PRIMARY;
+         if ( Player_ship->weapons.current_primary_bank == -1 ) {
+            frame_offset = 0; 
+         } else {
+            frame_offset = 1; 
+         }
+         break;
 
-                case 2:
-                        gauge_index = RETICLE_TWO_PRIMARY;
-                        if ( swp->current_primary_bank == -1 ) {
-                                frame_offset = 0;       
-                        } else {
-                                if ( Player_ship->flags & SF_PRIMARY_LINKED ) {
-                                        frame_offset = 3;
-                                } else {
-                                        if ( swp->current_primary_bank == 0 ) {
-                                                frame_offset = 1;
-                                        } else {
-                                                frame_offset = 2;
-                                        }
-                                }
-                        }
-                        break;
+      case 2:
+         gauge_index = RETICLE_TWO_PRIMARY;
+         if ( swp->current_primary_bank == -1 ) {
+            frame_offset = 0; 
+         } else {
+            if ( Player_ship->flags & SF_PRIMARY_LINKED ) {
+               frame_offset = 3;
+            } else {
+               if ( swp->current_primary_bank == 0 ) {
+                  frame_offset = 1;
+               } else {
+                  frame_offset = 2;
+               }
+            }
+         }
+         break;
 
-                default:
-                        Int3(); // shouldn't happen (get Alan if it does)
-                        return;
-                        break;
-        }
-        
-        if ( gauge_index != -1 ) {
-                GR_AABITMAP(Reticle_gauges[gauge_index].first_frame+frame_offset, Reticle_frame_coords[gr_screen.res][gauge_index][0], Reticle_frame_coords[gr_screen.res][gauge_index][1]);            
-        }
+      default:
+         Int3();  // shouldn't happen (get Alan if it does)
+         return;
+         break;
+   }
+   
+   if ( gauge_index != -1 ) {
+      GR_AABITMAP(Reticle_gauges[gauge_index].first_frame+frame_offset, Reticle_frame_coords[gr_screen.res][gauge_index][0], Reticle_frame_coords[gr_screen.res][gauge_index][1]);     
+   }
 
-        int num_banks = swp->num_secondary_banks;
-        if ( num_banks <= 0 ) {
-                num_banks = Ship_info[Player_ship->ship_info_index].num_secondary_banks;
-        }
+   int num_banks = swp->num_secondary_banks;
+   if ( num_banks <= 0 ) {
+      num_banks = Ship_info[Player_ship->ship_info_index].num_secondary_banks;
+   }
 
-        switch( num_banks ) {
-                case 0:
-                        Int3();
-                        gauge_index = -1;
-                        break;
+   switch( num_banks ) {
+      case 0:
+         Int3();
+         gauge_index = -1;
+         break;
 
-                case 1:
-                        gauge_index = RETICLE_ONE_SECONDARY;
-                        break;
+      case 1:
+         gauge_index = RETICLE_ONE_SECONDARY;
+         break;
 
-                case 2:
-                        gauge_index = RETICLE_TWO_SECONDARY;
-                        break;
+      case 2:
+         gauge_index = RETICLE_TWO_SECONDARY;
+         break;
 
-                case 3:
-                        gauge_index = RETICLE_THREE_SECONDARY;
-                        break;
+      case 3:
+         gauge_index = RETICLE_THREE_SECONDARY;
+         break;
 
-                default:
-                        Int3(); // shouldn't happen (get Alan if it does)
-                        return;
-                        break;
-        }
-        
-        if ( gauge_index != -1 ) {
-                if ( swp->num_secondary_banks <= 0 ) {
-                        frame_offset = 0;
-                } else {
-                        frame_offset = swp->current_secondary_bank+1;
-                }
+      default:
+         Int3();  // shouldn't happen (get Alan if it does)
+         return;
+         break;
+   }
+   
+   if ( gauge_index != -1 ) {
+      if ( swp->num_secondary_banks <= 0 ) {
+         frame_offset = 0;
+      } else {
+         frame_offset = swp->current_secondary_bank+1;
+      }
 
-                GR_AABITMAP(Reticle_gauges[gauge_index].first_frame+frame_offset, Reticle_frame_coords[gr_screen.res][gauge_index][0], Reticle_frame_coords[gr_screen.res][gauge_index][1]);            
-        }
+      GR_AABITMAP(Reticle_gauges[gauge_index].first_frame+frame_offset, Reticle_frame_coords[gr_screen.res][gauge_index][0], Reticle_frame_coords[gr_screen.res][gauge_index][1]);     
+   }
 }
 */
 
@@ -579,7 +579,7 @@ hud_show_center_reticle()
 {
     Assert(Reticle_gauges[RETICLE_CENTER].first_frame != -1);
 
-    //  hud_set_default_color();
+    //   hud_set_default_color();
     // hud_set_bright_color();
     hud_set_gauge_color(HUD_CENTER_RETICLE, HUD_C_BRIGHT);
 
@@ -627,18 +627,18 @@ hud_show_right_arc()
 
     // draw the weapons indicators in the holes along the right arc
     /*
-        if ( hud_gauge_active(HUD_WEAPON_LINKING_GAUGE) ) {             
-                // draw right arc with holes in it
-                GR_AABITMAP(Reticle_gauges[RETICLE_RIGHT_ARC].first_frame+1, Reticle_frame_coords[gr_screen.res][RETICLE_RIGHT_ARC][0], Reticle_frame_coords[gr_screen.res][RETICLE_RIGHT_ARC][1]);             
+   if ( hud_gauge_active(HUD_WEAPON_LINKING_GAUGE) ) {      
+      // draw right arc with holes in it
+      GR_AABITMAP(Reticle_gauges[RETICLE_RIGHT_ARC].first_frame+1, Reticle_frame_coords[gr_screen.res][RETICLE_RIGHT_ARC][0], Reticle_frame_coords[gr_screen.res][RETICLE_RIGHT_ARC][1]);    
 
-//              the following line was removed by Jasen to get rid of "undeclared identifier"
-//              hehe - DB
-//              hud_show_reticle_weapons();
-        } else {                
-                // draw right arc without any holes
-                GR_AABITMAP(Reticle_gauges[RETICLE_RIGHT_ARC].first_frame, Reticle_frame_coords[gr_screen.res][RETICLE_RIGHT_ARC][0], Reticle_frame_coords[gr_screen.res][RETICLE_RIGHT_ARC][1]);
-        }
-        */
+//    the following line was removed by Jasen to get rid of "undeclared identifier"
+//    hehe - DB
+//    hud_show_reticle_weapons();
+   } else {    
+      // draw right arc without any holes
+      GR_AABITMAP(Reticle_gauges[RETICLE_RIGHT_ARC].first_frame, Reticle_frame_coords[gr_screen.res][RETICLE_RIGHT_ARC][0], Reticle_frame_coords[gr_screen.res][RETICLE_RIGHT_ARC][1]);
+   }
+   */
 }
 
 // Draw the left portion of the reticle

@@ -1,0 +1,117 @@
+-*- mode: compilation -*-
+
+Low-hanging-fruit survey, 2026-07-29.  Empirical base: full-build warning
+census (4756 warnings; 4278 are -Wwrite-strings) + two tree sweeps
+(hand-rolled-vs-off-the-shelf, dead-code residue).  Ordered by
+value-per-risk within each section.
+
+STATUS: sections A and C APPLIED same day (53 files, -1322 lines; warning
+delta fully accounted, 4756 -> 4697).  D's build-config collapse +
+Fred/Pofview fold APPLIED same day too (82 files, -3481/+390; 4697 ->
+4676 accounted); D's remaining stock: observer subsystem, EAX chain, MP
+button handlers, commented-out blocks (policy call), zero-caller clusters
+behind the caution list.  F COMPLETE: write-strings 4278 -> ZERO
+across seven tranches; 424 warnings remain tree-wide, all pre-existing
+tail (multichar/pragmas/conversion-null/char-subscripts/...) = section E.
+One commented (char*) cast survives at credits.cc's no-credits fallback.  Key learnings:
+literal tables const cleanly, runtime-owner tables (Campaign_names,
+Cargo_names, Ship_class_names, Pilot/Ai/Weapon names) must stay char*;
+align continuation lines when const-ing wrapped prototypes or the
+decl/def drift surfaces as link errors.  B stays catalogue-only by
+doctrine.  E remains open.
+
+========================================================================
+A. BUGS AND PORT DIVERGENCES (fix-mine material)
+========================================================================
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/debris/debris.cc:551: note: RAND_MAX*2/3 overflows int on glibc (RAND_MAX=2^31-1; MSVC had 32767) -- condition is never true, so hull debris NEVER gets electrical arcs on Linux.  Retail: 2/3 of hull pieces arc.  Visible visual divergence; fix by ratio (myrand() < RAND_MAX/3*2 still overflows -- use myrand() % 3 < 2 or float ratio).
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/mission/missionmessage.cc:868: note: sprintf(ani_name, "%s%c", ani_name, ...) -- source overlaps destination, UB (-Wrestrict).  Twins at :876 and :882.  Intent is append-one-char; fix with strlen+store or sprintf(ani_name+strlen(ani_name), "%c", ...).
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/math/vecmat.hh:476: note: header declares atan2_safe(float x, float y) but the definition (vecmat.cc:39) is atan2_safe(float y, float x).  Reversed parameter names in the declaration -- a reading trap.  One-line doc fix.  NOTE atan2_safe is deliberately NOT atan2f (different quadrant behavior); never swap for libm.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/math/floating.hh:16: note: extern float fl_isqrt(float) is shadowed by the macro at :27 defined after it -- the extern is unreachable dead API.  One-line deletion.
+
+========================================================================
+B. RETAIL BUGS -- RESOLVED 2026-07-29 (all !x & FLAG sites respelled;
+   keycontrol was the one live fix, the other four inert; rand_alt left
+   as-is, srand_alt = zero-caller deletion candidate)
+========================================================================
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/io/keycontrol.cc:1970: note: if (!Player->flags & PLAYER_FLAGS_MATCH_TARGET) -- precedence bug: reads (!flags)&MATCH, which is ~always false, so auto match-target-speed is (almost) never activated by this path.  RETAIL SHIPPED THIS.  Gameplay-affecting; catalogue first, fix only by decision.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/asteroid/asteroid.cc:132: note: Assert(!Asteroid_objs[index].flags & ASTEROID_OBJ_USED) -- same !x&FLAG precedence slip; benign in practice (asserts compiled out in retail; USED is the only flag).  Siblings: missiongoals.cc:761, missionparse.cc:1894, sound.cc:233.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/math/staticrand.cc:92: note: rand_alt() opens with static int x = Rnd_seed -- initializer runs once, so srand_alt() (:84) can never reseed after first call.  Retail-faithful bug; catalogue.
+
+========================================================================
+C. ZERO-RISK DELETIONS (no behavioral surface at all)
+========================================================================
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/io/sw_error.hh:1: note: SideWinder FF leftover, includes windows.h, zero includers -- was only reachable via sw_force.hh, orphaned by its deletion (0a186d4bc).  Delete.
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/io/sw_guid.hh:1: note: same cascade; 280 lines of DirectInput FF GUIDs, zero includers.  Delete.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/Makefile:235: note: the stale CVS-era Makefile still lists 21 Network/multi_*.o objects; meson is the live build.  Delete the file (it is the retail artifact -- lives on in the retail branch).
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/math/floating.cc:17: note: fl_isqrt_c (:61-87) + LUT scaffolding (:17-41) + commented MakeInverseSqrtLookupTable (:43-58): dead inverse-sqrt apparatus, zero callers, not even declared in a header; also emits set-but-unused timer reads and drags in io/timer.hh.  ~70 lines, one file.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/math/vecmat.cc:119: note: asqrt() -- zero callers, no prototype.  Delete.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/parse/fhash.cc:1: note: entire module unused (fhash_init/activate/deactivate/flush/string_exists all zero-caller).
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/globalincs/pstypes.hh:603: note: VM_MALLOC/VM_FREE macros -- zero users.  (vm_malloc/vm_free themselves have ~12 call sites, all in sound/acm.cc + one vm_init; pure pass-throughs to malloc/free since the tracking heap went.  Optional flatten, or keep as the alloc-counter hook point.)
+
+~90 phantom declarations (declared, defined nowhere): tmapscanline.hh:70-89 (10), managepilot.hh:30-38 (7), vecmat.hh (13 unused vm_*), 3d.hh (18 unused g3_* + phantom g3_get_zoom/g3_get_view_vectors), timer.hh:26,27,44, hudreticle.hh:22-25, ai.hh:576-579, grinternal.hh:59,89, 2d.hh:372-373, ui.hh:743-744, cfile.hh:216 cfexist, missiongrid.hh:50 render_grid, scoring.hh:141 scoring_check_medal, and singles in bmpman.hh/modelsinc.hh/missioncampaign.hh/techmenu.hh/missionload.hh/floating.hh.
+
+33 file-scope statics defined-but-unused (full list = -Wunused-variable in the build log): nebula.cc neb_w/neb_h/nebula_inited, techmenu.cc Intel_bg_bitmap/Limit/Palette_name, hudmessage.cc x3, freespace.cc:3516-3517 x4, stats.cc x2, medals.cc Medal_palette, readyroom.cc x2, missionbrief.cc x2, etc.
+
+Set-but-never-read locals flagged by the compiler: hudtarget.cc:2441 dist, :2512 dist, :3661 nearest_turret_subsys (vestige of a retail-disabled auto-target-turret feature, see commented call at :2171), :4267 target_x/target_y, :4288 in_front; 2d.cc:284 first_time; aicode.cc:3970 debug_last_index; hudtarget.cc:1322 Ship_objs extern.
+
+========================================================================
+D. MECHANICAL COLLAPSES (provably-dead configurations; bigger, staged)
+========================================================================
+
+Dead build configs (~1050 lines; macros commented out at pstypes.hh:14-21, only RELEASE_REAL defined): FS2_DEMO x107, OEM_BUILD x25, E3_BUILD x12, PD_BUILD x12, PRESS_TOUR_BUILD x11, MULTIPLAYER_BETA x1.  Biggest: freespace.cc:6203-6390 OEM upsell screens (188), freespace.cc:287-466 demo version chain (180), freespace.cc:6403-6552 (150), ship.cc:8921-9046 (126).  CAUTION: inverted guards (#ifndef FS2_DEMO etc. at freespace.cc:1234,1626,3911,5510 and #ifdef RELEASE_REAL at 212/5415/6720) are the LIVE path -- unwrap, don't delete.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/freespace2/freespace.cc:244: note: Fred_running = 0 is the only assignment in the tree (133 refs: 67 dead if-branches, 52 always-true wrappers).  Pofview_running same (:164, 9 refs).  Cascade if collapsed: missiongrid.cc whole file (303 lines, zero callers -- briefing has its own grid), gr8_aascaler scaler.cc:556-764 (209), calc_alphacolor*_old colors.cc:436-572 (137) + alphacolor_old struct, sexp.cc FRED-editor API ~169 lines, parselo.cc *_fred variants ~91 lines, physics_sim_editor.
+    BUT: pofview lives in this tree (pcs2 memory says viewer split out); check whether Pofview_running is planned to come back before collapsing it.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/observer/observer.cc:34: note: observer_create has zero callers (was multiplayer-only) -- the whole observer subsystem (157 lines) + every OBJ_OBSERVER switch arm (object.cc:139,542,840,946,1021,1173,1217,1261; freespace.cc:2864) is unreachable.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/sound/ds.cc:1596: note: ds_eax_init returns -1 unconditionally ("A3D and EAX are unused under OpenAL", :551) -- the whole EAX/A3D chain is inert: ds.cc stubs (~100 lines), sound.cc sound_env_* (~60), ds.hh:170-264 EAX enums/structs (~95).  Callers at freespace.cc:4547,4861 are no-ops.
+
+Multiplayer residue: playermenu.cc:730 + barracks.cc:1023 button handlers for buttons hidden+disabled at :369-370/:1395-1396; CAMPAIGN_TYPE_MULTI_COOP missioncampaign.hh:44; GM_STATS_TRANSFER systemvars.hh:30 zero refs; phantom-comment references to deleted multi functions in scoring.hh:56,102 and missionmessage.hh:57.
+
+Commented-out code blocks (~2000 lines; retail history -- decide policy before touching; the pristine copy is the retail branch): 3ddraw.cc:1006-1437 x86 asm horizon (432), modelinterp.cc:1881-2274 model cache (394), ui/slider.cc:314-551 (238), fvi.cc:732-955 (224), packunpack.cc:216-346 (131), missioncampaign.cc:1020-1146 (127), shipfx.cc:2540-2660 (121), neb.cc:1554-1764 ("Obsolete !?", 210), 2d.cc:223-276 AMD 3DNow SEH (54), plus ~10 more 50-100 line blocks.  #if 0 blocks: 13, biggest already covered by sw_guid.hh.
+
+Zero-caller function clusters (~2500 lines; delete-candidates AFTER the caution check): CSFE campaign-editor shims missioncampaign.cc:551,699,729,955; techroom_weapons_render (marked "obsolete" :737); cfile write/misc 10 fns; timing_event_* profiling scaffold timer.cc:307-390; localization lcl_close/lcl_xstr_close/...; os_config_*2 osregistry.cc:223,281,312; io key/mouse/joy leftovers; ai formation/evade helpers; model octant/dock helpers; 15 unused UI_GADGET methods; snd_ffwd/rewind/size/get_data; spline bez_render/herm_render.
+
+CAUTION LIST -- zero-caller but plausibly port gaps (verify against retail call graph before deleting): ship_can_warp, ship_find_num_turrets, ship_find_num_crewpoints, ship_get_index_from_subsys, ship_get_turret_type, compute_shield_strength, subsystem_in_sight, mission_is_support_ship_arriving, mission_ai_goal_achievable, mission_add_ai_goal, cmeasure_select_next, asteroid_get_random_in_cone, hud_wing_index_from_ship, hud_query_order_issued, jumpnode_render_all, fireball_render_plane, stars_find_sun, shockwave_max_radius, shipfx_point_in_shadow, special_training_check, update_missions_played, clear_missions_played, choose_pilot.
+
+========================================================================
+E. CONTAINED MODERNIZATIONS (off-the-shelf swaps that earn their keep)
+========================================================================
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/menuui/readyroom.cc:195: note: hand-rolled chained hash table (307 buckets, manual new/delete, ~165 lines, 3 call sites, file-local) for campaign-mission filename dedup -- std::unordered_set<std::string> + case-insensitive hash/eq collapses it to ~20 lines AND removes a lifetime coupling (nodes alias Campaign_missions[] pointers).  STL precedent exists (osregistry.cc std::map).
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/cfile/cfilelist.cc:29: note: cf_sort_filenames = Shell sort written out twice (name/time branches) hand-swapping parallel arrays -- std::sort with an index permutation or pair array; tree already uses qsort in 11 places, so this converges on house pattern.  DON'T touch the objectsort.cc:139 twin: per-frame render order, tie-break change = visible draw-order flicker.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/pcxutils/pcxutils.cc:532: note: two C++17-deprecated `register` specifiers.  Two-line fix.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/cfile/cfile.cc:932: note: NULL passed as float (x6 here, :949-951) -- 0.0f meant; conversion-null family also model_load(char*, NULL, ...) at freespace.cc:6052, jumpnode.cc:83, missionbrief.cc:1307,1527,1544, ship.cc:4110, starfield.cc:1169 (NULL as int arg = 0 with -1 semantics? verify each), shiphit.cc:1358, bmpman.cc:1369,1374 pointer-arith on NULL.
+
+~15 -Wchar-subscripts sites (signed char as array index; UB for bytes >= 128): controlsconfig.cc:474-512, fireballs.cc:381, neblightning.cc:505,1305 (guarded, benign), object.cc:1447, ship.cc:4027,4942,4949, shipfx.cc:2862, ui/listbox.cc:337,339.  Cast-to-int or type change per site.
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/cfile/cfilesystem.cc:733: note: cf_get_file_list and _preallocated are ~half copy-paste (dedup scan is O(n^2) stricmp).  Most invasive item in this section -- park unless cfile gets touched anyway.
+
+========================================================================
+F. THE WALL: -Wwrite-strings (4278 of 4756 warnings)
+========================================================================
+
+String literals bound to char* -- tables (controlsconfigcommon.cc:188+ six Scan_code/Joy_button tables = 988 warnings alone), struct fields (config_item, XSTR-fed UI), and char* params taking literals.  Fix = const char* sweep, mechanical and behavior-inert but broad (top: controlsconfigcommon 988, missionparse 450, sexp 274, optionsmenu 198, hudconfig 171).  Staged per-subsystem passes, each provable by warning-count delta + disassembly diff; kills 90% of build noise, which currently buries real warnings (the Wrestrict UB above was invisible in it).  Itch-list material, not a casual afternoon.
+
+========================================================================
+Housekeeping noticed in passing
+========================================================================
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/notes.txt:1: note: this rolling notes file got committed by accident in 00c0d089c; charter says untracked.  git rm --cached + .gitignore entry when convenient.

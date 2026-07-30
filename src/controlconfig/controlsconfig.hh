@@ -39,7 +39,7 @@ typedef struct config_item
     short key_default; // default key bound to action
     short joy_default; // default joystick button bound to action
     char tab; // what tab (catagory) it belongs in
-    char *text; // describes the action in the config screen
+    const char *text; // describes the action in the config screen
     char type; // manner control should be checked in
     short key_id; // actual key bound to action
     short joy_id; // joystick button bound to action
@@ -207,8 +207,8 @@ extern int Invert_axis[];
 extern int Invert_axis_defaults[];
 
 extern config_item Control_config[]; // stores the keyboard configuration
-extern char **Scan_code_text;
-extern char **Joy_button_text;
+extern const char **Scan_code_text;
+extern const char **Joy_button_text;
 
 // initialize common control config stuff - call at game startup after localization has been initialized
 void control_config_common_init();
@@ -221,8 +221,8 @@ void control_config_cancel_exit();
 
 void control_config_reset_defaults();
 int translate_key_to_index(char *key);
-char *translate_key(char *key);
-char *textify_scancode(int code);
+const char *translate_key(char *key);
+const char *textify_scancode(int code);
 float check_control_timef(int id);
 int check_control(int id, int key = -1);
 void control_get_axes_readings(int *h, int *p, int *b, int *ta, int *tr);

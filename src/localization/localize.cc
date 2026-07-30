@@ -38,7 +38,7 @@ lang_info Lcl_languages[LCL_NUM_LANGUAGES] = {
 };
 
 //#if defined(GERMAN_BUILD)
-//#define DEFAULT_LANGUAGE                                                      "German"
+//#define DEFAULT_LANGUAGE                   "German"
 //#else
 #define DEFAULT_LANGUAGE "English"
 //#endif
@@ -103,10 +103,10 @@ int Ts_id_text_size;
 
 // file pointers for optimized string lookups
 // some example times for Freespace2 startup with granularities (mostly .tbl files, ~500 strings in the table file, many looked up more than once)
-// granularity 20                       :               13 secs
-// granularity 10                       :               11 secs
-// granularity 5                        :               9 secs
-// granularity 2                        :               7-8 secs
+// granularity 20       :     13 secs
+// granularity 10       :     11 secs
+// granularity 5        :     9 secs
+// granularity 2        :     7-8 secs
 // how many strings between each pointer (lower granularities should give faster lookup times)
 #define LCL_GRANULARITY 1
 // max # of pointers
@@ -120,7 +120,7 @@ int Lcl_pointer_count = 0;
 //
 
 // associate table file externalization with the specified input file
-void lcl_ext_associate(char *filename);
+void lcl_ext_associate(const char *filename);
 
 // given a valid XSTR() tag piece of text, extract the string portion, return it in out, nonzero on success
 int lcl_ext_get_text(char *xstr, char *out);
@@ -154,7 +154,7 @@ void
 lcl_init(int lang_init)
 {
     char lang_string[128];
-    char *ret;
+    const char *ret;
     int lang, idx;
 
     // initialize encryption
@@ -658,7 +658,7 @@ lcl_get_xstr_offset(int index, int res)
 
 // associate table file externalization with the specified input file
 void
-lcl_ext_associate(char *filename)
+lcl_ext_associate(const char *filename)
 {
     // if the filename already exists, free it up
     if (Lcl_ext_filename != NULL) {
@@ -807,7 +807,7 @@ lcl_ext_lookup(char *out, int id)
     // reset parsing vars and go to town
     Ts_current_state = TS_SCANNING;
     Ts_id_text_size = 0;
-    Ts_text_size;
+    Ts_text_size = 0; // retail dropped the "= 0"; every neighbor resets
     memset(Ts_text, 0, PARSE_TEXT_STRING_LEN);
     memset(Ts_id_text, 0, PARSE_ID_STRING_LEN);
     while ((cftell(Lcl_ext_file) < Lcl_pointers[Lcl_pointer_count - 1]) &&
@@ -854,7 +854,6 @@ lcl_ext_lookup(char *out, int id)
 int
 lcl_ext_lookup_sub(char *text, char *out, int id)
 {
-    char *front; // front of the line
     char *p; // current ptr
     int len = strlen(text);
     int count;
@@ -862,7 +861,6 @@ lcl_ext_lookup_sub(char *text, char *out, int id)
     char *tok;
     int found_new_string_id = 0;
 
-    front = text;
     p = text;
     count = 0;
     while (count < len) {

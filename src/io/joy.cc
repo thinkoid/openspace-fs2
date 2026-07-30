@@ -45,7 +45,7 @@ static SDL_Joystick *sdljoy = NULL;
 static joy_button_info joy_buttons[JOY_TOTAL_BUTTONS];
 
 // --------------------------------------------------------------
-//      joy_flush()
+// joy_flush()
 //
 // Clear the state of the joystick.
 //
@@ -69,7 +69,7 @@ joy_flush()
 }
 
 // --------------------------------------------------------------
-//      joy_get_caps()
+// joy_get_caps()
 //
 // Log the sticks SDL sees and mark the valid axes of the current one.
 //
@@ -99,7 +99,7 @@ joy_get_caps(int max)
 }
 
 // --------------------------------------------------------------
-//      joy_init()
+// joy_init()
 //
 // Initialize the joystick system.  This is called once at game startup.
 //
@@ -156,7 +156,7 @@ joy_init()
 }
 
 // --------------------------------------------------------------
-//      joy_process()
+// joy_process()
 //
 // Called from the os_poll() event pump: refresh SDL joystick state and
 // update the per-button bookkeeping the retail polling thread maintained.
@@ -241,9 +241,9 @@ joy_process()
 }
 
 // --------------------------------------------------------------
-//      joy_cheap_cal()
+// joy_cheap_cal()
 //
-//      Manual calibrate joystick routine
+// Manual calibrate joystick routine
 //
 void
 joy_cheap_cal()
@@ -252,15 +252,15 @@ joy_cheap_cal()
 }
 
 // --------------------------------------------------------------
-//      joy_get_pos()
+// joy_get_pos()
 //
-//      input:  x               =>              OUTPUT PARAMETER: x-axis position of stick (-1 to 1)
-//                              y               =>              OUTPUT PARAMETER: y-axis position of stick (-1 to 1)
-//                              z               =>              OUTPUT PARAMETER: z-axis (throttle) position of stick (0 to 1)
-//                              r               =>              OUTPUT PARAMETER: rudder position of stick (-1 to 1)
+// input:   x     =>    OUTPUT PARAMETER: x-axis position of stick (-1 to 1)
+//          y     =>    OUTPUT PARAMETER: y-axis position of stick (-1 to 1)
+//          z     =>    OUTPUT PARAMETER: z-axis (throttle) position of stick (0 to 1)
+//          r     =>    OUTPUT PARAMETER: rudder position of stick (-1 to 1)
 //
-//      return: success => 1
-//                              failure => 0
+// return:  success  => 1
+//          failure  => 0
 //
 int
 joy_get_pos(int *x, int *y, int *z, int *r)
@@ -281,7 +281,7 @@ joy_get_pos(int *x, int *y, int *z, int *r)
 
     joystick_read_raw_axis(JOY_NUM_AXES, axis);
 
-    //  joy_get_scaled_reading will return a value represents the joystick pos from -1 to +1
+    //   joy_get_scaled_reading will return a value represents the joystick pos from -1 to +1
     if (x && joystick.axis_valid[0])
         *x = joy_get_scaled_reading(axis[0], 0);
     if (y && joystick.axis_valid[1])
@@ -295,7 +295,7 @@ joy_get_pos(int *x, int *y, int *z, int *r)
 }
 
 // --------------------------------------------------------------
-//      joy_down_count()
+// joy_down_count()
 //
 // Return the number of times the button went down since
 // joy_down_count() was last called
@@ -319,7 +319,7 @@ joy_down_count(int btn, int reset_count)
 }
 
 // --------------------------------------------------------------
-//      joy_down()
+// joy_down()
 //
 // Return the state of button number 'btn'
 //
@@ -335,7 +335,7 @@ joy_down(int btn)
 }
 
 // --------------------------------------------------------------
-//      joy_up_count()
+// joy_up_count()
 //
 // Return the number of times the button went up since
 // joy_up_count() was last called
@@ -357,7 +357,7 @@ joy_up_count(int btn)
 }
 
 // --------------------------------------------------------------
-//      joy_down_time()
+// joy_down_time()
 //
 // Return a number between 0 and 1.  This number represents the
 // percentage of time that the button has been down since the last call
@@ -398,9 +398,9 @@ joy_down_time(int btn)
 }
 
 // --------------------------------------------------------------
-//      joy_get_cal_vals()
+// joy_get_cal_vals()
 //
-//      Get the calibrated min, center, and max for all axes
+// Get the calibrated min, center, and max for all axes
 //
 void
 joy_get_cal_vals(int *axis_min, int *axis_center, int *axis_max)
@@ -415,9 +415,9 @@ joy_get_cal_vals(int *axis_min, int *axis_center, int *axis_max)
 }
 
 // --------------------------------------------------------------
-//      joy_set_cal_vals()
+// joy_set_cal_vals()
 //
-//      Set the calibrated min, center, and max for all axes
+// Set the calibrated min, center, and max for all axes
 //
 void
 joy_set_cal_vals(int *axis_min, int *axis_center, int *axis_max)
@@ -432,9 +432,9 @@ joy_set_cal_vals(int *axis_min, int *axis_center, int *axis_max)
 }
 
 // --------------------------------------------------------------
-//      joystick_read_raw_axis()
+// joystick_read_raw_axis()
 //
-//      Read the raw axis information.  SDL axes are -32768..32767; bias into
+// Read the raw axis information.  SDL axes are -32768..32767; bias into
 // the retail 0..65535 space the calibration works in.  Axes the stick
 // doesn't have read as centered.
 //
@@ -466,7 +466,7 @@ joystick_read_raw_axis(int num_axes, int *axis)
 }
 
 // --------------------------------------------------------------
-//      joy_set_ul()
+// joy_set_ul()
 //
 void
 joy_set_ul()
@@ -475,7 +475,7 @@ joy_set_ul()
 }
 
 // --------------------------------------------------------------
-//      joy_set_lr()
+// joy_set_lr()
 //
 void
 joy_set_lr()
@@ -484,7 +484,7 @@ joy_set_lr()
 }
 
 // --------------------------------------------------------------
-//      joy_set_cen()
+// joy_set_cen()
 //
 void
 joy_set_cen()
@@ -518,14 +518,14 @@ joy_get_unscaled_reading(int raw, int axn)
 }
 
 // --------------------------------------------------------------
-//      joy_get_scaled_reading()
+// joy_get_scaled_reading()
 //
-//      input:  raw     =>      the raw value for an axis position
-//                              axn     =>      axis number, numbered starting at 0
+// input:   raw   => the raw value for an axis position
+//          axn   => axis number, numbered starting at 0
 //
-// return:      joy_get_scaled_reading will return a value that represents
-//                              the joystick pos from -1 to +1 for the specified axis number 'axn', and
-//                              the raw value 'raw'
+// return:  joy_get_scaled_reading will return a value that represents
+//          the joystick pos from -1 to +1 for the specified axis number 'axn', and
+//          the raw value 'raw'
 //
 int
 joy_get_scaled_reading(int raw, int axn)
