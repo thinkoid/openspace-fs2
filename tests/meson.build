@@ -223,6 +223,18 @@ test('weapons-native-check', find_program('weapons_native_check.sh'),
     depends: [sim_dump],
     timeout: 120)
 
+# The campaign gate: every install mission simulates 10 hands-off
+# sim-seconds natively without crashing; the corpus must show mid-run
+# arrivals and AI-scored kills, and a combat mission must be
+# byte-identical across two runs.
+test('campaign-sim-check', find_program('campaign_sim_check.sh'),
+    args: [
+        sim_dump.full_path(),
+        meson.project_source_root(),
+    ],
+    depends: [sim_dump],
+    timeout: 600)
+
 # The lesson gate: Training-1's native SEXP must put the lesson ON the
 # boundary -- directives decoded as retail draws them, the Welcome
 # Message promoted, token-translated, voice wave named -- all via

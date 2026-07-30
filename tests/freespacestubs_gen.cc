@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <gamesequence/gamesequence.hh>
 #include <globalincs/pstypes.hh>
 
 struct object;
@@ -33,19 +34,21 @@ void game_do_cd_mission_check(char*)
    oracle_trap("game_do_cd_mission_check");
 }
 
+// The gamesequence quartet: NO-OPS (enter/leave/do are presentation
+// hooks) and a one-transition state machine -- libfs2 boots the retail
+// sequencer (gameseq_init + post + process) and every event lands in
+// GS_STATE_GAME_PLAY, which is the only state the simulation library is
+// ever in. sim-side code (message_queue_process) reads the state.
 void game_do_state_common(int)
 {
-   oracle_trap("game_do_state_common");
 }
 
 void game_do_state(int)
 {
-   oracle_trap("game_do_state");
 }
 
 void game_enter_state(int, int)
 {
-   oracle_trap("game_enter_state");
 }
 
 struct fs_builtin_mission;
@@ -56,9 +59,9 @@ fs_builtin_mission *game_find_builtin_mission(char*)
    return nullptr;
 }
 
+// NO-OP: the big-damage screen flash (shiphit's path) is presentation
 void game_flash(float, float, float)
 {
-   oracle_trap("game_flash");
 }
 
 void game_flush()
@@ -83,7 +86,6 @@ void game_increase_skill_level()
 
 void game_leave_state(int, int)
 {
-   oracle_trap("game_leave_state");
 }
 
 void game_poll()
@@ -93,7 +95,7 @@ void game_poll()
 
 void game_process_event(int, int)
 {
-   oracle_trap("game_process_event");
+    gameseq_set_state(GS_STATE_GAME_PLAY, 1);
 }
 
 void game_set_frametime(int)
@@ -139,9 +141,10 @@ bool game_using_low_mem()
    return false;
 }
 
+// NO-OP: the getting-hit HUD shake is presentation (a live sim path --
+// the player takes hits in campaign combat)
 void game_whack_apply(float, float)
 {
-   oracle_trap("game_whack_apply");
 }
 
 void get_version_string(char*)

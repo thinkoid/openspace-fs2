@@ -11,6 +11,7 @@
 #include <debris/debris.hh>
 #include <fireball/fireballs.hh>
 #include <freespace2/freespace.hh>
+#include <gamesequence/gamesequence.hh>
 #include <gamesnd/eventmusic.hh>
 #include <gamesnd/gamesnd.hh>
 #include <globalincs/linklist.hh>
@@ -66,6 +67,11 @@ void message_training_que_check();
 
 // controlsconfigcommon.cc's key-text resolver (sexp_key_pressed's own)
 int translate_key_to_index(char *key);
+
+// the page-in residents levelpaging.cc consumes by local extern (retail
+// never put them in headers): the sim needs their MODEL halves
+void weapons_page_in();
+void debris_page_in();
 
 // radar.cc's blip-list reset -- file-scope in retail, but its callers are
 // split: radar_frame_init (the caller game_frame uses) needs fonts, while
@@ -184,6 +190,10 @@ boot(const char *game_root)
                            // missions' SOC promotions) against Medals[]
     asteroid_init();       // asteroid.tbl; asteroid_create_all loads the
                            // field missions' POFs from Asteroid_info
+    mflash_game_init();    // mflash.tbl BEFORE weapon_init: the weapon
+                           // parse looks its $Muzzleflash: up here, and a
+                           // failed lookup drops WIF_MFLASH -- which flak
+                           // turret fire asserts (flak.cc:219)
     ai_init();
     weapon_init();
     ship_init();
@@ -199,6 +209,13 @@ boot(const char *game_root)
     // the zeroed player carries dead list heads; retail's own data-side
     // initializer (HUD_init calls it) wires keyed_targets + the free list
     hud_keyed_targets_clear();
+
+    // the retail sequencer, entered once: the stubs' game_process_event
+    // sends every event to GS_STATE_GAME_PLAY -- the only state this
+    // library is ever in; sim code (message_queue_process) reads it
+    gameseq_init();
+    gameseq_post_event(GS_EVENT_ENTER_GAME);
+    gameseq_process_events();
 
     boot_ok = true;
     return true;
@@ -264,9 +281,14 @@ fs2_t::load(const char *game_root, const char *mission, int seed)
     training_mission_init();
     asteroid_create_all();
 
-    // --- freespace_mission_load_stuff: the one sim-essential call
-    // (created-list merge + player-ship AI fixup)
+    // --- freespace_mission_load_stuff: the sim-essential calls --
+    // created-list merge + player-ship AI fixup, and the weapon MODELS
+    // (level_page_in's cargo we actually need: an AI missile launch
+    // reaches model_get_radius on the missile's POF)
     mission_parse_fixup_players();
+    weapons_page_in();
+    debris_page_in();      // debris01/02.pof -- subsystem hits shed
+                           // debris_create'd pieces of it
 
     Game_mode = GM_NORMAL | GM_IN_MISSION;
 

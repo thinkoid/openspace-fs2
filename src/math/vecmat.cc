@@ -1760,7 +1760,13 @@ approach(float w_in, float w_max, float theta_goal, float aa, float delta_t,
                 // reaches wp this frame
                 float wp = fl_sqrt(wp_sqr);
                 float time_to_wp = (wp - w_in) / aa;
-                Assert(time_to_wp > 0);
+                // >= : a denormal theta_goal (formation flight converged
+                // on a stationary leader) makes wp == w_in == 0, and the
+                // code below handles the zero exactly (accel adds
+                // nothing, decel clamps, returns theta_goal) -- retail's
+                // shipping build sailed through with the assert compiled
+                // out
+                Assert(time_to_wp >= 0);
 
                 // accel
                 *w_out = wp;
