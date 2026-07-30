@@ -45,6 +45,25 @@ typedef struct sound
 sound Sounds[MAX_SOUNDS];
 
 int Sound_enabled = TRUE; // global flag to turn sound on/off
+
+// With sound disabled, a host may still want to KNOW what would have
+// played: libfs2 hangs a recorder here and the early-outs forward the
+// requests (the migration's sounds-as-events seam). Null in the game --
+// the disabled path stays a pure early-out. The filename resolves HERE
+// because snd_play_raw funnels through with only a Sounds[] id, and
+// Sounds[] is this file's own.
+void (*Snd_capture)(const char *filename, const vector *pos) = NULL;
+
+static void
+snd_capture_request(game_snd *gs, vector *pos)
+{
+    const char *name = gs->filename;
+
+    if (!name[0] && gs->id >= 0 && gs->id < MAX_SOUNDS)
+        name = Sounds[gs->id].filename;
+    if (name[0])
+        Snd_capture(name, pos);
+}
 int Snd_sram; // mem (in bytes) used up by storing sounds in system memory
 int Snd_hram; // mem (in bytes) used up by storing sounds in soundcard memory
 float Master_sound_volume = 1.0f; // range is 0 -> 1, used for non-music sound fx
@@ -489,8 +508,11 @@ snd_play(game_snd *gs, float pan, float vol_scale, int priority,
 
     int handle = -1;
 
-    if (!Sound_enabled)
+    if (!Sound_enabled) {
+        if (Snd_capture && gs)
+            snd_capture_request(gs, NULL);
         return -1;
+    }
 
     Assert(gs != NULL);
 
@@ -570,8 +592,11 @@ snd_play_3d(game_snd *gs, vector *source_pos, vector *listen_pos, float radius,
     sound *snd;
     float volume, distance, pan, max_volume;
 
-    if (!Sound_enabled)
+    if (!Sound_enabled) {
+        if (Snd_capture && gs)
+            snd_capture_request(gs, source_pos);
         return -1;
+    }
 
     Assert(gs != NULL);
 

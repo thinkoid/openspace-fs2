@@ -89,15 +89,18 @@ struct object_state_t {
 // -- LOG_WAYPOINTS_DONE, LOG_SHIP_DESTROYED... the sexp predicates read
 // the same table).
 struct event_t {
-    enum kind_t { created, destroyed, log };
+    enum kind_t { created, destroyed, log, sound };
 
     kind_t kind;
     int signature;                     // created/destroyed
-    char name[32];
+    char name[32];                     // created/destroyed; sound: the wav
 
     int log_type;                      // log: the LOG_* constant
     char pname[32], sname[32];
     fix time;                          // log: mission time of the entry
+
+    bool has_pos;                      // sound: 3d, at pos
+    vector pos;
 };
 
 // One directives-gauge line, decoded exactly as training_obj_display

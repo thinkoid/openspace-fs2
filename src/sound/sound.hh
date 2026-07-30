@@ -48,6 +48,11 @@ typedef struct sound_env
 } sound_env;
 
 extern int Sound_enabled;
+
+// sound-disabled capture hook (libfs2's sounds-as-events seam; null in
+// the game -- see the note at its definition). One hook sees every
+// one-shot; the wav name arrives resolved.
+extern void (*Snd_capture)(const char *filename, const vector *pos);
 extern float Master_sound_volume; // 0 -> 1.0
 extern float Master_voice_volume; // 0 -> 1.0
 extern int Snd_sram; // System memory consumed by sound data

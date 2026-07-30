@@ -187,6 +187,12 @@ public:
                 d["sname"] = ev.sname;
                 d["time"] = double(ev.time) / 65536.0;
                 break;
+            case event_t::sound:
+                d["kind"] = "sound";
+                d["name"] = ev.name;
+                if (ev.has_pos)
+                    d["pos"] = from_vec(ev.pos);
+                break;
             }
             out.push_back(d);
         }

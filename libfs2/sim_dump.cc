@@ -152,6 +152,13 @@ main(int argc, char *argv[])
                        ev.log_type, ev.pname, ev.sname,
                        double(ev.time) / 65536.0);
                 break;
+            case event_t::sound:
+                if (ev.has_pos)
+                    printf("event %d sound %s at %.9g %.9g %.9g\n", frame,
+                           ev.name, ev.pos.x, ev.pos.y, ev.pos.z);
+                else
+                    printf("event %d sound %s\n", frame, ev.name);
+                break;
             }
         }
 

@@ -147,6 +147,10 @@ func _physics_process(delta: float) -> void:
             _tick("log %d: %s %s" % [ev["log_type"], ev["pname"], ev["sname"]])
         elif ev["kind"] == "destroyed" and not (ev["name"] as String).is_empty():
             _tick("destroyed: " + ev["name"])   # bolts expire nameless
+        elif ev["kind"] == "sound":
+            # the sim's own requests (guns, impacts, booms) through the
+            # install's wavs; distance attenuation is a later refinement
+            sounds.play_effect(ev["name"])
 
     # reconcile: the snapshot is the truth; nodes follow it
     var seen := {}

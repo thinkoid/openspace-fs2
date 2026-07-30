@@ -73,6 +73,34 @@ int translate_key_to_index(char *key);
 void weapons_page_in();
 void debris_page_in();
 
+// The sound recorder (the sounds-as-events seam): with sound disabled,
+// snd_play/snd_play_3d forward what WOULD have played through
+// Snd_capture; events() drains this. Bounded -- a saturated frame drops
+// the excess rather than growing without limit.
+struct sound_req_t {
+    char name[32];
+    bool has_pos;
+    vector pos;
+};
+
+static std::vector<sound_req_t> captured_sounds;
+
+static void
+capture_sound(const char *name, const vector *pos)
+{
+    if (captured_sounds.size() >= 64)
+        return;
+
+    sound_req_t req;
+    memset(&req, 0, sizeof(req));
+    strncpy(req.name, name, sizeof(req.name) - 1);
+    if (pos) {
+        req.has_pos = true;
+        req.pos = *pos;
+    }
+    captured_sounds.push_back(req);
+}
+
 // radar.cc's blip-list reset -- file-scope in retail, but its callers are
 // split: radar_frame_init (the caller game_frame uses) needs fonts, while
 // the reset alone is the sim half (ship_process_post PLOTS blips every
@@ -130,7 +158,9 @@ boot(const char *game_root)
     setenv("FS2_INT3_CONTINUE", "1", 1);
 
     // no audio device: every snd_ call no-ops behind retail's own switch
+    // -- and the no-op path reports to the recorder
     Sound_enabled = 0;
+    Snd_capture = capture_sound;
 
     gr_screen.gf_init_color = null_init_color;
     gr_screen.gf_init_alphacolor = null_init_alphacolor;
@@ -565,6 +595,18 @@ fs2_t::events()
 
     if (!m_world_live)
         return out;
+
+    // the frame's sound requests, oldest first
+    for (const sound_req_t &req : captured_sounds) {
+        event_t ev;
+        memset(&ev, 0, sizeof(ev));
+        ev.kind = event_t::sound;
+        strncpy(ev.name, req.name, sizeof(ev.name) - 1);
+        ev.has_pos = req.has_pos;
+        ev.pos = req.pos;
+        out.push_back(ev);
+    }
+    captured_sounds.clear();
 
     // new mission-log entries since the last drain -- retail's own record
     for (; m_log_drained < last_entry; m_log_drained++) {

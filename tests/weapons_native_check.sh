@@ -48,4 +48,14 @@ else
     rc=1
 fi
 
+# the sounds-as-events seam: every shot requests its launch wav, every
+# hit its positioned impact wav
+if grep -q "^event [0-9]* sound L_Sidearm" "$tmp/fire.txt" \
+   && grep -q "^event [0-9]* sound hit_1\.wav at " "$tmp/fire.txt"; then
+    echo "OK: $(grep -c '^event [0-9]* sound' "$tmp/fire.txt") sound events (launch + positioned impacts)"
+else
+    echo "FAIL: firing produced no sound events"
+    rc=1
+fi
+
 exit $rc
