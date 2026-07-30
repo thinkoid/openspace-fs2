@@ -66,7 +66,7 @@ func play_voice(name: String) -> void:
     voice.stream = s
     voice.play()
 
-func play_effect(name: String) -> void:
+func play_effect(name: String, volume_db: float = 0.0) -> void:
     var s = _stream(name)
     if s == null:
         return
@@ -74,4 +74,9 @@ func play_effect(name: String) -> void:
     pool_next = (pool_next + 1) % POOL
     p.stop()
     p.stream = s
+    p.volume_db = volume_db
     p.play()
+
+# a resolved stream for callers running their own player (engine loops)
+func stream_of(name: String):
+    return _stream(name)

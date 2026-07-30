@@ -49,6 +49,14 @@ var training_msg: Label
 var sounds                     # SoundBank, voice playback
 var last_text := ""
 var msg_deadline := 0
+var engine_hum: AudioStreamPlayer
+var player_pos := Vector3.ZERO # FS2 frame, for sound attenuation
+
+# positioned sounds attenuate by distance to the player and cull beyond
+# earshot -- without this, flak eight klicks away arrives as random
+# full-volume bursts (field-reported as "static")
+const SND_FULL_RANGE := 150.0
+const SND_CULL_RANGE := 3000.0
 
 var assets_dir := ""
 var mission_name := ""
@@ -93,6 +101,21 @@ func _ready() -> void:
     sounds = SoundBankClass.new()
     add_child(sounds)
     sounds.setup(root)
+
+    # the player's engine hum: a scene-owned loop on the tables' own
+    # SND_ENGINE wav (retail runs it as an object-linked looping sound, a
+    # lifecycle the one-shot event seam doesn't carry -- the ship's OWN
+    # hum is presentation's to keep)
+    engine_hum = AudioStreamPlayer.new()
+    add_child(engine_hum)
+    var hum = sounds.stream_of(sim.sound_name(4))   # gamesnd.hh SND_ENGINE
+    if hum:
+        if hum is AudioStreamWAV:
+            hum.loop_mode = AudioStreamWAV.LOOP_FORWARD
+            hum.loop_end = hum.data.size() / 2
+        engine_hum.stream = hum
+        engine_hum.volume_db = -80.0
+        engine_hum.play()
 
     print("world: %s native, root %s" % [mission_name, root])
 
@@ -149,8 +172,16 @@ func _physics_process(delta: float) -> void:
             _tick("destroyed: " + ev["name"])   # bolts expire nameless
         elif ev["kind"] == "sound":
             # the sim's own requests (guns, impacts, booms) through the
-            # install's wavs; distance attenuation is a later refinement
-            sounds.play_effect(ev["name"])
+            # install's wavs, attenuated by distance when positioned
+            var vol := 0.0
+            if ev.has("pos"):
+                var d: float = (ev["pos"] as Vector3).distance_to(player_pos)
+                if d > SND_CULL_RANGE:
+                    continue
+                if d > SND_FULL_RANGE:
+                    vol = -30.0 * (d - SND_FULL_RANGE) \
+                        / (SND_CULL_RANGE - SND_FULL_RANGE)
+            sounds.play_effect(ev["name"], vol)
 
     # reconcile: the snapshot is the truth; nodes follow it
     var seen := {}
@@ -197,11 +228,20 @@ func _physics_process(delta: float) -> void:
     if player_node:
         _update_camera(delta, player_node,
                        ships[player_sig]["radius"])
+        player_pos = player_rec["pos"]
         var vel: Vector3 = player_rec["vel"]
         var fv2: Vector3 = player_rec["fvec"]
         hud_right.text = "speed %6.1f\nengine %4d%%" \
             % [vel.dot(fv2), int(throttle * 100.0)]
         hud_left.text = "%s\n%d ships" % [mission_name, ships.size()]
+
+        # the hum follows the engine: silent at 0%, full voice under burn
+        if engine_hum.stream:
+            var output: float = absf(throttle)
+            if player_rec["afterburner"]:
+                output = 1.0
+            engine_hum.volume_db = -80.0 if output <= 0.0 \
+                else lerpf(-26.0, -8.0, output)
 
     _update_lesson()
 

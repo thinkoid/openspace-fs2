@@ -17,6 +17,9 @@
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
+#include <globalincs/pstypes.hh>
+
+#include <gamesnd/gamesnd.hh>
 #include <object/object.hh>
 
 #include "fs2.hh"
@@ -85,6 +88,8 @@ protected:
                                     &FS2::hud_state);
         godot::ClassDB::bind_method(godot::D_METHOD("key_mark", "key_text"),
                                     &FS2::key_mark);
+        godot::ClassDB::bind_method(godot::D_METHOD("sound_name", "id"),
+                                    &FS2::sound_name);
     }
 
 public:
@@ -230,6 +235,15 @@ public:
     void key_mark(const godot::String &key_text)
     {
         m_sim.key_mark(key_text.utf8().get_data());
+    }
+
+    // a game sound's wav by Snds[] id (gamesnd.hh's SND_*) -- presentation
+    // runs its own loops (engine hum) from the same tables
+    godot::String sound_name(int id) const
+    {
+        if (id < 0 || id >= MAX_GAME_SOUNDS)
+            return "";
+        return Snds[id].filename;
     }
 
     godot::Dictionary fly_state() const
