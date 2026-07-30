@@ -113,6 +113,9 @@ func _physics_process(delta: float) -> void:
         "bank": _axis(KEY_Q, KEY_E),
         "forward": throttle,
         "afterburner": burn,
+        "fire_primary": mouse_grabbed and
+            (Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+             or Input.is_key_pressed(KEY_CTRL)),
     }
     mouse_accum = Vector2.ZERO
 
@@ -121,8 +124,8 @@ func _physics_process(delta: float) -> void:
     for ev in sim.events():
         if ev["kind"] == "log":
             _tick("log %d: %s %s" % [ev["log_type"], ev["pname"], ev["sname"]])
-        elif ev["kind"] == "destroyed":
-            _tick("destroyed: " + ev["name"])
+        elif ev["kind"] == "destroyed" and not (ev["name"] as String).is_empty():
+            _tick("destroyed: " + ev["name"])   # bolts expire nameless
 
     # reconcile: the snapshot is the truth; nodes follow it
     var seen := {}
@@ -171,9 +174,22 @@ func _physics_process(delta: float) -> void:
             % [vel.dot(fv2), int(throttle * 100.0)]
         hud_left.text = "%s\n%d ships" % [mission_name, ships.size()]
 
-# a new signature enters the world: its Ship if the assets carry the
-# class's GLB, an honest gray box otherwise
+# a new signature enters the world: a bolt for weapons, a Ship if the
+# assets carry the class's GLB, an honest gray box otherwise
 func _spawn(sig: int, rec: Dictionary) -> void:
+    if rec.get("type", "ship") == "weapon":
+        var bolt := MeshInstance3D.new()
+        var bm := BoxMesh.new()
+        bm.size = Vector3(0.4, 0.4, 6.0)   # a laser slug, nose along -Z
+        var bmat := StandardMaterial3D.new()
+        bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+        bmat.albedo_color = Color(1.0, 0.35, 0.25)
+        bm.material = bmat
+        bolt.mesh = bm
+        ships_root.add_child(bolt)
+        ships[sig] = { "node": bolt, "is_ship": false, "radius": 1.0 }
+        return
+
     var stem := (rec["pof"] as String).get_basename().to_lower()
     var glb := assets_dir.path_join(stem + ".glb")
 

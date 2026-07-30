@@ -211,6 +211,18 @@ test('training-flight-check', find_program('training_flight_check.sh'),
     depends: [sim_dump],
     timeout: 120)
 
+# The native weapons gate: sim_dump's fire mode on the synthetic range
+# must kill a drone through retail's whole chain -- firing cadence, bolt
+# flight, BSP model_collide, damage, destruction -- proven by the mission
+# log, with two runs byte-identical.
+test('weapons-native-check', find_program('weapons_native_check.sh'),
+    args: [
+        sim_dump.full_path(),
+        meson.project_source_root(),
+    ],
+    depends: [sim_dump],
+    timeout: 120)
+
 # The reconciler gate: world.tscn headless on the native Training-1 --
 # presentation consuming the boundary end to end (pof2glb assets, load,
 # step, snapshot, ships as scene nodes, the Instructor's NODE measurably

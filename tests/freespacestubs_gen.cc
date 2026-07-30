@@ -126,9 +126,11 @@ void game_stop_time()
    oracle_trap("game_stop_time");
 }
 
+// NO-OP, not a trap: retail's "hehe" easter-egg marker sits on
+// ship_hit_kill's path (shiphit.cc:1374), so every simulated kill crosses
+// it -- pure presentation (a screen flash), safely nothing here
 void game_tst_mark(object*, ship*)
 {
-   oracle_trap("game_tst_mark");
 }
 
 bool game_using_low_mem()

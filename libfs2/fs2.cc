@@ -17,6 +17,7 @@
 #include <graphics/grinternal.hh>
 #include <hud/hud.hh>
 #include <io/timer.hh>
+#include <lighting/lighting.hh>
 #include <localization/localize.hh>
 #include <mission/missionbriefcommon.hh>
 #include <mission/missiongoals.hh>
@@ -78,6 +79,11 @@ null_init_alphacolor(color *, int, int, int, int, int)
 {
 }
 
+static void
+null_zbuffer_clear(int)
+{
+}
+
 // Boot: cfile at the install root + the table chain, once per process --
 // the proven tool recipe (mission2tres/shiptbl2tres), game order
 // (sounds.tbl before weapon_init so sound indices resolve).
@@ -106,6 +112,21 @@ boot(const char *game_root)
 
     gr_screen.gf_init_color = null_init_color;
     gr_screen.gf_init_alphacolor = null_init_alphacolor;
+    gr_screen.gf_zbuffer_clear = null_zbuffer_clear;
+
+    // a described 640x480 canvas nothing ever draws to: the sim's own
+    // paths read it -- fireball_get_lod projects the explosion through g3
+    // to pick a detail level (ship_dying_frame, render machinery inside
+    // the death sequence)
+    gr_screen.max_w = 640;
+    gr_screen.max_h = 480;
+    gr_screen.aspect = 1.0f;
+    gr_screen.clip_left = 0;
+    gr_screen.clip_top = 0;
+    gr_screen.clip_right = 639;
+    gr_screen.clip_bottom = 479;
+    gr_screen.clip_width = 640;
+    gr_screen.clip_height = 480;
 
     // the 1555 ARGB color guns, grsoft.cc:858's own aux-path block: the
     // game-path table parse locks weapon bitmaps at 16bpp
@@ -241,11 +262,23 @@ record_of(object *objp)
     object_state_t rec;
     memset(&rec, 0, sizeof(rec));
 
+    rec.signature = objp->signature;
+    rec.objnum = OBJ_INDEX(objp);
+    rec.type = objp->type;
+    rec.pos = objp->pos;
+    rec.orient = objp->orient;
+    rec.vel = objp->phys_info.vel;
+
+    if (objp->type == OBJ_WEAPON) {
+        weapon_info *wip =
+            &Weapon_info[Weapons[objp->instance].weapon_info_index];
+        strncpy(rec.class_name, wip->name, sizeof(rec.class_name) - 1);
+        return rec;
+    }
+
     ship *shipp = &Ships[objp->instance];
     ship_info *sip = &Ship_info[shipp->ship_info_index];
 
-    rec.signature = objp->signature;
-    rec.objnum = OBJ_INDEX(objp);
     strncpy(rec.name, shipp->ship_name, sizeof(rec.name) - 1);
     strncpy(rec.class_name, sip->name, sizeof(rec.class_name) - 1);
     strncpy(rec.pof, sip->pof_file, sizeof(rec.pof) - 1);
@@ -258,10 +291,6 @@ record_of(object *objp)
                                : shipp->arrival_location;
     rec.player = (objp->flags & OF_PLAYER_SHIP) != 0;
     rec.dying = (shipp->flags & SF_DYING) != 0;
-
-    rec.pos = objp->pos;
-    rec.orient = objp->orient;
-    rec.vel = objp->phys_info.vel;
     rec.hull = objp->hull_strength;
     rec.hull_max = sip->initial_hull_strength;
 
@@ -293,6 +322,11 @@ fs2_t::step(float dt, const flight_controls_t &controls)
 
     radar_null_nblips();
 
+    // the light pool resets per frame (game_frame does it just before the
+    // simulation, deliberately outside the Pre_player_entry guard) --
+    // weapon fire ADDS lights sim-side, and the pool overflows without it
+    light_reset();
+
     // the virtual stick: retail's control_info filled from the boundary
     // in place of read_keyboard_controls; the rest of
     // read_player_controls' PCM_NORMAL path follows verbatim
@@ -303,6 +337,14 @@ fs2_t::step(float dt, const flight_controls_t &controls)
         Player->ci.heading = controls.heading;
         Player->ci.bank = controls.bank;
         Player->ci.forward = controls.forward;
+
+        // the triggers: obj_player_fire_stuff (called from obj_move_all's
+        // player branch) fires primaries/secondaries/countermeasures off
+        // these counts, trigger-down flag and stream cadence included
+        Player->ci.fire_primary_count = controls.fire_primary ? 1 : 0;
+        Player->ci.fire_secondary_count = controls.fire_secondary ? 1 : 0;
+        Player->ci.fire_countermeasure_count =
+            controls.fire_countermeasure ? 1 : 0;
 
         // afterburner engages through retail's own fuel accounting
         if (controls.afterburner && !m_burn_held)
@@ -381,7 +423,8 @@ fs2_t::snapshot() const
 
     for (object *objp = GET_FIRST(&obj_used_list);
          objp != END_OF_LIST(&obj_used_list); objp = GET_NEXT(objp)) {
-        if (objp->type != OBJ_SHIP && objp->type != OBJ_START)
+        if (objp->type != OBJ_SHIP && objp->type != OBJ_START &&
+            objp->type != OBJ_WEAPON)
             continue;
         out.push_back(record_of(objp));
     }

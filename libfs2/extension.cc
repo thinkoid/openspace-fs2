@@ -17,6 +17,8 @@
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
+#include <object/object.hh>
+
 #include "fs2.hh"
 
 // FS2 <-> retail frame plumbing: same axes, different containers
@@ -46,6 +48,9 @@ controls_of(const godot::Dictionary &controls)
     c.bank = controls.get("bank", 0.0);
     c.forward = controls.get("forward", 0.0);
     c.afterburner = controls.get("afterburner", false);
+    c.fire_primary = controls.get("fire_primary", false);
+    c.fire_secondary = controls.get("fire_secondary", false);
+    c.fire_countermeasure = controls.get("fire_countermeasure", false);
 
     return c;
 }
@@ -132,6 +137,7 @@ public:
         for (const object_state_t &o : m_sim.snapshot()) {
             godot::Dictionary d;
             d["signature"] = o.signature;
+            d["type"] = o.type == OBJ_WEAPON ? "weapon" : "ship";
             d["name"] = o.name;
             d["class"] = o.class_name;
             d["pof"] = o.pof;

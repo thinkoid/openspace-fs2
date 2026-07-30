@@ -37,10 +37,15 @@ struct flight_params_t {
 
 // Stick deflections in [-1, 1]; forward is the throttle (negative =
 // reverse). The afterburner request engages only if the params carry one.
+// The triggers land in retail's own control_info counts --
+// obj_player_fire_stuff (object.cc:694) does the firing from there.
 struct flight_controls_t {
     float pitch, heading, bank;
     float forward;
     bool afterburner;
+    bool fire_primary;
+    bool fire_secondary;
+    bool fire_countermeasure;
 };
 
 // The flying state after a step -- physics_info's living fields.
@@ -55,10 +60,12 @@ struct flight_state_t {
 
 // One mission object, value-only, as the snapshot reports it. The signature
 // is retail's own stable id (object.signature, minted to outlive objnum
-// reuse) -- the reconciler keys scene nodes by it.
+// reuse) -- the reconciler keys scene nodes by it. type is retail's OBJ_*:
+// ships carry the full record, weapons carry class/pos/orient/vel only.
 struct object_state_t {
     int signature;
     int objnum;
+    int type;                          // OBJ_SHIP / OBJ_WEAPON / ...
     char name[32];                     // Ships[].ship_name
     char class_name[32];               // Ship_info[].name
     char pof[32];                      // Ship_info[].pof_file
