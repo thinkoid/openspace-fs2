@@ -1,5 +1,10 @@
 # -*- mode: gdscript -*-
 #
+# RETIRED TO SPEC (2026-07-30): the runtime is libfs2 -- retail's
+# aicode.cc flies every ship. This file remains the line-cited
+# specification of the waypoint sliver (arrival test, log stamp,
+# distance-proportional pace), pinned by waypoints-check.
+#
 # WaypointAI -- the sliver of retail's AI that Training-1's lesson chain
 # gates on: ships fly waypoint paths, stand still, or play dead, and
 # completing a path stamps the mission log that

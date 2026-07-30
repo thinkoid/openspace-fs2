@@ -1,5 +1,12 @@
 # -*- mode: gdscript -*-
 #
+# RETIRED TO SPEC (2026-07-30): the runtime is libfs2 -- retail's own
+# eval_sexp/mission_eval_goals, the very code this file transcribed. The
+# planned differential gate was overtaken by events: the original itself
+# now runs. This file remains the annotated, readable specification of
+# the evaluator's semantics (KNOWN_* caching, NAN rules, the timestamp
+# overload) -- the commentary the C++ never carried.
+#
 # SexpVM -- retail's SEXP evaluator and mission event loop, ported
 # function-for-function from sexp.cc (eval_sexp, eval_when, sexp_and/or/
 # not) and missiongoals.cc (mission_process_event, mission_eval_goals).

@@ -1,5 +1,10 @@
 # -*- mode: gdscript -*-
 #
+# RETIRED TO SPEC (2026-07-30): the runtime is libfs2 -- retail firing
+# through ci trigger counts and the real BSP model_collide (this file's
+# swept-sphere was the honest approximation; the original needs none).
+# Pinned as spec by weapons-check.
+#
 # Weapons -- the player's gun, its projectiles in flight, and the hull
 # ledger they spend down: the runtime half of the weapons slice (the data
 # half is ship_params.tres ballistics through retail's weapon_init). Pure

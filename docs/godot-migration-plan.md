@@ -893,6 +893,18 @@ milestone — but `inspect/` reduced to presentation and every game
 semantic executing in the same machine code the retail port ships. The
 ownership table, enforced this time.
 
+**Status (2026-07-30, the day the plan was written):** slices 0–5 landed
+and gated in one run — version round-trip, bit-exact flight, the world
+(91/91 layouts, retail AI flying), the reconciler scene, native weapons
+(a logged kill), the lesson (directives + voiced training messages +
+key marks), and the frontier audit: **90/90 campaign missions simulate
+hands-off natively** (six missing descriptions, zero missing systems).
+The GDScript sims are formally retired to specs (banners in each, gates
+still pinning); `mission.tscn` is the superseded era scene pending
+fold-in. Open: presentation polish (regular-message exposure,
+sounds-as-events, fireball/debris/warp visuals, the world scene's combat
+HUD), and the campaign-flow horizon.
+
 ## Where this work lives
 
 - `master` — the retail Linux port; mothballed 2026-07-30 at its

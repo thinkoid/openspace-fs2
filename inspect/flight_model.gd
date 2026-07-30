@@ -1,5 +1,11 @@
 # -*- mode: gdscript -*-
 #
+# RETIRED TO SPEC (2026-07-30): the runtime is libfs2 -- retail's
+# physics.cc itself behind fly_step/step. This file remains the
+# executable, line-cited specification of the integrator, pinned by
+# flight-check against the same physics_dump oracle; its FIGHTER
+# constant still feeds flight-native-check's fly_reset.
+#
 # FlightModel -- retail's flight integrator, ported function-for-function
 # from src/physics/physics.cc (+ the vecmat primitives it leans on) and
 # oracle-pinned: tests/physics_dump runs the ORIGINAL code over a scripted

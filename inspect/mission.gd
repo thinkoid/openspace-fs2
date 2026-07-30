@@ -1,5 +1,11 @@
 # -*- mode: gdscript -*-
 #
+# SUPERSEDED (2026-07-30): this is the GDSCRIPT-ERA lesson -- the whole
+# simulation in the scripts above, built slice by slice on the road to
+# Training-1. The live lesson is world.tscn on libfs2 (the native world);
+# this scene remains the era's integration reference and still runs via
+# `-- mission <tres>` until the fold-in removes it.
+#
 # The mission scene: a MissionData layout (mission2tres, retail's parser)
 # spawned as real Ships, the player in the player-start ship under
 # FlightModel, the mission's events running in SexpVM (retail's evaluator)
