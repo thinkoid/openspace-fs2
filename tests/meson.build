@@ -183,6 +183,34 @@ test('flight-check', find_program('flight_check.sh'),
     depends: [physics_dump],
     timeout: 120)
 
+# The world gate: every install mission through the native boundary's
+# game-path load (sim_dump layout), cross-checked against mission2tres's
+# FRED view -- native subset of FRED, identity exact, placement within
+# tolerance, player start present, plus per-mission load determinism
+# (two loads byte-identical). sim_dump builds godot-lessly, so this gate
+# needs only the install.
+test('world-check', find_program('world_check.sh'),
+    args: [
+        sim_dump.full_path(),
+        mission2tres.full_path(),
+        meson.current_source_dir() / 'check_world.py',
+        meson.project_source_root(),
+    ],
+    depends: [sim_dump, mission2tres],
+    timeout: 240)
+
+# The Instructor gate: Training-1 runs 60 sim-seconds hands-off in the
+# native world and retail's OWN AI must fly the Instructor's first
+# waypoint path to completion (the mission log's LOG_WAYPOINTS_DONE, plus
+# measurable travel), with two runs byte-identical (step determinism).
+test('training-flight-check', find_program('training_flight_check.sh'),
+    args: [
+        sim_dump.full_path(),
+        meson.project_source_root(),
+    ],
+    depends: [sim_dump],
+    timeout: 120)
+
 # The INVERTED flight gate (the plan's gate-inversion, live): physics_dump's
 # trace replayed through the native boundary must agree BIT-EXACTLY -- both
 # sides run the same foundation machine code, so the tolerance is zero and

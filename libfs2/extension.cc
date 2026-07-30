@@ -36,6 +36,20 @@ from_vec(const vector &v)
     return godot::Vector3(v.x, v.y, v.z);
 }
 
+static flight_controls_t
+controls_of(const godot::Dictionary &controls)
+{
+    flight_controls_t c;
+
+    c.pitch = controls.get("pitch", 0.0);
+    c.heading = controls.get("heading", 0.0);
+    c.bank = controls.get("bank", 0.0);
+    c.forward = controls.get("forward", 0.0);
+    c.afterburner = controls.get("afterburner", false);
+
+    return c;
+}
+
 class FS2 : public godot::RefCounted {
     GDCLASS(FS2, godot::RefCounted)
 
@@ -53,6 +67,14 @@ protected:
                                     &FS2::fly_step);
         godot::ClassDB::bind_method(godot::D_METHOD("fly_state"),
                                     &FS2::fly_state);
+        godot::ClassDB::bind_method(godot::D_METHOD("load", "game_root",
+                                                    "mission", "seed"),
+                                    &FS2::load);
+        godot::ClassDB::bind_method(godot::D_METHOD("step", "dt", "controls"),
+                                    &FS2::step);
+        godot::ClassDB::bind_method(godot::D_METHOD("snapshot"),
+                                    &FS2::snapshot);
+        godot::ClassDB::bind_method(godot::D_METHOD("events"), &FS2::events);
     }
 
 public:
@@ -87,15 +109,77 @@ public:
 
     void fly_step(double dt, const godot::Dictionary &controls)
     {
-        flight_controls_t c;
+        m_sim.fly_step(float(dt), controls_of(controls));
+    }
 
-        c.pitch = controls.get("pitch", 0.0);
-        c.heading = controls.get("heading", 0.0);
-        c.bank = controls.get("bank", 0.0);
-        c.forward = controls.get("forward", 0.0);
-        c.afterburner = controls.get("afterburner", false);
+    // the mission world (slice 2): value-only marshalling, FS2-frame
+    bool load(const godot::String &game_root, const godot::String &mission,
+              int seed)
+    {
+        return m_sim.load(game_root.utf8().get_data(),
+                          mission.utf8().get_data(), seed);
+    }
 
-        m_sim.fly_step(float(dt), c);
+    void step(double dt, const godot::Dictionary &controls)
+    {
+        m_sim.step(float(dt), controls_of(controls));
+    }
+
+    godot::Array snapshot() const
+    {
+        godot::Array out;
+
+        for (const object_state_t &o : m_sim.snapshot()) {
+            godot::Dictionary d;
+            d["signature"] = o.signature;
+            d["name"] = o.name;
+            d["class"] = o.class_name;
+            d["pof"] = o.pof;
+            d["team"] = o.team;
+            d["player"] = o.player;
+            d["dying"] = o.dying;
+            d["pos"] = from_vec(o.pos);
+            d["rvec"] = from_vec(o.orient.rvec);
+            d["uvec"] = from_vec(o.orient.uvec);
+            d["fvec"] = from_vec(o.orient.fvec);
+            d["vel"] = from_vec(o.vel);
+            d["hull"] = o.hull;
+            d["hull_max"] = o.hull_max;
+            out.push_back(d);
+        }
+
+        return out;
+    }
+
+    godot::Array events()
+    {
+        godot::Array out;
+
+        for (const event_t &ev : m_sim.events()) {
+            godot::Dictionary d;
+            switch (ev.kind) {
+            case event_t::created:
+                d["kind"] = "created";
+                d["signature"] = ev.signature;
+                d["name"] = ev.name;
+                break;
+            case event_t::destroyed:
+                d["kind"] = "destroyed";
+                d["signature"] = ev.signature;
+                d["name"] = ev.name;
+                break;
+            case event_t::log:
+                d["kind"] = "log";
+                d["log_type"] = ev.log_type;
+                d["pname"] = ev.pname;
+                d["sname"] = ev.sname;
+                d["time"] = double(ev.time) / 65536.0;
+                break;
+            }
+            out.push_back(d);
+        }
+
+        return out;
     }
 
     godot::Dictionary fly_state() const

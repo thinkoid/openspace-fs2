@@ -8,6 +8,19 @@
 godot_exe = find_program('godot', required: false)
 libfs2_so = disabler()
 
+libfs2_version = vcs_tag(
+    command: ['git', 'describe', '--always', '--dirty=+'],
+    input: 'version.hh.in',
+    output: 'version.hh')
+
+# sim_dump needs no engine at all -- fs2_t linked directly (the boundary
+# API is tested without Godot in the room); the world gates drive it.
+sim_dump = executable('sim_dump',
+    ['sim_dump.cc', 'fs2.cc', libfs2_version] + oracle_stubs,
+    include_directories: inc,
+    link_with: foundation,
+    dependencies: [sdl2_dep, openal_dep, gl_dep])
+
 if godot_exe.found()
     py3 = find_program('python3')
     godot_cpp = meson.project_source_root() / 'third-party/godot-cpp'
@@ -68,11 +81,6 @@ if godot_exe.found()
     godot_cpp_lib = static_library('godot-cpp',
         godot_cpp_handwritten + gen_src,
         cpp_args: godot_cpp_args)
-
-    libfs2_version = vcs_tag(
-        command: ['git', 'describe', '--always', '--dirty=+'],
-        input: 'version.hh.in',
-        output: 'version.hh')
 
     # The .so: fs2_t + the shim, the WHOLE foundation (link_whole surfaces
     # any missing or duplicate symbol now and runs every static ctor at

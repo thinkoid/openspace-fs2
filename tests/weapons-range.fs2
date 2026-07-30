@@ -85,7 +85,7 @@ $Cargo 1:  XSTR("Nothing", 13)
 +Secondary Banks: ( "" "" "" )
 +Sbank Ammo: ( 0 0 0 )
 $Arrival Location: Hyperspace
-$Arrival Cue: ( false )
+$Arrival Cue: ( true )
 $Departure Location: Hyperspace
 $Departure Cue: ( false )
 $Determination: 10

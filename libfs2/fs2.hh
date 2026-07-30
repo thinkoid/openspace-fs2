@@ -10,6 +10,10 @@
 
 #pragma once
 
+#include <string>
+#include <vector>
+
+#include <globalincs/pstypes.hh>
 #include <math/vecmat.hh>
 #include <physics/physics.hh>
 
@@ -49,22 +53,80 @@ struct flight_state_t {
     float fspeed;                      // signed, forward direction
 };
 
-// The boundary object. Slice 1: one ship's flight -- retail's
-// physics_read_flying_controls + physics_sim over a single physics_info,
-// the same call pair tests/physics_dump.cc pins. The mission world (load /
-// step / snapshot / events) arrives in slice 2.
+// One mission object, value-only, as the snapshot reports it. The signature
+// is retail's own stable id (object.signature, minted to outlive objnum
+// reuse) -- the reconciler keys scene nodes by it.
+struct object_state_t {
+    int signature;
+    int objnum;
+    char name[32];                     // Ships[].ship_name
+    char class_name[32];               // Ship_info[].name
+    char pof[32];                      // Ship_info[].pof_file
+    int team;
+    int arrival_location;              // ARRIVE_* -- nonzero means the game
+                                       // relocated the authored position
+    bool player;
+    bool dying;
+
+    vector pos;
+    matrix orient;
+    vector vel;
+    float hull;                        // current hull strength
+    float hull_max;
+};
+
+// The discontinuities between two events() drains: objects entering and
+// leaving the world, and every new mission-log entry (retail's own record
+// -- LOG_WAYPOINTS_DONE, LOG_SHIP_DESTROYED... the sexp predicates read
+// the same table).
+struct event_t {
+    enum kind_t { created, destroyed, log };
+
+    kind_t kind;
+    int signature;                     // created/destroyed
+    char name[32];
+
+    int log_type;                      // log: the LOG_* constant
+    char pname[32], sname[32];
+    fix time;                          // log: mission time of the entry
+};
+
+// The boundary object. Slice 1 grew the single-ship flight surface
+// (fly_*, the tests/physics_dump.cc call pair); slice 2 grows the WORLD:
+// load runs retail's game-path mission chain (arrival cues live), step is
+// the headless twin of freespace.cc's frame (game_simulation_frame's sim
+// subset -- freespace.cc itself is the game's entry point and stays out
+// of the library), snapshot/events are the value-only state out.
 struct fs2_t {
     const char *version() const;
 
+    // one ship, no world -- the fly.tscn scene and the flight oracle
     void fly_reset(const flight_params_t &params);
     void fly_step(float dt, const flight_controls_t &controls);
     flight_state_t fly_state() const;
+
+    // the mission world. load boots cfile + tables once per process
+    // (game_root = the unpacked install), then runs the level chain for
+    // the mission; seed pins the rand stream (retail's own
+    // game_level_init(seed) parameter). Returns false on parse failure.
+    bool load(const char *game_root, const char *mission, int seed);
+    void step(float dt, const flight_controls_t &controls);
+    std::vector<object_state_t> snapshot() const;
+    std::vector<event_t> events();     // drains
 
 private:
     physics_info m_pi;
     vector m_pos = vmd_zero_vector;
     matrix m_orient = vmd_identity_matrix;
     bool m_has_afterburner = false;
+
+    bool m_world_live = false;
+    bool m_pre_entry = true;           // freespace.cc's Pre_player_entry
+                                       // (no header ever declared it; the
+                                       // boundary owns the replica)
+    bool m_burn_held = false;          // afterburner edge detection
+    int m_log_drained = 0;             // mission-log high-water mark
+    std::vector<object_state_t> m_known; // last drain's world, for diffs
 
 public:
     fs2_t();
