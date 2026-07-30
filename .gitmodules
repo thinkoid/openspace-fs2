@@ -1,3 +1,6 @@
 [submodule "subprojects/libpof"]
 	path = subprojects/libpof
 	url = ../libpof
+[submodule "third-party/godot-cpp"]
+	path = third-party/godot-cpp
+	url = https://github.com/godotengine/godot-cpp.git

@@ -11,7 +11,11 @@ foundation_src = files(
     'cmeasure/cmeasure.cc',
     'controlconfig/controlsconfig.cc',
     'controlconfig/controlsconfigcommon.cc',
-    'cryptstring/cryptstring.cc',
+    # cryptstring/cryptstring.cc is Volition's STANDALONE crypt utility -- it
+    # carries its own main() and a verbatim copy of crypt.cc's jcrypt().
+    # Harmless under lazy member pull, but libfs2's link_whole surfaced the
+    # duplicate definition; the library copy (globalincs/crypt.cc) is the one
+    # that belongs here.
     'cutscene/cutscenes.cc',
     'debris/debris.cc',
     'fireball/fireballs.cc',

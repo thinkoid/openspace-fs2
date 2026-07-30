@@ -1,0 +1,4 @@
+{
+    "_": "godot-cpp build profile for libfs2: the engine-class closure stays minimal (core builtins -- Variant, String, the packed arrays -- are always generated regardless). Grow the list as slices need classes.",
+    "enabled_classes": ["RefCounted", "OS"]
+}

@@ -48,6 +48,14 @@ void game_enter_state(int, int)
    oracle_trap("game_enter_state");
 }
 
+struct fs_builtin_mission;
+
+fs_builtin_mission *game_find_builtin_mission(char*)
+{
+   oracle_trap("game_find_builtin_mission");
+   return nullptr;
+}
+
 void game_flash(float, float, float)
 {
    oracle_trap("game_flash");
@@ -56,6 +64,11 @@ void game_flash(float, float, float)
 void game_flush()
 {
    oracle_trap("game_flush");
+}
+
+void game_format_time(fix, char*)
+{
+   oracle_trap("game_format_time");
 }
 
 void game_get_default_skill_level()
@@ -118,6 +131,12 @@ void game_tst_mark(object*, ship*)
    oracle_trap("game_tst_mark");
 }
 
+bool game_using_low_mem()
+{
+   oracle_trap("game_using_low_mem");
+   return false;
+}
+
 void game_whack_apply(float, float)
 {
    oracle_trap("game_whack_apply");
@@ -140,12 +159,15 @@ unsigned char Debug_octant[1 << 20];
 unsigned char flFrametime[1 << 20];
 unsigned char Framerate_delay[1 << 20];
 int Fred_running = 0;
+unsigned char Freespace_gamma[1 << 20];
 unsigned char Game_current_mission_filename[1 << 20];
 unsigned char Game_ships_tbl_valid[1 << 20];
 unsigned char Game_skill_level[1 << 20];
 unsigned char Game_subspace_effect[1 << 20];
 unsigned char Game_time_compression[1 << 20];
 unsigned char Game_weapons_tbl_valid[1 << 20];
+unsigned char game_single_step[1 << 20];
+unsigned char last_single_step[1 << 20];
 int Pofview_running = 0;
 unsigned char Show_target_debug_info[1 << 20];
 unsigned char Show_target_weapons[1 << 20];

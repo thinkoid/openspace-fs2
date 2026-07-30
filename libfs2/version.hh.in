@@ -1,0 +1,5 @@
+// Template for meson's vcs_tag(): @VCS_TAG@ becomes `git describe` output at
+// build time (a trailing '+' marks a dirty tree). Never edit the generated
+// header.
+#pragma once
+#define LIBFS2_VERSION "@VCS_TAG@"

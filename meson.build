@@ -30,12 +30,15 @@ oracle_stubs = game_stubs + files('tests/freespacestubs_gen.cc')
 
 # The tree is split by role: src/ compiles the whole ported corpus into the
 # `foundation` library; bin/ declares the shippable toplevel executables that
-# link it; tools/ and tests/ own their own families. Order is by dependency:
-#   src   exports `foundation` and the two entry-point sources
-#   tools defines pof2glb + vpstage; tests' gates run both
-#   tests defines the oracle dumpers and every gate
-#   bin   consumes `foundation`, the entry points, and `game_stubs` -- last
+# link it; tools/, libfs2/ and tests/ own their own families. Order is by
+# dependency:
+#   src    exports `foundation` and the two entry-point sources
+#   tools  defines pof2glb + vpstage; tests' gates run both
+#   libfs2 defines the GDExtension boundary library; tests' gate loads it
+#   tests  defines the oracle dumpers and every gate
+#   bin    consumes `foundation`, the entry points, and `game_stubs` -- last
 subdir('src')
 subdir('tools')
+subdir('libfs2')
 subdir('tests')
 subdir('bin')
