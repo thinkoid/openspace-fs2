@@ -195,7 +195,7 @@ $Formula: ( when
 +Repeat Count: 1
 +Interval: 1
 +Objective:  XSTR("Destroy Drone 01", -1)
-+Objective key:  XSTR("Press $LCtrl$", -1)
++Objective key:  XSTR("Press $Left Ctrl$", -1)
 
 $Formula: ( when
    ( is-destroyed-delay 0 "Drone 02" "Drone 03" )
@@ -231,7 +231,7 @@ $Formula: ( is-destroyed-delay 0 "Drone 01" "Drone 02" "Drone 03" )
 $Name: Range hot
 
 $Team: -1
-$MessageNew:  XSTR("Range is hot. [Press $LCtrl$] Destroy the three drones ahead.", -1)
+$MessageNew:  XSTR("Range is hot. [Press $Left Ctrl$] Destroy the three drones ahead.", -1)
 $end_multi_text
 
 $Name: Good hit

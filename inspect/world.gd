@@ -562,6 +562,8 @@ func _debris_node(rec: Dictionary) -> Node3D:
                 var pn := m.find_child(piece, true, false) as Node3D
                 if pn != null:
                     var root := Node3D.new()
+                    pn.owner = null      # else Godot warns: the piece's
+                                         # owner stays the GLB scene root
                     pn.get_parent().remove_child(pn)
                     root.add_child(pn)
                     pn.transform = Transform3D.IDENTITY

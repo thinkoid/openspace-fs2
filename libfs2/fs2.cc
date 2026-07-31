@@ -271,6 +271,13 @@ boot(const char *game_root)
     weapon_init();
     ship_init();
 
+    // the default key bindings, live: message_translate_tokens turns a
+    // training message's "$t$" into the CURRENT binding's text
+    // (translate_key reads Control_config[].key_id), and without this
+    // key_id is zero -- which textifies to an empty string and eats the
+    // key out of "Press $t$ to..." (field-reported)
+    control_config_reset_defaults();
+
     // the pilot: enough of Players[0] for the sim chain (scoring, ci,
     // control mode); pilot files and ship select stay out of the library
     Player_num = 0;
