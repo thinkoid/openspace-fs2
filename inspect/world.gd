@@ -1298,8 +1298,12 @@ func _sky_quad(tex: Texture2D, dir: Vector3, ax: Vector3, ay: Vector3,
         mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
     mat.albedo_texture = tex
     mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-    mat.no_depth_test = true
-    mat.render_priority = -100         # the sky draws under everything
+    # depth-tested, NOT no_depth_test: the shell sits at SKY_R and every
+    # ship is nearer, so hulls occlude the sky the ordinary way --
+    # no_depth_test painted the nebula OVER the Instructor
+    # (field-reported). Priority still sorts it first among transparents
+    # (bolts and explosions draw over the sky).
+    mat.render_priority = -100
     if billboard:
         mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
     qm.material = mat
