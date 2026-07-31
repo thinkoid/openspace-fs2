@@ -692,25 +692,12 @@ func _draw_hud() -> void:
                               vc + Vector2(0, -_ui(6.0)), HUD_LINE, 1.5)
 
     _draw_speed_tape(vp, fsz)
-    _draw_bars(vp, fsz)
-
-    # own bubble and hull, left of the radar
-    _draw_shield_glyph(Vector2(vp.x * 0.5 - _ui(220.0), vp.y - _ui(130.0)),
-                       player_shield, player_shield_max / 4.0,
-                       player_hull_frac, HUD_LINE, fsz)
 
     if target_rec.is_empty():
         return
 
     var col := Color(1.0, 0.35, 0.3) if target_rec["team"] != player_team \
         else Color(0.35, 1.0, 0.4)
-
-    # the target twin, beside the target text block
-    _draw_shield_glyph(Vector2(_ui(420.0), vp.y - _ui(130.0)),
-                       target_rec.get("shield", []),
-                       float(target_rec.get("shield_max", 0.0)) / 4.0,
-                       target_rec["hull"] / maxf(target_rec["hull_max"], 1.0),
-                       col, fsz)
 
     var p3: Vector3 = target_rec["pos"]
     var v := Vector3(p3.x, p3.y, -p3.z)
@@ -796,9 +783,12 @@ func _draw_speed_tape(vp: Vector2, fsz: int) -> void:
     var half_h := _ui(220.0)
     var cy := vp.y * 0.5
     var span := 60.0
-    overlay.draw_line(Vector2(x, cy - half_h), Vector2(x, cy + half_h),
+    # the tape floors at zero -- there is no reverse (retail's set-speed
+    # never goes negative; the throttle is already clipped 0..1)
+    var y_floor := minf(cy + player_speed / span * half_h, cy + half_h)
+    overlay.draw_line(Vector2(x, cy - half_h), Vector2(x, y_floor),
                       HUD_DIM, 1.5)
-    var m := int(floor((player_speed - span) / 10.0)) * 10
+    var m := maxi(0, int(floor((player_speed - span) / 10.0)) * 10)
     while m <= int(ceil((player_speed + span) / 10.0)) * 10:
         var y := cy + (player_speed - m) / span * half_h
         if y >= cy - half_h and y <= cy + half_h:
@@ -825,46 +815,7 @@ func _draw_speed_tape(vp: Vector2, fsz: int) -> void:
         Vector2(x + _ui(2.0), cy2), Vector2(x + _ui(11.0), cy2 - _ui(6.0)),
         Vector2(x + _ui(11.0), cy2 + _ui(6.0))]), cc2)
 
-# gun energy and afterburner fuel, thin verticals
-func _draw_bars(vp: Vector2, fsz: int) -> void:
-    var h := _ui(180.0)
-    var cy := vp.y * 0.5
-    var defs := [["GUN", player_energy_frac], ["AB", player_burner_frac]]
-    for i in defs.size():
-        var bx: float = vp.x * 0.84 + i * _ui(52.0)
-        overlay.draw_rect(Rect2(bx, cy - h * 0.5, _ui(10.0), h), HUD_DIM,
-                          false, 1.5)
-        var fh: float = h * clampf(defs[i][1], 0.0, 1.0)
-        overlay.draw_rect(Rect2(bx, cy + h * 0.5 - fh, _ui(10.0), fh),
-                          HUD_LINE)
-        overlay.draw_string(hud_font,
-                            Vector2(bx - _ui(6.0),
-                                    cy + h * 0.5 + fsz + _ui(6.0)),
-                            defs[i][0], HORIZONTAL_ALIGNMENT_LEFT, -1,
-                            int(fsz * 0.75), HUD_DIM)
 
-# the shield fence: four bars boxing the hull number -- front above,
-# right, rear, left (data order through Quadrant_xlate {1,0,2,3},
-# hudshield.cc:88), brightness by charge
-func _draw_shield_glyph(c: Vector2, quads: Array, qmax: float,
-                        hull_frac: float, base: Color, fsz: int) -> void:
-    var r := _ui(36.0)
-    if quads.size() >= 4 and qmax > 0.0:
-        var xlate: Array[int] = [1, 0, 2, 3]
-        var offs: Array[Vector2] = [Vector2(0, -r), Vector2(r, 0),
-                                    Vector2(0, r), Vector2(-r, 0)]
-        var dirs: Array[Vector2] = [Vector2(1, 0), Vector2(0, 1),
-                                    Vector2(1, 0), Vector2(0, 1)]
-        for i in 4:
-            var frac := clampf(float(quads[xlate[i]]) / qmax, 0.0, 1.0)
-            var qc := base
-            qc.a = 0.12 + 0.78 * frac
-            var o: Vector2 = c + offs[i]
-            var dd: Vector2 = dirs[i] * r * 0.55
-            overlay.draw_line(o - dd, o + dd, qc, _ui(4.0))
-    overlay.draw_string(hud_font, c + Vector2(-_ui(30.0), fsz * 0.35),
-                        "%3d%%" % maxi(0, int(hull_frac * 100.0)),
-                        HORIZONTAL_ALIGNMENT_LEFT, -1, int(fsz * 0.9), base)
 
 # the chatter window: recent radio lines, each shown for its own
 # text-length window (the voice may run longer -- lines scroll off,
