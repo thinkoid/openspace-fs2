@@ -48,6 +48,17 @@ else
     rc=1
 fi
 
+# the whole range clears and retail's goal evaluation notices: all three
+# drones die and the mission goal satisfies, end to end natively. This
+# pins the gunner's convergence sweep -- a boresight locked dead on
+# center straddles a small target with the parallel gun streams forever
+if grep -q "^event [0-9]* log 14 'Clear the range'" "$tmp/fire.txt"; then
+    echo "OK: $(grep -m1 "log 14" "$tmp/fire.txt")"
+else
+    echo "FAIL: mission goal 'Clear the range' never satisfied"
+    rc=1
+fi
+
 # the sounds-as-events seam: every shot requests its launch wav, every
 # hit its positioned impact wav
 if grep -q "^event [0-9]* sound L_Sidearm" "$tmp/fire.txt" \

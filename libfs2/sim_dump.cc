@@ -116,9 +116,18 @@ main(int argc, char *argv[])
 
             memset(&controls, 0, sizeof(controls));
             if (me && foe) {
+                // convergence sweep: the guns fire from offset points,
+                // parallel to the boresight, so an aim locked dead on
+                // center straddles a small target forever (the frozen
+                // 55.5-hull drone). The aim point rides a slow ~3 m
+                // circle around the hull instead; frame-based, so the
+                // determinism contract holds.
+                vector aim = foe->pos;
+                aim.x += 3.0f * sinf(float(frame) * 0.05f);
+                aim.y += 3.0f * cosf(float(frame) * 0.05f);
+
                 vector to;
-                vm_vec_sub(&to, const_cast<vector *>(&foe->pos),
-                           const_cast<vector *>(&me->pos));
+                vm_vec_sub(&to, &aim, const_cast<vector *>(&me->pos));
                 vm_vec_normalize_safe(&to);
 
                 // the error, in the local frame: rows dot the direction
