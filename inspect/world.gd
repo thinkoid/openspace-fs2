@@ -50,7 +50,8 @@ const KEY_NAMES := {
 
 var sim                       # FS2 (libfs2) instance
 var ships_root: Node3D
-var ships := {}               # signature -> {node, is_ship, radius}
+var ships := {}               # signature -> {node, is_ship, kind, radius}
+var flashes: Array[Dictionary] = []   # transient art: {node, deadline}
 var player_sig := -1
 
 var throttle := 0.0
@@ -276,6 +277,28 @@ func _physics_process(delta: float) -> void:
             Vector3(uv.x, uv.y, -uv.z),
             -Vector3(fv.x, fv.y, -fv.z))
 
+        # the per-kind art that follows the record: a laser's color
+        # cycles per retail (the boundary carries the live color), a
+        # shockwave's ring rides the blast front, an explosion plays out
+        # its flash-and-fade over the record's own lifetime
+        var entry_kind: String = entry.get("kind", "")
+        if entry_kind == "weapon" and node.has_meta("bolt_mat"):
+            (node.get_meta("bolt_mat") as StandardMaterial3D).albedo_color = \
+                rec.get("color", Color(1.0, 0.35, 0.25))
+        elif entry_kind == "shockwave":
+            node.scale = Vector3.ONE * maxf(rec["radius"], 0.1)
+        elif entry_kind == "fireball" and node.has_meta("born"):
+            var age: float = (Time.get_ticks_msec()
+                              - int(node.get_meta("born"))) / 1000.0
+            var k := clampf(age / 1.2, 0.0, 1.0)
+            node.scale = Vector3.ONE * (0.4 + 1.6 * k)
+            var cm: StandardMaterial3D = node.get_meta("core_mat")
+            var c := cm.albedo_color
+            c.a = 0.9 * (1.0 - k)
+            cm.albedo_color = c
+            (node.get_meta("boom_light") as OmniLight3D).light_energy = \
+                3.0 * (1.0 - k)
+
         # engine glow, field-calibrated: for the player, the burner truly
         # ON (the sim's flag, not the Tab key -- a refused engage must not
         # glow) or the engine above 0%; movers glow by their motion
@@ -284,6 +307,16 @@ func _physics_process(delta: float) -> void:
                 node.set_thrusters(rec["afterburner"] or throttle > 0.0)
             else:
                 node.set_thrusters((rec["vel"] as Vector3).length() > 0.5)
+
+            # the shield taking hits: a drop in the quadrant total this
+            # frame is a strike on the bubble
+            var tot := 0.0
+            for s: float in rec.get("shield", []):
+                tot += s
+            var prev: float = entry.get("shield_prev", tot)
+            if tot < prev - 0.5:
+                _shield_flash(node, entry["radius"])
+            entry["shield_prev"] = tot
 
         if rec["player"]:
             player_sig = sig
@@ -303,6 +336,20 @@ func _physics_process(delta: float) -> void:
             var m: StandardMaterial3D = n.get_meta("arc_mat")
             m.emission = Color(0.5, 0.7, 1.0) * 2.0 if randf() < 0.06 \
                 else Color(0, 0, 0)
+
+    # transient art expires on its own clock; a parent freed by the
+    # reconciler takes its flash with it
+    var now_ms := Time.get_ticks_msec()
+    var live_flashes: Array[Dictionary] = []
+    for f: Dictionary in flashes:
+        var fn: Node = f["node"]
+        if not is_instance_valid(fn):
+            continue
+        if now_ms >= int(f["deadline"]):
+            fn.queue_free()
+            continue
+        live_flashes.append(f)
+    flashes = live_flashes
 
     if player_node:
         # own hull out of the pilot's eyes; back for the chase view
@@ -461,8 +508,29 @@ func _update_lesson() -> void:
 func _spawn(sig: int, rec: Dictionary) -> void:
     var kind: String = rec.get("type", "ship")
     if kind == "weapon":
-        ships[sig] = { "node": _simple_node(kind, 1.0), "is_ship": false,
-                       "radius": 1.0 }
+        # a missile crosses with its POF and flies as a model; a laser
+        # is a slug in its tbl color and size. Either way the birth
+        # point IS the gun muzzle -- the flash goes there.
+        var node: Node3D = null
+        var stem := (rec.get("pof", "") as String).get_basename().to_lower()
+        if not stem.is_empty():
+            var glb := assets_dir.path_join(stem + ".glb")
+            if FileAccess.file_exists(glb):
+                var m = ShipClass.new()
+                if m.load_ship(glb):
+                    node = m
+                    ships_root.add_child(node)
+        if node == null:
+            node = _bolt_node(rec)
+        ships[sig] = { "node": node, "is_ship": false, "kind": "weapon",
+                       "radius": rec["radius"] }
+        _muzzle_flash(rec)
+        return
+    if kind == "shockwave":
+        # the blast front: the record's radius IS the live front; the
+        # ring just follows it (reconcile scales the unit torus)
+        ships[sig] = { "node": _simple_node("shockwave", 1.0),
+                       "is_ship": false, "kind": "shockwave", "radius": 1.0 }
         return
     if kind == "fireball" or kind == "debris":
         # the boundary tags fireballs: an arrival's warp effect is not
@@ -470,8 +538,13 @@ func _spawn(sig: int, rec: Dictionary) -> void:
         var art := kind
         if rec.get("class", "") == "warp":
             art = "warp"
-        ships[sig] = { "node": _simple_node(art, rec["radius"]),
-                       "is_ship": false, "radius": rec["radius"] }
+        var node: Node3D
+        if art == "fireball":
+            node = _explosion_node(rec["radius"])
+        else:
+            node = _simple_node(art, rec["radius"])
+        ships[sig] = { "node": node, "is_ship": false, "kind": art,
+                       "radius": rec["radius"] }
         return
 
     var stem := (rec["pof"] as String).get_basename().to_lower()
@@ -509,20 +582,16 @@ func _simple_node(kind: String, radius: float) -> Node3D:
     var mat := StandardMaterial3D.new()
     mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
     match kind:
-        "weapon":
-            var bm := BoxMesh.new()
-            bm.size = Vector3(0.4, 0.4, 6.0)   # a laser slug, nose along -Z
-            mat.albedo_color = Color(1.0, 0.35, 0.25)
-            bm.material = mat
-            mi.mesh = bm
-        "fireball":
-            var sm := SphereMesh.new()
-            sm.radius = maxf(radius, 1.0)
-            sm.height = sm.radius * 2.0
-            mat.albedo_color = Color(1.0, 0.55, 0.15, 0.8)
+        "shockwave":
+            # a unit ring in the horizontal plane; the reconciler scales
+            # it to the record's live blast radius every frame
+            var tm := TorusMesh.new()
+            tm.inner_radius = 0.85
+            tm.outer_radius = 1.0
+            mat.albedo_color = Color(1.0, 0.6, 0.3, 0.6)
             mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-            sm.material = mat
-            mi.mesh = sm
+            tm.material = mat
+            mi.mesh = tm
         "warp":
             # the arrival flash: retail's warp effect is a plane normal
             # to the ship's approach -- a blue-white disc, facing the
@@ -554,6 +623,126 @@ func _simple_node(kind: String, radius: float) -> Node3D:
             mi.set_meta("arc_mat", mat)   # the crackle's visual half
     ships_root.add_child(mi)
     return mi
+
+# a laser slug in its tbl size and color; the material rides on the node
+# so the reconciler can follow retail's color cycle every frame
+func _bolt_node(rec: Dictionary) -> MeshInstance3D:
+    var mi := MeshInstance3D.new()
+    var bm := BoxMesh.new()
+    var r: float = maxf(rec.get("laser_radius", 0.4), 0.15)
+    var length: float = maxf(rec.get("laser_length", 6.0), 1.0)
+    bm.size = Vector3(r * 2.0, r * 2.0, length)
+    var mat := StandardMaterial3D.new()
+    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    mat.albedo_color = rec.get("color", Color(1.0, 0.35, 0.25))
+    bm.material = mat
+    mi.mesh = bm
+    mi.set_meta("bolt_mat", mat)
+    ships_root.add_child(mi)
+    return mi
+
+# an explosion, presentation-owned: the sim's fireball record times and
+# sizes it (the node lives exactly as long as the record); the art -- a
+# fading core, one burst of embers, a dying light -- is the scene's
+func _explosion_node(radius: float) -> Node3D:
+    var root := Node3D.new()
+    var r := maxf(radius, 1.0)
+
+    var mi := MeshInstance3D.new()
+    var sm := SphereMesh.new()
+    sm.radius = r * 0.6
+    sm.height = sm.radius * 2.0
+    var mat := StandardMaterial3D.new()
+    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    mat.albedo_color = Color(1.0, 0.8, 0.4, 0.9)
+    mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    sm.material = mat
+    mi.mesh = sm
+    root.add_child(mi)
+
+    var p := GPUParticles3D.new()
+    p.one_shot = true
+    p.explosiveness = 1.0
+    p.amount = 40
+    p.lifetime = 1.2
+    p.emitting = true
+    var pm := ParticleProcessMaterial.new()
+    pm.direction = Vector3.ZERO
+    pm.spread = 180.0
+    pm.initial_velocity_min = r
+    pm.initial_velocity_max = r * 2.5
+    pm.gravity = Vector3.ZERO
+    pm.scale_min = 0.15
+    pm.scale_max = 0.5
+    pm.color = Color(1.0, 0.55, 0.2)
+    p.process_material = pm
+    var pmesh := SphereMesh.new()
+    pmesh.radius = 0.35
+    pmesh.height = 0.7
+    var pmat := StandardMaterial3D.new()
+    pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    pmat.albedo_color = Color(1.0, 0.6, 0.25)
+    pmesh.material = pmat
+    p.draw_pass_1 = pmesh
+    root.add_child(p)
+
+    var l := OmniLight3D.new()
+    l.light_color = Color(1.0, 0.7, 0.3)
+    l.light_energy = 3.0
+    l.omni_range = r * 8.0
+    root.add_child(l)
+
+    root.set_meta("born", Time.get_ticks_msec())
+    root.set_meta("core_mat", mat)
+    root.set_meta("boom_light", l)
+    ships_root.add_child(root)
+    return root
+
+# the gun flash: a weapon record is born AT the muzzle, so the birth
+# position is the flash position -- brief, bright, gone
+func _muzzle_flash(rec: Dictionary) -> void:
+    var p: Vector3 = rec["pos"]
+    var n := Node3D.new()
+
+    var mi := MeshInstance3D.new()
+    var sm := SphereMesh.new()
+    sm.radius = 0.8
+    sm.height = 1.6
+    var mat := StandardMaterial3D.new()
+    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    mat.albedo_color = Color(1.0, 0.85, 0.5, 0.9)
+    mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    sm.material = mat
+    mi.mesh = sm
+    n.add_child(mi)
+
+    var l := OmniLight3D.new()
+    l.light_color = Color(1.0, 0.8, 0.4)
+    l.light_energy = 2.0
+    l.omni_range = 12.0
+    n.add_child(l)
+
+    n.position = Vector3(p.x, p.y, -p.z)
+    ships_root.add_child(n)
+    flashes.append({ "node": n, "deadline": Time.get_ticks_msec() + 90 })
+
+# the shield shimmer: quadrant totals dropped this frame, so the bubble
+# takes a hit -- a translucent shell over the hull, briefly (retail
+# lights the struck mesh section; the whole-bubble flash is the honest
+# approximation until shield geometry crosses)
+func _shield_flash(node: Node3D, radius: float) -> void:
+    var mi := MeshInstance3D.new()
+    var sm := SphereMesh.new()
+    sm.radius = maxf(radius, 1.0) * 1.15
+    sm.height = sm.radius * 2.0
+    var mat := StandardMaterial3D.new()
+    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    mat.albedo_color = Color(0.45, 0.7, 1.0, 0.35)
+    mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    sm.material = mat
+    mi.mesh = sm
+    node.add_child(mi)
+    flashes.append({ "node": mi, "deadline": Time.get_ticks_msec() + 220 })
 
 func _tick(line: String) -> void:
     ticker_lines.append(line)
