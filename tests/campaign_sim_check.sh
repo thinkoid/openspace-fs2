@@ -37,6 +37,7 @@ total=0
 crashed=0
 arrivals=0
 kills=0
+chatter=0
 for f in "$root"/data/missions/*.fs2; do
     m=$(basename "$f")
     total=$((total + 1))
@@ -54,9 +55,14 @@ for f in "$root"/data/missions/*.fs2; do
     if grep -q "^event [0-9]* log 1 " "$tmp/$m.out"; then
         kills=$((kills + 1))
     fi
+    # radio chatter through the Msg_capture seam: sender + translated
+    # text + resolved voice wave
+    if grep -q "^event [0-9]* message " "$tmp/$m.out"; then
+        chatter=$((chatter + 1))
+    fi
 done
 
-echo "missions: $((total - crashed))/$total clean, $arrivals with arrivals, $kills with AI kills"
+echo "missions: $((total - crashed))/$total clean, $arrivals with arrivals, $kills with AI kills, $chatter with chatter"
 
 rc=0
 [ $crashed = 0 ] || rc=1
@@ -67,6 +73,17 @@ if [ $arrivals = 0 ]; then
 fi
 if [ $kills = 0 ]; then
     echo "FAIL: no AI kills anywhere in the corpus"
+    rc=1
+fi
+if [ $chatter = 0 ]; then
+    echo "FAIL: no radio chatter anywhere in the corpus"
+    rc=1
+fi
+# somewhere a message must carry its voice wave -- the capture happens
+# before the deviceless snd_load scrubs wave_info.index; if that ordering
+# regresses, text still flows but every wave goes empty
+if ! grep -qE "^event [0-9]+ message .* wave [^-]" "$tmp"/*.out; then
+    echo "FAIL: no message anywhere carries a voice wave"
     rc=1
 fi
 

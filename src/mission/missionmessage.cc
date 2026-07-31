@@ -117,6 +117,18 @@ typedef struct pmessage
 
 LOCAL pmessage Playing_messages[MAX_PLAYING_MESSAGES];
 
+// The chatter seam, sound.cc's Snd_capture pattern: null in the game, the
+// boundary aims it at a recorder. Fires in message_queue_process at the
+// moment retail commits a message to the player's screen, with the sender,
+// the token-translated (and possibly comm-distorted) text, and the voice
+// wave retail would stream. The wave name is handed off by
+// message_play_wave, where it takes its final form (the terran-command
+// bash) -- it cannot be recovered after the fact because a deviceless
+// snd_load fails and message_play_wave scrubs wave_info.index on failure.
+void (*Msg_capture)(const char *who, const char *text,
+                    const char *wave) = NULL;
+LOCAL char Msg_capture_wave[MAX_FILENAME_LEN];
+
 int Message_shipnum; // ship number of who is sending message to player -- used outside this module
 
 // variables to control message queuing.  All new messages to the player are queued.  The array
@@ -741,6 +753,10 @@ message_play_wave(message_q *q)
             strcpy(filename, new_filename);
         }
 
+        // the capture hand-off: the name is final here, and the failed
+        // load below is about to scrub wave_info.index
+        strcpy(Msg_capture_wave, filename);
+
         // load the sound file into memory
         message_load_wave(index, filename);
         if (Message_waves[index].num == -1) {
@@ -1215,6 +1231,7 @@ message_queue_process()
     }
 
     // play wave first, since need to know duration for picking anim start frame
+    Msg_capture_wave[0] = 0;
     message_play_wave(q);
 
 // play animation for head
@@ -1222,6 +1239,12 @@ message_queue_process()
 
     // distort the message if comms system is damaged
     message_maybe_distort_text(buf);
+
+    // the chatter seam: this is the commit point -- every early out above
+    // means the message never reached the player. Before the debug-build
+    // suffix below, so the captured text is what release retail prints.
+    if (Msg_capture)
+        Msg_capture(q->who_from, buf, Msg_capture_wave);
 
 #ifndef NDEBUG
     // debug only -- if the message is a builtin message, put in parens whether or not the voice played

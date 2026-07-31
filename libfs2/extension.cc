@@ -204,6 +204,12 @@ public:
                 if (ev.has_pos)
                     d["pos"] = from_vec(ev.pos);
                 break;
+            case event_t::message:
+                d["kind"] = "message";
+                d["who"] = ev.pname;
+                d["text"] = ev.text;
+                d["wave"] = ev.name;
+                break;
             }
             out.push_back(d);
         }

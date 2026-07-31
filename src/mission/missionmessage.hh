@@ -138,6 +138,12 @@ extern int
     Num_builtin_messages; // from messages.tbl -- index of message location to load mission specific messages into
 extern int Message_shipnum; // used to display info on hud when message is sent
 
+// the chatter seam (sound.hh's Snd_capture pattern): null in the game;
+// fired with sender, translated text and voice wave when a message
+// commits to the player's screen
+extern void (*Msg_capture)(const char *who, const char *text,
+                           const char *wave);
+
 // variable, etc for persona information
 #define MAX_PERSONAS 13
 #define MAX_PERSONA_TYPES 4

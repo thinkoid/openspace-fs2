@@ -91,15 +91,19 @@ struct object_state_t {
 // -- LOG_WAYPOINTS_DONE, LOG_SHIP_DESTROYED... the sexp predicates read
 // the same table).
 struct event_t {
-    enum kind_t { created, destroyed, log, sound };
+    enum kind_t { created, destroyed, log, sound, message };
 
     kind_t kind;
     int signature;                     // created/destroyed
     char name[32];                     // created/destroyed; sound: the wav
+                                       // message: the voice wav ("" = none)
 
     int log_type;                      // log: the LOG_* constant
-    char pname[32], sname[32];
+    char pname[32], sname[32];         // log; message: pname = the sender
     fix time;                          // log: mission time of the entry
+
+    char text[512];                    // message: the translated line
+                                       // (retail's MESSAGE_LENGTH)
 
     bool has_pos;                      // sound: 3d, at pos
     vector pos;

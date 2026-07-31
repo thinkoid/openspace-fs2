@@ -46,6 +46,8 @@ var ticker: Label
 var ticker_lines: Array[String] = []
 var directives: Label
 var training_msg: Label
+var chatter: Label
+var chatter_lines: Array[Dictionary] = []   # {line, deadline}
 var sounds                     # SoundBank, voice playback
 var last_text := ""
 var msg_deadline := 0
@@ -182,6 +184,20 @@ func _physics_process(delta: float) -> void:
                     vol = -30.0 * (d - SND_FULL_RANGE) \
                         / (SND_CULL_RANGE - SND_FULL_RANGE)
             sounds.play_effect(ev["name"], vol)
+        elif ev["kind"] == "message":
+            # radio chatter: the line joins the window for retail's
+            # text-length formula; the voice takes the one-speaker
+            # channel (a new message cuts the old, retail's rule)
+            var who: String = (ev["who"] as String).trim_prefix("#")
+            var text: String = (ev["text"] as String).replace("$", "")
+            chatter_lines.append({
+                "line": "%s: %s" % [who, text],
+                "deadline": Time.get_ticks_msec() + 1000 + 150 * text.length(),
+            })
+            if chatter_lines.size() > 4:
+                chatter_lines.pop_front()
+            if not (ev["wave"] as String).is_empty():
+                sounds.play_voice(ev["wave"])
 
     # reconcile: the snapshot is the truth; nodes follow it
     var seen := {}
@@ -253,6 +269,21 @@ func _physics_process(delta: float) -> void:
                 else lerpf(-26.0, -8.0, output)
 
     _update_lesson()
+    _update_chatter()
+
+# the chatter window: recent radio lines, each shown for its own
+# text-length window (the voice may run longer -- lines scroll off,
+# the voice plays out)
+func _update_chatter() -> void:
+    var now := Time.get_ticks_msec()
+    var kept: Array[Dictionary] = []
+    var lines: Array[String] = []
+    for c in chatter_lines:
+        if c["deadline"] >= now:
+            kept.append(c)
+            lines.append(c["line"])
+    chatter_lines = kept
+    chatter.text = "\n".join(lines)
 
 # the lesson gauges, fed by the boundary's hud_state: the directives list
 # (status-marked, key lines indented) and the training message, with
@@ -492,6 +523,14 @@ func _setup_hud() -> void:
     training_msg.autowrap_mode = TextServer.AUTOWRAP_WORD
     training_msg.custom_minimum_size = Vector2(900, 0)
     hud.add_child(training_msg)
+
+    # the radio: mid-left, clear of the directives gauge above and the
+    # help line below
+    chatter = _hud_label()
+    chatter.position = Vector2(16, 560)
+    chatter.autowrap_mode = TextServer.AUTOWRAP_WORD
+    chatter.custom_minimum_size = Vector2(760, 0)
+    hud.add_child(chatter)
 
     ticker = _hud_label()
     ticker.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)

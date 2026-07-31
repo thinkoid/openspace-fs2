@@ -170,6 +170,10 @@ main(int argc, char *argv[])
                 else
                     printf("event %d sound %s\n", frame, ev.name);
                 break;
+            case event_t::message:
+                printf("event %d message '%s' '%s' wave %s\n", frame,
+                       ev.pname, ev.text, ev.name[0] ? ev.name : "-");
+                break;
             }
         }
 

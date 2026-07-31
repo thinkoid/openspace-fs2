@@ -101,6 +101,31 @@ capture_sound(const char *name, const vector *pos)
     captured_sounds.push_back(req);
 }
 
+// The chatter recorder (missionmessage.cc's Msg_capture seam): sender,
+// translated text and voice wave at the moment a message commits to the
+// player's screen. Same bound-and-drop discipline as the sound ring.
+struct message_req_t {
+    char who[32];
+    char text[512];
+    char wave[32];
+};
+
+static std::vector<message_req_t> captured_messages;
+
+static void
+capture_message(const char *who, const char *text, const char *wave)
+{
+    if (captured_messages.size() >= 16)
+        return;
+
+    message_req_t req;
+    memset(&req, 0, sizeof(req));
+    strncpy(req.who, who, sizeof(req.who) - 1);
+    strncpy(req.text, text, sizeof(req.text) - 1);
+    strncpy(req.wave, wave, sizeof(req.wave) - 1);
+    captured_messages.push_back(req);
+}
+
 // radar.cc's blip-list reset -- file-scope in retail, but its callers are
 // split: radar_frame_init (the caller game_frame uses) needs fonts, while
 // the reset alone is the sim half (ship_process_post PLOTS blips every
@@ -161,6 +186,7 @@ boot(const char *game_root)
     // -- and the no-op path reports to the recorder
     Sound_enabled = 0;
     Snd_capture = capture_sound;
+    Msg_capture = capture_message;
 
     gr_screen.gf_init_color = null_init_color;
     gr_screen.gf_init_alphacolor = null_init_alphacolor;
@@ -611,6 +637,18 @@ fs2_t::events()
         out.push_back(ev);
     }
     captured_sounds.clear();
+
+    // the frame's chatter, oldest first
+    for (const message_req_t &req : captured_messages) {
+        event_t ev;
+        memset(&ev, 0, sizeof(ev));
+        ev.kind = event_t::message;
+        strncpy(ev.pname, req.who, sizeof(ev.pname) - 1);
+        strncpy(ev.text, req.text, sizeof(ev.text) - 1);
+        strncpy(ev.name, req.wave, sizeof(ev.name) - 1);
+        out.push_back(ev);
+    }
+    captured_messages.clear();
 
     // new mission-log entries since the last drain -- retail's own record
     for (; m_log_drained < last_entry; m_log_drained++) {
