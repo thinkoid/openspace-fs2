@@ -104,6 +104,8 @@ struct object_state_t {
                                        // (weapon_get_laser_color)
     float laser_length;                // lasers: the bolt's tbl size
     float laser_head_radius;
+    char laser_bitmap[32];             // lasers: the body streak's stem
+    char laser_glow[32];               // and the head glow's ("" = none)
 };
 
 // The discontinuities between two events() drains: objects entering and

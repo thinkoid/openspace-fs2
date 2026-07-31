@@ -19,7 +19,7 @@ import sys
 from array import array
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from check_tex import read_png
+from check_tex import read_idx, read_png
 
 PACKER = 0xEE        # PACKER_CODE (packunpack.hh:20); the header carries a
                      # per-file packer byte but retail unpacks against the
@@ -123,9 +123,49 @@ def read_ani(path):
     return width, height, frames, fps, xparent, pal, out
 
 
+# still mode: a PCX baked as a one-frame atlas, cross-checked against
+# pcx_dump's retail decode (the tool and the oracle share nothing: retail
+# pcx code vs python re-read of the idx dump). The bake rule is the ani
+# one: a transparent pixel is all-zero, key included.
+def check_still(idx_path, baked):
+    stem = os.path.splitext(os.path.basename(idx_path))[0].lower()
+    w, h, idx, pal = read_idx(idx_path)
+
+    with open(os.path.join(baked, stem + ".json")) as f:
+        side = json.load(f)
+    for field, want in (("width", w), ("height", h), ("frames", 1),
+                        ("cols", 1), ("rows", 1)):
+        if side[field] != want:
+            raise SystemExit(
+                f"{stem}: sidecar {field} = {side[field]}, pcx says {want}")
+
+    aw, ah, pixels = read_png(os.path.join(baked, stem + ".png"))
+    if (aw, ah) != (w, h):
+        raise SystemExit(f"{stem}: atlas {aw}x{ah}, pcx says {w}x{h}")
+
+    want = bytearray()
+    for p in idx:
+        rgb = (pal[p * 3], pal[p * 3 + 1], pal[p * 3 + 2])
+        want += b"\x00\x00\x00\x00" if rgb == (0, 255, 0) \
+            else bytes(rgb) + b"\xff"
+    if bytes(want) != pixels:
+        for j in range(0, len(want), 4):
+            if want[j:j + 4] != pixels[j:j + 4]:
+                raise SystemExit(
+                    f"{stem}: pixel {j // 4} atlas "
+                    f"{pixels[j:j + 4].hex()}, pcx says {want[j:j + 4].hex()}")
+
+    print(f"OK: {stem} -- still {w}x{h} agrees")
+    sys.exit(0)
+
+
 def main():
+    if len(sys.argv) == 4 and sys.argv[1] == "--still":
+        check_still(sys.argv[2], sys.argv[3])
+        return
     if len(sys.argv) != 3:
-        raise SystemExit("usage: check_ani.py <ani-file> <baked-dir>")
+        raise SystemExit(
+            "usage: check_ani.py [--still <idx-file>] <ani-file> <baked-dir>")
     ani_path, baked = sys.argv[1], sys.argv[2]
     stem = os.path.splitext(os.path.basename(ani_path))[0].lower()
 

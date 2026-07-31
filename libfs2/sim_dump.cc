@@ -173,9 +173,11 @@ main(int argc, char *argv[])
                        !shockwave_shown || !fireball_shown)) {
             for (const object_state_t &o : sim.snapshot()) {
                 if (!bolt_shown && o.type == OBJ_WEAPON && !o.pof[0]) {
-                    printf("art bolt %s len %.9g r %.9g rgb %d %d %d\n",
+                    printf("art bolt %s len %.9g r %.9g rgb %d %d %d "
+                           "bitmap %s glow %s\n",
                            o.class_name, o.laser_length, o.laser_head_radius,
-                           o.laser_rgb[0], o.laser_rgb[1], o.laser_rgb[2]);
+                           o.laser_rgb[0], o.laser_rgb[1], o.laser_rgb[2],
+                           o.laser_bitmap, o.laser_glow);
                     bolt_shown = true;
                 }
                 if (!missile_shown && o.type == OBJ_WEAPON && o.pof[0]) {

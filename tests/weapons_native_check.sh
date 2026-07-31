@@ -85,7 +85,7 @@ fi
 # the player's shield quadrants (390 total, 97.5 each: ships.tbl's
 # Myrmidon), the missile's POF, and a live expanding shockwave record
 # (the Piranha detonates even on a miss)
-if grep -q "^art bolt Subach HL-7 len 10 r 0\.899999976 rgb 245 0 4$" \
+if grep -q "^art bolt Subach HL-7 len 10 r 0\.899999976 rgb 245 0 4 bitmap newglo9\.pcx glow 2_laserglow03\.pcx$" \
         "$tmp/fire.txt"; then
     echo "OK: $(grep -m1 '^art bolt' "$tmp/fire.txt")"
 else

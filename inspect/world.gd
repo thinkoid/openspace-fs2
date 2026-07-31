@@ -293,9 +293,14 @@ func _physics_process(delta: float) -> void:
         # shockwave's ring rides the blast front, an explosion plays out
         # its flash-and-fade over the record's own lifetime
         var entry_kind: String = entry.get("kind", "")
-        if entry_kind == "weapon" and node.has_meta("bolt_mat"):
-            (node.get_meta("bolt_mat") as StandardMaterial3D).albedo_color = \
-                rec.get("color", Color(1.0, 0.35, 0.25))
+        if entry_kind == "weapon":
+            if entry.get("newborn", false):
+                entry["newborn"] = false
+            else:
+                node.visible = true
+            if node.has_meta("bolt_mat"):
+                (node.get_meta("bolt_mat") as StandardMaterial3D) \
+                    .albedo_color = rec.get("color", Color(1.0, 0.35, 0.25))
         elif node.has_meta("fx"):
             # the flipbook plays by age: frame from the sidecar's fps,
             # looped (warp) or held at the last (explosions burn out as
@@ -660,8 +665,12 @@ func _spawn(sig: int, rec: Dictionary) -> void:
                     ships_root.add_child(node)
         if node == null:
             node = _bolt_node(rec)
+        # born AT the muzzle, streak trailing through the cockpit for one
+        # frame -- the flash owns the birth moment, the bolt shows from
+        # its first step forward
+        node.visible = false
         ships[sig] = { "node": node, "is_ship": false, "kind": "weapon",
-                       "radius": rec["radius"] }
+                       "radius": rec["radius"], "newborn": true }
         _muzzle_flash(rec)
         return
     if kind == "shockwave":
@@ -833,28 +842,76 @@ func _flipbook_node(fx: Dictionary, size: float, billboard: bool,
     ships_root.add_child(mi)
     return mi
 
-# a laser bolt in its tbl size and color -- an additive-glow capsule, so
-# it reads as plasma from any angle (a box showed its square cross-section
-# dead astern, field-reported). The capsule's long axis is Y; the wrap
-# node takes the record's basis, the mesh inside turns Y onto -Z. The
-# material rides on the node so the reconciler can follow retail's color
-# cycle every frame.
+# a laser bolt in retail's own art: the body streak (@Laser Bitmap)
+# stretched along the flight axis as crossed additive quads -- readable
+# from any angle without a shader -- and the head glow (@Laser Glow) as
+# a camera billboard tinted by the cycle color, which the reconciler
+# follows per frame (the "bolt_mat" meta). Capsule fallback in the tbl
+# color where the bake is missing.
 func _bolt_node(rec: Dictionary) -> Node3D:
-    var mi := MeshInstance3D.new()
-    var cm := CapsuleMesh.new()
     var r: float = maxf(rec.get("laser_radius", 0.4), 0.15)
-    cm.radius = r
-    cm.height = maxf(rec.get("laser_length", 6.0), 2.0 * r)
-    var mat := StandardMaterial3D.new()
-    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-    mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-    mat.albedo_color = rec.get("color", Color(1.0, 0.35, 0.25))
-    cm.material = mat
-    mi.mesh = cm
-    mi.rotation_degrees = Vector3(90, 0, 0)
+    var length: float = maxf(rec.get("laser_length", 6.0), 2.0 * r)
     var wrap := Node3D.new()
-    wrap.add_child(mi)
-    wrap.set_meta("bolt_mat", mat)
+
+    var body = _fx((rec.get("laser_bitmap", "") as String)
+                   .get_basename().to_lower())
+    if body != null:
+        # quad local X carries the streak's long axis; y-rotation lays it
+        # along the bolt's -Z, the roller crosses the second copy
+        for roll: float in [0.0, 90.0]:
+            var roller := Node3D.new()
+            roller.rotation_degrees = Vector3(0, 0, roll)
+            var mi := MeshInstance3D.new()
+            # retail's g3_draw_laser geometry: the record pos is the
+            # HEAD, the streak trails behind it (+Z local), one head
+            # radius each side of the axis
+            mi.position = Vector3(0, 0, length * 0.5)
+            var qm := QuadMesh.new()
+            qm.size = Vector2(length, r * 2.0)
+            var mat := StandardMaterial3D.new()
+            mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+            mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+            mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+            mat.albedo_texture = body["tex"]
+            qm.material = mat
+            mi.mesh = qm
+            mi.rotation_degrees = Vector3(0, 90, 0)
+            roller.add_child(mi)
+            wrap.add_child(roller)
+
+        var glow = _fx((rec.get("laser_glow", "") as String)
+                       .get_basename().to_lower())
+        if glow != null:
+            # head-circle proportions: bigger washes the first-person
+            # view flat red (additive saturation at muzzle distance)
+            var gm := MeshInstance3D.new()
+            var gq := QuadMesh.new()
+            gq.size = Vector2(r * 2.6, r * 2.6)
+            var gmat := StandardMaterial3D.new()
+            gmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+            gmat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+            gmat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+            gmat.albedo_texture = glow["tex"]
+            gmat.albedo_color = rec.get("color", Color.WHITE)
+            gq.material = gmat
+            gm.mesh = gq
+            wrap.add_child(gm)
+            wrap.set_meta("bolt_mat", gmat)
+    else:
+        var mi := MeshInstance3D.new()
+        var cm := CapsuleMesh.new()
+        cm.radius = r
+        cm.height = length
+        var mat := StandardMaterial3D.new()
+        mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+        mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+        mat.albedo_color = rec.get("color", Color(1.0, 0.35, 0.25))
+        cm.material = mat
+        mi.mesh = cm
+        mi.rotation_degrees = Vector3(90, 0, 0)
+        wrap.add_child(mi)
+        wrap.set_meta("bolt_mat", mat)
+
     ships_root.add_child(wrap)
     return wrap
 
@@ -923,16 +980,35 @@ func _muzzle_flash(rec: Dictionary) -> void:
     var p: Vector3 = rec["pos"]
     var n := Node3D.new()
 
+    # the weapon's own glow art as a soft billboard -- a solid sphere at
+    # muzzle distance reads as a hard-edged sticker (field-capture
+    # lesson); small additive sphere only if no glow is baked
+    var glow = _fx((rec.get("laser_glow", "") as String)
+                   .get_basename().to_lower())
     var mi := MeshInstance3D.new()
-    var sm := SphereMesh.new()
-    sm.radius = 0.8
-    sm.height = 1.6
-    var mat := StandardMaterial3D.new()
-    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-    mat.albedo_color = Color(1.0, 0.85, 0.5, 0.9)
-    mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-    sm.material = mat
-    mi.mesh = sm
+    if glow != null:
+        var gq := QuadMesh.new()
+        gq.size = Vector2(1.0, 1.0)
+        var gmat := StandardMaterial3D.new()
+        gmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+        gmat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+        gmat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+        gmat.albedo_texture = glow["tex"]
+        # dim enough that the radial gradient survives additive
+        # saturation -- full white bakes a poker chip
+        gmat.albedo_color = Color(0.9, 0.7, 0.4)
+        gq.material = gmat
+        mi.mesh = gq
+    else:
+        var sm := SphereMesh.new()
+        sm.radius = 0.35
+        sm.height = 0.7
+        var mat := StandardMaterial3D.new()
+        mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+        mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+        mat.albedo_color = Color(1.0, 0.8, 0.45, 0.8)
+        sm.material = mat
+        mi.mesh = sm
     n.add_child(mi)
 
     var l := OmniLight3D.new()
@@ -943,7 +1019,7 @@ func _muzzle_flash(rec: Dictionary) -> void:
 
     n.position = Vector3(p.x, p.y, -p.z)
     ships_root.add_child(n)
-    flashes.append({ "node": n, "deadline": Time.get_ticks_msec() + 90 })
+    flashes.append({ "node": n, "deadline": Time.get_ticks_msec() + 50 })
 
 # the shield shimmer: quadrant totals dropped this frame, so the bubble
 # takes a hit -- a translucent shell over the hull, briefly (retail

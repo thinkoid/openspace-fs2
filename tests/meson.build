@@ -99,10 +99,11 @@ test('tex-check', find_program('tex_check.sh'),
 test('ani-check', find_program('ani_check.sh'),
     args: [
         ani2png.full_path(),
+        pcx_dump.full_path(),
         meson.current_source_dir() / 'check_ani.py',
         meson.project_source_root(),
     ],
-    depends: [ani2png],
+    depends: [ani2png, pcx_dump],
     timeout: 240)
 
 # The converter's manifest, verified by re-deriving every SHA-256 with python

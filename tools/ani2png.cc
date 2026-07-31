@@ -11,7 +11,10 @@
 //   ani2png <game-root> <out-dir> <name> [<name> ...]
 //
 // Names are bare, extension-less; anim_load appends .ani and cfile locates
-// them (data/effects for the combat set). Emits <out-dir>/<lower(name)>.png
+// them (data/effects for the combat set). A name with no .ani behind it is
+// tried as a still PCX (the laser bodies and glows live as stills beside
+// the flipbooks) and bakes as a one-frame atlas with the same sidecar
+// shape -- one loader on the scene side. Emits <out-dir>/<lower(name)>.png
 // and <out-dir>/<lower(name)>.json.
 
 #include <ctype.h>
@@ -26,6 +29,7 @@
 #include <anim/packunpack.hh>
 #include <cfile/cfile.hh>
 #include <graphics/2d.hh>
+#include <pcxutils/pcxutils.hh>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
@@ -38,14 +42,70 @@ lower(std::string s)
     return s;
 }
 
+// a still PCX as a one-frame atlas: the retail green key (0,255,0) bakes
+// to (0,0,0,0), sidecar says frames 1 / fps 0
+static bool
+bake_still(const char *name, const std::string &out_dir)
+{
+    char fn[MAX_FILENAME_LEN];
+
+    int w = 0, h = 0;
+    ubyte pal[768];
+    strncpy(fn, name, sizeof fn - 1);
+    fn[sizeof fn - 1] = 0;
+    if (pcx_read_header(fn, &w, &h, pal) != PCX_ERROR_NONE) {
+        fprintf(stderr, "ani2png: no ani and no pcx for %s\n", name);
+        return false;
+    }
+
+    std::vector<ubyte> idx((size_t)w * h);
+    strncpy(fn, name, sizeof fn - 1);
+    fn[sizeof fn - 1] = 0;
+    if (pcx_read_bitmap_8bpp(fn, idx.data(), pal) != PCX_ERROR_NONE) {
+        fprintf(stderr, "ani2png: pcx decode failed for %s\n", name);
+        return false;
+    }
+
+    std::vector<unsigned char> rgba((size_t)w * h * 4, 0);
+    for (size_t i = 0; i < idx.size(); i++) {
+        const ubyte *rgb = pal + idx[i] * 3;
+        if (rgb[0] == 0 && rgb[1] == 255 && rgb[2] == 0)
+            continue;                      // stays (0,0,0,0)
+        rgba[i * 4 + 0] = rgb[0];
+        rgba[i * 4 + 1] = rgb[1];
+        rgba[i * 4 + 2] = rgb[2];
+        rgba[i * 4 + 3] = 255;
+    }
+
+    const std::string stem = lower(name);
+    const std::string png = out_dir + "/" + stem + ".png";
+    const std::string json = out_dir + "/" + stem + ".json";
+
+    if (!stbi_write_png(png.c_str(), w, h, 4, rgba.data(), w * 4)) {
+        fprintf(stderr, "ani2png: cannot write %s\n", png.c_str());
+        return false;
+    }
+
+    FILE *o = fopen(json.c_str(), "w");
+    if (!o) {
+        fprintf(stderr, "ani2png: cannot write %s\n", json.c_str());
+        return false;
+    }
+    fprintf(o,
+            "{\"name\": \"%s\", \"width\": %d, \"height\": %d, "
+            "\"frames\": 1, \"fps\": 0, \"cols\": 1, \"rows\": 1, "
+            "\"xparent\": [0, 255, 0], \"atlas\": \"%s.png\"}\n",
+            stem.c_str(), w, h, stem.c_str());
+    fclose(o);
+    return true;
+}
+
 static bool
 bake_one(const char *name, const std::string &out_dir)
 {
     anim *a = anim_load(name, 0);
-    if (!a) {
-        fprintf(stderr, "ani2png: load failed for %s\n", name);
-        return false;
-    }
+    if (!a)
+        return bake_still(name, out_dir);
 
     // grid shape: as square-ish as fits under a 4096-pixel atlas edge --
     // exp05 (512x512, 94 frames) lands at 8x12

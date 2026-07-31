@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include <asteroid/asteroid.hh>
+#include <bmpman/bmpman.hh>
 #include <cfile/cfile.hh>
 #include <cmeasure/cmeasure.hh>
 #include <controlconfig/controlsconfig.hh>
@@ -411,6 +412,16 @@ record_of(object *objp)
             rec.laser_rgb[0] = c.red;
             rec.laser_rgb[1] = c.green;
             rec.laser_rgb[2] = c.blue;
+
+            // the bolt's art by name -- bmpman still knows what the tbl
+            // loaded (@Laser Bitmap / @Laser Glow)
+            if (wip->laser_bitmap >= 0)
+                strncpy(rec.laser_bitmap, bm_get_filename(wip->laser_bitmap),
+                        sizeof(rec.laser_bitmap) - 1);
+            if (wip->laser_glow_bitmap >= 0)
+                strncpy(rec.laser_glow,
+                        bm_get_filename(wip->laser_glow_bitmap),
+                        sizeof(rec.laser_glow) - 1);
         }
         return rec;
     }

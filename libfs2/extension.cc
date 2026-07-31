@@ -187,6 +187,8 @@ public:
                                       o.laser_rgb[2] / 255.0f);
             d["laser_length"] = o.laser_length;
             d["laser_radius"] = o.laser_head_radius;
+            d["laser_bitmap"] = o.laser_bitmap;
+            d["laser_glow"] = o.laser_glow;
 
             out.push_back(d);
         }
