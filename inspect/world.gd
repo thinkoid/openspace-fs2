@@ -76,9 +76,6 @@ var target_view_cam: Camera3D
 var target_view_pof := ""                   # the model currently in the well
 var lead_speed := 0.0                       # the primary's muzzle speed
 var player_vel := Vector3.ZERO              # FS2 frame, lead solution input
-var player_shield: Array = []               # own quadrants, for the icon
-var player_shield_max := 0.0
-var player_hull_frac := 1.0
 var player_team := 0                        # for hostile/friendly coloring
 var first_person := true                    # V toggles the chase camera
 var aim_from := Vector3.ZERO                # boresight ray for the reticle,
@@ -412,9 +409,6 @@ func _update_combat_hud(prec: Dictionary, ship_recs: Array) -> void:
     aim_dir = Vector3(fv.x, fv.y, -fv.z)
     player_max_speed = prec.get("max_speed", 0.0)
     player_vel = prec["vel"]
-    player_shield = prec.get("shield", [])
-    player_shield_max = prec.get("shield_max", 0.0)
-    player_hull_frac = prec["hull"] / maxf(prec["hull_max"], 1.0)
 
     var blips := []
     for rec in ship_recs:
@@ -522,23 +516,8 @@ func _draw_bracket() -> void:
         for d: Vector2 in [Vector2.RIGHT, Vector2.LEFT, Vector2.UP, Vector2.DOWN]:
             overlay.draw_line(rp + d * 7.0, rp + d * 16.0, rc, 1.5)
 
-    # the pilot's own bubble and hull, the left wing of the gauge row
-    var sz := overlay.size
-    if not player_shield.is_empty():
-        _draw_shield_icon(Vector2(sz.x * 0.5 - 470, sz.y - 122),
-                          player_shield, player_shield_max / 4.0,
-                          player_hull_frac, Color(0.45, 0.85, 1.0))
-
     if target_rec.is_empty():
         return
-
-    # the target's bubble, framing the monitor's model well
-    _draw_shield_icon(Vector2(sz.x * 0.5 - 250, sz.y - 122),
-                      target_rec.get("shield", []),
-                      float(target_rec.get("shield_max", 0.0)) / 4.0,
-                      target_rec["hull"] / maxf(target_rec["hull_max"], 1.0),
-                      Color(1.0, 0.55, 0.4) if target_rec["team"] != player_team
-                      else Color(0.45, 1.0, 0.55))
 
     var p3: Vector3 = target_rec["pos"]
     var v := Vector3(p3.x, p3.y, -p3.z)
@@ -585,28 +564,6 @@ func _draw_bracket() -> void:
             var lp := cam.unproject_position(lv)
             overlay.draw_circle(lp, 3.5, col)
             overlay.draw_arc(lp, 8.0, 0.0, TAU, 24, col, 1.5)
-
-# the shield/hull icon: four arcs in retail's display order -- front on
-# top, then right, rear, left (Quadrant_xlate {1,0,2,3}, hudshield.cc:88,
-# over get_quadrant's octants, shield.cc:824) -- each arc's brightness is
-# its quadrant's charge; the center bar is the hull
-func _draw_shield_icon(center: Vector2, quads: Array, qmax: float,
-                       hull_frac: float, base: Color) -> void:
-    if quads.size() >= 4 and qmax > 0.0:
-        var order: Array[int] = [1, 0, 2, 3]          # top, right, bottom, left
-        var mid: Array[float] = [-PI / 2, 0.0, PI / 2, PI]
-        for i in 4:
-            var frac := clampf(float(quads[order[i]]) / qmax, 0.0, 1.0)
-            if frac <= 0.02:
-                continue
-            var c := base
-            c.a = 0.2 + 0.8 * frac
-            overlay.draw_arc(center, 34.0, mid[i] - 0.55, mid[i] + 0.55,
-                             12, c, 5.0)
-    var hc := Color(0.4, 1.0, 0.5) if hull_frac > 0.5 \
-        else (Color(1.0, 0.8, 0.3) if hull_frac > 0.25 else Color(1.0, 0.35, 0.3))
-    overlay.draw_rect(Rect2(center - Vector2(16, 6),
-                            Vector2(32.0 * clampf(hull_frac, 0.0, 1.0), 12)), hc)
 
 # the chatter window: recent radio lines, each shown for its own
 # text-length window (the voice may run longer -- lines scroll off,
@@ -1087,22 +1044,23 @@ func _setup_hud() -> void:
     radar.mouse_filter = Control.MOUSE_FILTER_IGNORE
     hud.add_child(radar)
 
+    # floor at -56 like the ticker: the help line owns the bottom row
     target_monitor = _hud_label()
     target_monitor.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
     target_monitor.offset_left = 140
-    target_monitor.offset_bottom = -12
+    target_monitor.offset_bottom = -56
     target_monitor.grow_vertical = Control.GROW_DIRECTION_BEGIN
     hud.add_child(target_monitor)
 
     # the target view: a little world of its own with the target's model
-    # turning in it -- retail's target monitor, left of the radar; the
-    # overlay draws the target's shield arcs around this box
+    # turning in it -- retail's target monitor, tucked in the lower-left
+    # corner, above the help line
     var view_box := SubViewportContainer.new()
-    view_box.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-    view_box.offset_left = -360
-    view_box.offset_right = -140
-    view_box.offset_top = -232
-    view_box.offset_bottom = -12
+    view_box.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+    view_box.offset_left = 16
+    view_box.offset_right = 236
+    view_box.offset_top = -276
+    view_box.offset_bottom = -56
     view_box.stretch = true
     view_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
     target_view = SubViewport.new()
