@@ -486,9 +486,11 @@ func _update_combat_hud(prec: Dictionary, ship_recs: Array) -> void:
     if target_rec.is_empty():
         target_monitor.text = ""
     else:
+        # a dying ship's record carries the overkill (hull below zero)
         target_monitor.text = "%s\n%s\nhull %3d%%  %5.0f m" % [
             target_rec["name"], target_rec["class"],
-            int(100.0 * target_rec["hull"] / maxf(target_rec["hull_max"], 1.0)),
+            maxi(0, int(100.0 * target_rec["hull"]
+                        / maxf(target_rec["hull_max"], 1.0))),
             ((target_rec["pos"] as Vector3) - ppos).length()]
 
     _update_target_view()
@@ -536,6 +538,33 @@ func _update_target_view() -> void:
                 Vector3(0, dist * 0.25, dist), Vector3.ZERO, Vector3.UP)
     if not target_view_pof.is_empty():
         target_view_root.rotation.y += get_physics_process_delta_time() * 0.6
+
+# a debris chunk as retail renders it: the record names the source model
+# and the submodel piece, so a hull chunk wears the ship's own hull (the
+# GLB carries the pof's debris submodels; the Ship loader hides them at
+# load, this carves the named one out and shows it alone, transform
+# reset -- the sim's record IS the piece's world pose). Gray-box
+# fallback where the model or piece is missing.
+func _debris_node(rec: Dictionary) -> Node3D:
+    var stem := (rec.get("pof", "") as String).get_basename().to_lower()
+    var piece: String = rec.get("piece", "")
+    if not stem.is_empty() and not piece.is_empty():
+        var glb := assets_dir.path_join(stem + ".glb")
+        if FileAccess.file_exists(glb):
+            var m = ShipClass.new()
+            if m.load_ship(glb):
+                var pn := m.find_child(piece, true, false) as Node3D
+                if pn != null:
+                    var root := Node3D.new()
+                    pn.get_parent().remove_child(pn)
+                    root.add_child(pn)
+                    pn.transform = Transform3D.IDENTITY
+                    pn.visible = true
+                    m.queue_free()
+                    ships_root.add_child(root)
+                    return root
+                m.queue_free()
+    return _simple_node("debris", rec["radius"])
 
 # the merged AABB of a model's visible meshes, in the model's own frame --
 # accumulated transforms, no global_transform (valid in or out of tree)
@@ -727,6 +756,8 @@ func _spawn(sig: int, rec: Dictionary) -> void:
         if rec.get("class", "") == "warp":
             art = "warp"
         var node: Node3D = null
+        if art == "debris":
+            node = _debris_node(rec)
         if art == "fireball" or art == "warp":
             var fx = _fx((rec.get("pof", "") as String).to_lower())
             if fx != null:

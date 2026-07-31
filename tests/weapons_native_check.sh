@@ -132,4 +132,13 @@ else
     rc=1
 fi
 
+# debris names its source model and submodel piece -- the first chunk
+# off a dying drone is the drone's own
+if grep -q "^art debris pof Drone01\.pof piece debris01$" "$tmp/fire.txt"; then
+    echo "OK: $(grep -m1 '^art debris' "$tmp/fire.txt")"
+else
+    echo "FAIL: debris identity wrong or missing: $(grep -m1 '^art debris' "$tmp/fire.txt" || echo none)"
+    rc=1
+fi
+
 exit $rc

@@ -67,6 +67,10 @@ def parse_layout(path):
         if not m:
             continue
         name = m.group(1)
+        # ships only: nameless records (a debris field's chunks cross
+        # with their source pof now) are not the FRED view's business
+        if not name.strip():
+            continue
         ships[name.lower()] = {
             "name": name,
             "class": m.group(3),

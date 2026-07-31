@@ -442,8 +442,22 @@ record_of(object *objp)
         strncpy(rec.pof, fireball_art_name(objp), sizeof(rec.pof) - 1);
         return rec;
     }
-    if (objp->type == OBJ_DEBRIS)
+    if (objp->type == OBJ_DEBRIS) {
+        // the piece's identity: its source model and WHICH submodel --
+        // the presenter shows exactly that chunk (hull debris wears the
+        // ship's own textures that way)
+        const debris *db = &Debris[objp->instance];
+        if (db->model_num >= 0) {
+            polymodel *pm = model_get(db->model_num);
+            if (pm) {
+                strncpy(rec.pof, pm->filename, sizeof(rec.pof) - 1);
+                if (db->submodel_num >= 0 && db->submodel_num < pm->n_models)
+                    strncpy(rec.piece, pm->submodel[db->submodel_num].name,
+                            sizeof(rec.piece) - 1);
+            }
+        }
         return rec;
+    }
 
     ship *shipp = &Ships[objp->instance];
     ship_info *sip = &Ship_info[shipp->ship_info_index];

@@ -106,6 +106,11 @@ struct object_state_t {
     float laser_head_radius;
     char laser_bitmap[32];             // lasers: the body streak's stem
     char laser_glow[32];               // and the head glow's ("" = none)
+
+    char piece[32];                    // debris: the submodel's name in
+                                       // the pof -- a hull chunk wears
+                                       // the ship's own model, small
+                                       // debris wears debris01/02
 };
 
 // The discontinuities between two events() drains: objects entering and

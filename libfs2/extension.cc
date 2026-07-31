@@ -189,6 +189,7 @@ public:
             d["laser_radius"] = o.laser_head_radius;
             d["laser_bitmap"] = o.laser_bitmap;
             d["laser_glow"] = o.laser_glow;
+            d["piece"] = o.piece;
 
             out.push_back(d);
         }
