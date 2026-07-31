@@ -905,6 +905,23 @@ fold-in. Open: presentation polish (regular-message exposure,
 sounds-as-events, fireball/debris/warp visuals, the world scene's combat
 HUD), and the campaign-flow horizon.
 
+**Status (2026-07-31):** the polish menu landed — radio chatter through
+the `Msg_capture` seam (37/90 campaign missions speak in their first ten
+gate-seconds; the wave captured before the deviceless snd_load scrubs
+it), the combat HUD (bracket, target monitor, radar — `radar.gd`'s art
+back in service over native data, `hud_state` carrying the target
+signature), and warp flashes (`fireball_is_warp` tags the records; the
+positioned warp sound was already crossing). `mission.tscn`/`mission.gd`
+FOLDED IN — deleted with the `-- mission` mode; `world.tscn` is the
+lesson and the battlefield both. Two hunted bugs died on the way: the
+"zombie drones" (a tool artifact — the aim bot's parallel gun streams
+straddling a small target; fixed with a convergence sweep, and the
+weapons gate now pins the mission goal), and the flaky
+`is_valid_matrix` abort (retail's asteroid_create builds orientation
+from stack garbage outside GM_NORMAL — load() now sets the mode before
+the chain, valgrind-clean). Suite 26/26. Open: the campaign-flow
+horizon (goals → debrief → next mission).
+
 ## Where this work lives
 
 - `master` — the retail Linux port; mothballed 2026-07-30 at its

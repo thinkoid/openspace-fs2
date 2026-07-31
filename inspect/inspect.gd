@@ -58,14 +58,12 @@ func _ready() -> void:
     if args.is_empty():
         _fatal("usage: godot --path inspect -- [fly] /abs/path/to/ship.glb")
         return
-    # mode word instead of a scene argument: `-- fly <glb>` hands off to the
-    # flyable scene and `-- mission <tres>` to the mission scene, so a
-    # reused viewer command can't land in the wrong room
+    # mode word instead of a scene argument: `-- fly <glb>` hands off to
+    # the flyable scene and `-- world <fs2>` to the native world, so a
+    # reused viewer command can't land in the wrong room. (`-- mission`
+    # was the GDScript-era lesson, folded into the world 2026-07-31.)
     if args[0] == "fly":
         get_tree().change_scene_to_file.call_deferred("res://fly.tscn")
-        return
-    if args[0] == "mission":
-        get_tree().change_scene_to_file.call_deferred("res://mission.tscn")
         return
     if args[0] == "world":
         get_tree().change_scene_to_file.call_deferred("res://world.tscn")

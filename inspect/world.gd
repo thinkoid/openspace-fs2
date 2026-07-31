@@ -13,10 +13,11 @@
 # knows. Controls: mouse steers (click to grab), A/Z throttle, \ full,
 # Backspace zero, Tab afterburner, Q/E roll, H hud, Esc quit.
 #
-# The GDScript lesson scene (mission.tscn) stays alive beside this one
-# until the native path carries weapons (slice 3) and message/directive
-# events (slice 4) -- this scene is the world made visible, not yet the
-# lesson.
+# This scene IS the lesson and the battlefield: weapons (slice 3),
+# training messages and directives (slice 4), radio chatter, the combat
+# HUD (bracket, monitor, radar -- radar.gd's art on native data), warp
+# flashes and the sound seam. The GDScript-era mission.tscn folded in
+# 2026-07-31; the retired sims remain as specs beside their gates.
 extends Node3D
 
 const ShipClass := preload("res://ship.gd")
