@@ -209,9 +209,11 @@ main(int argc, char *argv[])
                     debris_shown = true;
                 }
                 if (!shield_shown && o.player) {
-                    printf("art shield '%s' %.9g %.9g %.9g %.9g max %.9g\n",
+                    printf("art shield '%s' %.9g %.9g %.9g %.9g max %.9g "
+                           "icon %s species %d\n",
                            o.name, o.shield[0], o.shield[1], o.shield[2],
-                           o.shield[3], o.shield_max);
+                           o.shield[3], o.shield_max,
+                           o.shield_icon[0] ? o.shield_icon : "-", o.species);
                     printf("art player energy %.9g/%.9g burner %.9g/%.9g "
                            "gun_speed %.9g\n",
                            o.weapon_energy, o.weapon_energy_max,

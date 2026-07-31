@@ -35,43 +35,59 @@ tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
 rc=0
-total=0
-for f in "$root"/data/effects/*.ani; do
-    total=$((total + 1))
-    name=$(basename "$f" .ani)
-    if ! "$tool" "$root" "$tmp" "$name" > /dev/null 2>&1; then
-        echo "FAIL: ani2png could not bake $name"
-        rc=1
-        continue
-    fi
-    if ! python3 "$checker" "$f" "$tmp"; then
-        rc=1
-    fi
-done
 
-echo "$total effects anis baked and cross-checked"
+# color art (effects) bakes through the palette; interface art (hud)
+# bakes --aa -- GR_AABITMAP's reading, index as alpha
+sweep_anis() {
+    dir=$1
+    flag=$2
+    n=0
+    for f in "$root"/data/"$dir"/*.ani "$root"/data/"$dir"/*.ANI; do
+        [ -f "$f" ] || continue
+        n=$((n + 1))
+        name=$(basename "$f")
+        name=${name%.*}            # case-blind strip: 2_BLAST.ANI too
+        if ! "$tool" $flag "$root" "$tmp" "$name" > /dev/null 2>&1; then
+            echo "FAIL: ani2png could not bake $name"
+            rc=1
+            continue
+        fi
+        if ! python3 "$checker" $flag "$f" "$tmp"; then
+            rc=1
+        fi
+    done
+    echo "$n $dir anis baked and cross-checked"
+}
 
-stills=0
-for f in "$root"/data/effects/*.pcx "$root"/data/effects/*.PCX; do
-    [ -f "$f" ] || continue
-    stills=$((stills + 1))
-    name=$(basename "$f")
-    name=${name%.*}
-    if ! "$tool" "$root" "$tmp" "$name" > /dev/null 2>&1; then
-        echo "FAIL: ani2png could not bake still $name"
-        rc=1
-        continue
-    fi
-    if ! "$pcx_dump" "$root" "$tmp" "$name" > /dev/null 2>&1; then
-        echo "FAIL: pcx_dump could not decode $name"
-        rc=1
-        continue
-    fi
-    stem=$(echo "$name" | tr '[:upper:]' '[:lower:]')
-    if ! python3 "$checker" --still "$tmp/$stem.idx" "$tmp"; then
-        rc=1
-    fi
-done
+sweep_stills() {
+    dir=$1
+    flag=$2
+    n=0
+    for f in "$root"/data/"$dir"/*.pcx "$root"/data/"$dir"/*.PCX; do
+        [ -f "$f" ] || continue
+        n=$((n + 1))
+        name=$(basename "$f")
+        name=${name%.*}
+        if ! "$tool" $flag "$root" "$tmp" "$name" > /dev/null 2>&1; then
+            echo "FAIL: ani2png could not bake still $name"
+            rc=1
+            continue
+        fi
+        if ! "$pcx_dump" "$root" "$tmp" "$name" > /dev/null 2>&1; then
+            echo "FAIL: pcx_dump could not decode $name"
+            rc=1
+            continue
+        fi
+        stem=$(echo "$name" | tr '[:upper:]' '[:lower:]')
+        if ! python3 "$checker" $flag --still "$tmp/$stem.idx" "$tmp"; then
+            rc=1
+        fi
+    done
+    echo "$n $dir stills baked and cross-checked"
+}
 
-echo "$stills effects stills baked and cross-checked"
+sweep_anis effects ""
+sweep_anis hud --aa
+sweep_stills effects ""
+sweep_stills hud --aa
 exit $rc

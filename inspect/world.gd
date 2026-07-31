@@ -56,6 +56,14 @@ var fx_cache := {}            # ani stem -> {tex, cols, rows, frames, fps},
                               # or null where the bake is missing
 var sky_root: Node3D          # the authored backdrop, riding the camera
 var key_light: DirectionalLight3D
+var view_box: SubViewportContainer    # the target monitor's screen box
+var retail_hud := false       # the 1024 gauge art loaded
+var hud_s := 1.0              # 1024x768 field scale (fits the window)
+var hud_ox := 0.0             # centered field's origin
+var hud_oy := 0.0
+var player_shield: Array = []
+var player_shield_max := 0.0
+var player_icon := ""         # ships.tbl $Shield_icon ani stem
 var player_sig := -1
 
 var throttle := 0.0
@@ -138,6 +146,7 @@ func _ready() -> void:
     _setup_starfield()
     _setup_backdrop()
     _setup_hud()
+    _setup_retail_hud()
 
     sounds = SoundBankClass.new()
     add_child(sounds)
@@ -373,10 +382,51 @@ func _physics_process(delta: float) -> void:
         # ON (the sim's flag, not the Tab key -- a refused engage must not
         # glow) or the engine above 0%; movers glow by their motion
         if entry["is_ship"]:
+            var eng_on: bool
             if rec["player"]:
-                node.set_thrusters(rec["afterburner"] or throttle > 0.0)
+                eng_on = rec["afterburner"] or throttle > 0.0
             else:
-                node.set_thrusters((rec["vel"] as Vector3).length() > 0.5)
+                eng_on = (rec["vel"] as Vector3).length() > 0.5
+            node.set_thrusters(eng_on)
+
+            # the engine dress follows: flipbook frame by age, burner
+            # variant by the sim's flag, glows lit with the engine
+            var th = entry.get("thrust")
+            if th != null:
+                var burner: bool = rec["afterburner"]
+                var fx: Dictionary = th["fxa"] if burner and th["fxa"] != null \
+                    else th["fxn"]
+                var age: float = (Time.get_ticks_msec()
+                                  - int(th["born"])) / 1000.0
+                var frames_n: int = fx["frames"]
+                var fr := int(age * int(fx["fps"])) % maxi(frames_n, 1)
+                var cols: int = fx["cols"]
+                var off := Vector3(float(fr % cols) / cols,
+                                   float(int(fr / float(cols)))
+                                   / float(fx["rows"]), 0.0)
+                for m in th["mats"]:
+                    var sm := m as StandardMaterial3D
+                    sm.albedo_texture = fx["tex"]
+                    sm.uv1_scale = Vector3(1.0 / cols, 1.0 / fx["rows"], 1.0)
+                    sm.uv1_offset = off
+                var gtex = th["glow_tex_a"] if burner \
+                    and th["glow_tex_a"] != null else th["glow_tex"]
+                var frac: float
+                if burner:
+                    frac = 1.0
+                elif rec["player"]:
+                    frac = throttle
+                else:
+                    frac = clampf((rec["vel"] as Vector3).length()
+                                  / maxf(rec.get("max_speed", 1.0), 1.0),
+                                  0.0, 1.0)
+                for g in th["glows"]:
+                    (g["node"] as MeshInstance3D).visible = eng_on
+                    if gtex != null:
+                        var gm := g["mat"] as StandardMaterial3D
+                        gm.albedo_texture = gtex["tex"]
+                        gm.albedo_color = Color(1, 1, 1,
+                                                0.25 + 0.75 * frac)
 
             # the shield taking hits: a drop in the quadrant total this
             # frame is a strike on the bubble
@@ -473,6 +523,9 @@ func _update_combat_hud(prec: Dictionary, ship_recs: Array) -> void:
     aim_dir = Vector3(fv.x, fv.y, -fv.z)
     player_max_speed = prec.get("max_speed", 0.0)
     player_vel = prec["vel"]
+    player_shield = prec.get("shield", [])
+    player_shield_max = prec.get("shield_max", 0.0)
+    player_icon = (prec.get("shield_icon", "") as String).to_lower()
 
     var blips := []
     for rec in ship_recs:
@@ -545,6 +598,67 @@ func _update_target_view() -> void:
     if not target_view_pof.is_empty():
         target_view_root.rotation.y += get_physics_process_delta_time() * 0.6
 
+# retail's engine dress: the cone submodels wear the species thruster
+# flipbook as their texture (retail animates the thruster maps onto the
+# cones), and every POF thruster point gets a glow billboard
+# (thrusterglow). The family is species-picked, burner variants included:
+# index = species*2 + afterburner (ship.cc:2996). Returns the animation
+# state the reconciler drives, or null when the bakes are missing.
+func _dress_thrusters(ship, rec: Dictionary):
+    var species: int = int(rec.get("species", 0))
+    var fxn = _fx("thruster0%d" % (species + 1))
+    var fxa = _fx("thruster0%da" % (species + 1))
+    var glow = _fx("thrusterglow0%d" % (species + 1))
+    var glow_a = _fx("thrusterglow0%da" % (species + 1))
+    if fxn == null or not "thruster_nodes" in ship:
+        return null
+
+    var out := {
+        "mats": [], "glows": [], "fxn": fxn, "fxa": fxa,
+        "glow_tex": glow, "glow_tex_a": glow_a,
+        "born": Time.get_ticks_msec(),
+    }
+
+    for tn in ship.thruster_nodes:
+        var stack: Array = [tn]
+        while not stack.is_empty():
+            var cur = stack.pop_back()
+            for c in cur.get_children():
+                stack.append(c)
+            if cur is MeshInstance3D:
+                var mat := StandardMaterial3D.new()
+                mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+                mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+                mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+                mat.albedo_texture = fxn["tex"]
+                mat.uv1_scale = Vector3(1.0 / fxn["cols"],
+                                        1.0 / fxn["rows"], 1.0)
+                (cur as MeshInstance3D).material_override = mat
+                out["mats"].append(mat)
+
+    if ship.data != null and glow != null:
+        for bank in ship.data.thrusters:
+            var pts: PackedVector3Array = bank["points"]
+            var radii: PackedFloat32Array = bank["radii"]
+            for i in pts.size():
+                var gm := MeshInstance3D.new()
+                var gq := QuadMesh.new()
+                var r: float = radii[i] * 2.4
+                gq.size = Vector2(r, r)
+                var gmat := StandardMaterial3D.new()
+                gmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+                gmat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+                gmat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+                gmat.albedo_texture = glow["tex"]
+                gq.material = gmat
+                gm.mesh = gq
+                gm.position = pts[i]
+                gm.visible = false
+                ship.add_child(gm)
+                out["glows"].append({ "node": gm, "mat": gmat })
+
+    return out
+
 # a debris chunk as retail renders it: the record names the source model
 # and the submodel piece, so a hull chunk wears the ship's own hull (the
 # GLB carries the pof's debris submodels; the Ship loader hides them at
@@ -603,13 +717,28 @@ func _draw_bracket() -> void:
     if cam == null:
         return
 
-    var aim := aim_from + aim_dir * 1000.0
-    if not cam.is_position_behind(aim):
-        var rp := cam.unproject_position(aim)
-        var rc := Color(0.4, 1.0, 0.5, 0.9)
-        overlay.draw_arc(rp, 12.0, 0.0, TAU, 32, rc, 1.5)
-        for d: Vector2 in [Vector2.RIGHT, Vector2.LEFT, Vector2.UP, Vector2.DOWN]:
-            overlay.draw_line(rp + d * 7.0, rp + d * 16.0, rc, 1.5)
+    # the vector boresight serves where the retail art cannot: the chase
+    # view (retail's fixed reticle is a cockpit truth)
+    if not (retail_hud and first_person):
+        var aim := aim_from + aim_dir * 1000.0
+        if not cam.is_position_behind(aim):
+            var rp := cam.unproject_position(aim)
+            var rc := Color(0.4, 1.0, 0.5, 0.9)
+            overlay.draw_arc(rp, 12.0, 0.0, TAU, 32, rc, 1.5)
+            for d: Vector2 in [Vector2.RIGHT, Vector2.LEFT, Vector2.UP, Vector2.DOWN]:
+                overlay.draw_line(rp + d * 7.0, rp + d * 16.0, rc, 1.5)
+
+    # the shield icons, retail's own anis: frame 0 the ship outline, then
+    # a quadrant overlay per frame, alpha by charge (hud_shield_show's
+    # scheme; display order front/right/rear/left = Quadrant_xlate)
+    if retail_hud:
+        _draw_shield_ani(player_icon, player_shield, player_shield_max / 4.0,
+                         634.0, 670.0)
+        if not target_rec.is_empty():
+            _draw_shield_ani(
+                (target_rec.get("shield_icon", "") as String).to_lower(),
+                target_rec.get("shield", []),
+                float(target_rec.get("shield_max", 0.0)) / 4.0, 292.0, 670.0)
 
     if target_rec.is_empty():
         return
@@ -657,8 +786,43 @@ func _draw_bracket() -> void:
         var lv := Vector3(lead.x, lead.y, -lead.z)
         if not cam.is_position_behind(lv):
             var lp := cam.unproject_position(lv)
-            overlay.draw_circle(lp, 3.5, col)
-            overlay.draw_arc(lp, 8.0, 0.0, TAU, 24, col, 1.5)
+            var lfx = _fx("2_lead1") if retail_hud else null
+            if lfx != null:
+                var lw: float = lfx["w"] * hud_s
+                var lh: float = lfx["h"] * hud_s
+                overlay.draw_texture_rect_region(
+                    lfx["tex"], Rect2(lp - Vector2(lw, lh) * 0.5,
+                                      Vector2(lw, lh)), _fx_region(lfx, 0),
+                    HUD_GREEN)
+            else:
+                overlay.draw_circle(lp, 3.5, col)
+                overlay.draw_arc(lp, 8.0, 0.0, TAU, 24, col, 1.5)
+
+# one retail shield icon: base outline + four quadrant frames, each
+# faded by its quadrant's charge (data order through Quadrant_xlate
+# {1,0,2,3}, hudshield.cc:88)
+func _draw_shield_ani(stem: String, quads: Array, qmax: float,
+                      x1024: float, y1024: float) -> void:
+    if stem.is_empty():
+        return
+    var fx = _fx(stem)
+    if fx == null or int(fx["frames"]) < 5:
+        return
+    var dst := Rect2(Vector2(hud_ox + x1024 * hud_s, hud_oy + y1024 * hud_s),
+                     Vector2(fx["w"] * hud_s, fx["h"] * hud_s))
+    overlay.draw_texture_rect_region(fx["tex"], dst, _fx_region(fx, 0),
+                                     HUD_GREEN)
+    if quads.size() < 4 or qmax <= 0.0:
+        return
+    var xlate: Array[int] = [1, 0, 2, 3]
+    for i in 4:
+        var frac := clampf(float(quads[xlate[i]]) / qmax, 0.0, 1.0)
+        if frac <= 0.02:
+            continue
+        var qc := HUD_GREEN
+        qc.a *= frac
+        overlay.draw_texture_rect_region(fx["tex"], dst,
+                                         _fx_region(fx, 1 + i), qc)
 
 # the chatter window: recent radio lines, each shown for its own
 # text-length window (the voice may run longer -- lines scroll off,
@@ -814,6 +978,8 @@ func _spawn(sig: int, rec: Dictionary) -> void:
     node.name = rec["name"]
     ships_root.add_child(node)
     ships[sig] = { "node": node, "is_ship": is_ship, "radius": radius }
+    if is_ship:
+        ships[sig]["thrust"] = _dress_thrusters(node, rec)
     _tick("arrived: %s (%s)" % [rec["name"], rec["class"]])
 
 # the non-ship visuals: unshaded primitives sized by the sim's own radius
@@ -881,6 +1047,7 @@ func _fx(stem: String) -> Variant:
                     "tex": ImageTexture.create_from_image(img),
                     "cols": int(side["cols"]), "rows": int(side["rows"]),
                     "frames": int(side["frames"]), "fps": int(side["fps"]),
+                    "w": int(side["width"]), "h": int(side["height"]),
                 }
     fx_cache[stem] = out
     return out
@@ -1374,7 +1541,7 @@ func _setup_hud() -> void:
     # the target view: a little world of its own with the target's model
     # turning in it -- retail's target monitor, tucked in the lower-left
     # corner, above the help line
-    var view_box := SubViewportContainer.new()
+    view_box = SubViewportContainer.new()
     view_box.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
     view_box.offset_left = 16
     view_box.offset_right = 236
@@ -1427,6 +1594,102 @@ func _setup_hud() -> void:
     help.add_theme_font_size_override("font_size", 24)
     help.text = "mouse steers + fires (RMB missile), Q/E roll, A/Z throttle, \\ full, Tab burner, T target, M match, V view, H hud, Esc quit"
     hud.add_child(help)
+
+# retail's 1024x768 HUD, in its own art at its own coordinates -- the
+# gauge positions are the source's GR_1024 tables (hudreticle.cc:98,
+# radar.cc:47, hudtargetbox.cc:96, hudshield.cc:45). The field scales by
+# viewport height and centers horizontally; widescreen keeps retail's 4:3
+# gauge cluster in the middle, like the cockpit it is.
+# the gauge tint: --aa art is a white alpha mask, colored at draw time
+# exactly as GR_AABITMAP colors it with the HUD green -- which is
+# TRANSLUCENT (retail's HUD_color_alpha rides every gauge draw; a
+# full-index face like the radar scope is a dim green pane, not paint)
+const HUD_GREEN := Color(0.25, 0.95, 0.35, 0.5)
+
+const HUD_PIECES := [
+    ["2_toparc1", 386, 219], ["2_toparc2", 640, 393],
+    ["2_toparc3", 631, 419], ["2_leftarc", 346, 269],
+    ["2_rightarc1", 574, 269], ["2_reticle1", 493, 370],
+    ["2_radar1", 411, 590], ["targetview1", 5, 590],
+    ["targetview2", 5, 555],
+]
+
+func _fx_region(fx: Dictionary, frame: int) -> Rect2:
+    var cols: int = fx["cols"]
+    return Rect2(float(frame % cols) * fx["w"],
+                 float(int(frame / float(cols))) * fx["h"],
+                 fx["w"], fx["h"])
+
+var hud_rects: Array = []     # placed gauge art: {tr, fx, x, y}
+
+func _setup_retail_hud() -> void:
+    for piece in HUD_PIECES:
+        var fx = _fx(piece[0])
+        if fx == null:
+            continue
+        var tr := TextureRect.new()
+        var at := AtlasTexture.new()
+        at.atlas = fx["tex"]
+        at.region = _fx_region(fx, 0)
+        tr.texture = at
+        tr.stretch_mode = TextureRect.STRETCH_SCALE
+        tr.modulate = HUD_GREEN
+        tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+        hud.add_child(tr)
+        hud_rects.append({ "tr": tr, "fx": fx,
+                           "x": piece[1], "y": piece[2] })
+    retail_hud = not hud_rects.is_empty()
+    if not retail_hud:
+        return
+
+    target_monitor.set_anchors_preset(Control.PRESET_TOP_LEFT)
+    target_monitor.grow_vertical = Control.GROW_DIRECTION_END
+    target_monitor.add_theme_font_size_override("font_size", 26)
+    view_box.set_anchors_preset(Control.PRESET_TOP_LEFT)
+    radar.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
+
+    # z-order: gauge art under the working widgets -- the target well
+    # sits IN its frame, the overlay above everything
+    hud.move_child(view_box, hud.get_child_count() - 1)
+    hud.move_child(overlay, hud.get_child_count() - 1)
+
+    # the window arrives at its real size AFTER _ready (the WM resizes
+    # the default 1152x648) -- lay out now and on every change
+    get_viewport().size_changed.connect(_layout_retail_hud)
+    _layout_retail_hud()
+
+func _layout_retail_hud() -> void:
+    # the 1024x768 field fits the window whatever its shape; gauges
+    # cluster at retail's own places within it
+    var vp := get_viewport().get_visible_rect().size
+    hud_s = minf(vp.x / 1024.0, vp.y / 768.0)
+    hud_ox = (vp.x - 1024.0 * hud_s) * 0.5
+    hud_oy = (vp.y - 768.0 * hud_s) * 0.5
+
+    for e in hud_rects:
+        var fx: Dictionary = e["fx"]
+        var tr: TextureRect = e["tr"]
+        tr.position = Vector2(hud_ox + e["x"] * hud_s,
+                              hud_oy + e["y"] * hud_s)
+        tr.size = Vector2(fx["w"] * hud_s, fx["h"] * hud_s)
+
+    # the working widgets sit in the retail frames: blips over the radar
+    # art's own rect (its center IS retail's Radar_center 515,675), the
+    # target well in targetview1's screen, its text beside the frame
+    var rfx = _fx("2_radar1")
+    if rfx != null:
+        radar.position = Vector2(hud_ox + 411.0 * hud_s,
+                                 hud_oy + 590.0 * hud_s)
+        radar.size = Vector2(rfx["w"] * hud_s, rfx["h"] * hud_s)
+
+    var tv = _fx("targetview1")
+    if tv != null:
+        view_box.position = Vector2(hud_ox + 13.0 * hud_s,
+                                    hud_oy + 598.0 * hud_s)
+        view_box.size = Vector2((tv["w"] - 16.0) * hud_s,
+                                (tv["h"] - 36.0) * hud_s)
+    target_monitor.position = Vector2(hud_ox + 150.0 * hud_s,
+                                      hud_oy + 598.0 * hud_s)
 
 static func _hud_label() -> Label:
     var font := SystemFont.new()

@@ -19,6 +19,7 @@
 #include <graphics/font.hh>
 #include <graphics/grinternal.hh>
 #include <hud/hudmessage.hh>
+#include <hud/hudshield.hh>
 #include <hud/hud.hh>
 #include <hud/hudtarget.hh>
 #include <io/timer.hh>
@@ -64,6 +65,12 @@ extern char Training_text[];
 extern int Training_msg_timestamp;
 extern int Training_obj_lines[];
 extern int Training_obj_num_lines;
+
+// hudshield.cc's icon table (ships.tbl $Shield_icon entries) has no
+// header declaration of its own
+#define MAX_SHIELD_ICONS 40
+extern char Hud_shield_filenames[MAX_SHIELD_ICONS][MAX_FILENAME_LEN];
+extern int Hud_shield_filename_count;
 void message_training_que_check();
 #define TRAINING_OBJ_LINES_KEY (1 << 30)   // missiontraining.cc:62
 
@@ -263,6 +270,9 @@ boot(const char *game_root)
     stars_init();          // stars.tbl: the sun/backdrop CATALOG -- the
                            // mission's #Background instances resolve
                            // against it (sun light RGBI, blend mode)
+    hud_shield_game_init(); // hud.tbl: the shield-icon catalog, BEFORE
+                           // ship_init -- $Shield_icon resolves against
+                           // it or stays 255 (and the record crosses "")
     mflash_game_init();    // mflash.tbl BEFORE weapon_init: the weapon
                            // parse looks its $Muzzleflash: up here, and a
                            // failed lookup drops WIF_MFLASH -- which flak
@@ -498,6 +508,12 @@ record_of(object *objp)
     rec.weapon_energy_max = sip->max_weapon_reserve;
     rec.burner_fuel = shipp->afterburner_fuel;
     rec.burner_fuel_max = sip->afterburner_fuel_capacity;
+    rec.species = sip->species;
+    if (sip->shield_icon_index != 255 &&
+        sip->shield_icon_index < Hud_shield_filename_count)
+        strncpy(rec.shield_icon,
+                Hud_shield_filenames[sip->shield_icon_index],
+                sizeof(rec.shield_icon) - 1);
 
     return rec;
 }

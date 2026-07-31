@@ -184,6 +184,8 @@ public:
             d["weapon_energy_max"] = o.weapon_energy_max;
             d["burner_fuel"] = o.burner_fuel;
             d["burner_fuel_max"] = o.burner_fuel_max;
+            d["species"] = o.species;
+            d["shield_icon"] = o.shield_icon;
 
             // the bolt's art, normalized to Godot's color space
             d["color"] = godot::Color(o.laser_rgb[0] / 255.0f,

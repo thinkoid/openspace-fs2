@@ -93,7 +93,7 @@ else
     rc=1
 fi
 
-if grep -q "^art shield 'Alpha 1' 97\.5 97\.5 97\.5 97\.5 max 390$" \
+if grep -q "^art shield 'Alpha 1' 97\.5 97\.5 97\.5 97\.5 max 390 icon shieldft-05 species 0$" \
         "$tmp/fire.txt"; then
     echo "OK: $(grep -m1 '^art shield' "$tmp/fire.txt")"
 else

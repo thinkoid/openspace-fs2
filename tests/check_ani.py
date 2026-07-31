@@ -145,6 +145,9 @@ def check_still(idx_path, baked):
 
     want = bytearray()
     for p in idx:
+        if AA:
+            want += aa_pixel(p)
+            continue
         rgb = (pal[p * 3], pal[p * 3 + 1], pal[p * 3 + 2])
         want += b"\x00\x00\x00\x00" if rgb == (0, 255, 0) \
             else bytes(rgb) + b"\xff"
@@ -159,14 +162,27 @@ def check_still(idx_path, baked):
     sys.exit(0)
 
 
+AA = False                   # --aa: GR_AABITMAP art -- the palette INDEX
+                             # is the alpha (x17), RGB bakes white
+
+
+def aa_pixel(idx):
+    return b"\xff\xff\xff" + bytes((min(255, idx * 17),))
+
+
 def main():
-    if len(sys.argv) == 4 and sys.argv[1] == "--still":
-        check_still(sys.argv[2], sys.argv[3])
+    global AA
+    argv = sys.argv[1:]
+    if argv and argv[0] == "--aa":
+        AA = True
+        argv = argv[1:]
+    if len(argv) == 3 and argv[0] == "--still":
+        check_still(argv[1], argv[2])
         return
-    if len(sys.argv) != 3:
-        raise SystemExit(
-            "usage: check_ani.py [--still <idx-file>] <ani-file> <baked-dir>")
-    ani_path, baked = sys.argv[1], sys.argv[2]
+    if len(argv) != 2:
+        raise SystemExit("usage: check_ani.py [--aa] [--still <idx-file>] "
+                         "<ani-file> <baked-dir>")
+    ani_path, baked = argv[0], argv[1]
     stem = os.path.splitext(os.path.basename(ani_path))[0].lower()
 
     width, height, frames, fps, xparent, pal, decoded = read_ani(ani_path)
@@ -186,9 +202,13 @@ def main():
         raise SystemExit(f"{stem}: atlas {aw}x{ah}, sidecar grid says "
                          f"{cols * width}x{rows * height}")
 
-    # palette index -> packed RGBA; the transparent color bakes to (0,0,0,0)
+    # palette index -> packed RGBA; the transparent color bakes to
+    # (0,0,0,0); --aa art is a white mask with the index for alpha
     pal32 = []
     for i in range(256):
+        if AA:
+            pal32.append(struct.unpack("<I", aa_pixel(i))[0])
+            continue
         rgb = (pal[i * 3], pal[i * 3 + 1], pal[i * 3 + 2])
         pal32.append(0 if rgb == xparent else
                      struct.unpack("<I", bytes(rgb) + b"\xff")[0])

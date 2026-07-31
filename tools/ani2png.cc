@@ -8,7 +8,12 @@
 // Python reader and compares pixel-for-pixel -- the pcx_dump/check_tex
 // pattern, pinning decode + palette + transparency against retail.
 //
-//   ani2png <game-root> <out-dir> <name> [<name> ...]
+//   ani2png [--aa] <game-root> <out-dir> <name> [<name> ...]
+//
+// --aa bakes interface art the way GR_AABITMAP reads it: the palette
+// INDEX is the alpha (16 levels, scaled x17), the RGB is white -- the
+// presenter tints with the HUD color at draw time. The palette's literal
+// colors are never shown by retail for these.
 //
 // Names are bare, extension-less; anim_load appends .ani and cfile locates
 // them (data/effects for the combat set). A name with no .ani behind it is
@@ -42,6 +47,29 @@ lower(std::string s)
     return s;
 }
 
+static bool aa_mode = false;
+
+// one pixel into the atlas: color art through the palette + transparent
+// key; --aa art as a white mask with the index for alpha
+static void
+put_pixel(unsigned char *dst, ubyte idx, const ubyte *pal, ubyte xr, ubyte xg,
+          ubyte xb)
+{
+    if (aa_mode) {
+        int a = idx * 17;
+        dst[0] = dst[1] = dst[2] = 255;
+        dst[3] = (unsigned char)(a > 255 ? 255 : a);
+        return;
+    }
+    const ubyte *rgb = pal + idx * 3;
+    if (rgb[0] == xr && rgb[1] == xg && rgb[2] == xb)
+        return;                        // stays (0,0,0,0)
+    dst[0] = rgb[0];
+    dst[1] = rgb[1];
+    dst[2] = rgb[2];
+    dst[3] = 255;
+}
+
 // a still PCX as a one-frame atlas: the retail green key (0,255,0) bakes
 // to (0,0,0,0), sidecar says frames 1 / fps 0
 static bool
@@ -67,15 +95,8 @@ bake_still(const char *name, const std::string &out_dir)
     }
 
     std::vector<unsigned char> rgba((size_t)w * h * 4, 0);
-    for (size_t i = 0; i < idx.size(); i++) {
-        const ubyte *rgb = pal + idx[i] * 3;
-        if (rgb[0] == 0 && rgb[1] == 255 && rgb[2] == 0)
-            continue;                      // stays (0,0,0,0)
-        rgba[i * 4 + 0] = rgb[0];
-        rgba[i * 4 + 1] = rgb[1];
-        rgba[i * 4 + 2] = rgb[2];
-        rgba[i * 4 + 3] = 255;
-    }
+    for (size_t i = 0; i < idx.size(); i++)
+        put_pixel(rgba.data() + i * 4, idx[i], pal, 0, 255, 0);
 
     const std::string stem = lower(name);
     const std::string png = out_dir + "/" + stem + ".png";
@@ -138,16 +159,9 @@ bake_one(const char *name, const std::string &out_dir)
             unsigned char *dst =
                 atlas.data() + (((size_t)(cy + y) * atlas_w) + cx) * 4;
 
-            for (int x = 0; x < a->width; x++, dst += 4) {
-                const ubyte *rgb = a->palette + src[x] * 3;
-                if (rgb[0] == a->xparent_r && rgb[1] == a->xparent_g &&
-                    rgb[2] == a->xparent_b)
-                    continue;                  // stays (0,0,0,0)
-                dst[0] = rgb[0];
-                dst[1] = rgb[1];
-                dst[2] = rgb[2];
-                dst[3] = 255;
-            }
+            for (int x = 0; x < a->width; x++, dst += 4)
+                put_pixel(dst, src[x], a->palette, a->xparent_r,
+                          a->xparent_g, a->xparent_b);
         }
         frames++;
     }
@@ -198,8 +212,18 @@ main(int argc, char *argv[])
                 "usage: ani2png <game-root> <out-dir> <name> [name ...]\n");
         return 2;
     }
-    const char *root = argv[1];
-    const std::string out_dir = argv[2];
+    int argb = 1;
+    if (strcmp(argv[argb], "--aa") == 0) {
+        aa_mode = true;
+        argb++;
+    }
+    if (argc < argb + 3) {
+        fprintf(stderr,
+                "usage: ani2png [--aa] <game-root> <out-dir> <name> ...\n");
+        return 2;
+    }
+    const char *root = argv[argb];
+    const std::string out_dir = argv[argb + 1];
 
     char exe_path[CF_MAX_PATHNAME_LENGTH];
     snprintf(exe_path, sizeof exe_path, "%s/x", root);
@@ -214,7 +238,7 @@ main(int argc, char *argv[])
     gr_screen.bits_per_pixel = 16;
 
     int fail = 0;
-    for (int i = 3; i < argc; i++)
+    for (int i = argb + 2; i < argc; i++)
         if (!bake_one(argv[i], out_dir))
             fail = 1;
     return fail;

@@ -99,6 +99,12 @@ struct object_state_t {
     float weapon_energy_max;           // draw from, and its ceiling
     float burner_fuel;                 // afterburner fuel and capacity
     float burner_fuel_max;
+    int species;                       // ships: 0 Terran / 1 Vasudan /
+                                       // 2 Shivan -- picks the thruster
+                                       // flipbook family (ship.cc:2996)
+    char shield_icon[32];              // ships: the HUD shield ani
+                                       // (ships.tbl $Shield_icon; "" =
+                                       // none, retail's 255 sentinel)
 
     unsigned char laser_rgb[3];        // lasers: the current cycle color
                                        // (weapon_get_laser_color)
