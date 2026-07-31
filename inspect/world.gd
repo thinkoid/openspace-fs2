@@ -303,10 +303,10 @@ func _physics_process(delta: float) -> void:
             var age: float = (Time.get_ticks_msec()
                               - int(node.get_meta("born"))) / 1000.0
             var k := clampf(age / 1.2, 0.0, 1.0)
-            node.scale = Vector3.ONE * (0.4 + 1.6 * k)
+            node.scale = Vector3.ONE * (0.6 + 0.8 * k)
             var cm: StandardMaterial3D = node.get_meta("core_mat")
             var c := cm.albedo_color
-            c.a = 0.9 * (1.0 - k)
+            c.a = 0.7 * (1.0 - k)
             cm.albedo_color = c
             (node.get_meta("boom_light") as OmniLight3D).light_energy = \
                 3.0 * (1.0 - k)
@@ -371,14 +371,19 @@ func _physics_process(delta: float) -> void:
         player_pos = player_rec["pos"]
         var vel: Vector3 = player_rec["vel"]
         var fv2: Vector3 = player_rec["fvec"]
+        var fwd_speed := vel.dot(fv2)
+        if absf(fwd_speed) < 0.05:
+            fwd_speed = 0.0            # %6.1f would print "-0.0"
         hud_right.text = "speed %6.1f\nengine %4d%%%s\ngun  %4d%%\nburn %4d%%" \
-            % [vel.dot(fv2), int(throttle * 100.0),
+            % [fwd_speed, int(throttle * 100.0),
                "\nmatch" if match_target else "",
                int(100.0 * player_rec["weapon_energy"]
                    / maxf(player_rec["weapon_energy_max"], 1.0)),
                int(100.0 * player_rec["burner_fuel"]
                    / maxf(player_rec["burner_fuel_max"], 1.0))]
-        hud_left.text = "%s\n%d ships" % [mission_name, ships.size()]
+        # ships only -- the node table also holds bolts, fireballs and
+        # debris, and "7 ships" after a kill was a lie (field-reported)
+        hud_left.text = "%s\n%d ships" % [mission_name, ship_recs.size()]
 
         # the hum follows the engine: silent at 0%, full voice under burn
         if engine_hum.stream:
@@ -446,8 +451,6 @@ func _update_target_view() -> void:
         for c in target_view_root.get_children():
             c.queue_free()
         if not pof.is_empty():
-            var radius: float = maxf(
-                ships.get(target_sig, {}).get("radius", 10.0), 1.0)
             var stem := pof.get_basename().to_lower()
             var glb := assets_dir.path_join(stem + ".glb")
             var node: Node3D = null
@@ -456,6 +459,8 @@ func _update_target_view() -> void:
                 if m.load_ship(glb):
                     node = m
             if node == null:
+                var radius: float = maxf(
+                    ships.get(target_sig, {}).get("radius", 10.0), 1.0)
                 var box := MeshInstance3D.new()
                 var mesh := BoxMesh.new()
                 mesh.size = Vector3(radius, radius * 0.5, radius * 1.6)
@@ -463,11 +468,44 @@ func _update_target_view() -> void:
                 node = box
             target_view_root.rotation = Vector3.ZERO
             target_view_root.add_child(node)
+
+            # frame what the eye gets: the POF radius counts far-flung
+            # gear (drone01 says 27.5 for a hull that measures ~15 across)
+            # and a camera backed off by it shrinks the target to a speck
+            # against the transparent starfield -- the "missing" monitor
+            # (field-reported). Center on the visible bounds and fill the
+            # well from them.
+            var bounds := _visual_bounds(node)
+            var extent := maxf(bounds.get_longest_axis_size() * 0.5, 1.0)
+            node.position = -bounds.get_center()
+            target_view_cam.fov = 40.0
+            var dist := extent / tan(deg_to_rad(20.0)) * 1.15
             target_view_cam.look_at_from_position(
-                Vector3(0, radius * 0.5, radius * 2.6), Vector3.ZERO,
-                Vector3.UP)
+                Vector3(0, dist * 0.25, dist), Vector3.ZERO, Vector3.UP)
     if not target_view_pof.is_empty():
         target_view_root.rotation.y += get_physics_process_delta_time() * 0.6
+
+# the merged AABB of a model's visible meshes, in the model's own frame --
+# accumulated transforms, no global_transform (valid in or out of tree)
+static func _visual_bounds(model: Node3D) -> AABB:
+    var bounds := AABB()
+    var first := true
+    var stack: Array = [[model, Transform3D.IDENTITY]]
+    while not stack.is_empty():
+        var top: Array = stack.pop_back()
+        var node: Node = top[0]
+        var xf: Transform3D = top[1]
+        if node is Node3D:
+            if not (node as Node3D).visible:
+                continue
+            xf = xf * (node as Node3D).transform
+        if node is MeshInstance3D:
+            var box: AABB = xf * (node as MeshInstance3D).get_aabb()
+            bounds = box if first else bounds.merge(box)
+            first = false
+        for c in node.get_children():
+            stack.append([c, xf])
+    return bounds
 
 # the target bracket: corners around the target's screen extent, sized by
 # its radius at distance, teamed by color -- and the reticle on the
@@ -595,7 +633,7 @@ func _update_lesson() -> void:
     var lines: Array[String] = []
     for d in h["directives"]:
         if d["key"]:
-            lines.append("      " + d["text"])
+            lines.append("      " + (d["text"] as String).replace("$", ""))
             continue
         var mark := "  "
         match int(d["state"]):
@@ -747,22 +785,30 @@ func _simple_node(kind: String, radius: float) -> Node3D:
     ships_root.add_child(mi)
     return mi
 
-# a laser slug in its tbl size and color; the material rides on the node
-# so the reconciler can follow retail's color cycle every frame
-func _bolt_node(rec: Dictionary) -> MeshInstance3D:
+# a laser bolt in its tbl size and color -- an additive-glow capsule, so
+# it reads as plasma from any angle (a box showed its square cross-section
+# dead astern, field-reported). The capsule's long axis is Y; the wrap
+# node takes the record's basis, the mesh inside turns Y onto -Z. The
+# material rides on the node so the reconciler can follow retail's color
+# cycle every frame.
+func _bolt_node(rec: Dictionary) -> Node3D:
     var mi := MeshInstance3D.new()
-    var bm := BoxMesh.new()
+    var cm := CapsuleMesh.new()
     var r: float = maxf(rec.get("laser_radius", 0.4), 0.15)
-    var length: float = maxf(rec.get("laser_length", 6.0), 1.0)
-    bm.size = Vector3(r * 2.0, r * 2.0, length)
+    cm.radius = r
+    cm.height = maxf(rec.get("laser_length", 6.0), 2.0 * r)
     var mat := StandardMaterial3D.new()
     mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
     mat.albedo_color = rec.get("color", Color(1.0, 0.35, 0.25))
-    bm.material = mat
-    mi.mesh = bm
-    mi.set_meta("bolt_mat", mat)
-    ships_root.add_child(mi)
-    return mi
+    cm.material = mat
+    mi.mesh = cm
+    mi.rotation_degrees = Vector3(90, 0, 0)
+    var wrap := Node3D.new()
+    wrap.add_child(mi)
+    wrap.set_meta("bolt_mat", mat)
+    ships_root.add_child(wrap)
+    return wrap
 
 # an explosion, presentation-owned: the sim's fireball record times and
 # sizes it (the node lives exactly as long as the record); the art -- a
@@ -771,14 +817,16 @@ func _explosion_node(radius: float) -> Node3D:
     var root := Node3D.new()
     var r := maxf(radius, 1.0)
 
+    # additive, not matte: the core must read as light -- an alpha disc
+    # at explosion size paints the sky khaki (field-reported)
     var mi := MeshInstance3D.new()
     var sm := SphereMesh.new()
-    sm.radius = r * 0.6
+    sm.radius = r * 0.45
     sm.height = sm.radius * 2.0
     var mat := StandardMaterial3D.new()
     mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-    mat.albedo_color = Color(1.0, 0.8, 0.4, 0.9)
-    mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+    mat.albedo_color = Color(1.0, 0.55, 0.2, 0.7)
     sm.material = mat
     mi.mesh = sm
     root.add_child(mi)
@@ -1062,9 +1110,16 @@ func _setup_hud() -> void:
     target_view.transparent_bg = true
     target_view_cam = Camera3D.new()
     target_view.add_child(target_view_cam)
+    # the little world has no ambient of its own -- retail hulls are dark
+    # art, so light them like a display case: key plus a soft fill
     var key_light := DirectionalLight3D.new()
     key_light.rotation_degrees = Vector3(-35, 40, 0)
+    key_light.light_energy = 1.5
     target_view.add_child(key_light)
+    var fill_light := DirectionalLight3D.new()
+    fill_light.rotation_degrees = Vector3(-15, 220, 0)
+    fill_light.light_energy = 0.6
+    target_view.add_child(fill_light)
     target_view_root = Node3D.new()
     target_view.add_child(target_view_root)
     view_box.add_child(target_view)
