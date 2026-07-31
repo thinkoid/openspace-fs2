@@ -308,8 +308,17 @@ func _physics_process(delta: float) -> void:
                 # collapsing to a fat blob end-on -- retail's
                 # g3_draw_laser look, depth-tested
                 var st: Dictionary = node.get_meta("stretch")
-                var f3: Vector3 = rec["fvec"]
-                var dirw := Vector3(f3.x, f3.y, -f3.z).normalized()
+                # the TRUE flight direction, not the launch orientation:
+                # bolts inherit the shooter's velocity and slide like a
+                # thrown dart -- a streak drawn along fvec skews from the
+                # path by up to ~9 degrees at fighter speeds (field
+                # report); a streak is motion, so it follows motion
+                var v3: Vector3 = rec["vel"]
+                var dirw := Vector3(v3.x, v3.y, -v3.z)
+                if dirw.length() < 1.0:
+                    var f3: Vector3 = rec["fvec"]
+                    dirw = Vector3(f3.x, f3.y, -f3.z)
+                dirw = dirw.normalized()
                 var bolt_len: float = st["len"]
                 var center: Vector3 = node.position - dirw * (bolt_len * 0.5)
                 var to_cam := (cam.global_position - center).normalized()
