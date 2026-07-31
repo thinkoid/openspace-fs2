@@ -922,6 +922,28 @@ from stack garbage outside GM_NORMAL — load() now sets the mode before
 the chain, valgrind-clean). Suite 26/26. Open: the campaign-flow
 horizon (goals → debrief → next mission).
 
+**Status (2026-07-31, afternoon):** the combat-visuals pass, chosen
+over campaign flow on the argument that the user is the differential
+oracle for this lane. Freight (`3633b48e3`): lasers cross tbl size +
+live cycle color (the deviceless `gr_init_color` stub was LOSSY —
+it dropped the rgb payload; it now records the data half exactly),
+missiles cross their POF, ships cross shield quadrants + ceiling and
+weapon-energy/burner-fuel, `OBJ_SHOCKWAVE` joins the snapshot with the
+LIVE blast radius (`Shockwaves[].radius`), `hud_state` carries the
+primary's muzzle speed. The synthetic range arms a Piranha (the
+fighter-mountable shockwave carrier — detonates even on a miss) and
+the fire bot ripples secondaries; the weapons gate pins all six art
+crossings exactly, every pin bitten red. Art (`1b234f45d`): colored
+cycling bolts, missiles as models, muzzle flashes at the birth
+position, explosions as flash-core + embers + dying light timed by the
+fireball record, shockwave rings riding the front, shield shimmer on
+quadrant drops. HUD (`3f1d02303`): target view (own-world SubViewport,
+model turning), shield/hull icons in retail's display order
+(`Quadrant_xlate {1,0,2,3}` over `get_quadrant`'s octants), lead
+indicator on relative motion, gun/burn gauges, RMB/Space secondary
+trigger. Suite 26/26 throughout. Open: campaign flow (goals → debrief
+→ next mission); field verdict on the new art pending.
+
 ## Where this work lives
 
 - `master` — the retail Linux port; mothballed 2026-07-30 at its
