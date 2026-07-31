@@ -85,6 +85,7 @@ main(int argc, char *argv[])
     bool shield_shown = false;
     bool missile_shown = false;
     bool shockwave_shown = false;
+    bool fireball_shown = false;
 
     for (int frame = 1; frame <= frames; frame++) {
         if (firing) {
@@ -169,7 +170,7 @@ main(int argc, char *argv[])
         // gate pins all four: laser color + tbl size, player shields,
         // the missile's POF, the expanding blast front
         if (firing && (!bolt_shown || !shield_shown || !missile_shown ||
-                       !shockwave_shown)) {
+                       !shockwave_shown || !fireball_shown)) {
             for (const object_state_t &o : sim.snapshot()) {
                 if (!bolt_shown && o.type == OBJ_WEAPON && !o.pof[0]) {
                     printf("art bolt %s len %.9g r %.9g rgb %d %d %d\n",
@@ -184,6 +185,10 @@ main(int argc, char *argv[])
                 if (!shockwave_shown && o.type == OBJ_SHOCKWAVE) {
                     printf("art shockwave frame %d r %.9g\n", frame, o.radius);
                     shockwave_shown = true;
+                }
+                if (!fireball_shown && o.type == OBJ_FIREBALL) {
+                    printf("art fireball %s ani %s\n", o.class_name, o.pof);
+                    fireball_shown = true;
                 }
                 if (!shield_shown && o.player) {
                     printf("art shield '%s' %.9g %.9g %.9g %.9g max %.9g\n",

@@ -424,9 +424,11 @@ record_of(object *objp)
     }
     if (objp->type == OBJ_FIREBALL) {
         // the one distinction presentation needs: an arrival's warp
-        // effect is not an explosion (retail's own accessor)
+        // effect is not an explosion (retail's own accessor) -- and the
+        // pof slot carries the type's ani stem, the flipbook to play
         strncpy(rec.class_name, fireball_is_warp(objp) ? "warp" : "explosion",
                 sizeof(rec.class_name) - 1);
+        strncpy(rec.pof, fireball_art_name(objp), sizeof(rec.pof) - 1);
         return rec;
     }
     if (objp->type == OBJ_DEBRIS)

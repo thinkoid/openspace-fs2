@@ -506,6 +506,21 @@ fireball_is_warp(object *obj)
     return 0;
 }
 
+// the art this fireball plays: its type's top-LOD ani stem. The info
+// tables are file-local, so the libfs2 boundary reads through here (the
+// fireball_is_warp pattern) to name the flipbook for the presenter.
+const char *
+fireball_art_name(object *obj)
+{
+    int num, objnum;
+
+    num = obj->instance;
+    objnum = OBJ_INDEX(obj);
+    Assert(Fireballs[num].objnum == objnum);
+
+    return Fireball_info[Fireballs[num].fireball_info_index].lod[0].filename;
+}
+
 // mabye play sound effect for warp hole closing
 void
 fireball_maybe_play_warp_close_sound(fireball *fb)

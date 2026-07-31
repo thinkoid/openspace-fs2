@@ -55,6 +55,9 @@ int fireball_is_perishable(object *obj);
 // Returns 1 if this fireball is a warp
 int fireball_is_warp(object *obj);
 
+// name of the type's top-LOD ani (the flipbook the effect plays)
+const char *fireball_art_name(object *obj);
+
 // Returns life left of a fireball in seconds
 float fireball_lifeleft(object *obj);
 

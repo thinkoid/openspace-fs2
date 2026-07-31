@@ -52,6 +52,8 @@ var sim                       # FS2 (libfs2) instance
 var ships_root: Node3D
 var ships := {}               # signature -> {node, is_ship, kind, radius}
 var flashes: Array[Dictionary] = []   # transient art: {node, deadline}
+var fx_cache := {}            # ani stem -> {tex, cols, rows, frames, fps},
+                              # or null where the bake is missing
 var player_sig := -1
 
 var throttle := 0.0
@@ -294,6 +296,24 @@ func _physics_process(delta: float) -> void:
         if entry_kind == "weapon" and node.has_meta("bolt_mat"):
             (node.get_meta("bolt_mat") as StandardMaterial3D).albedo_color = \
                 rec.get("color", Color(1.0, 0.35, 0.25))
+        elif node.has_meta("fx"):
+            # the flipbook plays by age: frame from the sidecar's fps,
+            # looped (warp) or held at the last (explosions burn out as
+            # the record dies); a shockwave's quad also rides the live
+            # blast radius
+            var fx: Dictionary = node.get_meta("fx")
+            var age: float = (Time.get_ticks_msec() - int(fx["born"])) / 1000.0
+            var fr := int(age * int(fx["fps"]))
+            if fx["loop"]:
+                fr = fr % int(fx["frames"])
+            else:
+                fr = mini(fr, int(fx["frames"]) - 1)
+            var cols: int = fx["cols"]
+            var row := int(fr / float(cols))
+            (fx["mat"] as StandardMaterial3D).uv1_offset = Vector3(
+                float(fr % cols) / cols, float(row) / float(fx["rows"]), 0.0)
+            if entry_kind == "shockwave":
+                node.scale = Vector3.ONE * maxf(rec["radius"], 0.1)
         elif entry_kind == "shockwave":
             node.scale = Vector3.ONE * maxf(rec["radius"], 0.1)
         elif entry_kind == "fireball" and node.has_meta("born"):
@@ -645,22 +665,43 @@ func _spawn(sig: int, rec: Dictionary) -> void:
         _muzzle_flash(rec)
         return
     if kind == "shockwave":
-        # the blast front: the record's radius IS the live front; the
-        # ring just follows it (reconcile scales the unit torus)
-        ships[sig] = { "node": _simple_node("shockwave", 1.0),
-                       "is_ship": false, "kind": "shockwave", "radius": 1.0 }
+        # the blast front: retail's own expanding-ring flipbook
+        # (shockwave01), frame by age, size riding the record's live
+        # radius; the torus stand-in only if the bake is missing
+        var fx = _fx("shockwave01")
+        var node: Node3D
+        if fx != null:
+            node = _flipbook_node(fx, 2.0, true, false)
+        else:
+            node = _simple_node("shockwave", 1.0)
+        ships[sig] = { "node": node, "is_ship": false, "kind": "shockwave",
+                       "radius": 1.0 }
         return
     if kind == "fireball" or kind == "debris":
         # the boundary tags fireballs: an arrival's warp effect is not
-        # an explosion
+        # an explosion -- and names the flipbook it plays (the pof slot
+        # carries the ani stem, fireball_art_name's crossing)
         var art := kind
         if rec.get("class", "") == "warp":
             art = "warp"
-        var node: Node3D
-        if art == "fireball":
-            node = _explosion_node(rec["radius"])
-        else:
-            node = _simple_node(art, rec["radius"])
+        var node: Node3D = null
+        if art == "fireball" or art == "warp":
+            var fx = _fx((rec.get("pof", "") as String).to_lower())
+            if fx != null:
+                if art == "warp":
+                    # the vortex stands in the arrival plane: a fixed
+                    # quad, the reconciler's basis turns it; loops while
+                    # the effect lives
+                    node = _flipbook_node(fx, rec["radius"] * 2.0, false,
+                                          true)
+                else:
+                    node = _flipbook_node(fx, rec["radius"] * 2.0, true,
+                                          false)
+        if node == null:
+            if art == "fireball":
+                node = _explosion_node(rec["radius"])
+            else:
+                node = _simple_node(art, rec["radius"])
         ships[sig] = { "node": node, "is_ship": false, "kind": art,
                        "radius": rec["radius"] }
         return
@@ -739,6 +780,56 @@ func _simple_node(kind: String, radius: float) -> Node3D:
             db.material = mat
             mi.mesh = db
             mi.set_meta("arc_mat", mat)   # the crackle's visual half
+    ships_root.add_child(mi)
+    return mi
+
+# the baked retail flipbooks (ani2png's atlases beside the models):
+# stem -> {tex, cols, rows, frames, fps}, null cached for missing bakes
+func _fx(stem: String) -> Variant:
+    if fx_cache.has(stem):
+        return fx_cache[stem]
+    var dir := assets_dir.path_join("effects")
+    var out = null
+    var meta_path := dir.path_join(stem + ".json")
+    if FileAccess.file_exists(meta_path):
+        var side = JSON.parse_string(FileAccess.get_file_as_string(meta_path))
+        if side is Dictionary:
+            var img := Image.load_from_file(dir.path_join(side["atlas"]))
+            if img:
+                out = {
+                    "tex": ImageTexture.create_from_image(img),
+                    "cols": int(side["cols"]), "rows": int(side["rows"]),
+                    "frames": int(side["frames"]), "fps": int(side["fps"]),
+                }
+    fx_cache[stem] = out
+    return out
+
+# a retail flipbook on a quad -- additive, unshaded (the effects families
+# are light on black); the material's UV window is one frame, and the
+# reconciler advances uv1_offset by age. Billboards face the camera; the
+# warp plane keeps its basis (visible from both sides).
+func _flipbook_node(fx: Dictionary, size: float, billboard: bool,
+                    loop: bool) -> MeshInstance3D:
+    var mi := MeshInstance3D.new()
+    var qm := QuadMesh.new()
+    qm.size = Vector2(size, size)
+    var mat := StandardMaterial3D.new()
+    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+    mat.albedo_texture = fx["tex"]
+    mat.uv1_scale = Vector3(1.0 / fx["cols"], 1.0 / fx["rows"], 1.0)
+    if billboard:
+        mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+        mat.billboard_keep_scale = true
+    else:
+        mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+    qm.material = mat
+    mi.mesh = qm
+    mi.set_meta("fx", {
+        "mat": mat, "cols": fx["cols"], "rows": fx["rows"],
+        "frames": fx["frames"], "fps": fx["fps"], "loop": loop,
+        "born": Time.get_ticks_msec(),
+    })
     ships_root.add_child(mi)
     return mi
 

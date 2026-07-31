@@ -123,4 +123,13 @@ else
     rc=1
 fi
 
+# the fireball names its flipbook (fireball_art_name -> the pof slot):
+# the first blast on the range is retail's exp04
+if grep -q "^art fireball explosion ani exp04$" "$tmp/fire.txt"; then
+    echo "OK: $(grep -m1 '^art fireball' "$tmp/fire.txt")"
+else
+    echo "FAIL: fireball ani name wrong or missing: $(grep -m1 '^art fireball' "$tmp/fire.txt" || echo none)"
+    rc=1
+fi
+
 exit $rc
