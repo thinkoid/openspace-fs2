@@ -11,7 +11,8 @@
 # <assets-dir> holds converted GLBs by POF stem (pof2glb); a class with no
 # GLB flies as a wireframe-gray box so the world stays honest about what it
 # knows. Controls: mouse steers (click to grab), A/Z throttle, \ full,
-# Backspace zero, Tab afterburner, Q/E roll, T target, V view (pilot's
+# Backspace zero, Tab afterburner, Q/E roll, T target, M match speed
+# (retail's tracking mode; manual throttle cancels), V view (pilot's
 # seat by default, chase on toggle), H hud, Esc quit.
 #
 # This scene IS the lesson and the battlefield: weapons (slice 3),
@@ -25,11 +26,23 @@ const ShipClass := preload("res://ship.gd")
 const SoundBankClass := preload("res://sound.gd")
 const RadarClass := preload("res://radar.gd")
 
-# retail names for the keys the training sexps watch (key-pressed "t"),
-# forwarded through key_mark so Control_config[].used carries the truth
+# retail names for the keys the training sexps watch (key-pressed "a"),
+# forwarded through key_mark so Control_config[].used carries the truth.
+# The census over Training-1/2/3 + the range: a t M H E C . Tab \
+# Backspace, plus Shift-/Alt- combinations built at forward time.
+# Training-1's "Fly within 125 meters" gates on key-pressed "a" AND the
+# distance -- a missing forward here stalled the lesson (field-reported).
 const KEY_NAMES := {
+    KEY_A: "a",
     KEY_T: "t",
     KEY_M: "M",
+    KEY_H: "H",
+    KEY_E: "E",
+    KEY_C: "C",
+    KEY_R: "R",
+    KEY_J: "J",
+    KEY_SLASH: "/",
+    KEY_PERIOD: ".",
     KEY_TAB: "Tab",
     KEY_BACKSLASH: "\\",
     KEY_BACKSPACE: "Backspace",
@@ -61,6 +74,7 @@ var first_person := true                    # V toggles the chase camera
 var aim_from := Vector3.ZERO                # boresight ray for the reticle,
 var aim_dir := Vector3.FORWARD              # godot frame
 var player_max_speed := 0.0                 # match-speed's denominator
+var match_target := false                   # M: retail's tracking mode
 var sounds                     # SoundBank, voice playback
 var last_text := ""
 var msg_deadline := 0
@@ -177,6 +191,12 @@ func _physics_process(delta: float) -> void:
         mouse_grabbed = true
         Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
+    # match mode: the set speed rides the target's actual speed, every
+    # frame, until toggled off or overridden at the throttle
+    if match_target and not target_rec.is_empty() and player_max_speed > 0.0:
+        throttle = clampf((target_rec["vel"] as Vector3).length()
+                          / player_max_speed, 0.0, 1.0)
+
     var burn := Input.is_key_pressed(KEY_TAB)
     var ci := {
         "pitch": clampf(_axis(KEY_UP, KEY_DOWN)
@@ -292,8 +312,9 @@ func _physics_process(delta: float) -> void:
         player_pos = player_rec["pos"]
         var vel: Vector3 = player_rec["vel"]
         var fv2: Vector3 = player_rec["fvec"]
-        hud_right.text = "speed %6.1f\nengine %4d%%" \
-            % [vel.dot(fv2), int(throttle * 100.0)]
+        hud_right.text = "speed %6.1f\nengine %4d%%%s" \
+            % [vel.dot(fv2), int(throttle * 100.0),
+               "\nmatch" if match_target else ""]
         hud_left.text = "%s\n%d ships" % [mission_name, ships.size()]
 
         # the hum follows the engine: silent at 0%, full voice under burn
@@ -555,29 +576,42 @@ func _unhandled_input(event: InputEvent) -> void:
         return
     if not (event is InputEventKey and event.pressed):
         return
-    # the training sexps watch retail key names; forward the press
+    # the training sexps watch retail key names; forward the press,
+    # modifiers spelled the way translate_key_to_index reads them
     if sim != null and KEY_NAMES.has(event.keycode):
-        sim.key_mark(KEY_NAMES[event.keycode])
+        var key_name: String = KEY_NAMES[event.keycode]
+        if event.shift_pressed:
+            key_name = "Shift-" + key_name
+        if event.alt_pressed:
+            key_name = "Alt-" + key_name
+        sim.key_mark(key_name)
     match event.keycode:
         KEY_A:
             # snappedf: ±0.1 float steps leave 5.5e-17 residue at "0%",
-            # and the glow's `throttle > 0` believes it (field-reported)
-            throttle = snappedf(clampf(throttle + 0.1, -1.0, 1.0), 0.1)
+            # and the glow's `throttle > 0` believes it (field-reported).
+            # 0..1 only: retail's set-speed never goes negative -- the
+            # physics knows reverse (max_rear_vel) but no player key
+            # commands it. Manual throttle input cancels match mode.
+            match_target = false
+            throttle = snappedf(clampf(throttle + 0.1, 0.0, 1.0), 0.1)
         KEY_Z:
-            throttle = snappedf(clampf(throttle - 0.1, -1.0, 1.0), 0.1)
+            match_target = false
+            throttle = snappedf(clampf(throttle - 0.1, 0.0, 1.0), 0.1)
         KEY_0:
+            match_target = false
             throttle = 0.0
         KEY_BACKSLASH:
+            match_target = false
             throttle = 1.0
         KEY_BACKSPACE:
+            match_target = false
             throttle = 0.0
         KEY_M:
-            # match speed: the target's current speed becomes the set
-            # throttle (retail's M against the boundary's forward axis)
-            if not target_rec.is_empty() and player_max_speed > 0.0:
-                throttle = clampf(
-                    (target_rec["vel"] as Vector3).length() / player_max_speed,
-                    0.0, 1.0)
+            # match speed, retail's semantics: a MODE that tracks the
+            # target's speed each frame until toggled off or overridden
+            # by a manual throttle input (field-corrected from the
+            # press-again-and-again snapshot)
+            match_target = not match_target
         KEY_V:
             first_person = not first_person
         KEY_H:
