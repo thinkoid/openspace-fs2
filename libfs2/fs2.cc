@@ -286,6 +286,14 @@ fs2_t::load(const char *game_root, const char *mission, int seed)
     // --- game_level_init (freespace.cc:872), the sim subset, same order.
     // Presentation-only entries stay out: game_flash_reset, shield_hit
     // decals, radar blip art. Everything else is world state.
+    //
+    // GM_NORMAL before the chain, retail's own precondition: the game
+    // carries it from startup, and level-load code branches on it --
+    // asteroid_create reads pos and angs ONLY inside `if (GM_NORMAL)`
+    // and builds the orientation from stack garbage otherwise (the
+    // multiplayer arm; the server used to overwrite it). A whole field
+    // of garbage-oriented rocks flakes the physics assert.
+    Game_mode = GM_NORMAL;
     srand(seed);
     Framecount = 0;
 
@@ -346,7 +354,7 @@ fs2_t::load(const char *game_root, const char *mission, int seed)
     debris_page_in();      // debris01/02.pof -- subsystem hits shed
                            // debris_create'd pieces of it
 
-    Game_mode = GM_NORMAL | GM_IN_MISSION;
+    Game_mode |= GM_IN_MISSION;
 
     m_world_live = true;
     m_burn_held = false;
