@@ -528,6 +528,10 @@ fs2_t::step(float dt, const flight_controls_t &controls)
     obj_move_all(flFrametime);
     mission_eval_goals();
     training_check_objectives();
+    // the training sexps' contexts: `speed` (hold a speed band),
+    // fly-path waypoint progress, `targeted`'s held-for timestamp --
+    // without this, Training-1's "fly at max speed" event never fires
+    game_do_training_checks();
     // the training-message queue promotes on the DISPLAY path in retail
     // (message_training_display calls it); a headless frame promotes here
     message_training_que_check();

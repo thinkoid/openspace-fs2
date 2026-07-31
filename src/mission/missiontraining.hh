@@ -15,6 +15,7 @@ extern int Training_failure;
 void training_mission_init();
 void training_mission_shutdown();
 void training_check_objectives();
+void game_do_training_checks();
 void message_training_que(char *text, int timestamp, int length = -1);
 void message_training_setup(int num, int length = -1);
 void message_training_display();

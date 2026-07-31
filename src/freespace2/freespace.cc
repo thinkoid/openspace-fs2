@@ -401,7 +401,6 @@ void game_maybe_draw_mouse(float frametime);
 void init_animating_pointer();
 void load_animating_pointer(const char *filename, int dx, int dy);
 void unload_animating_pointer();
-void game_do_training_checks();
 void game_shutdown(void);
 void game_show_event_debug(float frametime);
 void game_event_debug_init();
@@ -5492,58 +5491,9 @@ game_maybe_draw_mouse(float frametime)
         game_render_mouse(frametime);
 }
 
-void
-game_do_training_checks()
-{
-    int i, s;
-    float d;
-    waypoint_list *wplp;
-
-    if (Training_context & TRAINING_CONTEXT_SPEED) {
-        s = (int)Player_obj->phys_info.fspeed;
-        if ((s >= Training_context_speed_min) &&
-            (s <= Training_context_speed_max)) {
-            if (!Training_context_speed_set) {
-                Training_context_speed_set = 1;
-                Training_context_speed_timestamp = timestamp();
-            }
-        }
-        else
-            Training_context_speed_set = 0;
-    }
-
-    if (Training_context & TRAINING_CONTEXT_FLY_PATH) {
-        wplp = &Waypoint_lists[Training_context_path];
-        if (wplp->count > Training_context_goal_waypoint) {
-            i = Training_context_goal_waypoint;
-            do {
-                d = vm_vec_dist(&wplp->waypoints[i], &Player_obj->pos);
-                if (d <= Training_context_distance) {
-                    Training_context_at_waypoint = i;
-                    if (Training_context_goal_waypoint == i) {
-                        Training_context_goal_waypoint++;
-                        snd_play(&Snds[SND_CARGO_REVEAL], 0.0f);
-                    }
-
-                    break;
-                }
-
-                i++;
-                if (i == wplp->count)
-                    i = 0;
-
-            } while (i != Training_context_goal_waypoint);
-        }
-    }
-
-    if ((Players_target == UNINITIALIZED) ||
-        (Player_ai->target_objnum != Players_target) ||
-        (Player_ai->targeted_subsys != Players_targeted_subsys)) {
-        Players_target = Player_ai->target_objnum;
-        Players_targeted_subsys = Player_ai->targeted_subsys;
-        Players_target_timestamp = timestamp();
-    }
-}
+// game_do_training_checks moved to missiontraining.cc (2026-07-31): it is
+// pure simulation -- the training sexps' speed/fly-path/targeted contexts
+// -- and the library's frame needs it as much as game_frame does
 
 /////////// Following is for event debug view screen
 

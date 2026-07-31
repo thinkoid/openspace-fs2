@@ -25,6 +25,7 @@
 #include <bmpman/bmpman.hh>
 #include <hud/hudconfig.hh>
 #include <playerman/player.hh>
+#include <gamesnd/gamesnd.hh>
 #include <popup/popup.hh>
 #include <gamesequence/gamesequence.hh>
 #include <weapon/emp.hh>
@@ -1015,4 +1016,62 @@ training_fail()
     //   Give directive to warp out.
     //   Also ensure that a special failure debriefing is given.  Must mention firing at instructor.
     //   Ask Sandeep to write it (or you can).
+}
+
+// Moved from freespace.cc (2026-07-31): pure simulation feeding the
+// training sexps -- the speed context (`speed`), the fly-path context
+// (waypoint progress), and the target-held timestamp (`targeted`'s
+// held-for arm). Retail ran it in game_frame; the library's step runs
+// it too, which is why it lives here and not in the game's shell.
+void
+game_do_training_checks()
+{
+    int i, s;
+    float d;
+    waypoint_list *wplp;
+
+    if (Training_context & TRAINING_CONTEXT_SPEED) {
+        s = (int)Player_obj->phys_info.fspeed;
+        if ((s >= Training_context_speed_min) &&
+            (s <= Training_context_speed_max)) {
+            if (!Training_context_speed_set) {
+                Training_context_speed_set = 1;
+                Training_context_speed_timestamp = timestamp();
+            }
+        }
+        else
+            Training_context_speed_set = 0;
+    }
+
+    if (Training_context & TRAINING_CONTEXT_FLY_PATH) {
+        wplp = &Waypoint_lists[Training_context_path];
+        if (wplp->count > Training_context_goal_waypoint) {
+            i = Training_context_goal_waypoint;
+            do {
+                d = vm_vec_dist(&wplp->waypoints[i], &Player_obj->pos);
+                if (d <= Training_context_distance) {
+                    Training_context_at_waypoint = i;
+                    if (Training_context_goal_waypoint == i) {
+                        Training_context_goal_waypoint++;
+                        snd_play(&Snds[SND_CARGO_REVEAL], 0.0f);
+                    }
+
+                    break;
+                }
+
+                i++;
+                if (i == wplp->count)
+                    i = 0;
+
+            } while (i != Training_context_goal_waypoint);
+        }
+    }
+
+    if ((Players_target == UNINITIALIZED) ||
+        (Player_ai->target_objnum != Players_target) ||
+        (Player_ai->targeted_subsys != Players_targeted_subsys)) {
+        Players_target = Player_ai->target_objnum;
+        Players_targeted_subsys = Player_ai->targeted_subsys;
+        Players_target_timestamp = timestamp();
+    }
 }

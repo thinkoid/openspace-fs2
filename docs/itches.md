@@ -177,3 +177,15 @@ pin the layout premise permanently.
 affirmed correct (std::list itself is a thin-sentinel ring — libstdc++
 `_List_node_base` header, empty = self-loop); the fat head identified as
 the sole genuine wart, plus its cousin, the sentinel/node type confusion.
+
+## tests: the lesson-replay gate — a scripted pilot (2026-07-31)
+
+Training-1's event chain gates on PLAYER behavior the hands-off lesson
+gate cannot produce: keys pressed (a, \, Tab...), speed bands held
+(set-training-context-speed 73..77 + `speed 2`), distances closed and
+reopened (< 126, > 199). The A-key and speed-context stalls were both
+found by the user flying, not by a gate. The itch: a scripted pilot —
+sim_dump grows a keyframed control track (throttle/keys per frame
+range) or a small replay file, and the gate asserts the full Training-1
+directive sequence fires in order. game_do_training_checks (relocated
+to missiontraining.cc 2026-07-31) is the machinery under test.
