@@ -54,6 +54,8 @@ var ships := {}               # signature -> {node, is_ship, kind, radius}
 var flashes: Array[Dictionary] = []   # transient art: {node, deadline}
 var fx_cache := {}            # ani stem -> {tex, cols, rows, frames, fps},
                               # or null where the bake is missing
+var sky_root: Node3D          # the authored backdrop, riding the camera
+var key_light: DirectionalLight3D
 var player_sig := -1
 
 var throttle := 0.0
@@ -134,6 +136,7 @@ func _ready() -> void:
     _setup_camera()
     _setup_lights()
     _setup_starfield()
+    _setup_backdrop()
     _setup_hud()
 
     sounds = SoundBankClass.new()
@@ -423,6 +426,9 @@ func _physics_process(delta: float) -> void:
         player_node.visible = not first_person
         _update_camera(delta, player_node,
                        ships[player_sig]["radius"])
+        # the sky rides the camera: infinitely far, parallax-free
+        if sky_root and cam:
+            sky_root.position = cam.global_position
         player_pos = player_rec["pos"]
         var vel: Vector3 = player_rec["vel"]
         var fv2: Vector3 = player_rec["fvec"]
@@ -1194,9 +1200,9 @@ func _update_camera(delta: float, node: Node3D, radius: float) -> void:
                 node.basis.y)
 
 func _setup_lights() -> void:
-    var key := DirectionalLight3D.new()
-    key.rotation_degrees = Vector3(-35.0, 40.0, 0.0)
-    add_child(key)
+    key_light = DirectionalLight3D.new()
+    key_light.rotation_degrees = Vector3(-35.0, 40.0, 0.0)
+    add_child(key_light)
     var env := Environment.new()
     env.background_mode = Environment.BG_COLOR
     env.background_color = Color(0.02, 0.02, 0.04)
@@ -1219,7 +1225,8 @@ func _setup_starfield() -> void:
     mat.albedo_color = Color(0.9, 0.9, 1.0)
     s.material = mat
     mm.mesh = s
-    mm.instance_count = 800
+    # the mission's own star count ($Num stars), retail's dial
+    mm.instance_count = maxi(int(sim.num_stars()), 200)
     var rng := RandomNumberGenerator.new()
     rng.seed = 0x46533200  # deterministic sky ("FS2\0")
     for i in mm.instance_count:
@@ -1229,6 +1236,78 @@ func _setup_starfield() -> void:
     var mmi := MultiMeshInstance3D.new()
     mmi.multimesh = mm
     add_child(mmi)
+
+# the mission's authored sky, retail's own numbers: each element sits
+# along its instance matrix's uvec at retail's angular scale (a sun's
+# radius is 0.05*scale rad, a patch spans 10 deg * scale), painted on a
+# far shell that follows the camera (no parallax). stars.tbl decides the
+# blend -- $BitmapX green-key art by alpha, $Bitmap intensity art
+# additive -- and gives each sun the RGBI that takes over the key light.
+const SKY_R := 3200.0
+
+func _setup_backdrop() -> void:
+    sky_root = Node3D.new()
+    add_child(sky_root)
+
+    var suns := 0
+    for e in sim.backdrop():
+        var u: Vector3 = e["uvec"]
+        var r3: Vector3 = e["rvec"]
+        var f3: Vector3 = e["fvec"]
+        var dir := Vector3(u.x, u.y, -u.z)
+        var ax := Vector3(r3.x, r3.y, -r3.z)
+        var ay := Vector3(f3.x, f3.y, -f3.z)
+        var fx = _fx((e["name"] as String).to_lower())
+
+        if e["sun"]:
+            suns += 1
+            var li := key_light if suns == 1 and key_light \
+                else DirectionalLight3D.new()
+            if li.get_parent() == null:
+                add_child(li)
+            li.light_color = e["color"]
+            li.light_energy = maxf(e["intensity"], 0.1)
+            li.basis = Basis.looking_at(-dir)      # shines FROM the sun
+
+            var size: float = 2.0 * SKY_R * tan(0.05 * e["scale_x"])
+            var glow = _fx((e["glow"] as String).to_lower())
+            if glow != null:
+                sky_root.add_child(_sky_quad(glow["tex"], dir, ax, ay,
+                                             size * 2.2, size * 2.2,
+                                             false, true))
+            if fx != null:
+                sky_root.add_child(_sky_quad(fx["tex"], dir, ax, ay,
+                                             size, size, false, true))
+        elif fx != null:
+            var sx: float = 2.0 * SKY_R * tan(deg_to_rad(5.0 * e["scale_x"]))
+            var sy: float = 2.0 * SKY_R * tan(deg_to_rad(5.0 * e["scale_y"]))
+            sky_root.add_child(_sky_quad(fx["tex"], dir, ax, ay, sx, sy,
+                                         e["xparent"], false))
+
+func _sky_quad(tex: Texture2D, dir: Vector3, ax: Vector3, ay: Vector3,
+               sx: float, sy: float, alpha: bool,
+               billboard: bool) -> MeshInstance3D:
+    var mi := MeshInstance3D.new()
+    var qm := QuadMesh.new()
+    qm.size = Vector2(sx, sy)
+    var mat := StandardMaterial3D.new()
+    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    if alpha:
+        mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    else:
+        mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+    mat.albedo_texture = tex
+    mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+    mat.no_depth_test = true
+    mat.render_priority = -100         # the sky draws under everything
+    if billboard:
+        mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+    qm.material = mat
+    mi.mesh = qm
+    mi.position = dir * SKY_R
+    if not billboard:
+        mi.basis = Basis(ax, ay, dir)
+    return mi
 
 func _setup_hud() -> void:
     hud = CanvasLayer.new()

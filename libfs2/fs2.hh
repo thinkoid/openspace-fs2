@@ -147,6 +147,25 @@ struct directive_t {
     bool key_line;
 };
 
+// One sky element, as the mission authored it and retail's own structures
+// hold it: a sun (drawn at its direction, lighting the world in its RGBI)
+// or a background bitmap patch. orient is the instance's angle matrix --
+// the element sits along its uvec (retail rotates (0,1,0) by it); scale
+// is retail's angular scale (a sun's angular radius is 0.05 * scale_x,
+// stars_draw_sun; a patch spans 10 degrees * scale, 3ddraw.cc's
+// p_phi/p_theta). xparent tells the blend: stars.tbl $BitmapX green-key
+// art draws with alpha, plain $Bitmap intensity art draws additive.
+struct backdrop_t {
+    bool sun;
+    char name[32];
+    char glow[32];                     // suns: the glow bitmap ("" = none)
+    matrix orient;
+    float scale_x, scale_y;
+    int div_x, div_y;
+    bool xparent;
+    float r, g, b, i;                  // suns: the directional light
+};
+
 // The lesson's display half, value-only: what the training gauges would
 // draw this frame. training_text is empty outside a message's window
 // (retail's own text-length timing paces it headless -- the voice load
@@ -186,6 +205,8 @@ struct fs2_t {
     std::vector<object_state_t> snapshot() const;
     std::vector<event_t> events();     // drains
     hud_state_t hud_state() const;
+    std::vector<backdrop_t> backdrop() const;   // static per mission
+    int num_stars() const;             // the mission's $Num stars
 
     // mark a key used, by the mission's own name for it ("t", "M",
     // "Tab") -- the sexp key-pressed predicate reads the mark

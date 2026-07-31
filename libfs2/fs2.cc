@@ -45,6 +45,7 @@
 #include <ship/shipfx.hh>
 #include <ship/shiphit.hh>
 #include <sound/sound.hh>
+#include <starfield/starfield.hh>
 #include <starfield/supernova.hh>
 #include <stats/medals.hh>
 #include <stats/scoring.hh>
@@ -259,6 +260,9 @@ boot(const char *game_root)
                            // missions' SOC promotions) against Medals[]
     asteroid_init();       // asteroid.tbl; asteroid_create_all loads the
                            // field missions' POFs from Asteroid_info
+    stars_init();          // stars.tbl: the sun/backdrop CATALOG -- the
+                           // mission's #Background instances resolve
+                           // against it (sun light RGBI, blend mode)
     mflash_game_init();    // mflash.tbl BEFORE weapon_init: the weapon
                            // parse looks its $Muzzleflash: up here, and a
                            // failed lookup drops WIF_MFLASH -- which flak
@@ -732,6 +736,75 @@ fs2_t::hud_state() const
     }
 
     return out;
+}
+
+// the mission's authored sky: suns first, then the backdrop patches --
+// instances from the mission's #Background bitmaps, catalog facts (sun
+// RGBI + glow, blend mode) from stars.tbl via the same lookup the
+// renderer uses
+std::vector<backdrop_t>
+fs2_t::backdrop() const
+{
+    std::vector<backdrop_t> out;
+
+    if (!m_world_live)
+        return out;
+
+    for (int n = 0; n < Num_suns; n++) {
+        backdrop_t d;
+        memset(&d, 0, sizeof(d));
+        d.sun = true;
+        strncpy(d.name, Suns[n].filename, sizeof(d.name) - 1);
+        vm_angles_2_matrix(&d.orient, &Suns[n].ang);
+        d.scale_x = Suns[n].scale_x;
+        d.scale_y = Suns[n].scale_y;
+        d.div_x = Suns[n].div_x;
+        d.div_y = Suns[n].div_y;
+
+        int k = stars_find_sun(Suns[n].filename);
+        starfield_bitmap *bm = k >= 0 ? &Sun_bitmaps[k] : NULL;
+        if (bm) {
+            strncpy(d.glow, bm->glow_filename, sizeof(d.glow) - 1);
+            d.xparent = bm->xparent != 0;
+            d.r = bm->r;
+            d.g = bm->g;
+            d.b = bm->b;
+            d.i = bm->i;
+        }
+        out.push_back(d);
+    }
+
+    for (int n = 0; n < Num_starfield_bitmaps; n++) {
+        starfield_bitmap_instance *inst = &Starfield_bitmap_instance[n];
+        if (!inst->filename[0])
+            continue;
+
+        backdrop_t d;
+        memset(&d, 0, sizeof(d));
+        d.sun = false;
+        strncpy(d.name, inst->filename, sizeof(d.name) - 1);
+        vm_angles_2_matrix(&d.orient, &inst->ang);
+        d.scale_x = inst->scale_x;
+        d.scale_y = inst->scale_y;
+        d.div_x = inst->div_x;
+        d.div_y = inst->div_y;
+
+        for (int k = 0; k < MAX_STARFIELD_BITMAPS; k++) {
+            if (!stricmp(Starfield_bitmaps[k].filename, inst->filename)) {
+                d.xparent = Starfield_bitmaps[k].xparent != 0;
+                break;
+            }
+        }
+        out.push_back(d);
+    }
+
+    return out;
+}
+
+int
+fs2_t::num_stars() const
+{
+    return m_world_live ? Num_stars : 0;
 }
 
 std::vector<event_t>

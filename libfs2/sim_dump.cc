@@ -64,6 +64,16 @@ main(int argc, char *argv[])
     if (strcmp(argv[3], "layout") == 0) {
         for (const object_state_t &o : sim.snapshot())
             print_state(0, o);
+
+        // the authored sky, one line per element -- world-check pins
+        // training-1's sun against the mission text
+        for (const backdrop_t &d : sim.backdrop())
+            printf("backdrop %s %s glow %s uvec %.9g %.9g %.9g "
+                   "scale %.9g %.9g xparent %d rgbi %.9g %.9g %.9g %.9g\n",
+                   d.sun ? "sun" : "bitmap", d.name, d.glow[0] ? d.glow : "-",
+                   d.orient.uvec.x, d.orient.uvec.y, d.orient.uvec.z,
+                   d.scale_x, d.scale_y, int(d.xparent), d.r, d.g, d.b, d.i);
+        printf("backdrop stars %d\n", sim.num_stars());
         return 0;
     }
 

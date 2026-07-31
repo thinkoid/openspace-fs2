@@ -69,4 +69,22 @@ for f in "$root"/data/missions/*.fs2 "$(dirname "$checker")"/*.fs2; do
 done
 
 echo "missions: $((total - failed))/$total clean"
-[ $failed = 0 ]
+[ $failed = 0 ] || exit 1
+
+# the authored sky crosses: training-1's sun with its glow, the RGBI
+# light stars.tbl gives it, and the mission's own star count -- pinned
+# exactly (bites: dropped stars_init zeroes the RGBI; a dead parse
+# loses the sun)
+t1=$(find "$root/data/missions" -maxdepth 1 -iname 'training-1.fs2' | head -1)
+if [ -n "$t1" ]; then
+    "$sim" "$root" "$t1" layout > "$tmp/t1.backdrop" 2> /dev/null || true
+    if grep -q "^backdrop sun SunGold glow SunglowGold uvec 0\.38340795 0\.898794293 -0\.212525621 scale 2 2 xparent 1 rgbi 0\.74000001 0\.75999999 0\.439999998 1$" \
+            "$tmp/t1.backdrop" \
+       && grep -q "^backdrop stars 880$" "$tmp/t1.backdrop"; then
+        echo "OK: $(grep -c '^backdrop bitmap' "$tmp/t1.backdrop") backdrop patches + SunGold + 880 stars"
+    else
+        echo "FAIL: training-1 backdrop wrong or missing: $(grep -m1 '^backdrop' "$tmp/t1.backdrop" || echo none)"
+        exit 1
+    fi
+fi
+exit 0

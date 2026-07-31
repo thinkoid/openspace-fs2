@@ -84,6 +84,10 @@ protected:
         godot::ClassDB::bind_method(godot::D_METHOD("snapshot"),
                                     &FS2::snapshot);
         godot::ClassDB::bind_method(godot::D_METHOD("events"), &FS2::events);
+        godot::ClassDB::bind_method(godot::D_METHOD("backdrop"),
+                                    &FS2::backdrop);
+        godot::ClassDB::bind_method(godot::D_METHOD("num_stars"),
+                                    &FS2::num_stars);
         godot::ClassDB::bind_method(godot::D_METHOD("hud_state"),
                                     &FS2::hud_state);
         godot::ClassDB::bind_method(godot::D_METHOD("key_mark", "key_text"),
@@ -239,6 +243,32 @@ public:
 
         return out;
     }
+
+    // the mission's authored sky, static per load
+    godot::Array backdrop() const
+    {
+        godot::Array out;
+
+        for (const backdrop_t &d : m_sim.backdrop()) {
+            godot::Dictionary e;
+            e["sun"] = d.sun;
+            e["name"] = d.name;
+            e["glow"] = d.glow;
+            e["rvec"] = from_vec(d.orient.rvec);
+            e["uvec"] = from_vec(d.orient.uvec);
+            e["fvec"] = from_vec(d.orient.fvec);
+            e["scale_x"] = d.scale_x;
+            e["scale_y"] = d.scale_y;
+            e["xparent"] = d.xparent;
+            e["color"] = godot::Color(d.r, d.g, d.b);
+            e["intensity"] = d.i;
+            out.push_back(e);
+        }
+
+        return out;
+    }
+
+    int num_stars() const { return m_sim.num_stars(); }
 
     godot::Dictionary hud_state() const
     {
