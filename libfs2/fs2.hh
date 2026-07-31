@@ -84,6 +84,8 @@ struct object_state_t {
     vector vel;
     float hull;                        // current hull strength
     float hull_max;
+    float max_speed;                   // ships: phys_info.max_vel.z --
+                                       // match-speed's denominator
 };
 
 // The discontinuities between two events() drains: objects entering and

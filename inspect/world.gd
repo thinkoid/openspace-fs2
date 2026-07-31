@@ -60,6 +60,7 @@ var player_team := 0                        # for hostile/friendly coloring
 var first_person := true                    # V toggles the chase camera
 var aim_from := Vector3.ZERO                # boresight ray for the reticle,
 var aim_dir := Vector3.FORWARD              # godot frame
+var player_max_speed := 0.0                 # match-speed's denominator
 var sounds                     # SoundBank, voice playback
 var last_text := ""
 var msg_deadline := 0
@@ -320,6 +321,7 @@ func _update_combat_hud(prec: Dictionary, ship_recs: Array) -> void:
     player_team = pteam
     aim_from = Vector3(ppos.x, ppos.y, -ppos.z)
     aim_dir = Vector3(fv.x, fv.y, -fv.z)
+    player_max_speed = prec.get("max_speed", 0.0)
 
     var blips := []
     for rec in ship_recs:
@@ -569,6 +571,13 @@ func _unhandled_input(event: InputEvent) -> void:
             throttle = 1.0
         KEY_BACKSPACE:
             throttle = 0.0
+        KEY_M:
+            # match speed: the target's current speed becomes the set
+            # throttle (retail's M against the boundary's forward axis)
+            if not target_rec.is_empty() and player_max_speed > 0.0:
+                throttle = clampf(
+                    (target_rec["vel"] as Vector3).length() / player_max_speed,
+                    0.0, 1.0)
         KEY_V:
             first_person = not first_person
         KEY_H:
@@ -697,13 +706,15 @@ func _setup_hud() -> void:
     overlay.draw.connect(_draw_bracket)
     hud.add_child(overlay)
 
+    # the ticker sits ABOVE the help line's row -- at wide help texts the
+    # two used to meet in the bottom corner (field-reported overlap)
     ticker = _hud_label()
     ticker.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
     ticker.grow_horizontal = Control.GROW_DIRECTION_BEGIN
     ticker.grow_vertical = Control.GROW_DIRECTION_BEGIN
     ticker.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
     ticker.offset_right = -16
-    ticker.offset_bottom = -12
+    ticker.offset_bottom = -56
     hud.add_child(ticker)
 
     var help := _hud_label()
@@ -711,7 +722,8 @@ func _setup_hud() -> void:
     help.grow_vertical = Control.GROW_DIRECTION_BEGIN
     help.offset_left = 16
     help.offset_bottom = -12
-    help.text = "mouse steers, Q/E roll, A/Z throttle, \\ full, Tab burner, T target, V view, H hud, Esc quit"
+    help.add_theme_font_size_override("font_size", 24)
+    help.text = "mouse steers, Q/E roll, A/Z throttle, \\ full, Tab burner, T target, M match, V view, H hud, Esc quit"
     hud.add_child(help)
 
 static func _hud_label() -> Label:

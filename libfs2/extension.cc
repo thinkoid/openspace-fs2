@@ -168,6 +168,7 @@ public:
             d["vel"] = from_vec(o.vel);
             d["hull"] = o.hull;
             d["hull_max"] = o.hull_max;
+            d["max_speed"] = o.max_speed;
             out.push_back(d);
         }
 

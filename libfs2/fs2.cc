@@ -413,6 +413,7 @@ record_of(object *objp)
     rec.afterburner = (objp->phys_info.flags & PF_AFTERBURNER_ON) != 0;
     rec.hull = objp->hull_strength;
     rec.hull_max = sip->initial_hull_strength;
+    rec.max_speed = objp->phys_info.max_vel.z;
 
     return rec;
 }
