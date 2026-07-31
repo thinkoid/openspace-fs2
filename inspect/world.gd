@@ -406,7 +406,12 @@ func _spawn(sig: int, rec: Dictionary) -> void:
                        "radius": 1.0 }
         return
     if kind == "fireball" or kind == "debris":
-        ships[sig] = { "node": _simple_node(kind, rec["radius"]),
+        # the boundary tags fireballs: an arrival's warp effect is not
+        # an explosion
+        var art := kind
+        if rec.get("class", "") == "warp":
+            art = "warp"
+        ships[sig] = { "node": _simple_node(art, rec["radius"]),
                        "is_ship": false, "radius": rec["radius"] }
         return
 
@@ -459,6 +464,24 @@ func _simple_node(kind: String, radius: float) -> Node3D:
             mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
             sm.material = mat
             mi.mesh = sm
+        "warp":
+            # the arrival flash: retail's warp effect is a plane normal
+            # to the ship's approach -- a blue-white disc, facing the
+            # record's fvec (the mesh turns; the node's basis stays the
+            # reconciler's to set)
+            var wm := CylinderMesh.new()
+            wm.top_radius = maxf(radius, 1.0)
+            wm.bottom_radius = wm.top_radius
+            wm.height = 0.4
+            mat.albedo_color = Color(0.5, 0.75, 1.0, 0.85)
+            mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+            wm.material = mat
+            mi.mesh = wm
+            mi.rotation_degrees = Vector3(90, 0, 0)
+            var wrap := Node3D.new()
+            wrap.add_child(mi)
+            ships_root.add_child(wrap)
+            return wrap
         "debris":
             var db := BoxMesh.new()
             var s: float = clampf(radius, 0.5, 6.0)

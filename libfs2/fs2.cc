@@ -385,7 +385,14 @@ record_of(object *objp)
         strncpy(rec.class_name, wip->name, sizeof(rec.class_name) - 1);
         return rec;
     }
-    if (objp->type == OBJ_FIREBALL || objp->type == OBJ_DEBRIS)
+    if (objp->type == OBJ_FIREBALL) {
+        // the one distinction presentation needs: an arrival's warp
+        // effect is not an explosion (retail's own accessor)
+        strncpy(rec.class_name, fireball_is_warp(objp) ? "warp" : "explosion",
+                sizeof(rec.class_name) - 1);
+        return rec;
+    }
+    if (objp->type == OBJ_DEBRIS)
         return rec;
 
     ship *shipp = &Ships[objp->instance];

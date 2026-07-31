@@ -38,6 +38,7 @@ crashed=0
 arrivals=0
 kills=0
 chatter=0
+warps=0
 for f in "$root"/data/missions/*.fs2; do
     m=$(basename "$f")
     total=$((total + 1))
@@ -60,9 +61,13 @@ for f in "$root"/data/missions/*.fs2; do
     if grep -q "^event [0-9]* message " "$tmp/$m.out"; then
         chatter=$((chatter + 1))
     fi
+    # an arrival announcing itself: the warp-in's positioned sound
+    if grep -q "^event [0-9]* sound warp.*at " "$tmp/$m.out"; then
+        warps=$((warps + 1))
+    fi
 done
 
-echo "missions: $((total - crashed))/$total clean, $arrivals with arrivals, $kills with AI kills, $chatter with chatter"
+echo "missions: $((total - crashed))/$total clean, $arrivals with arrivals, $kills with AI kills, $chatter with chatter, $warps with warp arrivals"
 
 rc=0
 [ $crashed = 0 ] || rc=1
@@ -77,6 +82,10 @@ if [ $kills = 0 ]; then
 fi
 if [ $chatter = 0 ]; then
     echo "FAIL: no radio chatter anywhere in the corpus"
+    rc=1
+fi
+if [ $warps = 0 ]; then
+    echo "FAIL: no arrival ever announced itself (positioned warp sound)"
     rc=1
 fi
 # somewhere a message must carry its voice wave -- the capture happens
