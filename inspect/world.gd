@@ -11,7 +11,8 @@
 # <assets-dir> holds converted GLBs by POF stem (pof2glb); a class with no
 # GLB flies as a wireframe-gray box so the world stays honest about what it
 # knows. Controls: mouse steers (click to grab), A/Z throttle, \ full,
-# Backspace zero, Tab afterburner, Q/E roll, H hud, Esc quit.
+# Backspace zero, Tab afterburner, Q/E roll, T target, V view (pilot's
+# seat by default, chase on toggle), H hud, Esc quit.
 #
 # This scene IS the lesson and the battlefield: weapons (slice 3),
 # training messages and directives (slice 4), radio chatter, the combat
@@ -56,6 +57,9 @@ var target_monitor: Label
 var target_sig := -1                        # hud_state's target_signature
 var target_rec := {}                        # its snapshot record this frame
 var player_team := 0                        # for hostile/friendly coloring
+var first_person := true                    # V toggles the chase camera
+var aim_from := Vector3.ZERO                # boresight ray for the reticle,
+var aim_dir := Vector3.FORWARD              # godot frame
 var sounds                     # SoundBank, voice playback
 var last_text := ""
 var msg_deadline := 0
@@ -128,6 +132,21 @@ func _ready() -> void:
         engine_hum.play()
 
     print("world: %s native, root %s" % [mission_name, root])
+
+# a stream still playing at exit leaks its playback pair past ObjectDB
+# cleanup (the "N instances leaked" warning); stop() alone races the mix
+# thread, so the stream references drop too -- silence AND let go
+func _exit_tree() -> void:
+    if engine_hum:
+        engine_hum.stop()
+        engine_hum.stream = null
+    if sounds:
+        sounds.voice.stop()
+        sounds.voice.stream = null
+        for p in sounds.pool:
+            p.stop()
+            p.stream = null
+        sounds.cache.clear()
 
 func _fatal(msg: String) -> void:
     printerr("world: " + msg)
@@ -265,6 +284,8 @@ func _physics_process(delta: float) -> void:
                 else Color(0, 0, 0)
 
     if player_node:
+        # own hull out of the pilot's eyes; back for the chase view
+        player_node.visible = not first_person
         _update_camera(delta, player_node,
                        ships[player_sig]["radius"])
         player_pos = player_rec["pos"]
@@ -297,6 +318,8 @@ func _update_combat_hud(prec: Dictionary, ship_recs: Array) -> void:
     var fv: Vector3 = prec["fvec"]
     var pteam: int = prec["team"]
     player_team = pteam
+    aim_from = Vector3(ppos.x, ppos.y, -ppos.z)
+    aim_dir = Vector3(fv.x, fv.y, -fv.z)
 
     var blips := []
     for rec in ship_recs:
@@ -323,9 +346,21 @@ func _update_combat_hud(prec: Dictionary, ship_recs: Array) -> void:
     overlay.queue_redraw()
 
 # the target bracket: corners around the target's screen extent, sized by
-# its radius at distance, teamed by color
+# its radius at distance, teamed by color -- and the reticle on the
+# boresight (screen center in first person, the nose's true line in chase)
 func _draw_bracket() -> void:
-    if target_rec.is_empty() or cam == null:
+    if cam == null:
+        return
+
+    var aim := aim_from + aim_dir * 1000.0
+    if not cam.is_position_behind(aim):
+        var rp := cam.unproject_position(aim)
+        var rc := Color(0.4, 1.0, 0.5, 0.9)
+        overlay.draw_arc(rp, 12.0, 0.0, TAU, 32, rc, 1.5)
+        for d: Vector2 in [Vector2.RIGHT, Vector2.LEFT, Vector2.UP, Vector2.DOWN]:
+            overlay.draw_line(rp + d * 7.0, rp + d * 16.0, rc, 1.5)
+
+    if target_rec.is_empty():
         return
     var p3: Vector3 = target_rec["pos"]
     var v := Vector3(p3.x, p3.y, -p3.z)
@@ -534,6 +569,8 @@ func _unhandled_input(event: InputEvent) -> void:
             throttle = 1.0
         KEY_BACKSPACE:
             throttle = 0.0
+        KEY_V:
+            first_person = not first_person
         KEY_H:
             hud.visible = not hud.visible
         KEY_ESCAPE:
@@ -547,6 +584,14 @@ func _setup_camera() -> void:
 
 func _update_camera(delta: float, node: Node3D, radius: float) -> void:
     var r := maxf(radius, 1.0)
+
+    # the pilot's seat: rigid on the hull, eye a touch above center (the
+    # hull itself is hidden in this view); V swaps to the chase camera
+    if first_person:
+        cam.position = node.position + node.basis * Vector3(0.0, r * 0.12, 0.0)
+        cam.basis = node.basis
+        return
+
     var target: Vector3 = node.position \
         + node.basis * Vector3(0.0, r * 0.6, r * 2.2)
     var k := 1.0 - exp(-6.0 * delta)
@@ -666,7 +711,7 @@ func _setup_hud() -> void:
     help.grow_vertical = Control.GROW_DIRECTION_BEGIN
     help.offset_left = 16
     help.offset_bottom = -12
-    help.text = "mouse steers, Q/E roll, A/Z throttle, \\ full, Tab burner, H hud, Esc quit"
+    help.text = "mouse steers, Q/E roll, A/Z throttle, \\ full, Tab burner, T target, V view, H hud, Esc quit"
     hud.add_child(help)
 
 static func _hud_label() -> Label:
