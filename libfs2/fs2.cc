@@ -456,6 +456,11 @@ record_of(object *objp)
         rec.shield[i] = objp->shields[i];
     rec.shield_max = sip->shields;
 
+    rec.weapon_energy = shipp->weapon_energy;
+    rec.weapon_energy_max = sip->max_weapon_reserve;
+    rec.burner_fuel = shipp->afterburner_fuel;
+    rec.burner_fuel_max = sip->afterburner_fuel_capacity;
+
     return rec;
 }
 
@@ -629,10 +634,23 @@ fs2_t::hud_state() const
     hud_state_t out;
     out.training_text[0] = '\0';
     out.training_voice[0] = '\0';
+    out.primary_speed = 0.0f;
     out.target_signature = -1;
 
     if (!m_world_live)
         return out;
+
+    // the selected primary's muzzle speed -- with the target's motion
+    // (both already in the snapshot) it completes the lead solution
+    if (Player_obj && Player_obj->type == OBJ_SHIP) {
+        const ship_weapon &w = Ships[Player_obj->instance].weapons;
+        if (w.current_primary_bank >= 0 &&
+            w.current_primary_bank < w.num_primary_banks) {
+            int wi = w.primary_bank_weapons[w.current_primary_bank];
+            if (wi >= 0)
+                out.primary_speed = Weapon_info[wi].max_speed;
+        }
+    }
 
     // the player's target, as retail's own targeting state has it --
     // signature, not objnum, so the presenter keys into its snapshot map;

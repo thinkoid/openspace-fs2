@@ -95,6 +95,11 @@ struct object_state_t {
                                        // (hudshield.cc:250)
     float shield_max;                  // ship_info.shields, the total
 
+    float weapon_energy;               // ships: the EU reserve the primaries
+    float weapon_energy_max;           // draw from, and its ceiling
+    float burner_fuel;                 // afterburner fuel and capacity
+    float burner_fuel_max;
+
     unsigned char laser_rgb[3];        // lasers: the current cycle color
                                        // (weapon_get_laser_color)
     float laser_length;                // lasers: the bolt's tbl size
@@ -144,6 +149,9 @@ struct hud_state_t {
     char training_text[8192];
     char training_voice[64];
     std::vector<directive_t> directives;
+    float primary_speed;               // the selected primary's muzzle
+                                       // speed -- the lead indicator's
+                                       // one input the scene lacks
     int target_signature;              // the player's current target
                                        // (Player_ai), -1 = none
 };

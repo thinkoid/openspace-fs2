@@ -176,6 +176,10 @@ public:
                 shield.push_back(o.shield[i]);
             d["shield"] = shield;
             d["shield_max"] = o.shield_max;
+            d["weapon_energy"] = o.weapon_energy;
+            d["weapon_energy_max"] = o.weapon_energy_max;
+            d["burner_fuel"] = o.burner_fuel;
+            d["burner_fuel_max"] = o.burner_fuel_max;
 
             // the bolt's art, normalized to Godot's color space
             d["color"] = godot::Color(o.laser_rgb[0] / 255.0f,
@@ -240,6 +244,7 @@ public:
 
         out["training_text"] = h.training_text;
         out["training_voice"] = h.training_voice;
+        out["primary_speed"] = h.primary_speed;
         out["target_signature"] = h.target_signature;
 
         godot::Array dirs;

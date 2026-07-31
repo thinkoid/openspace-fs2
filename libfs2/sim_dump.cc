@@ -189,6 +189,11 @@ main(int argc, char *argv[])
                     printf("art shield '%s' %.9g %.9g %.9g %.9g max %.9g\n",
                            o.name, o.shield[0], o.shield[1], o.shield[2],
                            o.shield[3], o.shield_max);
+                    printf("art player energy %.9g/%.9g burner %.9g/%.9g "
+                           "gun_speed %.9g\n",
+                           o.weapon_energy, o.weapon_energy_max,
+                           o.burner_fuel, o.burner_fuel_max,
+                           sim.hud_state().primary_speed);
                     shield_shown = true;
                 }
             }

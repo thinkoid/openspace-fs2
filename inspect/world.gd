@@ -70,6 +70,15 @@ var overlay: Control                        # target bracket, drawn 2d
 var target_monitor: Label
 var target_sig := -1                        # hud_state's target_signature
 var target_rec := {}                        # its snapshot record this frame
+var target_view: SubViewport                # the monitor's little world
+var target_view_root: Node3D                # the target's model, turning
+var target_view_cam: Camera3D
+var target_view_pof := ""                   # the model currently in the well
+var lead_speed := 0.0                       # the primary's muzzle speed
+var player_vel := Vector3.ZERO              # FS2 frame, lead solution input
+var player_shield: Array = []               # own quadrants, for the icon
+var player_shield_max := 0.0
+var player_hull_frac := 1.0
 var player_team := 0                        # for hostile/friendly coloring
 var first_person := true                    # V toggles the chase camera
 var aim_from := Vector3.ZERO                # boresight ray for the reticle,
@@ -210,6 +219,9 @@ func _physics_process(delta: float) -> void:
         "fire_primary": mouse_grabbed and
             (Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
              or Input.is_key_pressed(KEY_CTRL)),
+        "fire_secondary": mouse_grabbed and
+            (Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT)
+             or Input.is_key_pressed(KEY_SPACE)),
         "target_next": Input.is_key_pressed(KEY_T),
     }
     mouse_accum = Vector2.ZERO
@@ -359,9 +371,13 @@ func _physics_process(delta: float) -> void:
         player_pos = player_rec["pos"]
         var vel: Vector3 = player_rec["vel"]
         var fv2: Vector3 = player_rec["fvec"]
-        hud_right.text = "speed %6.1f\nengine %4d%%%s" \
+        hud_right.text = "speed %6.1f\nengine %4d%%%s\ngun  %4d%%\nburn %4d%%" \
             % [vel.dot(fv2), int(throttle * 100.0),
-               "\nmatch" if match_target else ""]
+               "\nmatch" if match_target else "",
+               int(100.0 * player_rec["weapon_energy"]
+                   / maxf(player_rec["weapon_energy_max"], 1.0)),
+               int(100.0 * player_rec["burner_fuel"]
+                   / maxf(player_rec["burner_fuel_max"], 1.0))]
         hud_left.text = "%s\n%d ships" % [mission_name, ships.size()]
 
         # the hum follows the engine: silent at 0%, full voice under burn
@@ -390,6 +406,10 @@ func _update_combat_hud(prec: Dictionary, ship_recs: Array) -> void:
     aim_from = Vector3(ppos.x, ppos.y, -ppos.z)
     aim_dir = Vector3(fv.x, fv.y, -fv.z)
     player_max_speed = prec.get("max_speed", 0.0)
+    player_vel = prec["vel"]
+    player_shield = prec.get("shield", [])
+    player_shield_max = prec.get("shield_max", 0.0)
+    player_hull_frac = prec["hull"] / maxf(prec["hull_max"], 1.0)
 
     var blips := []
     for rec in ship_recs:
@@ -413,7 +433,41 @@ func _update_combat_hud(prec: Dictionary, ship_recs: Array) -> void:
             target_rec["name"], target_rec["class"],
             int(100.0 * target_rec["hull"] / maxf(target_rec["hull_max"], 1.0)),
             ((target_rec["pos"] as Vector3) - ppos).length()]
+
+    _update_target_view()
     overlay.queue_redraw()
+
+# the monitor's model well follows the target: rebuild on a class change,
+# keep it turning while held
+func _update_target_view() -> void:
+    var pof: String = target_rec.get("pof", "")
+    if pof != target_view_pof:
+        target_view_pof = pof
+        for c in target_view_root.get_children():
+            c.queue_free()
+        if not pof.is_empty():
+            var radius: float = maxf(
+                ships.get(target_sig, {}).get("radius", 10.0), 1.0)
+            var stem := pof.get_basename().to_lower()
+            var glb := assets_dir.path_join(stem + ".glb")
+            var node: Node3D = null
+            if FileAccess.file_exists(glb):
+                var m = ShipClass.new()
+                if m.load_ship(glb):
+                    node = m
+            if node == null:
+                var box := MeshInstance3D.new()
+                var mesh := BoxMesh.new()
+                mesh.size = Vector3(radius, radius * 0.5, radius * 1.6)
+                box.mesh = mesh
+                node = box
+            target_view_root.rotation = Vector3.ZERO
+            target_view_root.add_child(node)
+            target_view_cam.look_at_from_position(
+                Vector3(0, radius * 0.5, radius * 2.6), Vector3.ZERO,
+                Vector3.UP)
+    if not target_view_pof.is_empty():
+        target_view_root.rotation.y += get_physics_process_delta_time() * 0.6
 
 # the target bracket: corners around the target's screen extent, sized by
 # its radius at distance, teamed by color -- and the reticle on the
@@ -430,8 +484,24 @@ func _draw_bracket() -> void:
         for d: Vector2 in [Vector2.RIGHT, Vector2.LEFT, Vector2.UP, Vector2.DOWN]:
             overlay.draw_line(rp + d * 7.0, rp + d * 16.0, rc, 1.5)
 
+    # the pilot's own bubble and hull, the left wing of the gauge row
+    var sz := overlay.size
+    if not player_shield.is_empty():
+        _draw_shield_icon(Vector2(sz.x * 0.5 - 470, sz.y - 122),
+                          player_shield, player_shield_max / 4.0,
+                          player_hull_frac, Color(0.45, 0.85, 1.0))
+
     if target_rec.is_empty():
         return
+
+    # the target's bubble, framing the monitor's model well
+    _draw_shield_icon(Vector2(sz.x * 0.5 - 250, sz.y - 122),
+                      target_rec.get("shield", []),
+                      float(target_rec.get("shield_max", 0.0)) / 4.0,
+                      target_rec["hull"] / maxf(target_rec["hull_max"], 1.0),
+                      Color(1.0, 0.55, 0.4) if target_rec["team"] != player_team
+                      else Color(0.45, 1.0, 0.55))
+
     var p3: Vector3 = target_rec["pos"]
     var v := Vector3(p3.x, p3.y, -p3.z)
     if cam.is_position_behind(v):
@@ -447,6 +517,58 @@ func _draw_bracket() -> void:
         var c := p + corner * half
         overlay.draw_line(c, c - Vector2(corner.x * arm, 0), col, 2.0)
         overlay.draw_line(c, c - Vector2(0, corner.y * arm), col, 2.0)
+
+    # the lead indicator: put the reticle on the dot and the bolts meet
+    # the target -- an intercept on RELATIVE motion, because bolts
+    # inherit the shooter's velocity (|R + Vt| = s*t, smallest t > 0)
+    if lead_speed <= 0.0:
+        return
+    var rp3 := (target_rec["pos"] as Vector3) - player_pos
+    var rv3 := (target_rec["vel"] as Vector3) - player_vel
+    var a := rv3.dot(rv3) - lead_speed * lead_speed
+    var b := 2.0 * rp3.dot(rv3)
+    var cc := rp3.dot(rp3)
+    var t := -1.0
+    if absf(a) < 1e-3:
+        if absf(b) > 1e-6:
+            t = -cc / b
+    else:
+        var disc := b * b - 4.0 * a * cc
+        if disc >= 0.0:
+            var sq := sqrt(disc)
+            var t1 := (-b - sq) / (2.0 * a)
+            var t2 := (-b + sq) / (2.0 * a)
+            t = t1 if t1 > 0.0 else t2
+    if t > 0.0 and t < 10.0:
+        var lead: Vector3 = (target_rec["pos"] as Vector3) \
+            + (target_rec["vel"] as Vector3) * t
+        var lv := Vector3(lead.x, lead.y, -lead.z)
+        if not cam.is_position_behind(lv):
+            var lp := cam.unproject_position(lv)
+            overlay.draw_circle(lp, 3.5, col)
+            overlay.draw_arc(lp, 8.0, 0.0, TAU, 24, col, 1.5)
+
+# the shield/hull icon: four arcs in retail's display order -- front on
+# top, then right, rear, left (Quadrant_xlate {1,0,2,3}, hudshield.cc:88,
+# over get_quadrant's octants, shield.cc:824) -- each arc's brightness is
+# its quadrant's charge; the center bar is the hull
+func _draw_shield_icon(center: Vector2, quads: Array, qmax: float,
+                       hull_frac: float, base: Color) -> void:
+    if quads.size() >= 4 and qmax > 0.0:
+        var order: Array[int] = [1, 0, 2, 3]          # top, right, bottom, left
+        var mid: Array[float] = [-PI / 2, 0.0, PI / 2, PI]
+        for i in 4:
+            var frac := clampf(float(quads[order[i]]) / qmax, 0.0, 1.0)
+            if frac <= 0.02:
+                continue
+            var c := base
+            c.a = 0.2 + 0.8 * frac
+            overlay.draw_arc(center, 34.0, mid[i] - 0.55, mid[i] + 0.55,
+                             12, c, 5.0)
+    var hc := Color(0.4, 1.0, 0.5) if hull_frac > 0.5 \
+        else (Color(1.0, 0.8, 0.3) if hull_frac > 0.25 else Color(1.0, 0.35, 0.3))
+    overlay.draw_rect(Rect2(center - Vector2(16, 6),
+                            Vector2(32.0 * clampf(hull_frac, 0.0, 1.0), 12)), hc)
 
 # the chatter window: recent radio lines, each shown for its own
 # text-length window (the voice may run longer -- lines scroll off,
@@ -468,6 +590,7 @@ func _update_chatter() -> void:
 func _update_lesson() -> void:
     var h: Dictionary = sim.hud_state()
     target_sig = int(h.get("target_signature", -1))
+    lead_speed = float(h.get("primary_speed", 0.0))
 
     var lines: Array[String] = []
     for d in h["directives"]:
@@ -923,6 +1046,30 @@ func _setup_hud() -> void:
     target_monitor.grow_vertical = Control.GROW_DIRECTION_BEGIN
     hud.add_child(target_monitor)
 
+    # the target view: a little world of its own with the target's model
+    # turning in it -- retail's target monitor, left of the radar; the
+    # overlay draws the target's shield arcs around this box
+    var view_box := SubViewportContainer.new()
+    view_box.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+    view_box.offset_left = -360
+    view_box.offset_right = -140
+    view_box.offset_top = -232
+    view_box.offset_bottom = -12
+    view_box.stretch = true
+    view_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    target_view = SubViewport.new()
+    target_view.own_world_3d = true
+    target_view.transparent_bg = true
+    target_view_cam = Camera3D.new()
+    target_view.add_child(target_view_cam)
+    var key_light := DirectionalLight3D.new()
+    key_light.rotation_degrees = Vector3(-35, 40, 0)
+    target_view.add_child(key_light)
+    target_view_root = Node3D.new()
+    target_view.add_child(target_view_root)
+    view_box.add_child(target_view)
+    hud.add_child(view_box)
+
     overlay = Control.new()
     overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
     overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -946,7 +1093,7 @@ func _setup_hud() -> void:
     help.offset_left = 16
     help.offset_bottom = -12
     help.add_theme_font_size_override("font_size", 24)
-    help.text = "mouse steers, Q/E roll, A/Z throttle, \\ full, Tab burner, T target, M match, V view, H hud, Esc quit"
+    help.text = "mouse steers + fires (RMB missile), Q/E roll, A/Z throttle, \\ full, Tab burner, T target, M match, V view, H hud, Esc quit"
     hud.add_child(help)
 
 static func _hud_label() -> Label:

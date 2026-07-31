@@ -101,6 +101,14 @@ else
     rc=1
 fi
 
+if grep -q "^art player energy 150/150 burner 320/320 gun_speed 450$" \
+        "$tmp/fire.txt"; then
+    echo "OK: $(grep -m1 '^art player' "$tmp/fire.txt")"
+else
+    echo "FAIL: player HUD freight wrong or missing: $(grep -m1 '^art player' "$tmp/fire.txt" || echo none)"
+    rc=1
+fi
+
 if grep -q "^art missile Piranha pof piranha\.pof$" "$tmp/fire.txt"; then
     echo "OK: $(grep -m1 '^art missile' "$tmp/fire.txt")"
 else
