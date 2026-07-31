@@ -301,6 +301,30 @@ func _physics_process(delta: float) -> void:
             if node.has_meta("bolt_mat"):
                 (node.get_meta("bolt_mat") as StandardMaterial3D) \
                     .albedo_color = rec.get("color", Color(1.0, 0.35, 0.25))
+            if node.has_meta("stretch") and cam:
+                # the velocity-stretched billboard: quad center between
+                # head (the record pos) and tail, face to camera, long
+                # axis = the flight axis' screen projection, length
+                # collapsing to a fat blob end-on -- retail's
+                # g3_draw_laser look, depth-tested
+                var st: Dictionary = node.get_meta("stretch")
+                var f3: Vector3 = rec["fvec"]
+                var dirw := Vector3(f3.x, f3.y, -f3.z).normalized()
+                var bolt_len: float = st["len"]
+                var center: Vector3 = node.position - dirw * (bolt_len * 0.5)
+                var to_cam := (cam.global_position - center).normalized()
+                var lx := dirw - dirw.dot(to_cam) * to_cam
+                var lp := bolt_len * lx.length()
+                var wq: float = st["r"] * 2.0
+                if lx.length() < 0.05:
+                    lx = to_cam.cross(Vector3.UP)
+                    if lx.length() < 0.05:
+                        lx = to_cam.cross(Vector3.RIGHT)
+                lx = lx.normalized()
+                lp = maxf(lp, wq * 1.4)
+                node.position = center
+                node.basis = Basis(lx * lp, to_cam.cross(lx).normalized() * wq,
+                                   to_cam)
         elif node.has_meta("fx"):
             # the flipbook plays by age: frame from the sidecar's fps,
             # looped (warp) or held at the last (explosions burn out as
@@ -856,35 +880,38 @@ func _bolt_node(rec: Dictionary) -> Node3D:
     var body = _fx((rec.get("laser_bitmap", "") as String)
                    .get_basename().to_lower())
     if body != null:
-        # quad local X carries the streak's long axis; y-rotation lays it
-        # along the bolt's -Z, the roller crosses the second copy
-        for roll: float in [0.0, 90.0]:
-            var roller := Node3D.new()
-            roller.rotation_degrees = Vector3(0, 0, roll)
-            var mi := MeshInstance3D.new()
-            # retail's g3_draw_laser geometry: the record pos is the
-            # HEAD, the streak trails behind it (+Z local), one head
-            # radius each side of the axis
-            mi.position = Vector3(0, 0, length * 0.5)
-            var qm := QuadMesh.new()
-            qm.size = Vector2(length, r * 2.0)
-            var mat := StandardMaterial3D.new()
-            mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-            mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-            mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-            mat.albedo_texture = body["tex"]
-            qm.material = mat
-            mi.mesh = qm
-            mi.rotation_degrees = Vector3(0, 90, 0)
-            roller.add_child(mi)
-            wrap.add_child(roller)
+        # retail's g3_draw_laser stretches the sprite between the
+        # PROJECTED head and tail -- a screen-space draw. The 3D
+        # equivalent (depth-tested, unlike a HUD overlay) is a
+        # velocity-stretched billboard: a unit quad whose basis the
+        # reconciler rebuilds every frame -- face to the camera, long
+        # axis along the flight axis' screen projection, length
+        # collapsing toward a fat blob end-on. A plane merely
+        # CONTAINING the axis is edge-on to your own fire and vanishes
+        # (field-reported "not retail").
+        var mi := MeshInstance3D.new()
+        var qm := QuadMesh.new()
+        qm.size = Vector2.ONE
+        var mat := StandardMaterial3D.new()
+        mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+        mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+        mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+        mat.albedo_texture = body["tex"]
+        qm.material = mat
+        mi.mesh = qm
+        wrap.add_child(mi)
+        wrap.set_meta("stretch", { "len": length, "r": r })
 
         var glow = _fx((rec.get("laser_glow", "") as String)
                        .get_basename().to_lower())
         if glow != null:
-            # head-circle proportions: bigger washes the first-person
-            # view flat red (additive saturation at muzzle distance)
+            # rides the HEAD end (+X/2 through the stretched basis);
+            # billboard keep_scale stays false, so the parent's stretch
+            # never inflates it. Head-circle proportions: bigger washes
+            # the first-person view flat red (additive saturation at
+            # muzzle distance).
             var gm := MeshInstance3D.new()
+            gm.position = Vector3(0.5, 0, 0)
             var gq := QuadMesh.new()
             gq.size = Vector2(r * 2.6, r * 2.6)
             var gmat := StandardMaterial3D.new()
