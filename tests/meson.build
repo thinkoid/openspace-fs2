@@ -92,6 +92,19 @@ test('tex-check', find_program('tex_check.sh'),
     depends: [pof2glb, pcx_dump],
     timeout: 120)
 
+# ani2png bakes the effects flipbooks through retail's own anim code;
+# ani-check re-derives every install ani with check_ani.py (an independent
+# from-scratch reader) and compares atlases pixel-for-pixel -- tex-check's
+# pattern for animated art.
+test('ani-check', find_program('ani_check.sh'),
+    args: [
+        ani2png.full_path(),
+        meson.current_source_dir() / 'check_ani.py',
+        meson.project_source_root(),
+    ],
+    depends: [ani2png],
+    timeout: 240)
+
 # The converter's manifest, verified by re-deriving every SHA-256 with python
 # hashlib -- an independent implementation, so this doubles as the oracle for
 # pof2glb's hand-rolled digest -- plus a convert-twice byte-compare pinning

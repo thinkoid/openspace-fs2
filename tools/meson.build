@@ -33,6 +33,16 @@ vpstage = executable('vpstage',
     link_with: foundation,
     dependencies: [sdl2_dep, openal_dep, gl_dep])
 
+# ani2png bakes the retail effects flipbooks (.ani -> RGBA PNG atlas + JSON
+# sidecar) through retail's own anim code -- the authoritative decoder, like
+# vpstage's cfile -- with stb writing the PNG like pof2glb's textures.
+ani2png = executable('ani2png',
+    ['ani2png.cc'] + oracle_stubs,
+    include_directories: [inc, include_directories('../third-party/stb')],
+    link_with: foundation,
+    dependencies: [sdl2_dep, openal_dep, gl_dep],
+    cpp_args: ['-Wno-unused-function'])
+
 # shiptbl2tres runs retail's weapon_init + ship_init (the real parse_shiptbl)
 # and emits the flight-parameter subset of Ship_info as a Godot .tres --
 # ships.tbl read by its one authoritative reader, like vpstage's cfile.
