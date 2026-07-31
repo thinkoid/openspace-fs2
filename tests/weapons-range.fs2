@@ -82,8 +82,8 @@ $Cargo 1:  XSTR("Nothing", 13)
 +Initial Hull: 100
 +Subsystem: Pilot
 +Primary Banks: ( "Subach HL-7" "" )
-+Secondary Banks: ( "" "" "" )
-+Sbank Ammo: ( 0 0 0 )
++Secondary Banks: ( "Piranha" "" "" )
++Sbank Ammo: ( 100 0 0 )
 $Arrival Location: Hyperspace
 $Arrival Cue: ( true )
 $Departure Location: Hyperspace

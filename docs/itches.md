@@ -178,6 +178,20 @@ affirmed correct (std::list itself is a thin-sentinel ring — libstdc++
 `_List_node_base` header, empty = self-loop); the fat head identified as
 the sole genuine wart, plus its cousin, the sentinel/node type confusion.
 
+## tools: DDS decode — texture the MediaVP models (2026-07-31)
+
+The MediaVPs (assets/ = mv_assets + _s + _t, 2020 vintage) are the
+art-revamp lane. pof2glb eats their POFs clean (MediaVP Fighter01 =
+5503 tris vs retail's ~500; sample bake in build/glb-mv/), but every
+MediaVP map is DDS (BC1/BC3 block compression) and both texture
+consumers speak only PCX — pof2glb's stb transcode and pofview's
+pcx.cc. One BC1/BC3 decoder textures both. The formats are small
+(4x4 blocks, two endpoint colors + 2-bit indices; BC3 adds an alpha
+block), so a hand-rolled decoder in the PCX/SHA-256 tradition is the
+likely shape — but it is a dependency-vs-hand-roll question to ASK
+before starting. Separate gap: the Ulysses hull map (ulsss) is not in
+these three VPs at all — MV_Root.vp must be fetched.
+
 ## tests: the lesson-replay gate — a scripted pilot (2026-07-31)
 
 Training-1's event chain gates on PLAYER behavior the hands-off lesson

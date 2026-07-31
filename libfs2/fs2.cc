@@ -144,14 +144,26 @@ fs2_t::version() const
 
 // gr_screen color stores, the mission2tres recipe: table parsing pokes
 // two function pointers; everything else graphical stays untouched
+// deviceless, but not lossless: the rgb payload is sim-visible truth
+// (weapon_get_laser_color cycles a laser's color through here, and the
+// bolt art crosses the boundary) -- record it exactly as grx_init_color
+// would; only the device bookkeeping stays dead
 static void
-null_init_color(color *, int, int, int)
+null_init_color(color *clr, int r, int g, int b)
 {
+    clr->red = (ubyte)r;
+    clr->green = (ubyte)g;
+    clr->blue = (ubyte)b;
+    clr->alpha = 255;
 }
 
 static void
-null_init_alphacolor(color *, int, int, int, int, int)
+null_init_alphacolor(color *clr, int r, int g, int b, int alpha, int)
 {
+    clr->red = (ubyte)r;
+    clr->green = (ubyte)g;
+    clr->blue = (ubyte)b;
+    clr->alpha = (ubyte)alpha;
 }
 
 static void
@@ -383,6 +395,31 @@ record_of(object *objp)
         weapon_info *wip =
             &Weapon_info[Weapons[objp->instance].weapon_info_index];
         strncpy(rec.class_name, wip->name, sizeof(rec.class_name) - 1);
+
+        // the bolt's art: lasers cross their tbl size and the current
+        // cycle color; a POF-rendered weapon (missiles) crosses its model
+        // instead and the presenter loads it like any hull
+        rec.laser_length = wip->laser_length;
+        rec.laser_head_radius = wip->laser_head_radius;
+        if (wip->render_type == WRT_POF) {
+            strncpy(rec.pof, wip->pofbitmap_name, sizeof(rec.pof) - 1);
+        }
+        else {
+            color c;
+            memset(&c, 0, sizeof(c));
+            weapon_get_laser_color(&c, objp);
+            rec.laser_rgb[0] = c.red;
+            rec.laser_rgb[1] = c.green;
+            rec.laser_rgb[2] = c.blue;
+        }
+        return rec;
+    }
+    if (objp->type == OBJ_SHOCKWAVE) {
+        // the blast front: the object's radius is pinned at the outer
+        // ceiling from creation; the expanding front the presenter scales
+        // to is the shockwave's own
+        strncpy(rec.class_name, "shockwave", sizeof(rec.class_name) - 1);
+        rec.radius = Shockwaves[objp->instance].radius;
         return rec;
     }
     if (objp->type == OBJ_FIREBALL) {
@@ -414,6 +451,10 @@ record_of(object *objp)
     rec.hull = objp->hull_strength;
     rec.hull_max = sip->initial_hull_strength;
     rec.max_speed = objp->phys_info.max_vel.z;
+
+    for (int i = 0; i < MAX_SHIELD_SECTIONS; i++)
+        rec.shield[i] = objp->shields[i];
+    rec.shield_max = sip->shields;
 
     return rec;
 }
@@ -566,7 +607,7 @@ fs2_t::snapshot() const
          objp != END_OF_LIST(&obj_used_list); objp = GET_NEXT(objp)) {
         if (objp->type != OBJ_SHIP && objp->type != OBJ_START &&
             objp->type != OBJ_WEAPON && objp->type != OBJ_FIREBALL &&
-            objp->type != OBJ_DEBRIS)
+            objp->type != OBJ_DEBRIS && objp->type != OBJ_SHOCKWAVE)
             continue;
         out.push_back(record_of(objp));
     }

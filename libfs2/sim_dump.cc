@@ -81,6 +81,10 @@ main(int argc, char *argv[])
 
     const float dt = 1.0f / 60.0f;
     int last_target = -1;
+    bool bolt_shown = false;
+    bool shield_shown = false;
+    bool missile_shown = false;
+    bool shockwave_shown = false;
 
     for (int frame = 1; frame <= frames; frame++) {
         if (firing) {
@@ -144,6 +148,11 @@ main(int argc, char *argv[])
                 controls.heading = fmaxf(-1.0f, fminf(1.0f, right * 50.0f));
                 controls.pitch = fmaxf(-1.0f, fminf(1.0f, -up * 50.0f));
                 controls.fire_primary = fwd > 0.98f;
+
+                // an occasional missile off the rail: heat-seekers
+                // self-acquire in the launch cone, and a warhead's blast
+                // is the corpus's one reliable shockwave witness
+                controls.fire_secondary = fwd > 0.98f && frame % 240 == 0;
             }
 
             // a periodic target-next pulse: the gunner aims by snapshot,
@@ -155,6 +164,35 @@ main(int argc, char *argv[])
         }
 
         sim.step(dt, controls);
+
+        // one-shot art lines, each record kind's first crossing -- the
+        // gate pins all four: laser color + tbl size, player shields,
+        // the missile's POF, the expanding blast front
+        if (firing && (!bolt_shown || !shield_shown || !missile_shown ||
+                       !shockwave_shown)) {
+            for (const object_state_t &o : sim.snapshot()) {
+                if (!bolt_shown && o.type == OBJ_WEAPON && !o.pof[0]) {
+                    printf("art bolt %s len %.9g r %.9g rgb %d %d %d\n",
+                           o.class_name, o.laser_length, o.laser_head_radius,
+                           o.laser_rgb[0], o.laser_rgb[1], o.laser_rgb[2]);
+                    bolt_shown = true;
+                }
+                if (!missile_shown && o.type == OBJ_WEAPON && o.pof[0]) {
+                    printf("art missile %s pof %s\n", o.class_name, o.pof);
+                    missile_shown = true;
+                }
+                if (!shockwave_shown && o.type == OBJ_SHOCKWAVE) {
+                    printf("art shockwave frame %d r %.9g\n", frame, o.radius);
+                    shockwave_shown = true;
+                }
+                if (!shield_shown && o.player) {
+                    printf("art shield '%s' %.9g %.9g %.9g %.9g max %.9g\n",
+                           o.name, o.shield[0], o.shield[1], o.shield[2],
+                           o.shield[3], o.shield_max);
+                    shield_shown = true;
+                }
+            }
+        }
 
         // target acquisitions and losses, recorded as they happen
         {

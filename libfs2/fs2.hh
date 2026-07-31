@@ -62,8 +62,10 @@ struct flight_state_t {
 // One mission object, value-only, as the snapshot reports it. The signature
 // is retail's own stable id (object.signature, minted to outlive objnum
 // reuse) -- the reconciler keys scene nodes by it. type is retail's OBJ_*:
-// ships carry the full record; weapons, fireballs and debris carry the
-// kinematic core (class name where they have one, radius always).
+// ships carry the full record; weapons, fireballs, debris and shockwaves
+// carry the kinematic core (class name where they have one, radius always;
+// a shockwave's radius is the LIVE blast front, not the object's static
+// outer ceiling). Lasers add their art; missiles carry their POF instead.
 struct object_state_t {
     int signature;
     int objnum;
@@ -86,6 +88,17 @@ struct object_state_t {
     float hull_max;
     float max_speed;                   // ships: phys_info.max_vel.z --
                                        // match-speed's denominator
+
+    float shield[4];                   // ships: retail's quadrants
+                                       // (object.shields[]); a quadrant's
+                                       // ceiling is shield_max / 4
+                                       // (hudshield.cc:250)
+    float shield_max;                  // ship_info.shields, the total
+
+    unsigned char laser_rgb[3];        // lasers: the current cycle color
+                                       // (weapon_get_laser_color)
+    float laser_length;                // lasers: the bolt's tbl size
+    float laser_head_radius;
 };
 
 // The discontinuities between two events() drains: objects entering and

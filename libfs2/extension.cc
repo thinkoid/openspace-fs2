@@ -148,10 +148,11 @@ public:
             godot::Dictionary d;
             d["signature"] = o.signature;
             switch (o.type) {
-            case OBJ_WEAPON:   d["type"] = "weapon"; break;
-            case OBJ_FIREBALL: d["type"] = "fireball"; break;
-            case OBJ_DEBRIS:   d["type"] = "debris"; break;
-            default:           d["type"] = "ship"; break;
+            case OBJ_WEAPON:    d["type"] = "weapon"; break;
+            case OBJ_FIREBALL:  d["type"] = "fireball"; break;
+            case OBJ_DEBRIS:    d["type"] = "debris"; break;
+            case OBJ_SHOCKWAVE: d["type"] = "shockwave"; break;
+            default:            d["type"] = "ship"; break;
             }
             d["radius"] = o.radius;
             d["name"] = o.name;
@@ -169,6 +170,20 @@ public:
             d["hull"] = o.hull;
             d["hull_max"] = o.hull_max;
             d["max_speed"] = o.max_speed;
+
+            godot::Array shield;
+            for (int i = 0; i < 4; i++)
+                shield.push_back(o.shield[i]);
+            d["shield"] = shield;
+            d["shield_max"] = o.shield_max;
+
+            // the bolt's art, normalized to Godot's color space
+            d["color"] = godot::Color(o.laser_rgb[0] / 255.0f,
+                                      o.laser_rgb[1] / 255.0f,
+                                      o.laser_rgb[2] / 255.0f);
+            d["laser_length"] = o.laser_length;
+            d["laser_radius"] = o.laser_head_radius;
+
             out.push_back(d);
         }
 

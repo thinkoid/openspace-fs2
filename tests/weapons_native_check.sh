@@ -79,4 +79,40 @@ else
     rc=1
 fi
 
+# the art freight, each record kind's first crossing pinned exactly:
+# the laser's tbl size + cycle color (through the deviceless
+# gr_init_color stub -- a zeroed rgb means the stub went lossy again),
+# the player's shield quadrants (390 total, 97.5 each: ships.tbl's
+# Myrmidon), the missile's POF, and a live expanding shockwave record
+# (the Piranha detonates even on a miss)
+if grep -q "^art bolt Subach HL-7 len 10 r 0\.899999976 rgb 245 0 4$" \
+        "$tmp/fire.txt"; then
+    echo "OK: $(grep -m1 '^art bolt' "$tmp/fire.txt")"
+else
+    echo "FAIL: laser bolt art wrong or missing: $(grep -m1 '^art bolt' "$tmp/fire.txt" || echo none)"
+    rc=1
+fi
+
+if grep -q "^art shield 'Alpha 1' 97\.5 97\.5 97\.5 97\.5 max 390$" \
+        "$tmp/fire.txt"; then
+    echo "OK: $(grep -m1 '^art shield' "$tmp/fire.txt")"
+else
+    echo "FAIL: player shield freight wrong or missing: $(grep -m1 '^art shield' "$tmp/fire.txt" || echo none)"
+    rc=1
+fi
+
+if grep -q "^art missile Piranha pof piranha\.pof$" "$tmp/fire.txt"; then
+    echo "OK: $(grep -m1 '^art missile' "$tmp/fire.txt")"
+else
+    echo "FAIL: missile POF never crossed: $(grep -m1 '^art missile' "$tmp/fire.txt" || echo none)"
+    rc=1
+fi
+
+if grep -q "^art shockwave frame [0-9]* r [0-9]" "$tmp/fire.txt"; then
+    echo "OK: $(grep -m1 '^art shockwave' "$tmp/fire.txt")"
+else
+    echo "FAIL: no shockwave record ever crossed"
+    rc=1
+fi
+
 exit $rc
