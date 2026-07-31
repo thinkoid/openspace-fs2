@@ -59,8 +59,6 @@ var key_light: DirectionalLight3D
 var view_box: SubViewportContainer    # the target monitor's screen box
 var retail_hud := false       # the 1024 gauge art loaded
 var hud_s := 1.0              # 1024x768 field scale (fits the window)
-var hud_ox := 0.0             # centered field's origin
-var hud_oy := 0.0
 var player_shield: Array = []
 var player_shield_max := 0.0
 var player_icon := ""         # ships.tbl $Shield_icon ani stem
@@ -808,7 +806,7 @@ func _draw_shield_ani(stem: String, quads: Array, qmax: float,
     var fx = _fx(stem)
     if fx == null or int(fx["frames"]) < 5:
         return
-    var dst := Rect2(Vector2(hud_ox + x1024 * hud_s, hud_oy + y1024 * hud_s),
+    var dst := Rect2(_hud_pos(x1024, y1024, "bc"),
                      Vector2(fx["w"] * hud_s, fx["h"] * hud_s))
     overlay.draw_texture_rect_region(fx["tex"], dst, _fx_region(fx, 0),
                                      HUD_GREEN)
@@ -1606,13 +1604,31 @@ func _setup_hud() -> void:
 # full-index face like the radar scope is a dim green pane, not paint)
 const HUD_GREEN := Color(0.25, 0.95, 0.35, 0.5)
 
+# each piece anchors to what it serves (field report: gauges belong to
+# the WINDOW's bottom, not a letterboxed field): the reticle cluster to
+# the screen center (the boresight), the monitor cluster to the
+# bottom-left corner, the radar cluster to bottom-center. Coordinates
+# stay retail's 1024 numbers, measured from retail's own anchors --
+# reticle center (512,385), field bottom 768, field left/center.
 const HUD_PIECES := [
-    ["2_toparc1", 386, 219], ["2_toparc2", 640, 393],
-    ["2_toparc3", 631, 419], ["2_leftarc", 346, 269],
-    ["2_rightarc1", 574, 269], ["2_reticle1", 493, 370],
-    ["2_radar1", 411, 590], ["targetview1", 5, 590],
-    ["targetview2", 5, 555],
+    ["2_toparc1", 386, 219, "c"], ["2_toparc2", 640, 393, "c"],
+    ["2_toparc3", 631, 419, "c"], ["2_leftarc", 346, 269, "c"],
+    ["2_rightarc1", 574, 269, "c"], ["2_reticle1", 493, 370, "c"],
+    ["2_radar1", 411, 590, "bc"], ["targetview1", 5, 590, "bl"],
+    ["targetview2", 5, 555, "bl"],
 ]
+
+var hud_vp := Vector2(1024, 768)
+
+func _hud_pos(x: float, y: float, anchor: String) -> Vector2:
+    match anchor:
+        "c":
+            return hud_vp * 0.5 + Vector2(x - 512.0, y - 385.0) * hud_s
+        "bc":
+            return Vector2(hud_vp.x * 0.5 + (x - 512.0) * hud_s,
+                           hud_vp.y - (768.0 - y) * hud_s)
+        _:  # "bl"
+            return Vector2(x * hud_s, hud_vp.y - (768.0 - y) * hud_s)
 
 func _fx_region(fx: Dictionary, frame: int) -> Rect2:
     var cols: int = fx["cols"]
@@ -1636,8 +1652,8 @@ func _setup_retail_hud() -> void:
         tr.modulate = HUD_GREEN
         tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
         hud.add_child(tr)
-        hud_rects.append({ "tr": tr, "fx": fx,
-                           "x": piece[1], "y": piece[2] })
+        hud_rects.append({ "tr": tr, "fx": fx, "x": piece[1],
+                           "y": piece[2], "anchor": piece[3] })
     retail_hud = not hud_rects.is_empty()
     if not retail_hud:
         return
@@ -1659,18 +1675,13 @@ func _setup_retail_hud() -> void:
     _layout_retail_hud()
 
 func _layout_retail_hud() -> void:
-    # the 1024x768 field fits the window whatever its shape; gauges
-    # cluster at retail's own places within it
-    var vp := get_viewport().get_visible_rect().size
-    hud_s = minf(vp.x / 1024.0, vp.y / 768.0)
-    hud_ox = (vp.x - 1024.0 * hud_s) * 0.5
-    hud_oy = (vp.y - 768.0 * hud_s) * 0.5
+    hud_vp = get_viewport().get_visible_rect().size
+    hud_s = minf(hud_vp.x / 1024.0, hud_vp.y / 768.0)
 
     for e in hud_rects:
         var fx: Dictionary = e["fx"]
         var tr: TextureRect = e["tr"]
-        tr.position = Vector2(hud_ox + e["x"] * hud_s,
-                              hud_oy + e["y"] * hud_s)
+        tr.position = _hud_pos(e["x"], e["y"], e["anchor"])
         tr.size = Vector2(fx["w"] * hud_s, fx["h"] * hud_s)
 
     # the working widgets sit in the retail frames: blips over the radar
@@ -1678,18 +1689,19 @@ func _layout_retail_hud() -> void:
     # target well in targetview1's screen, its text beside the frame
     var rfx = _fx("2_radar1")
     if rfx != null:
-        radar.position = Vector2(hud_ox + 411.0 * hud_s,
-                                 hud_oy + 590.0 * hud_s)
+        radar.art_only = true
+        radar.position = _hud_pos(411.0, 590.0, "bc")
         radar.size = Vector2(rfx["w"] * hud_s, rfx["h"] * hud_s)
 
     var tv = _fx("targetview1")
     if tv != null:
-        view_box.position = Vector2(hud_ox + 13.0 * hud_s,
-                                    hud_oy + 598.0 * hud_s)
+        view_box.position = _hud_pos(13.0, 598.0, "bl")
         view_box.size = Vector2((tv["w"] - 16.0) * hud_s,
                                 (tv["h"] - 36.0) * hud_s)
-    target_monitor.position = Vector2(hud_ox + 150.0 * hud_s,
-                                      hud_oy + 598.0 * hud_s)
+        # the frame-space readout (name/class/hull/distance) rides just
+        # right of the monitor frame
+        target_monitor.position = _hud_pos(5.0 + tv["w"] + 10.0, 598.0,
+                                           "bl")
 
 static func _hud_label() -> Label:
     var font := SystemFont.new()

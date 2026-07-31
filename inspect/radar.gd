@@ -54,16 +54,20 @@ static func lead_point(tpos: Vector3, tvel: Vector3, ppos: Vector3,
         return tpos
     return tpos + tvel * (tpos.distance_to(ppos) / bolt_speed)
 
+var art_only := false      # retail's 2_radar1 frame behind us: draw
+                           # blips alone, no home-grown scope chrome
+
 func _draw() -> void:
     var c := size / 2.0
     var r: float = minf(c.x, c.y)
 
-    # the scope: rim, the half-radius beam ring, crosshair
-    var line := Color(0.35, 0.6, 0.4, 0.8)
-    draw_arc(c, r - 1.0, 0.0, TAU, 64, line, 2.0)
-    draw_arc(c, r * 0.5, 0.0, TAU, 48, Color(line, 0.35), 1.0)
-    draw_line(c - Vector2(r, 0), c + Vector2(r, 0), Color(line, 0.35))
-    draw_line(c - Vector2(0, r), c + Vector2(0, r), Color(line, 0.35))
+    if not art_only:
+        # the scope: rim, the half-radius beam ring, crosshair
+        var line := Color(0.35, 0.6, 0.4, 0.8)
+        draw_arc(c, r - 1.0, 0.0, TAU, 64, line, 2.0)
+        draw_arc(c, r * 0.5, 0.0, TAU, 48, Color(line, 0.35), 1.0)
+        draw_line(c - Vector2(r, 0), c + Vector2(r, 0), Color(line, 0.35))
+        draw_line(c - Vector2(0, r), c + Vector2(0, r), Color(line, 0.35))
 
     for b in blips:
         var v: Vector2 = b["disc"] * r
