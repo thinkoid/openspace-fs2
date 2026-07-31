@@ -56,19 +56,15 @@ var fx_cache := {}            # ani stem -> {tex, cols, rows, frames, fps},
                               # or null where the bake is missing
 var sky_root: Node3D          # the authored backdrop, riding the camera
 var key_light: DirectionalLight3D
-var view_box: SubViewportContainer    # the target monitor's screen box
-var retail_hud := false       # the 1024 gauge art loaded
-var hud_s := 1.0              # 1024x768 field scale (fits the window)
 var player_shield: Array = []
 var player_shield_max := 0.0
-var player_icon := ""         # ships.tbl $Shield_icon ani stem
+var player_hull_frac := 1.0
 var player_sig := -1
 
 var throttle := 0.0
 var cam: Camera3D
 var hud: CanvasLayer
 var hud_left: Label
-var hud_right: Label
 var ticker: Label
 var ticker_lines: Array[String] = []
 var directives: Label
@@ -76,16 +72,18 @@ var training_msg: Label
 var chatter: Label
 var chatter_lines: Array[Dictionary] = []   # {line, deadline}
 var radar: Control                          # the retired file's art, live
-var overlay: Control                        # target bracket, drawn 2d
+var overlay: Control                        # the HUD symbology, drawn 2d
 var target_monitor: Label
 var target_sig := -1                        # hud_state's target_signature
 var target_rec := {}                        # its snapshot record this frame
-var target_view: SubViewport                # the monitor's little world
-var target_view_root: Node3D                # the target's model, turning
-var target_view_cam: Camera3D
-var target_view_pof := ""                   # the model currently in the well
 var lead_speed := 0.0                       # the primary's muzzle speed
 var player_vel := Vector3.ZERO              # FS2 frame, lead solution input
+var player_speed := 0.0                     # forward speed, the tape's needle
+var player_energy_frac := 1.0               # gun reserve fraction
+var player_burner_frac := 1.0               # afterburner fuel fraction
+var target_range := 0.0                     # to the target, meters
+var target_closure := 0.0                   # smoothed d(range)/dt, m/s
+var hud_font: SystemFont                    # overlay text (Iosevka)
 var player_team := 0                        # for hostile/friendly coloring
 var first_person := true                    # V toggles the chase camera
 var aim_from := Vector3.ZERO                # boresight ray for the reticle,
@@ -144,7 +142,6 @@ func _ready() -> void:
     _setup_starfield()
     _setup_backdrop()
     _setup_hud()
-    _setup_retail_hud()
 
     sounds = SoundBankClass.new()
     add_child(sounds)
@@ -483,13 +480,11 @@ func _physics_process(delta: float) -> void:
         var fwd_speed := vel.dot(fv2)
         if absf(fwd_speed) < 0.05:
             fwd_speed = 0.0            # %6.1f would print "-0.0"
-        hud_right.text = "speed %6.1f\nengine %4d%%%s\ngun  %4d%%\nburn %4d%%" \
-            % [fwd_speed, int(throttle * 100.0),
-               "\nmatch" if match_target else "",
-               int(100.0 * player_rec["weapon_energy"]
-                   / maxf(player_rec["weapon_energy_max"], 1.0)),
-               int(100.0 * player_rec["burner_fuel"]
-                   / maxf(player_rec["burner_fuel_max"], 1.0))]
+        player_speed = fwd_speed
+        player_energy_frac = player_rec["weapon_energy"] \
+            / maxf(player_rec["weapon_energy_max"], 1.0)
+        player_burner_frac = player_rec["burner_fuel"] \
+            / maxf(player_rec["burner_fuel_max"], 1.0)
         # ships only -- the node table also holds bolts, fireballs and
         # debris, and "7 ships" after a kill was a lie (field-reported)
         hud_left.text = "%s\n%d ships" % [mission_name, ship_recs.size()]
@@ -523,7 +518,7 @@ func _update_combat_hud(prec: Dictionary, ship_recs: Array) -> void:
     player_vel = prec["vel"]
     player_shield = prec.get("shield", [])
     player_shield_max = prec.get("shield_max", 0.0)
-    player_icon = (prec.get("shield_icon", "") as String).to_lower()
+    player_hull_frac = prec["hull"] / maxf(prec["hull_max"], 1.0)
 
     var blips := []
     for rec in ship_recs:
@@ -542,59 +537,24 @@ func _update_combat_hud(prec: Dictionary, ship_recs: Array) -> void:
 
     if target_rec.is_empty():
         target_monitor.text = ""
+        target_range = 0.0
+        target_closure = 0.0
     else:
         # a dying ship's record carries the overkill (hull below zero)
-        target_monitor.text = "%s\n%s\nhull %3d%%  %5.0f m" % [
+        target_monitor.text = "%s\n%s\nhull %3d%%" % [
             target_rec["name"], target_rec["class"],
             maxi(0, int(100.0 * target_rec["hull"]
-                        / maxf(target_rec["hull_max"], 1.0))),
-            ((target_rec["pos"] as Vector3) - ppos).length()]
+                        / maxf(target_rec["hull_max"], 1.0)))]
+        # range and closure (positive = closing), smoothed for the box
+        var rng := ((target_rec["pos"] as Vector3) - ppos).length()
+        var dt := get_physics_process_delta_time()
+        if dt > 0.0 and target_range > 0.0:
+            target_closure = lerpf(target_closure,
+                                   (target_range - rng) / dt, 0.15)
+        target_range = rng
 
-    _update_target_view()
     overlay.queue_redraw()
 
-# the monitor's model well follows the target: rebuild on a class change,
-# keep it turning while held
-func _update_target_view() -> void:
-    var pof: String = target_rec.get("pof", "")
-    if pof != target_view_pof:
-        target_view_pof = pof
-        for c in target_view_root.get_children():
-            c.queue_free()
-        if not pof.is_empty():
-            var stem := pof.get_basename().to_lower()
-            var glb := assets_dir.path_join(stem + ".glb")
-            var node: Node3D = null
-            if FileAccess.file_exists(glb):
-                var m = ShipClass.new()
-                if m.load_ship(glb):
-                    node = m
-            if node == null:
-                var radius: float = maxf(
-                    ships.get(target_sig, {}).get("radius", 10.0), 1.0)
-                var box := MeshInstance3D.new()
-                var mesh := BoxMesh.new()
-                mesh.size = Vector3(radius, radius * 0.5, radius * 1.6)
-                box.mesh = mesh
-                node = box
-            target_view_root.rotation = Vector3.ZERO
-            target_view_root.add_child(node)
-
-            # frame what the eye gets: the POF radius counts far-flung
-            # gear (drone01 says 27.5 for a hull that measures ~15 across)
-            # and a camera backed off by it shrinks the target to a speck
-            # against the transparent starfield -- the "missing" monitor
-            # (field-reported). Center on the visible bounds and fill the
-            # well from them.
-            var bounds := _visual_bounds(node)
-            var extent := maxf(bounds.get_longest_axis_size() * 0.5, 1.0)
-            node.position = -bounds.get_center()
-            target_view_cam.fov = 40.0
-            var dist := extent / tan(deg_to_rad(20.0)) * 1.15
-            target_view_cam.look_at_from_position(
-                Vector3(0, dist * 0.25, dist), Vector3.ZERO, Vector3.UP)
-    if not target_view_pof.is_empty():
-        target_view_root.rotation.y += get_physics_process_delta_time() * 0.6
 
 # retail's engine dress: the cone submodels wear the species thruster
 # flipbook as their texture (retail animates the thruster maps onto the
@@ -686,80 +646,122 @@ func _debris_node(rec: Dictionary) -> Node3D:
                 m.queue_free()
     return _simple_node("debris", rec["radius"])
 
-# the merged AABB of a model's visible meshes, in the model's own frame --
-# accumulated transforms, no global_transform (valid in or out of tree)
-static func _visual_bounds(model: Node3D) -> AABB:
-    var bounds := AABB()
-    var first := true
-    var stack: Array = [[model, Transform3D.IDENTITY]]
-    while not stack.is_empty():
-        var top: Array = stack.pop_back()
-        var node: Node = top[0]
-        var xf: Transform3D = top[1]
-        if node is Node3D:
-            if not (node as Node3D).visible:
-                continue
-            xf = xf * (node as Node3D).transform
-        if node is MeshInstance3D:
-            var box: AABB = xf * (node as MeshInstance3D).get_aabb()
-            bounds = box if first else bounds.merge(box)
-            first = false
-        for c in node.get_children():
-            stack.append([c, xf])
-    return bounds
+# the flight HUD, jet symbology (docs/hud-design.md): boresight where
+# the guns POINT, the velocity vector where the ship GOES, a speed tape
+# with the commanded caret, energy/burner bars, shield-quadrant glyphs,
+# the target box with range and closure AT the box, an edge chevron when
+# the target leaves the view, and the lead intercept. Every number is
+# the sim's; only the drawing is the scene's.
+const HUD_LINE := Color(0.4, 1.0, 0.5, 0.9)
+const HUD_DIM := Color(0.4, 1.0, 0.5, 0.45)
+const HUD_MATCH := Color(0.45, 0.8, 1.0, 0.95)
 
-# the target bracket: corners around the target's screen extent, sized by
-# its radius at distance, teamed by color -- and the reticle on the
-# boresight (screen center in first person, the nose's true line in chase)
-func _draw_bracket() -> void:
+func _ui(k: float) -> float:
+    return k * overlay.size.y / 1080.0
+
+func _draw_hud() -> void:
     if cam == null:
         return
+    var vp := overlay.size
+    var fsz := int(_ui(26.0))
 
-    # the vector boresight serves where the retail art cannot: the chase
-    # view (retail's fixed reticle is a cockpit truth)
-    if not (retail_hud and first_person):
-        var aim := aim_from + aim_dir * 1000.0
-        if not cam.is_position_behind(aim):
-            var rp := cam.unproject_position(aim)
-            var rc := Color(0.4, 1.0, 0.5, 0.9)
-            overlay.draw_arc(rp, 12.0, 0.0, TAU, 32, rc, 1.5)
-            for d: Vector2 in [Vector2.RIGHT, Vector2.LEFT, Vector2.UP, Vector2.DOWN]:
-                overlay.draw_line(rp + d * 7.0, rp + d * 16.0, rc, 1.5)
+    # boresight: the gun line
+    var aim := aim_from + aim_dir * 1000.0
+    if not cam.is_position_behind(aim):
+        var rp := cam.unproject_position(aim)
+        overlay.draw_arc(rp, _ui(12.0), 0.0, TAU, 32, HUD_LINE, 1.5)
+        for d: Vector2 in [Vector2.RIGHT, Vector2.LEFT, Vector2.UP,
+                           Vector2.DOWN]:
+            overlay.draw_line(rp + d * _ui(7.0), rp + d * _ui(16.0),
+                              HUD_LINE, 1.5)
 
-    # the shield icons, retail's own anis: frame 0 the ship outline, then
-    # a quadrant overlay per frame, alpha by charge (hud_shield_show's
-    # scheme; display order front/right/rear/left = Quadrant_xlate)
-    if retail_hud:
-        _draw_shield_ani(player_icon, player_shield, player_shield_max / 4.0,
-                         634.0, 670.0)
-        if not target_rec.is_empty():
-            _draw_shield_ani(
-                (target_rec.get("shield_icon", "") as String).to_lower(),
-                target_rec.get("shield", []),
-                float(target_rec.get("shield_max", 0.0)) / 4.0, 292.0, 670.0)
+    # the flight-path marker: where the ship actually GOES -- the one
+    # symbol a real HUD is built around; with inertia it rarely agrees
+    # with the boresight
+    var vel_g := Vector3(player_vel.x, player_vel.y, -player_vel.z)
+    if vel_g.length() > 0.5:
+        var vv := aim_from + vel_g.normalized() * 1000.0
+        if not cam.is_position_behind(vv):
+            var vc := cam.unproject_position(vv)
+            overlay.draw_arc(vc, _ui(6.0), 0.0, TAU, 24, HUD_LINE, 1.5)
+            overlay.draw_line(vc + Vector2(-_ui(15.0), 0),
+                              vc + Vector2(-_ui(6.0), 0), HUD_LINE, 1.5)
+            overlay.draw_line(vc + Vector2(_ui(6.0), 0),
+                              vc + Vector2(_ui(15.0), 0), HUD_LINE, 1.5)
+            overlay.draw_line(vc + Vector2(0, -_ui(13.0)),
+                              vc + Vector2(0, -_ui(6.0)), HUD_LINE, 1.5)
+
+    _draw_speed_tape(vp, fsz)
+    _draw_bars(vp, fsz)
+
+    # own bubble and hull, left of the radar
+    _draw_shield_glyph(Vector2(vp.x * 0.5 - _ui(220.0), vp.y - _ui(130.0)),
+                       player_shield, player_shield_max / 4.0,
+                       player_hull_frac, HUD_LINE, fsz)
 
     if target_rec.is_empty():
         return
 
-    var p3: Vector3 = target_rec["pos"]
-    var v := Vector3(p3.x, p3.y, -p3.z)
-    if cam.is_position_behind(v):
-        return
-    var p := cam.unproject_position(v)
-    var edge := cam.unproject_position(
-        v + cam.global_basis.x * float(ships.get(target_sig, {}).get("radius", 10.0)))
-    var half := clampf((edge - p).length(), 24.0, 300.0)
     var col := Color(1.0, 0.35, 0.3) if target_rec["team"] != player_team \
         else Color(0.35, 1.0, 0.4)
+
+    # the target twin, beside the target text block
+    _draw_shield_glyph(Vector2(_ui(420.0), vp.y - _ui(130.0)),
+                       target_rec.get("shield", []),
+                       float(target_rec.get("shield_max", 0.0)) / 4.0,
+                       target_rec["hull"] / maxf(target_rec["hull_max"], 1.0),
+                       col, fsz)
+
+    var p3: Vector3 = target_rec["pos"]
+    var v := Vector3(p3.x, p3.y, -p3.z)
+
+    # off the view: an edge chevron pointing the way, range beside it
+    var onscreen := not cam.is_position_behind(v)
+    var p := Vector2.ZERO
+    if onscreen:
+        p = cam.unproject_position(v)
+        onscreen = Rect2(Vector2.ZERO, vp).has_point(p)
+    if not onscreen:
+        var local: Vector3 = cam.global_transform.affine_inverse() * v
+        var dir2 := Vector2(local.x, -local.y)
+        if dir2.length() < 0.001:
+            dir2 = Vector2.DOWN
+        dir2 = dir2.normalized()
+        var centre := vp * 0.5
+        var edge_pt := centre + dir2 * (minf(vp.x, vp.y) * 0.5 - _ui(80.0))
+        var perp := Vector2(-dir2.y, dir2.x)
+        overlay.draw_colored_polygon(PackedVector2Array([
+            edge_pt + dir2 * _ui(18.0), edge_pt + perp * _ui(9.0),
+            edge_pt - perp * _ui(9.0)]), col)
+        overlay.draw_string(hud_font,
+                            edge_pt - dir2 * _ui(26.0) + Vector2(-_ui(36.0),
+                                                                 _ui(9.0)),
+                            "%.0f m" % target_range,
+                            HORIZONTAL_ALIGNMENT_LEFT, -1, fsz, col)
+        return
+
+    # the box, sized by radius at distance; range + closure ride its side
+    var edge := cam.unproject_position(
+        v + cam.global_basis.x
+        * float(ships.get(target_sig, {}).get("radius", 10.0)))
+    var half := clampf((edge - p).length(), _ui(24.0), _ui(300.0))
     var arm := half * 0.5
-    for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(-1, 1), Vector2(1, 1)]:
+    for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(-1, 1),
+                            Vector2(1, 1)]:
         var c := p + corner * half
         overlay.draw_line(c, c - Vector2(corner.x * arm, 0), col, 2.0)
         overlay.draw_line(c, c - Vector2(0, corner.y * arm), col, 2.0)
+    overlay.draw_string(hud_font, p + Vector2(half + _ui(10.0), 0),
+                        "%.0f m" % target_range,
+                        HORIZONTAL_ALIGNMENT_LEFT, -1, fsz, col)
+    overlay.draw_string(hud_font,
+                        p + Vector2(half + _ui(10.0), fsz + _ui(4.0)),
+                        "%+.0f m/s" % target_closure,
+                        HORIZONTAL_ALIGNMENT_LEFT, -1, fsz, col)
 
-    # the lead indicator: put the reticle on the dot and the bolts meet
-    # the target -- an intercept on RELATIVE motion, because bolts
-    # inherit the shooter's velocity (|R + Vt| = s*t, smallest t > 0)
+    # the lead intercept: put the boresight on the dot and the bolts
+    # meet the target -- solved on RELATIVE motion, bolts inherit the
+    # shooter velocity (|R + Vt| = s*t, smallest t > 0)
     if lead_speed <= 0.0:
         return
     var rp3 := (target_rec["pos"] as Vector3) - player_pos
@@ -784,43 +786,85 @@ func _draw_bracket() -> void:
         var lv := Vector3(lead.x, lead.y, -lead.z)
         if not cam.is_position_behind(lv):
             var lp := cam.unproject_position(lv)
-            var lfx = _fx("2_lead1") if retail_hud else null
-            if lfx != null:
-                var lw: float = lfx["w"] * hud_s
-                var lh: float = lfx["h"] * hud_s
-                overlay.draw_texture_rect_region(
-                    lfx["tex"], Rect2(lp - Vector2(lw, lh) * 0.5,
-                                      Vector2(lw, lh)), _fx_region(lfx, 0),
-                    HUD_GREEN)
-            else:
-                overlay.draw_circle(lp, 3.5, col)
-                overlay.draw_arc(lp, 8.0, 0.0, TAU, 24, col, 1.5)
+            overlay.draw_circle(lp, _ui(3.5), col)
+            overlay.draw_arc(lp, _ui(8.0), 0.0, TAU, 24, col, 1.5)
 
-# one retail shield icon: base outline + four quadrant frames, each
-# faded by its quadrant's charge (data order through Quadrant_xlate
-# {1,0,2,3}, hudshield.cc:88)
-func _draw_shield_ani(stem: String, quads: Array, qmax: float,
-                      x1024: float, y1024: float) -> void:
-    if stem.is_empty():
-        return
-    var fx = _fx(stem)
-    if fx == null or int(fx["frames"]) < 5:
-        return
-    var dst := Rect2(_hud_pos(x1024, y1024, "bc"),
-                     Vector2(fx["w"] * hud_s, fx["h"] * hud_s))
-    overlay.draw_texture_rect_region(fx["tex"], dst, _fx_region(fx, 0),
-                                     HUD_GREEN)
-    if quads.size() < 4 or qmax <= 0.0:
-        return
-    var xlate: Array[int] = [1, 0, 2, 3]
-    for i in 4:
-        var frac := clampf(float(quads[xlate[i]]) / qmax, 0.0, 1.0)
-        if frac <= 0.02:
-            continue
-        var qc := HUD_GREEN
-        qc.a *= frac
-        overlay.draw_texture_rect_region(fx["tex"], dst,
-                                         _fx_region(fx, 1 + i), qc)
+# the speed tape: 10 m/s ticks scrolling past the fixed needle, the
+# commanded caret (throttle x max; match-mode blue when it drives)
+func _draw_speed_tape(vp: Vector2, fsz: int) -> void:
+    var x := vp.x * 0.16
+    var half_h := _ui(220.0)
+    var cy := vp.y * 0.5
+    var span := 60.0
+    overlay.draw_line(Vector2(x, cy - half_h), Vector2(x, cy + half_h),
+                      HUD_DIM, 1.5)
+    var m := int(floor((player_speed - span) / 10.0)) * 10
+    while m <= int(ceil((player_speed + span) / 10.0)) * 10:
+        var y := cy + (player_speed - m) / span * half_h
+        if y >= cy - half_h and y <= cy + half_h:
+            var major := m % 30 == 0
+            var w := _ui(16.0) if major else _ui(9.0)
+            overlay.draw_line(Vector2(x - w, y), Vector2(x, y), HUD_DIM, 1.5)
+            if major:
+                overlay.draw_string(hud_font,
+                                    Vector2(x - w - _ui(76.0),
+                                            y + fsz * 0.35),
+                                    "%d" % m, HORIZONTAL_ALIGNMENT_RIGHT,
+                                    int(_ui(68.0)), fsz, HUD_DIM)
+        m += 10
+    overlay.draw_line(Vector2(x - _ui(20.0), cy), Vector2(x - _ui(2.0), cy),
+                      HUD_LINE, 3.0)
+    overlay.draw_string(hud_font, Vector2(x + _ui(12.0), cy + fsz * 0.35),
+                        "%.0f" % player_speed, HORIZONTAL_ALIGNMENT_LEFT,
+                        -1, fsz, HUD_LINE)
+    var cmd := throttle * player_max_speed
+    var cy2 := clampf(cy + (player_speed - cmd) / span * half_h,
+                      cy - half_h, cy + half_h)
+    var cc2 := HUD_MATCH if match_target else HUD_LINE
+    overlay.draw_colored_polygon(PackedVector2Array([
+        Vector2(x + _ui(2.0), cy2), Vector2(x + _ui(11.0), cy2 - _ui(6.0)),
+        Vector2(x + _ui(11.0), cy2 + _ui(6.0))]), cc2)
+
+# gun energy and afterburner fuel, thin verticals
+func _draw_bars(vp: Vector2, fsz: int) -> void:
+    var h := _ui(180.0)
+    var cy := vp.y * 0.5
+    var defs := [["GUN", player_energy_frac], ["AB", player_burner_frac]]
+    for i in defs.size():
+        var bx: float = vp.x * 0.84 + i * _ui(52.0)
+        overlay.draw_rect(Rect2(bx, cy - h * 0.5, _ui(10.0), h), HUD_DIM,
+                          false, 1.5)
+        var fh: float = h * clampf(defs[i][1], 0.0, 1.0)
+        overlay.draw_rect(Rect2(bx, cy + h * 0.5 - fh, _ui(10.0), fh),
+                          HUD_LINE)
+        overlay.draw_string(hud_font,
+                            Vector2(bx - _ui(6.0),
+                                    cy + h * 0.5 + fsz + _ui(6.0)),
+                            defs[i][0], HORIZONTAL_ALIGNMENT_LEFT, -1,
+                            int(fsz * 0.75), HUD_DIM)
+
+# the shield fence: four bars boxing the hull number -- front above,
+# right, rear, left (data order through Quadrant_xlate {1,0,2,3},
+# hudshield.cc:88), brightness by charge
+func _draw_shield_glyph(c: Vector2, quads: Array, qmax: float,
+                        hull_frac: float, base: Color, fsz: int) -> void:
+    var r := _ui(36.0)
+    if quads.size() >= 4 and qmax > 0.0:
+        var xlate: Array[int] = [1, 0, 2, 3]
+        var offs: Array[Vector2] = [Vector2(0, -r), Vector2(r, 0),
+                                    Vector2(0, r), Vector2(-r, 0)]
+        var dirs: Array[Vector2] = [Vector2(1, 0), Vector2(0, 1),
+                                    Vector2(1, 0), Vector2(0, 1)]
+        for i in 4:
+            var frac := clampf(float(quads[xlate[i]]) / qmax, 0.0, 1.0)
+            var qc := base
+            qc.a = 0.12 + 0.78 * frac
+            var o: Vector2 = c + offs[i]
+            var dd: Vector2 = dirs[i] * r * 0.55
+            overlay.draw_line(o - dd, o + dd, qc, _ui(4.0))
+    overlay.draw_string(hud_font, c + Vector2(-_ui(30.0), fsz * 0.35),
+                        "%3d%%" % maxi(0, int(hull_frac * 100.0)),
+                        HORIZONTAL_ALIGNMENT_LEFT, -1, int(fsz * 0.9), base)
 
 # the chatter window: recent radio lines, each shown for its own
 # text-length window (the voice may run longer -- lines scroll off,
@@ -1488,14 +1532,6 @@ func _setup_hud() -> void:
     hud_left.position = Vector2(16, 12)
     hud.add_child(hud_left)
 
-    hud_right = _hud_label()
-    hud_right.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-    hud_right.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-    hud_right.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-    hud_right.offset_top = 12
-    hud_right.offset_right = -16
-    hud.add_child(hud_right)
-
     directives = _hud_label()
     directives.position = Vector2(16, 120)
     hud.add_child(directives)
@@ -1528,49 +1564,22 @@ func _setup_hud() -> void:
     radar.mouse_filter = Control.MOUSE_FILTER_IGNORE
     hud.add_child(radar)
 
-    # floor at -56 like the ticker: the help line owns the bottom row
+    # the target text block: bottom-left corner, above the help line;
+    # its shield glyph draws beside it on the overlay
     target_monitor = _hud_label()
-    target_monitor.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-    target_monitor.offset_left = 140
+    target_monitor.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+    target_monitor.offset_left = 16
     target_monitor.offset_bottom = -56
     target_monitor.grow_vertical = Control.GROW_DIRECTION_BEGIN
     hud.add_child(target_monitor)
 
-    # the target view: a little world of its own with the target's model
-    # turning in it -- retail's target monitor, tucked in the lower-left
-    # corner, above the help line
-    view_box = SubViewportContainer.new()
-    view_box.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-    view_box.offset_left = 16
-    view_box.offset_right = 236
-    view_box.offset_top = -276
-    view_box.offset_bottom = -56
-    view_box.stretch = true
-    view_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-    target_view = SubViewport.new()
-    target_view.own_world_3d = true
-    target_view.transparent_bg = true
-    target_view_cam = Camera3D.new()
-    target_view.add_child(target_view_cam)
-    # the little world has no ambient of its own -- retail hulls are dark
-    # art, so light them like a display case: key plus a soft fill
-    var key_light := DirectionalLight3D.new()
-    key_light.rotation_degrees = Vector3(-35, 40, 0)
-    key_light.light_energy = 1.5
-    target_view.add_child(key_light)
-    var fill_light := DirectionalLight3D.new()
-    fill_light.rotation_degrees = Vector3(-15, 220, 0)
-    fill_light.light_energy = 0.6
-    target_view.add_child(fill_light)
-    target_view_root = Node3D.new()
-    target_view.add_child(target_view_root)
-    view_box.add_child(target_view)
-    hud.add_child(view_box)
+    hud_font = SystemFont.new()
+    hud_font.font_names = ["Iosevka"]
 
     overlay = Control.new()
     overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
     overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-    overlay.draw.connect(_draw_bracket)
+    overlay.draw.connect(_draw_hud)
     hud.add_child(overlay)
 
     # the ticker sits ABOVE the help line's row -- at wide help texts the
@@ -1593,115 +1602,6 @@ func _setup_hud() -> void:
     help.text = "mouse steers + fires (RMB missile), Q/E roll, A/Z throttle, \\ full, Tab burner, T target, M match, V view, H hud, Esc quit"
     hud.add_child(help)
 
-# retail's 1024x768 HUD, in its own art at its own coordinates -- the
-# gauge positions are the source's GR_1024 tables (hudreticle.cc:98,
-# radar.cc:47, hudtargetbox.cc:96, hudshield.cc:45). The field scales by
-# viewport height and centers horizontally; widescreen keeps retail's 4:3
-# gauge cluster in the middle, like the cockpit it is.
-# the gauge tint: --aa art is a white alpha mask, colored at draw time
-# exactly as GR_AABITMAP colors it with the HUD green -- which is
-# TRANSLUCENT (retail's HUD_color_alpha rides every gauge draw; a
-# full-index face like the radar scope is a dim green pane, not paint)
-const HUD_GREEN := Color(0.25, 0.95, 0.35, 0.5)
-
-# each piece anchors to what it serves (field report: gauges belong to
-# the WINDOW's bottom, not a letterboxed field): the reticle cluster to
-# the screen center (the boresight), the monitor cluster to the
-# bottom-left corner, the radar cluster to bottom-center. Coordinates
-# stay retail's 1024 numbers, measured from retail's own anchors --
-# reticle center (512,385), field bottom 768, field left/center.
-const HUD_PIECES := [
-    ["2_toparc1", 386, 219, "c"], ["2_toparc2", 640, 393, "c"],
-    ["2_toparc3", 631, 419, "c"], ["2_leftarc", 346, 269, "c"],
-    ["2_rightarc1", 574, 269, "c"], ["2_reticle1", 493, 370, "c"],
-    ["2_radar1", 411, 590, "bc"], ["targetview1", 5, 590, "bl"],
-    ["targetview2", 5, 555, "bl"],
-]
-
-var hud_vp := Vector2(1024, 768)
-
-func _hud_pos(x: float, y: float, anchor: String) -> Vector2:
-    match anchor:
-        "c":
-            return hud_vp * 0.5 + Vector2(x - 512.0, y - 385.0) * hud_s
-        "bc":
-            return Vector2(hud_vp.x * 0.5 + (x - 512.0) * hud_s,
-                           hud_vp.y - (768.0 - y) * hud_s)
-        _:  # "bl"
-            return Vector2(x * hud_s, hud_vp.y - (768.0 - y) * hud_s)
-
-func _fx_region(fx: Dictionary, frame: int) -> Rect2:
-    var cols: int = fx["cols"]
-    return Rect2(float(frame % cols) * fx["w"],
-                 float(int(frame / float(cols))) * fx["h"],
-                 fx["w"], fx["h"])
-
-var hud_rects: Array = []     # placed gauge art: {tr, fx, x, y}
-
-func _setup_retail_hud() -> void:
-    for piece in HUD_PIECES:
-        var fx = _fx(piece[0])
-        if fx == null:
-            continue
-        var tr := TextureRect.new()
-        var at := AtlasTexture.new()
-        at.atlas = fx["tex"]
-        at.region = _fx_region(fx, 0)
-        tr.texture = at
-        tr.stretch_mode = TextureRect.STRETCH_SCALE
-        tr.modulate = HUD_GREEN
-        tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
-        hud.add_child(tr)
-        hud_rects.append({ "tr": tr, "fx": fx, "x": piece[1],
-                           "y": piece[2], "anchor": piece[3] })
-    retail_hud = not hud_rects.is_empty()
-    if not retail_hud:
-        return
-
-    target_monitor.set_anchors_preset(Control.PRESET_TOP_LEFT)
-    target_monitor.grow_vertical = Control.GROW_DIRECTION_END
-    target_monitor.add_theme_font_size_override("font_size", 26)
-    view_box.set_anchors_preset(Control.PRESET_TOP_LEFT)
-    radar.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
-
-    # z-order: gauge art under the working widgets -- the target well
-    # sits IN its frame, the overlay above everything
-    hud.move_child(view_box, hud.get_child_count() - 1)
-    hud.move_child(overlay, hud.get_child_count() - 1)
-
-    # the window arrives at its real size AFTER _ready (the WM resizes
-    # the default 1152x648) -- lay out now and on every change
-    get_viewport().size_changed.connect(_layout_retail_hud)
-    _layout_retail_hud()
-
-func _layout_retail_hud() -> void:
-    hud_vp = get_viewport().get_visible_rect().size
-    hud_s = minf(hud_vp.x / 1024.0, hud_vp.y / 768.0)
-
-    for e in hud_rects:
-        var fx: Dictionary = e["fx"]
-        var tr: TextureRect = e["tr"]
-        tr.position = _hud_pos(e["x"], e["y"], e["anchor"])
-        tr.size = Vector2(fx["w"] * hud_s, fx["h"] * hud_s)
-
-    # the working widgets sit in the retail frames: blips over the radar
-    # art's own rect (its center IS retail's Radar_center 515,675), the
-    # target well in targetview1's screen, its text beside the frame
-    var rfx = _fx("2_radar1")
-    if rfx != null:
-        radar.art_only = true
-        radar.position = _hud_pos(411.0, 590.0, "bc")
-        radar.size = Vector2(rfx["w"] * hud_s, rfx["h"] * hud_s)
-
-    var tv = _fx("targetview1")
-    if tv != null:
-        view_box.position = _hud_pos(13.0, 598.0, "bl")
-        view_box.size = Vector2((tv["w"] - 16.0) * hud_s,
-                                (tv["h"] - 36.0) * hud_s)
-        # the frame-space readout (name/class/hull/distance) rides just
-        # right of the monitor frame
-        target_monitor.position = _hud_pos(5.0 + tv["w"] + 10.0, 598.0,
-                                           "bl")
 
 static func _hud_label() -> Label:
     var font := SystemFont.new()
