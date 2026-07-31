@@ -80,6 +80,7 @@ main(int argc, char *argv[])
     memset(&controls, 0, sizeof(controls));
 
     const float dt = 1.0f / 60.0f;
+    int last_target = -1;
 
     for (int frame = 1; frame <= frames; frame++) {
         if (firing) {
@@ -144,9 +145,25 @@ main(int argc, char *argv[])
                 controls.pitch = fmaxf(-1.0f, fminf(1.0f, -up * 50.0f));
                 controls.fire_primary = fwd > 0.98f;
             }
+
+            // a periodic target-next pulse: the gunner aims by snapshot,
+            // but the press proves the whole targeting chain (virtual
+            // stick edge -> hud_target_next -> Player_ai -> hud_state's
+            // signature); periodic because the earliest presses land in
+            // the pre-entry grace and go ignored
+            controls.target_next = frame % 300 == 0;
         }
 
         sim.step(dt, controls);
+
+        // target acquisitions and losses, recorded as they happen
+        {
+            int t = sim.hud_state().target_signature;
+            if (t != last_target) {
+                printf("hud %d target %d\n", frame, t);
+                last_target = t;
+            }
+        }
 
         for (const event_t &ev : sim.events()) {
             switch (ev.kind) {

@@ -21,6 +21,7 @@ extends Node3D
 
 const ShipClass := preload("res://ship.gd")
 const SoundBankClass := preload("res://sound.gd")
+const RadarClass := preload("res://radar.gd")
 
 # retail names for the keys the training sexps watch (key-pressed "t"),
 # forwarded through key_mark so Control_config[].used carries the truth
@@ -48,6 +49,12 @@ var directives: Label
 var training_msg: Label
 var chatter: Label
 var chatter_lines: Array[Dictionary] = []   # {line, deadline}
+var radar: Control                          # the retired file's art, live
+var overlay: Control                        # target bracket, drawn 2d
+var target_monitor: Label
+var target_sig := -1                        # hud_state's target_signature
+var target_rec := {}                        # its snapshot record this frame
+var player_team := 0                        # for hostile/friendly coloring
 var sounds                     # SoundBank, voice playback
 var last_text := ""
 var msg_deadline := 0
@@ -203,9 +210,15 @@ func _physics_process(delta: float) -> void:
     var seen := {}
     var player_node: Node3D = null
     var player_rec := {}
+    var ship_recs := []
+    target_rec = {}
     for rec in sim.snapshot():
         var sig: int = rec["signature"]
         seen[sig] = true
+        if rec.get("type", "ship") == "ship":
+            ship_recs.append(rec)
+        if sig == target_sig:
+            target_rec = rec
         if not ships.has(sig):
             _spawn(sig, rec)
         var entry: Dictionary = ships[sig]
@@ -268,8 +281,66 @@ func _physics_process(delta: float) -> void:
             engine_hum.volume_db = -80.0 if output <= 0.0 \
                 else lerpf(-26.0, -8.0, output)
 
+        _update_combat_hud(player_rec, ship_recs)
+
     _update_lesson()
     _update_chatter()
+
+# the combat gauges: radar blips through the retired file's projection
+# (the data path -- radar_plot_object -- runs natively; this is the art),
+# the target monitor's readout, and a redraw request for the bracket
+func _update_combat_hud(prec: Dictionary, ship_recs: Array) -> void:
+    var ppos: Vector3 = prec["pos"]
+    var rv: Vector3 = prec["rvec"]
+    var uv: Vector3 = prec["uvec"]
+    var fv: Vector3 = prec["fvec"]
+    var pteam: int = prec["team"]
+    player_team = pteam
+
+    var blips := []
+    for rec in ship_recs:
+        if rec["player"] or rec["dying"]:
+            continue
+        var d: Vector3 = (rec["pos"] as Vector3) - ppos
+        blips.append({
+            "disc": RadarClass.blip_disc(
+                Vector3(rv.dot(d), uv.dot(d), fv.dot(d))),
+            "dim": d.length() > 1500.0,      # retail's fallback range
+            "hostile": rec["team"] != pteam,
+            "target": rec["signature"] == target_sig,
+        })
+    radar.blips = blips
+    radar.queue_redraw()
+
+    if target_rec.is_empty():
+        target_monitor.text = ""
+    else:
+        target_monitor.text = "%s\n%s\nhull %3d%%  %5.0f m" % [
+            target_rec["name"], target_rec["class"],
+            int(100.0 * target_rec["hull"] / maxf(target_rec["hull_max"], 1.0)),
+            ((target_rec["pos"] as Vector3) - ppos).length()]
+    overlay.queue_redraw()
+
+# the target bracket: corners around the target's screen extent, sized by
+# its radius at distance, teamed by color
+func _draw_bracket() -> void:
+    if target_rec.is_empty() or cam == null:
+        return
+    var p3: Vector3 = target_rec["pos"]
+    var v := Vector3(p3.x, p3.y, -p3.z)
+    if cam.is_position_behind(v):
+        return
+    var p := cam.unproject_position(v)
+    var edge := cam.unproject_position(
+        v + cam.global_basis.x * float(ships.get(target_sig, {}).get("radius", 10.0)))
+    var half := clampf((edge - p).length(), 24.0, 300.0)
+    var col := Color(1.0, 0.35, 0.3) if target_rec["team"] != player_team \
+        else Color(0.35, 1.0, 0.4)
+    var arm := half * 0.5
+    for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(-1, 1), Vector2(1, 1)]:
+        var c := p + corner * half
+        overlay.draw_line(c, c - Vector2(corner.x * arm, 0), col, 2.0)
+        overlay.draw_line(c, c - Vector2(0, corner.y * arm), col, 2.0)
 
 # the chatter window: recent radio lines, each shown for its own
 # text-length window (the voice may run longer -- lines scroll off,
@@ -290,6 +361,7 @@ func _update_chatter() -> void:
 # Sensky's voice played once per message through the SoundBank
 func _update_lesson() -> void:
     var h: Dictionary = sim.hud_state()
+    target_sig = int(h.get("target_signature", -1))
 
     var lines: Array[String] = []
     for d in h["directives"]:
@@ -531,6 +603,30 @@ func _setup_hud() -> void:
     chatter.autowrap_mode = TextServer.AUTOWRAP_WORD
     chatter.custom_minimum_size = Vector2(760, 0)
     hud.add_child(chatter)
+
+    # the combat gauges: the retired radar art bottom-center, the target
+    # monitor beside it, the bracket overlay across the whole view
+    radar = RadarClass.new()
+    radar.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+    radar.offset_left = -110
+    radar.offset_right = 110
+    radar.offset_top = -232
+    radar.offset_bottom = -12
+    radar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    hud.add_child(radar)
+
+    target_monitor = _hud_label()
+    target_monitor.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+    target_monitor.offset_left = 140
+    target_monitor.offset_bottom = -12
+    target_monitor.grow_vertical = Control.GROW_DIRECTION_BEGIN
+    hud.add_child(target_monitor)
+
+    overlay = Control.new()
+    overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+    overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    overlay.draw.connect(_draw_bracket)
+    hud.add_child(overlay)
 
     ticker = _hud_label()
     ticker.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)

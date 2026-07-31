@@ -224,6 +224,7 @@ public:
 
         out["training_text"] = h.training_text;
         out["training_voice"] = h.training_voice;
+        out["target_signature"] = h.target_signature;
 
         godot::Array dirs;
         for (const directive_t &d : h.directives) {

@@ -129,6 +129,8 @@ struct hud_state_t {
     char training_text[8192];
     char training_voice[64];
     std::vector<directive_t> directives;
+    int target_signature;              // the player's current target
+                                       // (Player_ai), -1 = none
 };
 
 // The boundary object. Slice 1 grew the single-ship flight surface

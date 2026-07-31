@@ -2,8 +2,9 @@
 #
 # RETIRED TO SPEC (2026-07-30): the runtime is libfs2 -- retail's
 # hud_target_next on the boundary's target_next edge. Pinned as spec by
-# targeting-check; the world scene's target HUD (bracket, monitor) will
-# lift this file's drawing when the polish pass dresses it.
+# targeting-check. The world scene's target HUD (bracket, monitor) draws
+# from hud_state's target_signature as of 2026-07-31 -- this file stays
+# pure spec.
 #
 # Targeting -- the player's target state and cycling, the data half of
 # retail's target monitor (hudtarget.cpp, lean). Retail's hud_target_next

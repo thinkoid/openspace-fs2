@@ -59,6 +59,16 @@ else
     rc=1
 fi
 
+# the targeting chain: fire mode pulses target_next once at frame 60;
+# the signature must cross back through hud_state (a broken chain reads
+# target -1 forever)
+if grep -q "^hud [0-9]* target [0-9]" "$tmp/fire.txt"; then
+    echo "OK: $(grep -m1 "^hud [0-9]* target [0-9]" "$tmp/fire.txt")"
+else
+    echo "FAIL: no target signature ever crossed hud_state"
+    rc=1
+fi
+
 # the sounds-as-events seam: every shot requests its launch wav, every
 # hit its positioned impact wav
 if grep -q "^event [0-9]* sound L_Sidearm" "$tmp/fire.txt" \

@@ -2,8 +2,10 @@
 #
 # RETIRED TO SPEC (2026-07-30): the data path it transcribes
 # (radar_plot_object) runs natively in ship_process_post. Pinned as spec
-# by radar-check; the world scene has no radar yet -- the polish pass
-# lifts this file's projection and art.
+# by radar-check. The ART half re-entered service 2026-07-31: world.gd
+# instances this Control as its radar gauge and feeds blips from the
+# boundary's snapshot -- presentation only, the projection spec below
+# unchanged.
 #
 # Radar -- retail's radar gauge (radar.cc radar_plot_object), the data
 # path exact, the art lean Iosevka-era vectors instead of bitmap blips.

@@ -568,9 +568,19 @@ fs2_t::hud_state() const
     hud_state_t out;
     out.training_text[0] = '\0';
     out.training_voice[0] = '\0';
+    out.target_signature = -1;
 
     if (!m_world_live)
         return out;
+
+    // the player's target, as retail's own targeting state has it --
+    // signature, not objnum, so the presenter keys into its snapshot map;
+    // a freed slot (target died, world moved on) reads as no target
+    if (Player_ai && Player_ai->target_objnum >= 0) {
+        const object *t = &Objects[Player_ai->target_objnum];
+        if (t->type != OBJ_NONE)
+            out.target_signature = t->signature;
+    }
 
     // the training message, gated exactly as the display gates it
     // (missiontraining.cc:886): inside its timing window and non-empty
