@@ -192,6 +192,17 @@ likely shape — but it is a dependency-vs-hand-roll question to ASK
 before starting. Separate gap: the Ulysses hull map (ulsss) is not in
 these three VPs at all — MV_Root.vp must be fetched.
 
+## tools: pof2glb — bake flat-poly colors into materials (2026-07-31)
+
+POF models carry textureless FLAT polys with an RGB color ("poly flat
+R G B" in the model dumps; the corpus gate has seen them since the
+bomber05 sliver). pof2glb emits them with no material color, so they
+render white in Godot — visible on debris chunks' break faces (the
+retail-art lane made hull debris wear the ship's own model, and the
+white caps stand out). The bake: a per-color material with albedo =
+the flat RGB. The GLB checker should grow the color check; the tres
+side is untouched (flat polys carry no UVs).
+
 ## tests: the lesson-replay gate — a scripted pilot (2026-07-31)
 
 Training-1's event chain gates on PLAYER behavior the hands-off lesson
