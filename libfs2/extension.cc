@@ -55,6 +55,7 @@ controls_of(const godot::Dictionary &controls)
     c.fire_secondary = controls.get("fire_secondary", false);
     c.fire_countermeasure = controls.get("fire_countermeasure", false);
     c.target_next = controls.get("target_next", false);
+    c.target_hostile = controls.get("target_hostile", false);
 
     return c;
 }
@@ -343,6 +344,25 @@ public:
         out["training_voice"] = h.training_voice;
         out["primary_speed"] = h.primary_speed;
         out["target_signature"] = h.target_signature;
+        out["target_subsys"] = h.target_subsys;
+
+        godot::Array pb, sb;
+        for (const weapon_bank_t &b : h.primary_banks) {
+            godot::Dictionary line;
+            line["name"] = b.name;
+            line["armed"] = b.armed;
+            line["shots"] = b.shots;
+            pb.push_back(line);
+        }
+        for (const weapon_bank_t &b : h.secondary_banks) {
+            godot::Dictionary line;
+            line["name"] = b.name;
+            line["armed"] = b.armed;
+            line["shots"] = b.shots;
+            sb.push_back(line);
+        }
+        out["primary_banks"] = pb;
+        out["secondary_banks"] = sb;
 
         godot::Array dirs;
         for (const directive_t &d : h.directives) {

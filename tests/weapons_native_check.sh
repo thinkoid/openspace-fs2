@@ -113,6 +113,16 @@ else
     rc=1
 fi
 
+# the weapon gauge: the range loadout's mounted banks exactly -- the
+# authored-empty second/third banks stay OFF the gauge, the selected
+# banks read armed, single-shot
+if grep -q "^art weapons p 'Subach HL-7' 1 1 s 'Piranha' 1 1$" "$tmp/fire.txt"; then
+    echo "OK: $(grep -m1 '^art weapons' "$tmp/fire.txt")"
+else
+    echo "FAIL: weapon gauge wrong or missing: $(grep -m1 '^art weapons' "$tmp/fire.txt" || echo none)"
+    rc=1
+fi
+
 if grep -q "^art missile Piranha pof piranha\.pof$" "$tmp/fire.txt"; then
     echo "OK: $(grep -m1 '^art missile' "$tmp/fire.txt")"
 else

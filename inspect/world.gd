@@ -76,6 +76,9 @@ var overlay: Control                        # the HUD symbology, drawn 2d
 var target_monitor: Label
 var target_sig := -1                        # hud_state's target_signature
 var target_rec := {}                        # its snapshot record this frame
+var target_subsys := ""                     # targeted subsystem name on it
+var weapon_banks_p: Array = []              # weapon gauge: mounted banks,
+var weapon_banks_s: Array = []              # {name, armed, shots}
 var lead_speed := 0.0                       # the primary's muzzle speed
 var player_vel := Vector3.ZERO              # FS2 frame, lead solution input
 var player_speed := 0.0                     # forward speed, the tape's needle
@@ -275,6 +278,7 @@ func _physics_process(delta: float) -> void:
             (Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT)
              or Input.is_key_pressed(KEY_SPACE)),
         "target_next": Input.is_key_pressed(KEY_T),
+        "target_hostile": Input.is_key_pressed(KEY_H),
     }
     mouse_accum = Vector2.ZERO
 
@@ -581,6 +585,11 @@ func _update_combat_hud(prec: Dictionary, ship_recs: Array) -> void:
     radar.blips = blips
     radar.queue_redraw()
 
+    # the monitor sits at the HUD rectangle's lower-left: under the
+    # speed tape's foot, on its x (the tape is the rectangle's left edge)
+    target_monitor.position = Vector2(overlay.size.x * 0.16,
+                                      overlay.size.y * 0.5 + _ui(232.0))
+
     if target_rec.is_empty():
         target_monitor.text = ""
         target_range = 0.0
@@ -591,6 +600,8 @@ func _update_combat_hud(prec: Dictionary, ship_recs: Array) -> void:
             target_rec["name"], target_rec["class"],
             maxi(0, int(100.0 * target_rec["hull"]
                         / maxf(target_rec["hull_max"], 1.0)))]
+        if not target_subsys.is_empty():
+            target_monitor.text += "\nsys: %s" % target_subsys
         # range and closure (positive = closing), smoothed for the box
         var rng := ((target_rec["pos"] as Vector3) - ppos).length()
         var dt := get_physics_process_delta_time()
@@ -738,6 +749,7 @@ func _draw_hud() -> void:
                               vc + Vector2(0, -_ui(6.0)), HUD_LINE, 1.5)
 
     _draw_speed_tape(vp, fsz)
+    _draw_weapon_gauge(vp, fsz)
 
     if target_rec.is_empty():
         return
@@ -824,6 +836,35 @@ func _draw_hud() -> void:
 
 # the speed tape: 10 m/s ticks scrolling past the fixed needle, the
 # commanded caret (throttle x max; match-mode blue when it drives)
+# the weapon gauge at the HUD rectangle's lower-right, retail's bank
+# list: one line per mounted bank, a box per shot the next trigger pull
+# fires -- filled when the bank is armed (linked primaries fill every
+# line, dual-fire missiles draw two boxes on the selected one)
+func _draw_weapon_gauge(vp: Vector2, fsz: int) -> void:
+    var lines: Array = weapon_banks_p + weapon_banks_s
+    if lines.is_empty():
+        return
+
+    var x := vp.x * 0.84                       # the rectangle's right edge
+    var lh := fsz + _ui(8.0)
+    var y := vp.y * 0.5 + _ui(220.0) - (lines.size() - 1) * lh
+    var side := fsz * 0.55
+
+    for b in lines:
+        var col: Color = HUD_LINE if b["armed"] else HUD_DIM
+        overlay.draw_string(hud_font, Vector2(x - _ui(260.0), y),
+                            b["name"], HORIZONTAL_ALIGNMENT_RIGHT,
+                            int(_ui(250.0)), fsz, col)
+        var bx := x + _ui(10.0)
+        for s in range(int(b["shots"])):
+            var r := Rect2(bx, y - side * 0.85, side, side)
+            if b["armed"]:
+                overlay.draw_rect(r, col)
+            else:
+                overlay.draw_rect(r, col, false, 1.5)
+            bx += side + _ui(5.0)
+        y += lh
+
 func _draw_speed_tape(vp: Vector2, fsz: int) -> void:
     var x := vp.x * 0.16
     var half_h := _ui(220.0)
@@ -884,6 +925,9 @@ func _update_lesson() -> void:
     var h: Dictionary = sim.hud_state()
     target_sig = int(h.get("target_signature", -1))
     lead_speed = float(h.get("primary_speed", 0.0))
+    target_subsys = h.get("target_subsys", "")
+    weapon_banks_p = h.get("primary_banks", [])
+    weapon_banks_s = h.get("secondary_banks", [])
 
     var lines: Array[String] = []
     for d in h["directives"]:
@@ -1390,8 +1434,6 @@ func _unhandled_input(event: InputEvent) -> void:
             match_target = not match_target
         KEY_V:
             first_person = not first_person
-        KEY_H:
-            hud.visible = not hud.visible
         KEY_J:
             # end the mission into the debrief (campaign mode only -- a
             # lone mission has nowhere to go). Alt-J is retail's jump
@@ -1739,11 +1781,9 @@ func _setup_hud() -> void:
 
     # the target text block: bottom-left corner, above the help line;
     # its shield glyph draws beside it on the overlay
+    # positioned each frame at the HUD rectangle's lower-left corner
+    # (under the speed tape) -- see _update_combat_hud
     target_monitor = _hud_label()
-    target_monitor.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-    target_monitor.offset_left = 16
-    target_monitor.offset_bottom = -56
-    target_monitor.grow_vertical = Control.GROW_DIRECTION_BEGIN
     hud.add_child(target_monitor)
 
     hud_font = SystemFont.new()
@@ -1772,7 +1812,7 @@ func _setup_hud() -> void:
     help.offset_left = 16
     help.offset_bottom = -12
     help.add_theme_font_size_override("font_size", 24)
-    help.text = "mouse steers + fires (RMB missile), Q/E roll, A/Z throttle, \\ full, Tab burner, T target, M match, V view, H hud, Shift-Super-J end mission, Esc quit"
+    help.text = "mouse steers + fires (RMB missile), Q/E roll, A/Z throttle, \\ full, Tab burner, T target, H hostile, M match, V view, Shift-Super-J end mission, Esc quit"
     hud.add_child(help)
 
 

@@ -197,8 +197,10 @@ main(int argc, char *argv[])
             // but the press proves the whole targeting chain (virtual
             // stick edge -> hud_target_next -> Player_ai -> hud_state's
             // signature); periodic because the earliest presses land in
-            // the pre-entry grace and go ignored
+            // the pre-entry grace and go ignored. The offset hostile
+            // pulse exercises the H binding's chain the same way.
             controls.target_next = frame % 300 == 0;
+            controls.target_hostile = frame % 300 == 150;
         }
 
         sim.step(dt, controls);
@@ -245,6 +247,18 @@ main(int argc, char *argv[])
                            o.weapon_energy, o.weapon_energy_max,
                            o.burner_fuel, o.burner_fuel_max,
                            sim.hud_state().primary_speed);
+
+                    // the weapon gauge: every mounted bank, armed flag
+                    // and shots-per-pull -- the gate pins the loadout
+                    hud_state_t hs = sim.hud_state();
+                    printf("art weapons");
+                    for (const weapon_bank_t &b : hs.primary_banks)
+                        printf(" p '%s' %d %d", b.name, int(b.armed),
+                               b.shots);
+                    for (const weapon_bank_t &b : hs.secondary_banks)
+                        printf(" s '%s' %d %d", b.name, int(b.armed),
+                               b.shots);
+                    printf("\n");
                     shield_shown = true;
                 }
             }

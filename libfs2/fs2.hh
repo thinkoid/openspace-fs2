@@ -47,6 +47,9 @@ struct flight_controls_t {
     bool fire_secondary;
     bool fire_countermeasure;
     bool target_next;                  // edge -> retail's hud_target_next
+    bool target_hostile;               // edge -> the H binding's
+                                       // hud_target_next_list (next
+                                       // closest hostile)
 };
 
 // The flying state after a step -- physics_info's living fields.
@@ -212,6 +215,17 @@ struct debrief_t {
 // (retail's own text-length timing paces it headless -- the voice load
 // fails without a device and message_training_setup falls back);
 // training_voice names the wave so the presenter can play it.
+// One weapon-gauge line: a mounted bank's tbl name and whether the next
+// trigger pull fires it -- primaries arm the selected bank, or every
+// bank when linked; secondaries arm the selected bank alone. shots is
+// the missiles-per-pull count (2 under dual fire, from the SAME bank --
+// ship_fire_secondary's two-slot arm); primaries always 1.
+struct weapon_bank_t {
+    char name[32];
+    bool armed;
+    int shots;
+};
+
 struct hud_state_t {
     char training_text[8192];
     char training_voice[64];
@@ -221,6 +235,10 @@ struct hud_state_t {
                                        // one input the scene lacks
     int target_signature;              // the player's current target
                                        // (Player_ai), -1 = none
+    char target_subsys[32];            // the targeted subsystem on it
+                                       // (system_info->name, "" = none)
+    std::vector<weapon_bank_t> primary_banks;
+    std::vector<weapon_bank_t> secondary_banks;
 };
 
 // The boundary object. Slice 1 grew the single-ship flight surface
@@ -282,6 +300,7 @@ private:
                                        // boundary owns the replica)
     bool m_burn_held = false;          // afterburner edge detection
     bool m_target_held = false;        // target-next edge detection
+    bool m_hostile_held = false;       // target-hostile edge detection
     int m_log_drained = 0;             // mission-log high-water mark
     std::vector<object_state_t> m_known; // last drain's world, for diffs
 

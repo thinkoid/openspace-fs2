@@ -683,6 +683,16 @@ fs2_t::step(float dt, const flight_controls_t &controls)
         hud_target_next();
     m_target_held = controls.target_next;
 
+    // the H binding, keycontrol.cc:1986's own sequence: mark the
+    // control used (sexp key-pressed reads it) and take the next
+    // closest hostile, sensors permitting
+    if (controls.target_hostile && !m_hostile_held && !m_pre_entry) {
+        control_used(TARGET_NEXT_CLOSEST_HOSTILE);
+        if (hud_sensors_ok(Player_ship))
+            hud_target_next_list();
+    }
+    m_hostile_held = controls.target_hostile;
+
     mission_parse_eval_stuff();        // arrivals and departures, live
     obj_move_all(flFrametime);
     mission_eval_goals();
@@ -894,6 +904,7 @@ fs2_t::hud_state() const
     out.training_voice[0] = '\0';
     out.primary_speed = 0.0f;
     out.target_signature = -1;
+    out.target_subsys[0] = '\0';
 
     if (!m_world_live)
         return out;
@@ -917,6 +928,48 @@ fs2_t::hud_state() const
         const object *t = &Objects[Player_ai->target_objnum];
         if (t->type != OBJ_NONE)
             out.target_signature = t->signature;
+
+        if (Player_ai->targeted_subsys)
+            strncpy(out.target_subsys,
+                    Player_ai->targeted_subsys->system_info->name,
+                    sizeof(out.target_subsys) - 1);
+    }
+
+    // the weapon gauge, one line per MOUNTED bank (an authored-empty
+    // bank reads -1 and stays off the gauge): primaries arm the
+    // selected bank or all of them when linked, secondaries arm the
+    // selected bank -- doubled shots under dual fire
+    if (Player_obj && Player_obj->type == OBJ_SHIP) {
+        const ship &sp = Ships[Player_obj->instance];
+        const ship_weapon &w = sp.weapons;
+
+        for (int i = 0; i < w.num_primary_banks; i++) {
+            if (w.primary_bank_weapons[i] < 0)
+                continue;
+
+            weapon_bank_t b;
+            memset(&b, 0, sizeof(b));
+            strncpy(b.name, Weapon_info[w.primary_bank_weapons[i]].name,
+                    sizeof(b.name) - 1);
+            b.armed = (sp.flags & SF_PRIMARY_LINKED) ||
+                      i == w.current_primary_bank;
+            b.shots = 1;
+            out.primary_banks.push_back(b);
+        }
+
+        for (int i = 0; i < w.num_secondary_banks; i++) {
+            if (w.secondary_bank_weapons[i] < 0)
+                continue;
+
+            weapon_bank_t b;
+            memset(&b, 0, sizeof(b));
+            strncpy(b.name, Weapon_info[w.secondary_bank_weapons[i]].name,
+                    sizeof(b.name) - 1);
+            b.armed = i == w.current_secondary_bank;
+            b.shots = (b.armed && (sp.flags & SF_SECONDARY_DUAL_FIRE)) ? 2
+                                                                       : 1;
+            out.secondary_banks.push_back(b);
+        }
     }
 
     // the training message, gated exactly as the display gates it
