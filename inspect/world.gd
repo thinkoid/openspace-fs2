@@ -159,6 +159,11 @@ func _ready() -> void:
             assets_dir = launch.path_join(assets_dir).simplify_path()
         if root.is_relative_path():
             root = launch.path_join(root).simplify_path()
+        # a mission argument with a path in it opens by fopen (cfile's
+        # full-path branch); a bare name resolves through the file index
+        # and must stay bare
+        if mission_name.contains("/") and mission_name.is_relative_path():
+            mission_name = launch.path_join(mission_name).simplify_path()
 
     game_root = root
 
