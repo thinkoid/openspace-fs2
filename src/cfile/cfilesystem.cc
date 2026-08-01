@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <errno.h>
 #include <unistd.h>
 #include <fnmatch.h>
 #include <sys/stat.h>
@@ -295,8 +294,12 @@ cf_build_root_list(char *cdrom_dir)
 
     root = cf_create_root();
 
-    if (!getcwd(root->path, CF_MAX_PATHNAME_LENGTH)) {
-        Error(LOCATION, "Can't get current working directory -- %d", errno);
+    // the primary root comes from cfile_init, not the working directory:
+    // cfile no longer chdirs the process (see cfile_init), so cwd is the
+    // host's business and means nothing here
+    strcpy(root->path, Cfile_root_dir);
+    if (!root->path[0]) {
+        Error(LOCATION, "cf_build_root_list before cfile_init set a root");
     }
 
     // do we already have a slash? as in the case of a root directory install

@@ -179,7 +179,6 @@ cfile_init(char *exe_dir, char *cdrom_dir)
 
         if (i >= 1) {
             buf[i] = 0;
-            cfile_chdir(buf);
         }
         else {
             fprintf(stderr,
@@ -187,7 +186,11 @@ cfile_init(char *exe_dir, char *cdrom_dir)
             return 1;
         }
 
-        // set root directory
+        // set root directory -- and STAY where we are. Retail chdir'd
+        // here and let cf_build_root_list read getcwd(); every cfile
+        // path now builds absolutely from Cfile_root_dir instead, and a
+        // library must not chdir its host process (the embedding
+        // engine's own relative paths broke the moment it did)
         strncpy(Cfile_root_dir, buf, CFILE_ROOT_DIRECTORY_LEN - 1);
 
         for (i = 0; i < MAX_CFILE_BLOCKS; i++) {

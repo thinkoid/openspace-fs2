@@ -144,6 +144,18 @@ func _ready() -> void:
     var root := args[2] if args.size() > 2 else OS.get_environment("FS2_GAME_ROOT")
     if root.is_empty():
         root = ProjectSettings.globalize_path("res://") + "../../rundir"
+
+    # CLI paths may be shell-relative (`./build/glb`), but godot --path
+    # has already chdir'd into the project by now -- resolve them against
+    # the launch shell's own $PWD (field-reported: the Instructor flew as
+    # a gray box because ./build/glb resolved under inspect/)
+    var launch := OS.get_environment("PWD")
+    if not launch.is_empty():
+        if assets_dir.is_relative_path():
+            assets_dir = launch.path_join(assets_dir).simplify_path()
+        if root.is_relative_path():
+            root = launch.path_join(root).simplify_path()
+
     game_root = root
 
     if not _load_libfs2():
