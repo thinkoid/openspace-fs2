@@ -104,6 +104,16 @@ const SND_CULL_RANGE := 3000.0
 
 var assets_dir := ""
 var mission_name := ""
+var game_root := ""
+
+# the campaign (boundary slice 3): non-empty campaign_name puts the
+# scene in campaign mode -- Alt-J ends the mission into the debrief
+# overlay (the sim freezes, the verdict shows), Enter accepts and loads
+# the branch's pick in place, L takes the offered side loop
+var campaign_name := ""
+var debriefing := false
+var debrief_data := {}
+var debrief_panel: Control
 
 var mouse_accum := Vector2.ZERO
 var mouse_grabbed := false
@@ -115,7 +125,16 @@ func _ready() -> void:
     # and a direct scene run without the mode word
     if args.size() > 0 and args[0] == "world":
         args = args.slice(1)
-    if args.size() < 2:
+
+    # campaign form: `campaign <name> <assets-dir> [game-root]` -- the
+    # boundary resolves the mission; plain form flies args[0] directly
+    if args.size() > 0 and args[0] == "campaign":
+        if args.size() < 3:
+            _fatal("usage: godot --path inspect -- world campaign <name> <assets-dir> [game-root]")
+            return
+        campaign_name = args[1]
+        args = args.slice(1)
+    elif args.size() < 2:
         _fatal("usage: godot --path inspect -- world <mission.fs2> <assets-dir> [game-root]")
         return
 
@@ -125,10 +144,21 @@ func _ready() -> void:
     var root := args[2] if args.size() > 2 else OS.get_environment("FS2_GAME_ROOT")
     if root.is_empty():
         root = ProjectSettings.globalize_path("res://") + "../../rundir"
+    game_root = root
 
     if not _load_libfs2():
         return
     sim = ClassDB.instantiate("FS2")
+
+    if not campaign_name.is_empty():
+        if not sim.load_campaign(root, campaign_name):
+            _fatal("campaign load failed: %s (root %s)" % [campaign_name, root])
+            return
+        mission_name = sim.current_mission()
+        if mission_name.is_empty():
+            _fatal("campaign %s is already complete" % campaign_name)
+            return
+
     if not sim.load(root, mission_name, 42):
         _fatal("native load failed: %s (root %s)" % [mission_name, root])
         return
@@ -201,6 +231,10 @@ func _load_libfs2() -> bool:
 
 func _physics_process(delta: float) -> void:
     if sim == null:
+        return
+
+    # the debrief freezes the world: the sim holds, the overlay owns input
+    if debriefing:
         return
 
     if not mouse_grabbed:
@@ -1295,6 +1329,17 @@ func _unhandled_input(event: InputEvent) -> void:
         return
     if not (event is InputEventKey and event.pressed):
         return
+    # the debrief overlay owns the keys while it is up
+    if debriefing:
+        match event.keycode:
+            KEY_ENTER, KEY_KP_ENTER:
+                _accept_debrief(false)
+            KEY_L:
+                if debrief_data.get("loop_offer", false):
+                    _accept_debrief(true)
+            KEY_ESCAPE:
+                get_tree().quit()
+        return
     # the training sexps watch retail key names; forward the press,
     # modifiers spelled the way translate_key_to_index reads them
     if sim != null and KEY_NAMES.has(event.keycode):
@@ -1335,8 +1380,170 @@ func _unhandled_input(event: InputEvent) -> void:
             first_person = not first_person
         KEY_H:
             hud.visible = not hud.visible
+        KEY_J:
+            # Alt-J, retail's own jump binding: end the mission into the
+            # debrief (campaign mode only -- a lone mission has nowhere
+            # to go)
+            if event.alt_pressed and not campaign_name.is_empty():
+                _enter_debrief()
         KEY_ESCAPE:
             get_tree().quit()
+
+# ----------------------------------------------------------------------
+# the campaign flow: debrief overlay in, accept out, next mission in place
+
+func _enter_debrief() -> void:
+    debrief_data = sim.debrief()
+    debriefing = true
+    Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+    mouse_grabbed = false
+    _build_debrief_panel()
+
+func _build_debrief_panel() -> void:
+    debrief_panel = Control.new()
+    debrief_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+    hud.add_child(debrief_panel)
+
+    var dim := ColorRect.new()
+    dim.color = Color(0.0, 0.02, 0.0, 0.85)
+    dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+    debrief_panel.add_child(dim)
+
+    var margin := MarginContainer.new()
+    margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+    for side in ["left", "top", "right", "bottom"]:
+        margin.add_theme_constant_override("margin_" + side, int(_ui(90.0)))
+    debrief_panel.add_child(margin)
+
+    var col := VBoxContainer.new()
+    col.add_theme_constant_override("separation", int(_ui(14.0)))
+    margin.add_child(col)
+
+    var fsz := int(_ui(26.0))
+
+    var title := Label.new()
+    title.text = "DEBRIEFING -- %s" % mission_name
+    _debrief_style(title, int(fsz * 1.3), HUD_LINE)
+    col.add_child(title)
+
+    # the goals, status spelled out; retail's colors by verdict
+    for g in debrief_data.get("goals", []):
+        var line := Label.new()
+        var status: String = ["FAILED", "COMPLETE", "INCOMPLETE"][g["status"]]
+        line.text = "  %-11s %s" % [status, g["text"]]
+        var c := HUD_DIM
+        if not g["invalid"]:
+            c = Color(0.35, 1.0, 0.4) if g["status"] == 1 \
+                else Color(1.0, 0.35, 0.3) if g["status"] == 0 else HUD_DIM
+        _debrief_style(line, fsz, c)
+        col.add_child(line)
+
+    # the selected stages, scrollable prose
+    var scroll := ScrollContainer.new()
+    scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    col.add_child(scroll)
+
+    var stages := VBoxContainer.new()
+    stages.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    stages.add_theme_constant_override("separation", int(_ui(18.0)))
+    scroll.add_child(stages)
+
+    for s in debrief_data.get("stages", []):
+        var para := Label.new()
+        para.text = s["text"]
+        para.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+        para.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        _debrief_style(para, fsz, HUD_LINE)
+        stages.add_child(para)
+        if not (s["recommendation"] as String).is_empty():
+            var rec := Label.new()
+            rec.text = s["recommendation"]
+            rec.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+            rec.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+            _debrief_style(rec, fsz, HUD_DIM)
+            stages.add_child(rec)
+
+    # the verdict and the keys
+    var verdict := Label.new()
+    var next: String = debrief_data.get("next_mission", "")
+    if next.is_empty():
+        verdict.text = "CAMPAIGN COMPLETE      [Enter] finish"
+    else:
+        verdict.text = "next: %s      [Enter] accept" % next
+        if debrief_data.get("loop_offer", false):
+            verdict.text += "      [L] optional mission: %s" \
+                % debrief_data.get("loop_desc", "")
+    _debrief_style(verdict, fsz, HUD_LINE)
+    col.add_child(verdict)
+
+func _debrief_style(l: Label, size: int, color: Color) -> void:
+    l.add_theme_font_override("font", hud_font)
+    l.add_theme_font_size_override("font_size", size)
+    l.add_theme_color_override("font_color", color)
+
+func _accept_debrief(take_loop: bool) -> void:
+    sim.accept(take_loop)
+
+    var next: String = sim.current_mission()
+    if next.is_empty():
+        print("campaign %s complete" % campaign_name)
+        get_tree().quit()
+        return
+
+    _reset_world()
+    mission_name = next
+    if not sim.load(game_root, next, 42):
+        _fatal("native load failed: %s" % next)
+        return
+    _setup_backdrop()
+
+    debrief_panel.queue_free()
+    debrief_panel = null
+    debriefing = false
+    debrief_data = {}
+    Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+    mouse_grabbed = true
+    print("world: %s native (campaign %s)" % [mission_name, campaign_name])
+
+# strip the scene back to mission-free: ship nodes, transient art, the
+# authored sky (plus any secondary-sun lights it hung on the root), and
+# every piece of per-mission HUD state. The art caches and sound bank
+# survive -- they are mission-independent.
+func _reset_world() -> void:
+    for sig in ships:
+        ships[sig]["node"].queue_free()
+    ships.clear()
+
+    for f in flashes:
+        f["node"].queue_free()
+    flashes.clear()
+
+    if sky_root:
+        sky_root.queue_free()
+        sky_root = null
+    for child in get_children():
+        if child is DirectionalLight3D and child != key_light:
+            child.queue_free()
+
+    player_sig = -1
+    player_shield = []
+    player_hull_frac = 1.0
+    target_sig = -1
+    target_rec = {}
+    target_range = 0.0
+    target_closure = 0.0
+    throttle = 0.0
+    match_target = false
+
+    ticker_lines.clear()
+    chatter_lines.clear()
+    ticker.text = ""
+    chatter.text = ""
+    directives.text = ""
+    training_msg.text = ""
+    last_text = ""
+    msg_deadline = 0
+    radar.blips = []
 
 func _setup_camera() -> void:
     cam = Camera3D.new()

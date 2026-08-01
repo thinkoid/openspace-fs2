@@ -90,6 +90,15 @@ protected:
                                     &FS2::num_stars);
         godot::ClassDB::bind_method(godot::D_METHOD("hud_state"),
                                     &FS2::hud_state);
+        godot::ClassDB::bind_method(godot::D_METHOD("load_campaign",
+                                                    "game_root", "name"),
+                                    &FS2::load_campaign);
+        godot::ClassDB::bind_method(godot::D_METHOD("current_mission"),
+                                    &FS2::current_mission);
+        godot::ClassDB::bind_method(godot::D_METHOD("debrief"),
+                                    &FS2::debrief);
+        godot::ClassDB::bind_method(godot::D_METHOD("accept", "take_loop"),
+                                    &FS2::accept);
         godot::ClassDB::bind_method(godot::D_METHOD("key_mark", "key_text"),
                                     &FS2::key_mark);
         godot::ClassDB::bind_method(godot::D_METHOD("sound_name", "id"),
@@ -142,6 +151,59 @@ public:
     void step(double dt, const godot::Dictionary &controls)
     {
         m_sim.step(float(dt), controls_of(controls));
+    }
+
+    // the campaign (slice 3): load_campaign + current_mission bracket
+    // the mission loads; debrief/accept mirror the debrief screen's
+    // lifecycle -- the verdict crosses as one dictionary
+    bool load_campaign(const godot::String &game_root,
+                       const godot::String &name)
+    {
+        return m_sim.load_campaign(game_root.utf8().get_data(),
+                                   name.utf8().get_data());
+    }
+
+    godot::String current_mission() const
+    {
+        return m_sim.current_mission();
+    }
+
+    godot::Dictionary debrief()
+    {
+        debrief_t d = m_sim.debrief();
+
+        godot::Array goals;
+        for (const goal_state_t &g : d.goals) {
+            godot::Dictionary e;
+            e["name"] = g.name;
+            e["text"] = g.text;
+            e["type"] = g.type;
+            e["status"] = g.status;
+            e["invalid"] = g.invalid;
+            goals.push_back(e);
+        }
+
+        godot::Array stages;
+        for (const debrief_stage_t &s : d.stages) {
+            godot::Dictionary e;
+            e["text"] = s.text.c_str();
+            e["recommendation"] = s.recommendation.c_str();
+            e["voice"] = s.voice;
+            stages.push_back(e);
+        }
+
+        godot::Dictionary out;
+        out["goals"] = goals;
+        out["stages"] = stages;
+        out["next_mission"] = d.next_mission;
+        out["loop_offer"] = d.loop_offer;
+        out["loop_desc"] = d.loop_desc.c_str();
+        return out;
+    }
+
+    void accept(bool take_loop)
+    {
+        m_sim.accept(take_loop);
     }
 
     godot::Array snapshot() const
