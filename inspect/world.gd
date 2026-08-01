@@ -67,7 +67,9 @@ var throttle := 0.0
 var cam: Camera3D
 var hud                       # every 2D pixel (hud.gd)
 var target_sig := -1                        # hud_state's target_signature
-var target_rec := {}                        # its snapshot record this frame
+var target_rec := {}                        # its record, assembled per frame
+var births := {}              # sig -> identity record (created events);
+                              # handed to _spawn, then kept in ships[sig]
 var first_person := true                    # V toggles the chase camera
 var player_max_speed := 0.0                 # match-speed's denominator
 var match_target := false                   # M: retail's tracking mode
@@ -244,38 +246,83 @@ func _physics_process(delta: float) -> void:
     sim.step(delta, ci)
 
     for ev in sim.events():
-        if ev["kind"] == "log":
+        if ev["kind"] == "created":
+            # identity crosses ONCE, here; the packed frame() rows carry
+            # only what changes after birth
+            births[ev["signature"]] = ev["rec"]
+        elif ev["kind"] == "log":
             hud._tick("log %d: %s %s" % [ev["log_type"], ev["pname"], ev["sname"]])
-        elif ev["kind"] == "destroyed" and not (ev["name"] as String).is_empty():
-            hud._tick("destroyed: " + ev["name"])   # bolts expire nameless
+        elif ev["kind"] == "destroyed":
+            births.erase(ev["signature"])   # born and died between drains
+            if not (ev["name"] as String).is_empty():
+                hud._tick("destroyed: " + ev["name"])   # bolts expire nameless
         elif ev["kind"] == "sound":
             sounds.play_event(ev, player_pos)
         elif ev["kind"] == "message":
             hud.add_chatter(ev)
 
-    # reconcile: the snapshot is the truth; nodes follow it
+    # reconcile: the packed frame is the truth (frame() -- parallel
+    # arrays, one row per object; identity arrived at birth); nodes
+    # follow the rows
+    var frm: Dictionary = sim.frame()
+    var sigs: PackedInt32Array = frm["sig"]
+    var fpos: PackedVector3Array = frm["pos"]
+    var frv: PackedVector3Array = frm["rvec"]
+    var fuv: PackedVector3Array = frm["uvec"]
+    var ffv: PackedVector3Array = frm["fvec"]
+    var fvel: PackedVector3Array = frm["vel"]
+    var fhull: PackedFloat32Array = frm["hull"]
+    var frad: PackedFloat32Array = frm["radius"]
+    var fshield: PackedFloat32Array = frm["shield"]
+    var fflags: PackedInt32Array = frm["flags"]
+    var frgb: PackedByteArray = frm["rgb"]
+
     var seen := {}
     var player_node: Node3D = null
-    var player_rec := {}
+    var player_i := -1
     var ship_recs := []
     target_rec = {}
-    for rec in sim.snapshot():
-        var sig: int = rec["signature"]
+    for i in sigs.size():
+        var sig := sigs[i]
         seen[sig] = true
-        if rec.get("type", "ship") == "ship":
-            ship_recs.append(rec)
-        if sig == target_sig:
-            target_rec = rec
+
         if not ships.has(sig):
-            _spawn(sig, rec)
+            # a row with no birth record is a contract breach -- the
+            # created event precedes the first row, same drain
+            var brec: Dictionary = births.get(sig, {})
+            if brec.is_empty():
+                push_warning("world: no birth record for sig %d" % sig)
+                continue
+            _spawn(sig, brec)
+            ships[sig]["birth"] = brec
+            births.erase(sig)
         var entry: Dictionary = ships[sig]
         var node: Node3D = entry["node"]
 
+        var flags := fflags[i]
+        var dying := (flags & 1) != 0
+        var burner := (flags & 2) != 0
+        var is_player := (flags & 4) != 0
+
+        if entry["is_ship"]:
+            var birth: Dictionary = entry["birth"]
+            ship_recs.append({
+                "signature": sig, "pos": fpos[i], "team": birth["team"],
+                "player": is_player, "dying": dying,
+            })
+            if sig == target_sig:
+                target_rec = {
+                    "signature": sig, "name": birth["name"],
+                    "class": birth["class"], "team": birth["team"],
+                    "pos": fpos[i], "vel": fvel[i],
+                    "hull": fhull[i], "hull_max": birth["hull_max"],
+                }
+
         # FS2 frame -> Godot frame at the visual boundary only
-        var p: Vector3 = rec["pos"]
-        var rv: Vector3 = rec["rvec"]
-        var uv: Vector3 = rec["uvec"]
-        var fv: Vector3 = rec["fvec"]
+        var p := fpos[i]
+        var rv := frv[i]
+        var uv := fuv[i]
+        var fv := ffv[i]
         node.position = Vector3(p.x, p.y, -p.z)
         node.basis = Basis(
             Vector3(rv.x, rv.y, -rv.z),
@@ -294,7 +341,9 @@ func _physics_process(delta: float) -> void:
                 node.visible = true
             if node.has_meta("bolt_mat"):
                 (node.get_meta("bolt_mat") as StandardMaterial3D) \
-                    .albedo_color = rec.get("color", Color(1.0, 0.35, 0.25))
+                    .albedo_color = Color(frgb[i * 3] / 255.0,
+                                          frgb[i * 3 + 1] / 255.0,
+                                          frgb[i * 3 + 2] / 255.0)
             if node.has_meta("stretch") and cam:
                 # the velocity-stretched billboard: quad center between
                 # head (the record pos) and tail, face to camera, long
@@ -307,11 +356,10 @@ func _physics_process(delta: float) -> void:
                 # thrown dart -- a streak drawn along fvec skews from the
                 # path by up to ~9 degrees at fighter speeds (field
                 # report); a streak is motion, so it follows motion
-                var v3: Vector3 = rec["vel"]
+                var v3 := fvel[i]
                 var dirw := Vector3(v3.x, v3.y, -v3.z)
                 if dirw.length() < 1.0:
-                    var f3: Vector3 = rec["fvec"]
-                    dirw = Vector3(f3.x, f3.y, -f3.z)
+                    dirw = Vector3(fv.x, fv.y, -fv.z)
                 dirw = dirw.normalized()
                 var bolt_len: float = st["len"]
                 var center: Vector3 = node.position - dirw * (bolt_len * 0.5)
@@ -345,9 +393,9 @@ func _physics_process(delta: float) -> void:
             (fb["mat"] as StandardMaterial3D).uv1_offset = Vector3(
                 float(fr % cols) / cols, float(row) / float(fb["rows"]), 0.0)
             if entry_kind == "shockwave":
-                node.scale = Vector3.ONE * maxf(rec["radius"], 0.1)
+                node.scale = Vector3.ONE * maxf(frad[i], 0.1)
         elif entry_kind == "shockwave":
-            node.scale = Vector3.ONE * maxf(rec["radius"], 0.1)
+            node.scale = Vector3.ONE * maxf(frad[i], 0.1)
         elif entry_kind == "fireball" and node.has_meta("born"):
             var age: float = (Time.get_ticks_msec()
                               - int(node.get_meta("born"))) / 1000.0
@@ -365,17 +413,16 @@ func _physics_process(delta: float) -> void:
         # glow) or the engine above 0%; movers glow by their motion
         if entry["is_ship"]:
             var eng_on: bool
-            if rec["player"]:
-                eng_on = rec["afterburner"] or throttle > 0.0
+            if is_player:
+                eng_on = burner or throttle > 0.0
             else:
-                eng_on = (rec["vel"] as Vector3).length() > 0.5
+                eng_on = fvel[i].length() > 0.5
             node.set_thrusters(eng_on)
 
             # the engine dress follows: flipbook frame by age, burner
             # variant by the sim's flag, glows lit with the engine
             var th = entry.get("thrust")
             if th != null:
-                var burner: bool = rec["afterburner"]
                 var tfx: Dictionary = th["fxa"] if burner and th["fxa"] != null \
                     else th["fxn"]
                 var age: float = (Time.get_ticks_msec()
@@ -396,11 +443,12 @@ func _physics_process(delta: float) -> void:
                 var frac: float
                 if burner:
                     frac = 1.0
-                elif rec["player"]:
+                elif is_player:
                     frac = throttle
                 else:
-                    frac = clampf((rec["vel"] as Vector3).length()
-                                  / maxf(rec.get("max_speed", 1.0), 1.0),
+                    frac = clampf(fvel[i].length()
+                                  / maxf(float(entry["birth"].get(
+                                      "max_speed", 1.0)), 1.0),
                                   0.0, 1.0)
                 for g in th["glows"]:
                     (g["node"] as MeshInstance3D).visible = eng_on
@@ -412,18 +460,17 @@ func _physics_process(delta: float) -> void:
 
             # the shield taking hits: a drop in the quadrant total this
             # frame is a strike on the bubble
-            var tot := 0.0
-            for s: float in rec.get("shield", []):
-                tot += s
+            var tot := fshield[i * 4] + fshield[i * 4 + 1] \
+                + fshield[i * 4 + 2] + fshield[i * 4 + 3]
             var prev: float = entry.get("shield_prev", tot)
             if tot < prev - 0.5:
                 fx._shield_flash(node, entry["radius"])
             entry["shield_prev"] = tot
 
-        if rec["player"]:
+        if is_player:
             player_sig = sig
             player_node = node
-            player_rec = rec
+            player_i = i
 
     for sig in ships.keys():
         if not seen.has(sig):
@@ -448,11 +495,10 @@ func _physics_process(delta: float) -> void:
                        ships[player_sig]["radius"])
         if sky and cam:
             sky.follow(cam.global_position)
-        player_pos = player_rec["pos"]
-        player_max_speed = player_rec.get("max_speed", 0.0)
-        var vel: Vector3 = player_rec["vel"]
-        var fv2: Vector3 = player_rec["fvec"]
-        var fwd_speed := vel.dot(fv2)
+        var pbirth: Dictionary = ships[player_sig]["birth"]
+        player_pos = fpos[player_i]
+        player_max_speed = pbirth.get("max_speed", 0.0)
+        var fwd_speed := fvel[player_i].dot(ffv[player_i])
         if absf(fwd_speed) < 0.05:
             fwd_speed = 0.0            # %6.1f would print "-0.0"
 
@@ -464,24 +510,37 @@ func _physics_process(delta: float) -> void:
         hud.player_pos = player_pos
         hud.throttle = throttle
         hud.match_target = match_target
-        hud.player_energy_frac = player_rec["weapon_energy"] \
-            / maxf(player_rec["weapon_energy_max"], 1.0)
-        hud.player_burner_frac = player_rec["burner_fuel"] \
-            / maxf(player_rec["burner_fuel_max"], 1.0)
         hud.hud_left.text = "%s\n%d ships" % [mission_name, ship_recs.size()]
 
         var hum_out: float = absf(throttle)
-        if player_rec["afterburner"]:
+        if fflags[player_i] & 2:
             hum_out = 1.0
         sounds.hum_level(hum_out)
 
-        hud.update_combat(player_rec, ship_recs, target_sig, target_rec,
+        # the player's combat record, joined from the row and the birth
+        var prec := {
+            "pos": fpos[player_i], "rvec": frv[player_i],
+            "uvec": fuv[player_i], "fvec": ffv[player_i],
+            "vel": fvel[player_i], "team": pbirth["team"],
+            "max_speed": player_max_speed,
+            "shield": [fshield[player_i * 4], fshield[player_i * 4 + 1],
+                       fshield[player_i * 4 + 2], fshield[player_i * 4 + 3]],
+            "shield_max": pbirth["shield_max"],
+            "hull": fhull[player_i], "hull_max": pbirth["hull_max"],
+        }
+        hud.update_combat(prec, ship_recs, target_sig, target_rec,
                           float(ships.get(target_sig, {}).get("radius", 10.0)))
 
     # the boundary's HUD freight: the orchestrator keeps the target
-    # signature (the reconciler keys on it); the rest is the HUD's
+    # signature (the reconciler keys on it); the rest is the HUD's --
+    # the player's energy/fuel gauges ride here now, keeping frame()
+    # uniform across object kinds
     var h: Dictionary = sim.hud_state()
     target_sig = int(h.get("target_signature", -1))
+    hud.player_energy_frac = float(h.get("weapon_energy", 0.0)) \
+        / maxf(float(h.get("weapon_energy_max", 0.0)), 1.0)
+    hud.player_burner_frac = float(h.get("burner_fuel", 0.0)) \
+        / maxf(float(h.get("burner_fuel_max", 0.0)), 1.0)
     hud.update_lesson(h)
     hud.update_chatter()
 
@@ -712,6 +771,7 @@ func _reset_world() -> void:
     player_sig = -1
     target_sig = -1
     target_rec = {}
+    births.clear()
     throttle = 0.0
     match_target = false
     hud.reset()
