@@ -944,6 +944,32 @@ indicator on relative motion, gun/burn gauges, RMB/Space secondary
 trigger. Suite 26/26 throughout. Open: campaign flow (goals → debrief
 → next mission); field verdict on the new art pending.
 
+**Status (2026-08-01):** campaign flow, end to end. Foundation
+(`ea21ed513`): persistence went Linux-native — cfile grew its second
+root (root 0 = `$XDG_DATA_HOME/fs2`, the write root; the retail tree
+rides the old CD-ROM slot, so the data home shadows it = the mod
+mechanism for free), the registry shim moved to `~/.config/fs2`, and
+The Pilot boots with the library: Commander Jameson, read from the
+`.plr` or inducted fresh. Shaken loose: retail's `MAX_PATH_LEN 128`
+stack smash (bumped 256), the never-initialized anim free list
+(`anim_init` joins boot — the pilot's default HUD config activates the
+talking-head gauge headless), the void `game_get_default_skill_level`
+trap. Boundary (`39643c5dd`): slice 3 — `load_campaign` (.fc2 +
+`.csg` resume), `current_mission`, `debrief()` (retail's debrief-entry
+order: fail incomplete → store goals/events → eval branch →
+scoring_level_close → stage formulas), `accept()` (grants, `.csg`
+save, advance, side-loop steer). The campaign-flow gate proves the arc
+across three processes on a synthetic two-hop campaign staged through
+the root-0 shadow, plus the retail Training-1 fail/repeat/no-save
+smoke; perturbed red, restored green. Presenter (`6b9797f88`): `world
+campaign <name>` form, Alt-J → debrief overlay (sim frozen, goals +
+stages + verdict), Enter → accept + next mission loaded in place
+(`_reset_world` strips ship nodes / art / sky, caches survive).
+Suite 28/28. Open: promotion/badge/traitor debrief stages (parked,
+presentation-fed), red-alert stat carry, the mission-loop brief in the
+scene (boundary carries the offer; L is wired but unflown), warp-out
+as a real departure (Alt-J currently ends the mission directly).
+
 ## Where this work lives
 
 - `master` — the retail Linux port; mothballed 2026-07-30 at its
