@@ -56,6 +56,7 @@ controls_of(const godot::Dictionary &controls)
     c.fire_countermeasure = controls.get("fire_countermeasure", false);
     c.target_next = controls.get("target_next", false);
     c.target_hostile = controls.get("target_hostile", false);
+    c.target_escort = controls.get("target_escort", false);
 
     return c;
 }

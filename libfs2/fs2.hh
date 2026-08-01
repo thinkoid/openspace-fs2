@@ -50,6 +50,8 @@ struct flight_controls_t {
     bool target_hostile;               // edge -> the H binding's
                                        // hud_target_next_list (next
                                        // closest hostile)
+    bool target_escort;                // edge -> the E binding's
+                                       // hud_escort_target_next
 };
 
 // The flying state after a step -- physics_info's living fields.
@@ -301,6 +303,7 @@ private:
     bool m_burn_held = false;          // afterburner edge detection
     bool m_target_held = false;        // target-next edge detection
     bool m_hostile_held = false;       // target-hostile edge detection
+    bool m_escort_held = false;        // target-escort edge detection
     int m_log_drained = 0;             // mission-log high-water mark
     std::vector<object_state_t> m_known; // last drain's world, for diffs
 

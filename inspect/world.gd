@@ -268,7 +268,8 @@ func _physics_process(delta: float) -> void:
                         - mouse_accum.y * MOUSE_SENS, -1.0, 1.0),
         "heading": clampf(_axis(KEY_RIGHT, KEY_LEFT)
                           + mouse_accum.x * MOUSE_SENS, -1.0, 1.0),
-        "bank": _axis(KEY_Q, KEY_E),
+        "bank": 0.0,       # roll unbound: Q was roll, E is retail's
+                           # escort key -- both freed (field request)
         "forward": throttle,
         "afterburner": burn,
         "fire_primary": mouse_grabbed and
@@ -279,6 +280,7 @@ func _physics_process(delta: float) -> void:
              or Input.is_key_pressed(KEY_SPACE)),
         "target_next": Input.is_key_pressed(KEY_T),
         "target_hostile": Input.is_key_pressed(KEY_H),
+        "target_escort": Input.is_key_pressed(KEY_E),
     }
     mouse_accum = Vector2.ZERO
 
@@ -1821,7 +1823,7 @@ func _setup_hud() -> void:
     help.offset_left = 16
     help.offset_bottom = -12
     help.add_theme_font_size_override("font_size", 24)
-    help.text = "mouse steers + fires (RMB missile), Q/E roll, A/Z throttle, \\ full, Tab burner, T target, H hostile, M match, V view, Shift-Super-J end mission, Esc quit"
+    help.text = "mouse steers + fires (RMB missile), A/Z throttle, \\ full, Tab burner, T target, H hostile, E escort, M match, V view, Shift-Super-J end mission, Esc quit"
     hud.add_child(help)
 
 

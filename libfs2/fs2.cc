@@ -21,6 +21,7 @@
 #include <globalincs/linklist.hh>
 #include <graphics/font.hh>
 #include <graphics/grinternal.hh>
+#include <hud/hudescort.hh>
 #include <hud/hudmessage.hh>
 #include <hud/hudshield.hh>
 #include <hud/hud.hh>
@@ -692,6 +693,14 @@ fs2_t::step(float dt, const flight_controls_t &controls)
             hud_target_next_list();
     }
     m_hostile_held = controls.target_hostile;
+
+    // the E binding, same retail sequence: next ship on the escort list
+    // (empty list = retail's own no-op)
+    if (controls.target_escort && !m_escort_held && !m_pre_entry) {
+        control_used(TARGET_NEXT_ESCORT_SHIP);
+        hud_escort_target_next();
+    }
+    m_escort_held = controls.target_escort;
 
     mission_parse_eval_stuff();        // arrivals and departures, live
     obj_move_all(flFrametime);
