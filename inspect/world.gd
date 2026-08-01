@@ -586,9 +586,14 @@ func _update_combat_hud(prec: Dictionary, ship_recs: Array) -> void:
     radar.queue_redraw()
 
     # the monitor sits at the HUD rectangle's lower-left: under the
-    # speed tape's foot, on its x (the tape is the rectangle's left edge)
+    # speed tape's foot, on its x (the tape is the rectangle's left
+    # edge), top-aligned with the weapon gauge across the rectangle --
+    # same font, same small size (field-calibrated)
     target_monitor.position = Vector2(overlay.size.x * 0.16,
-                                      overlay.size.y * 0.5 + _ui(232.0))
+                                      overlay.size.y * 0.5 + _ui(226.0))
+    var mfsz := int(_ui(13.0))
+    if target_monitor.get_theme_font_size("font_size") != mfsz:
+        target_monitor.add_theme_font_size_override("font_size", mfsz)
 
     if target_rec.is_empty():
         target_monitor.text = ""
@@ -839,15 +844,19 @@ func _draw_hud() -> void:
 # the weapon gauge at the HUD rectangle's lower-right, retail's bank
 # list: one line per mounted bank, a box per shot the next trigger pull
 # fires -- filled when the bank is armed (linked primaries fill every
-# line, dual-fire missiles draw two boxes on the selected one)
-func _draw_weapon_gauge(vp: Vector2, fsz: int) -> void:
+# line, dual-fire missiles draw two boxes on the selected one). Same
+# small font as the target monitor, both blocks top-aligned under the
+# rectangle's bottom edge (field-calibrated).
+func _draw_weapon_gauge(vp: Vector2, _fsz: int) -> void:
     var lines: Array = weapon_banks_p + weapon_banks_s
     if lines.is_empty():
         return
 
+    var fsz := int(_ui(13.0))
     var x := vp.x * 0.84                       # the rectangle's right edge
-    var lh := fsz + _ui(8.0)
-    var y := vp.y * 0.5 + _ui(220.0) - (lines.size() - 1) * lh
+    var lh := fsz + _ui(5.0)
+    var y := vp.y * 0.5 + _ui(226.0) + fsz     # first baseline, top-aligned
+                                               # with the monitor label
     var side := fsz * 0.55
 
     for b in lines:
@@ -855,14 +864,14 @@ func _draw_weapon_gauge(vp: Vector2, fsz: int) -> void:
         overlay.draw_string(hud_font, Vector2(x - _ui(260.0), y),
                             b["name"], HORIZONTAL_ALIGNMENT_RIGHT,
                             int(_ui(250.0)), fsz, col)
-        var bx := x + _ui(10.0)
+        var bx := x + _ui(8.0)
         for s in range(int(b["shots"])):
             var r := Rect2(bx, y - side * 0.85, side, side)
             if b["armed"]:
                 overlay.draw_rect(r, col)
             else:
                 overlay.draw_rect(r, col, false, 1.5)
-            bx += side + _ui(5.0)
+            bx += side + _ui(4.0)
         y += lh
 
 func _draw_speed_tape(vp: Vector2, fsz: int) -> void:
