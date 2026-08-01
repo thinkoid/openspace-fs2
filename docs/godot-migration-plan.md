@@ -970,6 +970,23 @@ presentation-fed), red-alert stat carry, the mission-loop brief in the
 scene (boundary carries the offer; L is wired but unflown), warp-out
 as a real departure (Alt-J currently ends the mission directly).
 
+**Status (2026-08-01, afternoon):** the cockpit-calibration round
+(H hostile / E escort / S subsystem / "." and "/" weapon cycles, all
+retail's own keycontrol bodies through boundary control edges; the
+target monitor + weapon gauge in the HUD rectangle's corners; the
+subsystem frame; tests/subsys-range.fs2 with a GTFR Triton), then the
+god-script split: world.gd (1866 lines, 42% of the scene code) cut to
+a 734-line orchestrator plus four passive modules on the radar.gd
+pattern -- fx.gd (transient art + flipbook cache), sky.gd (lights /
+starfield / backdrop), hud.gd (every 2D pixel incl. the debrief
+overlay), sound.gd grown (hum, positioned attenuation, exit cleanup).
+Move-only commits, bodies verbatim, world-scene gate + probe shots
+identical after each cut. NEXT (decided, not started): the snapshot
+boundary contract -- split birth records (identity, once, dictionary)
+from per-frame kinematics (packed parallel arrays keyed by signature);
+measure before/after. Events/config/debrief stay dictionaries -- low
+volume, ergonomics win.
+
 ## Where this work lives
 
 - `master` — the retail Linux port; mothballed 2026-07-30 at its

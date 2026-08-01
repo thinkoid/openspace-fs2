@@ -15,11 +15,17 @@
 # (retail's tracking mode; manual throttle cancels), V view (pilot's
 # seat by default, chase on toggle), H hud, Esc quit.
 #
-# This scene IS the lesson and the battlefield: weapons (slice 3),
-# training messages and directives (slice 4), radio chatter, the combat
-# HUD (bracket, monitor, radar -- radar.gd's art on native data), warp
-# flashes and the sound seam. The GDScript-era mission.tscn folded in
-# 2026-07-31; the retired sims remain as specs beside their gates.
+# This scene is the ORCHESTRATOR (split 2026-08-01, four cuts): it owns
+# the frame loop -- step, drain events, snapshot -- object lifetime (the
+# reconciler, keyed by retail's signature), input translation, the
+# camera, and campaign progression. Presentation concerns live in
+# passive modules it pushes state into, the radar.gd pattern: fx.gd
+# (transient art + the flipbook cache), sky.gd (lights, starfield,
+# backdrop), hud.gd (every 2D pixel, debrief overlay included),
+# sound.gd (voice, effects, the hum). Nothing calls back; every module
+# reads the frame the orchestrator hands it. The GDScript-era
+# mission.tscn folded in 2026-07-31; the retired sims remain as specs
+# beside their gates.
 extends Node3D
 
 const ShipClass := preload("res://ship.gd")
