@@ -20,9 +20,16 @@ const DIRS := [
 ]
 const POOL := 6
 
+# positioned sounds attenuate by distance to the player and cull beyond
+# earshot -- without this, flak eight klicks away arrives as random
+# full-volume bursts (field-reported as "static")
+const SND_FULL_RANGE := 150.0
+const SND_CULL_RANGE := 3000.0
+
 var index := {}                  # lowercased wav name -> absolute path
 var cache := {}                  # lowercased wav name -> AudioStreamWAV
 var voice: AudioStreamPlayer
+var hum: AudioStreamPlayer       # the player's engine loop
 var pool := []
 var pool_next := 0
 var _missing := {}
@@ -80,3 +87,54 @@ func play_effect(name: String, volume_db: float = 0.0) -> void:
 # a resolved stream for callers running their own player (engine loops)
 func stream_of(name: String):
     return _stream(name)
+
+# the player's engine hum: a bank-owned loop on the tables' own
+# SND_ENGINE wav (retail runs it as an object-linked looping sound, a
+# lifecycle the one-shot event seam doesn't carry -- the ship's OWN
+# hum is presentation's to keep)
+func attach_hum(name: String) -> void:
+    hum = AudioStreamPlayer.new()
+    add_child(hum)
+    var s = _stream(name)
+    if s == null:
+        return
+    if s is AudioStreamWAV:
+        s.loop_mode = AudioStreamWAV.LOOP_FORWARD
+        s.loop_end = s.data.size() / 2
+    hum.stream = s
+    hum.volume_db = -80.0
+    hum.play()
+
+# the hum follows the engine: silent at 0%, full voice under burn
+func hum_level(output: float) -> void:
+    if hum == null or hum.stream == null:
+        return
+    hum.volume_db = -80.0 if output <= 0.0 else lerpf(-26.0, -8.0, output)
+
+# the sim's own requests (guns, impacts, booms) through the install's
+# wavs, attenuated by distance when positioned
+func play_event(ev: Dictionary, player_pos: Vector3) -> void:
+    var vol := 0.0
+    if ev.has("pos"):
+        var d: float = (ev["pos"] as Vector3).distance_to(player_pos)
+        if d > SND_CULL_RANGE:
+            return
+        if d > SND_FULL_RANGE:
+            vol = -30.0 * (d - SND_FULL_RANGE) \
+                / (SND_CULL_RANGE - SND_FULL_RANGE)
+    play_effect(ev["name"], vol)
+
+# a stream still playing at exit leaks its playback pair past ObjectDB
+# cleanup (the "N instances leaked" warning); stop() alone races the mix
+# thread, so the stream references drop too -- silence AND let go
+func _exit_tree() -> void:
+    if hum:
+        hum.stop()
+        hum.stream = null
+    if voice:
+        voice.stop()
+        voice.stream = null
+    for p in pool:
+        p.stop()
+        p.stream = null
+    cache.clear()

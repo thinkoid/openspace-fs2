@@ -65,15 +65,8 @@ var target_rec := {}                        # its snapshot record this frame
 var first_person := true                    # V toggles the chase camera
 var player_max_speed := 0.0                 # match-speed's denominator
 var match_target := false                   # M: retail's tracking mode
-var sounds                     # SoundBank, voice playback
-var engine_hum: AudioStreamPlayer
+var sounds                     # SoundBank: voice, effects, the hum
 var player_pos := Vector3.ZERO # FS2 frame, for sound attenuation
-
-# positioned sounds attenuate by distance to the player and cull beyond
-# earshot -- without this, flak eight klicks away arrives as random
-# full-volume bursts (field-reported as "static")
-const SND_FULL_RANGE := 150.0
-const SND_CULL_RANGE := 3000.0
 
 var assets_dir := ""
 var mission_name := ""
@@ -175,37 +168,9 @@ func _ready() -> void:
     add_child(hud)
     hud.setup(cam, sounds)
 
-    # the player's engine hum: a scene-owned loop on the tables' own
-    # SND_ENGINE wav (retail runs it as an object-linked looping sound, a
-    # lifecycle the one-shot event seam doesn't carry -- the ship's OWN
-    # hum is presentation's to keep)
-    engine_hum = AudioStreamPlayer.new()
-    add_child(engine_hum)
-    var hum = sounds.stream_of(sim.sound_name(4))   # gamesnd.hh SND_ENGINE
-    if hum:
-        if hum is AudioStreamWAV:
-            hum.loop_mode = AudioStreamWAV.LOOP_FORWARD
-            hum.loop_end = hum.data.size() / 2
-        engine_hum.stream = hum
-        engine_hum.volume_db = -80.0
-        engine_hum.play()
+    sounds.attach_hum(sim.sound_name(4))   # gamesnd.hh SND_ENGINE
 
     print("world: %s native, root %s" % [mission_name, root])
-
-# a stream still playing at exit leaks its playback pair past ObjectDB
-# cleanup (the "N instances leaked" warning); stop() alone races the mix
-# thread, so the stream references drop too -- silence AND let go
-func _exit_tree() -> void:
-    if engine_hum:
-        engine_hum.stop()
-        engine_hum.stream = null
-    if sounds:
-        sounds.voice.stop()
-        sounds.voice.stream = null
-        for p in sounds.pool:
-            p.stop()
-            p.stream = null
-        sounds.cache.clear()
 
 func _fatal(msg: String) -> void:
     printerr("world: " + msg)
@@ -278,17 +243,7 @@ func _physics_process(delta: float) -> void:
         elif ev["kind"] == "destroyed" and not (ev["name"] as String).is_empty():
             hud._tick("destroyed: " + ev["name"])   # bolts expire nameless
         elif ev["kind"] == "sound":
-            # the sim's own requests (guns, impacts, booms) through the
-            # install's wavs, attenuated by distance when positioned
-            var vol := 0.0
-            if ev.has("pos"):
-                var d: float = (ev["pos"] as Vector3).distance_to(player_pos)
-                if d > SND_CULL_RANGE:
-                    continue
-                if d > SND_FULL_RANGE:
-                    vol = -30.0 * (d - SND_FULL_RANGE) \
-                        / (SND_CULL_RANGE - SND_FULL_RANGE)
-            sounds.play_effect(ev["name"], vol)
+            sounds.play_event(ev, player_pos)
         elif ev["kind"] == "message":
             hud.add_chatter(ev)
 
@@ -509,13 +464,10 @@ func _physics_process(delta: float) -> void:
             / maxf(player_rec["burner_fuel_max"], 1.0)
         hud.hud_left.text = "%s\n%d ships" % [mission_name, ship_recs.size()]
 
-        # the hum follows the engine: silent at 0%, full voice under burn
-        if engine_hum.stream:
-            var output: float = absf(throttle)
-            if player_rec["afterburner"]:
-                output = 1.0
-            engine_hum.volume_db = -80.0 if output <= 0.0 \
-                else lerpf(-26.0, -8.0, output)
+        var hum_out: float = absf(throttle)
+        if player_rec["afterburner"]:
+            hum_out = 1.0
+        sounds.hum_level(hum_out)
 
         hud.update_combat(player_rec, ship_recs, target_sig, target_rec,
                           float(ships.get(target_sig, {}).get("radius", 10.0)))
