@@ -52,6 +52,11 @@ struct flight_controls_t {
                                        // closest hostile)
     bool target_escort;                // edge -> the E binding's
                                        // hud_escort_target_next
+    bool target_subsys;                // edge -> the S binding's
+                                       // hud_target_next_subobject
+    bool cycle_primary;                // edge -> "." (bank 1 -> bank 2
+                                       // -> linked, retail's cycle)
+    bool cycle_secondary;              // edge -> "/" (next missile bank)
 };
 
 // The flying state after a step -- physics_info's living fields.
@@ -239,6 +244,8 @@ struct hud_state_t {
                                        // (Player_ai), -1 = none
     char target_subsys[32];            // the targeted subsystem on it
                                        // (system_info->name, "" = none)
+    vector target_subsys_pos;          // its world position (FS2 frame;
+                                       // valid when target_subsys set)
     std::vector<weapon_bank_t> primary_banks;
     std::vector<weapon_bank_t> secondary_banks;
 };
@@ -304,6 +311,9 @@ private:
     bool m_target_held = false;        // target-next edge detection
     bool m_hostile_held = false;       // target-hostile edge detection
     bool m_escort_held = false;        // target-escort edge detection
+    bool m_subsys_held = false;        // target-subsystem edge detection
+    bool m_cycle_p_held = false;       // primary-cycle edge detection
+    bool m_cycle_s_held = false;       // secondary-cycle edge detection
     int m_log_drained = 0;             // mission-log high-water mark
     std::vector<object_state_t> m_known; // last drain's world, for diffs
 

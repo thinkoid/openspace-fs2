@@ -114,12 +114,42 @@ else
 fi
 
 # the weapon gauge: the range loadout's mounted banks exactly -- the
-# authored-empty second/third banks stay OFF the gauge, the selected
+# authored-empty third missile bank stays OFF the gauge, the selected
 # banks read armed, single-shot
-if grep -q "^art weapons p 'Subach HL-7' 1 1 s 'Piranha' 1 1$" "$tmp/fire.txt"; then
-    echo "OK: $(grep -m1 '^art weapons' "$tmp/fire.txt")"
+if grep -q "^art weapons p 'Subach HL-7' 1 1 p 'Subach HL-7' 0 1 s 'Piranha' 1 1 s 'Rockeye' 0 1$" "$tmp/fire.txt"; then
+    echo "OK: $(grep -m1 '^art weapons ' "$tmp/fire.txt")"
 else
-    echo "FAIL: weapon gauge wrong or missing: $(grep -m1 '^art weapons' "$tmp/fire.txt" || echo none)"
+    echo "FAIL: weapon gauge wrong or missing: $(grep -m1 '^art weapons ' "$tmp/fire.txt" || echo none)"
+    rc=1
+fi
+
+# the cycles bite: after one "." pulse the second Subach bank is the
+# armed one, after one "/" pulse the Rockeye bank is -- retail's own
+# ship_select_next_primary/secondary through the boundary
+if grep -q "^art weapons2 p 'Subach HL-7' 0 1 p 'Subach HL-7' 1 1 s 'Piranha' 0 1 s 'Rockeye' 1 1$" "$tmp/fire.txt"; then
+    echo "OK: $(grep -m1 '^art weapons2' "$tmp/fire.txt")"
+else
+    echo "FAIL: weapon cycling wrong or missing: $(grep -m1 '^art weapons2' "$tmp/fire.txt" || echo none)"
+    rc=1
+fi
+
+# the S pulse targets a real subsystem on the drone (the Amazon carries
+# a navigation subsystem) and its name crosses hud_state
+if grep -q "^art subsys 'navigation'$" "$tmp/fire.txt"; then
+    echo "OK: $(grep -m1 '^art subsys' "$tmp/fire.txt")"
+else
+    echo "FAIL: subsystem targeting wrong or missing: $(grep -m1 '^art subsys' "$tmp/fire.txt" || echo none)"
+    rc=1
+fi
+
+# the subsystem range: the same pulses against the Triton barge -- the
+# first S stop on a capital-class contact is its gun turret
+"$sim" "$root" "$repo/tests/subsys-range.fs2" fire 600 600 > "$tmp/subsys.txt" 2> /dev/null
+
+if grep -q "^art subsys 'gun turret'$" "$tmp/subsys.txt"; then
+    echo "OK: Triton $(grep -m1 '^art subsys' "$tmp/subsys.txt")"
+else
+    echo "FAIL: Triton subsystem targeting wrong: $(grep -m1 '^art subsys' "$tmp/subsys.txt" || echo none)"
     rc=1
 fi
 

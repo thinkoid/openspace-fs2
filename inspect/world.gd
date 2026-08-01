@@ -77,6 +77,7 @@ var target_monitor: Label
 var target_sig := -1                        # hud_state's target_signature
 var target_rec := {}                        # its snapshot record this frame
 var target_subsys := ""                     # targeted subsystem name on it
+var target_subsys_pos := Vector3.ZERO       # its world pos (FS2 frame)
 var weapon_banks_p: Array = []              # weapon gauge: mounted banks,
 var weapon_banks_s: Array = []              # {name, armed, shots}
 var lead_speed := 0.0                       # the primary's muzzle speed
@@ -281,6 +282,9 @@ func _physics_process(delta: float) -> void:
         "target_next": Input.is_key_pressed(KEY_T),
         "target_hostile": Input.is_key_pressed(KEY_H),
         "target_escort": Input.is_key_pressed(KEY_E),
+        "target_subsys": Input.is_key_pressed(KEY_S),
+        "cycle_primary": Input.is_key_pressed(KEY_PERIOD),
+        "cycle_secondary": Input.is_key_pressed(KEY_SLASH),
     }
     mouse_accum = Vector2.ZERO
 
@@ -811,6 +815,23 @@ func _draw_hud() -> void:
                         "%+.0f m/s" % target_closure,
                         HORIZONTAL_ALIGNMENT_LEFT, -1, fsz, col)
 
+    # the subsystem frame: a second, smaller bracket on the targeted
+    # subsystem (S cycles it) -- absent when the hull itself is the
+    # target (no targeted_subsys crosses)
+    if not target_subsys.is_empty():
+        var sv := Vector3(target_subsys_pos.x, target_subsys_pos.y,
+                          -target_subsys_pos.z)
+        if not cam.is_position_behind(sv):
+            var sc := cam.unproject_position(sv)
+            var sh := _ui(16.0)
+            for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1),
+                                    Vector2(-1, 1), Vector2(1, 1)]:
+                var cc3 := sc + corner * sh
+                overlay.draw_line(cc3, cc3 - Vector2(corner.x * sh * 0.6, 0),
+                                  col, 1.5)
+                overlay.draw_line(cc3, cc3 - Vector2(0, corner.y * sh * 0.6),
+                                  col, 1.5)
+
     # the lead intercept: put the boresight on the dot and the bolts
     # meet the target -- solved on RELATIVE motion, bolts inherit the
     # shooter velocity (|R + Vt| = s*t, smallest t > 0)
@@ -937,6 +958,7 @@ func _update_lesson() -> void:
     target_sig = int(h.get("target_signature", -1))
     lead_speed = float(h.get("primary_speed", 0.0))
     target_subsys = h.get("target_subsys", "")
+    target_subsys_pos = h.get("target_subsys_pos", Vector3.ZERO)
     weapon_banks_p = h.get("primary_banks", [])
     weapon_banks_s = h.get("secondary_banks", [])
 

@@ -57,6 +57,9 @@ controls_of(const godot::Dictionary &controls)
     c.target_next = controls.get("target_next", false);
     c.target_hostile = controls.get("target_hostile", false);
     c.target_escort = controls.get("target_escort", false);
+    c.target_subsys = controls.get("target_subsys", false);
+    c.cycle_primary = controls.get("cycle_primary", false);
+    c.cycle_secondary = controls.get("cycle_secondary", false);
 
     return c;
 }
@@ -346,6 +349,9 @@ public:
         out["primary_speed"] = h.primary_speed;
         out["target_signature"] = h.target_signature;
         out["target_subsys"] = h.target_subsys;
+        out["target_subsys_pos"] =
+            godot::Vector3(h.target_subsys_pos.x, h.target_subsys_pos.y,
+                           h.target_subsys_pos.z);
 
         godot::Array pb, sb;
         for (const weapon_bank_t &b : h.primary_banks) {

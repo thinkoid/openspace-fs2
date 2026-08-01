@@ -702,6 +702,41 @@ fs2_t::step(float dt, const flight_controls_t &controls)
     }
     m_escort_held = controls.target_escort;
 
+    // the S binding: next subsystem on the current target
+    if (controls.target_subsys && !m_subsys_held && !m_pre_entry) {
+        control_used(TARGET_NEXT_SUBOBJECT);
+        if (hud_sensors_ok(Player_ship))
+            hud_target_next_subobject();
+    }
+    m_subsys_held = controls.target_subsys;
+
+    // the "." binding (keycontrol.cc's CYCLE_NEXT_PRIMARY body): bank 1
+    // -> bank 2 -> linked, ship_select_next_primary's own cycle, with
+    // retail's quarter-second ready-again delay on the new bank
+    if (controls.cycle_primary && !m_cycle_p_held && !m_pre_entry &&
+        Player_obj && Player_ship) {
+        control_used(CYCLE_NEXT_PRIMARY);
+        if (ship_select_next_primary(Player_obj, CYCLE_PRIMARY_NEXT))
+            Player_ship->weapons.next_primary_fire_stamp
+                [Player_ship->weapons.current_primary_bank] = timestamp(250);
+    }
+    m_cycle_p_held = controls.cycle_primary;
+
+    // the "/" binding (CYCLE_SECONDARY's body): the next mounted
+    // missile bank, same ready-again delay
+    if (controls.cycle_secondary && !m_cycle_s_held && !m_pre_entry &&
+        Player_obj) {
+        control_used(CYCLE_SECONDARY);
+        if (ship_select_next_secondary(Player_obj)) {
+            ship_weapon &w = Ships[Player_obj->instance].weapons;
+            if (timestamp_elapsed(
+                    w.next_secondary_fire_stamp[w.current_secondary_bank]))
+                w.next_secondary_fire_stamp[w.current_secondary_bank] =
+                    timestamp(250);
+        }
+    }
+    m_cycle_s_held = controls.cycle_secondary;
+
     mission_parse_eval_stuff();        // arrivals and departures, live
     obj_move_all(flFrametime);
     mission_eval_goals();
@@ -914,6 +949,7 @@ fs2_t::hud_state() const
     out.primary_speed = 0.0f;
     out.target_signature = -1;
     out.target_subsys[0] = '\0';
+    out.target_subsys_pos = vmd_zero_vector;
 
     if (!m_world_live)
         return out;
@@ -938,10 +974,14 @@ fs2_t::hud_state() const
         if (t->type != OBJ_NONE)
             out.target_signature = t->signature;
 
-        if (Player_ai->targeted_subsys)
+        if (Player_ai->targeted_subsys) {
             strncpy(out.target_subsys,
                     Player_ai->targeted_subsys->system_info->name,
                     sizeof(out.target_subsys) - 1);
+            get_subsystem_world_pos(const_cast<object *>(t),
+                                    Player_ai->targeted_subsys,
+                                    &out.target_subsys_pos);
+        }
     }
 
     // the weapon gauge, one line per MOUNTED bank (an authored-empty

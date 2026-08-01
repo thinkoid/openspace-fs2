@@ -123,6 +123,8 @@ main(int argc, char *argv[])
     bool shockwave_shown = false;
     bool fireball_shown = false;
     bool debris_shown = false;
+    bool weapons2_shown = false;
+    bool subsys_shown = false;
 
     for (int frame = 1; frame <= frames; frame++) {
         if (firing) {
@@ -201,6 +203,13 @@ main(int argc, char *argv[])
             // pulse exercises the H binding's chain the same way.
             controls.target_next = frame % 300 == 0;
             controls.target_hostile = frame % 300 == 150;
+
+            // one pulse each, after the entry grace: cycle the primary
+            // (bank 1 -> bank 2), cycle the missile bank, target a
+            // subsystem -- the weapons gate pins what each did
+            controls.cycle_primary = frame == 450;
+            controls.cycle_secondary = frame == 456;
+            controls.target_subsys = frame == 462;
         }
 
         sim.step(dt, controls);
@@ -270,6 +279,26 @@ main(int argc, char *argv[])
             if (t != last_target) {
                 printf("hud %d target %d\n", frame, t);
                 last_target = t;
+            }
+        }
+
+        // the post-pulse witnesses, once each: the weapon gauge after
+        // both cycles, and the first targeted subsystem
+        if (firing && frame >= 470 && !weapons2_shown) {
+            hud_state_t hs = sim.hud_state();
+            printf("art weapons2");
+            for (const weapon_bank_t &b : hs.primary_banks)
+                printf(" p '%s' %d %d", b.name, int(b.armed), b.shots);
+            for (const weapon_bank_t &b : hs.secondary_banks)
+                printf(" s '%s' %d %d", b.name, int(b.armed), b.shots);
+            printf("\n");
+            weapons2_shown = true;
+        }
+        if (firing && !subsys_shown) {
+            hud_state_t hs = sim.hud_state();
+            if (hs.target_subsys[0]) {
+                printf("art subsys '%s'\n", hs.target_subsys);
+                subsys_shown = true;
             }
         }
 
