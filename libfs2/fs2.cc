@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <filesystem>
+
+#include <anim/animplay.hh>
 #include <asteroid/asteroid.hh>
 #include <bmpman/bmpman.hh>
 #include <cfile/cfile.hh>
@@ -36,7 +39,9 @@
 #include <object/object.hh>
 #include <object/objectsnd.hh>
 #include <observer/observer.hh>
+#include <osapi/osregistry.hh>
 #include <particle/particle.hh>
+#include <playerman/managepilot.hh>
 #include <playerman/player.hh>
 #include <radar/radar.hh>
 #include <ship/afterburner.hh>
@@ -193,9 +198,42 @@ boot(const char *game_root)
         return boot_ok;
     booted = true;
 
+    // Persistence is a Linux affair: cfile root 0 -- the write root, and
+    // the head of the read search -- is the XDG data home
+    // ($XDG_DATA_HOME/fs2, default ~/.local/share/fs2), where pilots and
+    // campaign saves live. The retail tree rides behind it in the
+    // engine's old CD-ROM slot, so reads fall through to retail data and
+    // anything dropped in the data home shadows it. Both buffers are
+    // static: cfile keeps the cdrom pointer (cfile_refresh rereads it).
+    static char data_home[CF_MAX_PATHNAME_LENGTH];
+    static char retail_root[CF_MAX_PATHNAME_LENGTH];
+
+    const char *xdg = getenv("XDG_DATA_HOME");
+    if (xdg && xdg[0])
+        snprintf(data_home, sizeof(data_home), "%s/fs2", xdg);
+    else
+        snprintf(data_home, sizeof(data_home), "%s/.local/share/fs2",
+                 getenv("HOME") ? getenv("HOME") : ".");
+
+    // every cfile path is root + type dir + filename (+ localization)
+    // inside MAX_PATH_LEN, built by strcpy/strcat with no bounds -- keep
+    // enough headroom that no combination can reach the ceiling
+    if (strlen(data_home) > MAX_PATH_LEN - 96) {
+        fprintf(stderr, "fs2: data home path too long: %s\n", data_home);
+        return false;
+    }
+
+    // the subtree the savefile writers expect; cfile never mkdirs
+    std::error_code ec;
+    std::filesystem::create_directories(
+        std::string(data_home) + "/data/players/single", ec);
+    if (ec)
+        return false;
+
     char exe_path[CF_MAX_PATHNAME_LENGTH];
-    snprintf(exe_path, sizeof(exe_path), "%s/x", game_root);
-    if (cfile_init(exe_path))
+    snprintf(exe_path, sizeof(exe_path), "%s/x", data_home);
+    snprintf(retail_root, sizeof(retail_root), "%s/", game_root);
+    if (cfile_init(exe_path, retail_root))
         return false;
 
     // retail Int3 is a continuable breakpoint; t=0 bulk ship creation
@@ -288,17 +326,32 @@ boot(const char *game_root)
     // key out of "Press $t$ to..." (field-reported)
     control_config_reset_defaults();
 
-    // the pilot: enough of Players[0] for the sim chain (scoring, ci,
-    // control mode); pilot files and ship select stay out of the library
+    // the anim render-instance free list (retail wires it in game_init):
+    // the pilot's default HUD config turns every gauge on, and an active
+    // talking-head gauge sends message_play_anim through anim_play --
+    // which walks these lists headless
+    anim_init();
+
+    // the config shim behind os_config_read_*: without this
+    // init_new_pilot's detail/skill reads return 0, not their defaults
+    os_init_registry_stuff(NULL, NULL, NULL);
+
+    // The Pilot. His name is Commander Jameson (there is exactly one,
+    // and Elite named him first): resume him from the data home if he
+    // has flown before, induct him fresh otherwise. Induction writes
+    // nothing -- the .plr appears at the first campaign save.
     Player_num = 0;
     Player = &Players[0];
     memset(Player, 0, sizeof(player));
-    strcpy(Player->callsign, "libfs2");
-    Player->control_mode = PCM_NORMAL;
 
     // the zeroed player carries dead list heads; retail's own data-side
     // initializer (HUD_init calls it) wires keyed_targets + the free list
     hud_keyed_targets_clear();
+
+    strcpy(Player->callsign, "Commander Jameson");
+    if (read_pilot_file(Player->callsign, 1, Player) != 0)
+        init_new_pilot(Player);
+    Player->control_mode = PCM_NORMAL;
 
     // the retail sequencer, entered once: the stubs' game_process_event
     // sends every event to GS_STATE_GAME_PLAY -- the only state this

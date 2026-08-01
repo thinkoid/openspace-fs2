@@ -452,8 +452,12 @@ void dc_printf(const char *format, ...);
 // Some constants for stuff
 // Length for filenames, ie "title.pcx"
 #define MAX_FILENAME_LEN 32
-// Length for pathnames, ie "c:\bitmaps\title.pcx"
-#define MAX_PATH_LEN 128
+// Length for pathnames, ie "c:\bitmaps\title.pcx". Retail said 128: with
+// the install dir as the only cfile root, no path ever grew past it. Our
+// root 0 is the XDG data home -- an arbitrary user path -- so this must
+// match cfile's own CF_MAX_PATHNAME_LENGTH or cf_create_default_path
+// writes past the caller's buffer (fs2open made the same bump).
+#define MAX_PATH_LEN 256
 
 // contants and defined for byteswapping routines (useful for mac)
 

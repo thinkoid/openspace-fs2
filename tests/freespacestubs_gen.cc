@@ -74,9 +74,12 @@ void game_format_time(fix, char*)
    oracle_trap("game_format_time");
 }
 
-void game_get_default_skill_level()
+// real behavior, not a trap: init_new_pilot (the boundary's Commander
+// Jameson bootstrap) asks for it; retail returns DEFAULT_SKILL_LEVEL
+// (freespace.cc:174), and the wrong-signature void trap was UB anyway
+int game_get_default_skill_level()
 {
-   oracle_trap("game_get_default_skill_level");
+   return 1;   // DEFAULT_SKILL_LEVEL, freespace.cc:174
 }
 
 void game_increase_skill_level()

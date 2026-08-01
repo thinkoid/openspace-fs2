@@ -33,6 +33,10 @@ echo "game root: $root"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
+# hermetic pilot: libfs2 boots against the XDG homes, so point both at
+# scratch -- the gate must neither read nor write the real Commander
+export XDG_DATA_HOME="$tmp/xdg-data" XDG_CONFIG_HOME="$tmp/xdg-config"
+
 total=0
 crashed=0
 arrivals=0

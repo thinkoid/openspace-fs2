@@ -20,10 +20,12 @@
 #include <osapi/osregistry.hh>
 
 // The Win32 registry is replaced with a plain "key=value" text file at
-// ~/.fs2/config.  Keys are "Section/Name" (the section defaults to "Default"
-// when the caller passes NULL, which is what the Win32 code used the plain
-// app key for).  The file is loaded lazily into an in-memory map and written
-// through on every write.
+// $XDG_CONFIG_HOME/fs2/config (~/.config/fs2/config).  Keys are
+// "Section/Name" (the section defaults to "Default" when the caller passes
+// NULL, which is what the Win32 code used the plain app key for).  The file
+// is loaded lazily into an in-memory map and written through on every write.
+// Settings live here; game STATE (pilots, campaign saves) lives under the
+// XDG data home, which is cfile's write root -- see libfs2 boot.
 
 // ------------------------------------------------------------------------------------------------------------
 // REGISTRY DEFINES/VARS
@@ -43,19 +45,27 @@ int Os_reg_inited = 0;
 static std::map< std::string, std::string > Config_map;
 static int Config_loaded = 0;
 
-// full path of the config file; creates ~/.fs2 on first use
+// full path of the config file; creates the fs2 config dir on first use
 static const char *
 config_file_name()
 {
     static char path[1024] = "";
 
     if (!path[0]) {
-        const char *home = getenv("HOME");
-        if (!home) {
-            home = ".";
+        const char *base = getenv("XDG_CONFIG_HOME");
+
+        if (base && base[0]) {
+            sprintf(path, "%s/fs2", base);
         }
-        sprintf(path, "%s/.fs2", home);
-        mkdir(path, 0755); // make sure ~/.fs2 exists
+        else {
+            const char *home = getenv("HOME");
+            if (!home) {
+                home = ".";
+            }
+            sprintf(path, "%s/.config/fs2", home);
+        }
+
+        mkdir(path, 0755); // make sure the config dir exists
         strcat(path, "/config");
     }
 
