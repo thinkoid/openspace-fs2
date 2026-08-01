@@ -9,12 +9,18 @@
 //   sim_dump <game-root> <mission> layout
 //   sim_dump <game-root> <mission> run <frames> [every]
 //   sim_dump <game-root> <mission> fire <frames> [every]
+//   sim_dump <game-root> <campaign> campaign <frames> [take_loop]
 //
 // `fire` is `run` with the trigger held and a minimal aim assist: each
 // frame it steers toward the nearest hostile using only what crosses the
 // boundary (snapshot in, controls out) -- a legitimate consumer, and the
 // weapons gate's driver: retail firing, flight, BSP collision, damage and
 // destruction all exercise natively, kills appearing in the mission log.
+//
+// `campaign` loads the named .fc2 (with the pilot's .csg resume), flies
+// the CURRENT mission with the fire driver, then runs the mission-end
+// pair: debrief (goal states, stage selection, the branch verdict) and
+// accept (the .csg save, the advance) -- the campaign-flow gate's driver.
 //
 // All floats %.9g so every float32 round-trips exactly.
 
@@ -56,8 +62,27 @@ main(int argc, char *argv[])
 
     fs2_t sim;
 
-    if (!sim.load(argv[1], argv[2], 42)) {
-        fprintf(stderr, "sim_dump: load failed for %s\n", argv[2]);
+    // campaign mode resolves the mission itself; the others fly argv[2]
+    bool campaign = strcmp(argv[3], "campaign") == 0;
+    const char *mission = argv[2];
+
+    if (campaign) {
+        if (!sim.load_campaign(argv[1], argv[2])) {
+            fprintf(stderr, "sim_dump: campaign load failed for %s\n",
+                    argv[2]);
+            return 1;
+        }
+
+        mission = sim.current_mission();
+        printf("campaign %s mission '%s'\n", argv[2], mission);
+        if (!mission[0]) {
+            printf("campaign complete\n");
+            return 0;
+        }
+    }
+
+    if (!sim.load(argv[1], mission, 42)) {
+        fprintf(stderr, "sim_dump: load failed for %s\n", mission);
         return 1;
     }
 
@@ -77,14 +102,15 @@ main(int argc, char *argv[])
         return 0;
     }
 
-    bool firing = strcmp(argv[3], "fire") == 0;
+    bool firing = campaign || strcmp(argv[3], "fire") == 0;
     if ((!firing && strcmp(argv[3], "run") != 0) || argc < 5) {
         fprintf(stderr, "sim_dump: unknown mode %s\n", argv[3]);
         return 2;
     }
 
     int frames = atoi(argv[4]);
-    int every = argc > 5 ? atoi(argv[5]) : 600;
+    int every = (!campaign && argc > 5) ? atoi(argv[5]) : 600;
+    bool take_loop = campaign && argc > 5 && atoi(argv[5]) != 0;
 
     flight_controls_t controls;
     memset(&controls, 0, sizeof(controls));
@@ -274,6 +300,30 @@ main(int argc, char *argv[])
                 printf("hud %d directive %d key %d '%s'\n", frame, d.state,
                        int(d.key_line), d.text);
         }
+    }
+
+    // the mission-end pair: everything the debrief screen would show,
+    // then the Accept -- .csg written, campaign advanced
+    if (campaign) {
+        debrief_t d = sim.debrief();
+
+        for (const goal_state_t &g : d.goals)
+            printf("goal '%s' type %d status %d invalid %d text '%s'\n",
+                   g.name, g.type, g.status, int(g.invalid), g.text);
+
+        // stage text is multi-line prose; the gate pins count, voice and
+        // length, not the paragraphs
+        int idx = 0;
+        for (const debrief_stage_t &s : d.stages)
+            printf("stage %d voice %s text %zu rec %zu\n", idx++,
+                   s.voice[0] ? s.voice : "-", s.text.size(),
+                   s.recommendation.size());
+
+        printf("verdict next '%s' loop %d\n", d.next_mission,
+               int(d.loop_offer));
+
+        sim.accept(take_loop);
+        printf("current '%s'\n", sim.current_mission());
     }
 
     return 0;

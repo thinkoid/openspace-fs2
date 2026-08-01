@@ -29,6 +29,7 @@
 #include <lighting/lighting.hh>
 #include <localization/localize.hh>
 #include <mission/missionbriefcommon.hh>
+#include <mission/missioncampaign.hh>
 #include <mission/missiongoals.hh>
 #include <mission/missionhotkey.hh>
 #include <mission/missionlog.hh>
@@ -40,6 +41,7 @@
 #include <object/objectsnd.hh>
 #include <observer/observer.hh>
 #include <osapi/osregistry.hh>
+#include <parse/sexp.hh>
 #include <particle/particle.hh>
 #include <playerman/managepilot.hh>
 #include <playerman/player.hh>
@@ -230,7 +232,7 @@ boot(const char *game_root)
     if (ec)
         return false;
 
-    char exe_path[CF_MAX_PATHNAME_LENGTH];
+    char exe_path[CF_MAX_PATHNAME_LENGTH + 4];
     snprintf(exe_path, sizeof(exe_path), "%s/x", data_home);
     snprintf(retail_root, sizeof(retail_root), "%s/", game_root);
     if (cfile_init(exe_path, retail_root))
@@ -353,6 +355,10 @@ boot(const char *game_root)
         init_new_pilot(Player);
     Player->control_mode = PCM_NORMAL;
 
+    // retail's startup mode, carried from game_init: campaign savefile
+    // code asserts it before any mission load (missioncampaign.cc:755)
+    Game_mode = GM_NORMAL;
+
     // the retail sequencer, entered once: the stubs' game_process_event
     // sends every event to GS_STATE_GAME_PLAY -- the only state this
     // library is ever in; sim code (message_queue_process) reads it
@@ -380,7 +386,7 @@ fs2_t::load(const char *game_root, const char *mission, int seed)
     // and builds the orientation from stack garbage otherwise (the
     // multiplayer arm; the server used to overwrite it). A whole field
     // of garbage-oriented rocks flakes the physics assert.
-    Game_mode = GM_NORMAL;
+    Game_mode = GM_NORMAL | (m_campaign ? GM_CAMPAIGN_MODE : 0);
     srand(seed);
     Framecount = 0;
 
@@ -733,6 +739,151 @@ fs2_t::key_mark(const char *key_text)
     int z = translate_key_to_index(const_cast<char *>(key_text));
     if (z >= 0)
         control_used(z);
+}
+
+// ----------------------------------------------------------------------
+// the campaign (slice 3): retail's own missioncampaign machine behind
+// the boundary. The .fc2 parse, the .csg resume, the branch formulas and
+// the savefile writes are all missioncampaign.cc's -- the boundary only
+// sequences them the way freespace.cc's debrief path does, and carries
+// the verdict across as values.
+
+bool
+fs2_t::load_campaign(const char *game_root, const char *name)
+{
+    if (!boot(game_root))
+        return false;
+
+    // .fc2 parse + the pilot's .csg resume (savefile_load is inside);
+    // nonzero = the campaign file is missing or unreadable
+    if (mission_campaign_load(name))
+        return false;
+
+    // the readyroom epilogue: campaign mode on (load() re-applies it to
+    // Game_mode each mission), the pilot bookmarked, and the resume
+    // point promoted to the current mission (-1 = already complete)
+    m_campaign = true;
+    m_campaign_over = false;
+    strcpy(Player->current_campaign, Campaign.filename);
+    if (mission_campaign_next_mission() != 0)
+        m_campaign_over = true;
+
+    return true;
+}
+
+const char *
+fs2_t::current_mission() const
+{
+    if (!m_campaign || m_campaign_over || Campaign.current_mission < 0)
+        return "";
+
+    return Campaign.missions[Campaign.current_mission].name;
+}
+
+debrief_t
+fs2_t::debrief()
+{
+    debrief_t out;
+    out.next_mission[0] = '\0';
+    out.loop_offer = false;
+
+    // retail's debrief entry, in retail's order (freespace.cc:4527 +
+    // debrief_init's campaign block): fail what never completed, store
+    // the goal/event record, THEN evaluate the branch -- the campaign
+    // formulas read the stored record
+    mission_goal_fail_incomplete();
+
+    if (m_campaign) {
+        mission_campaign_store_goals_and_events();
+        mission_campaign_eval_next_mission();
+    }
+
+    // accept the level stats into the pilot (debrief_init's own call --
+    // rank/medal progression), before the stage formulas can read them
+    scoring_level_close();
+
+    for (int i = 0; i < Num_goals; ++i) {
+        goal_state_t g;
+        memset(&g, 0, sizeof(g));
+
+        strncpy(g.name, Mission_goals[i].name, sizeof(g.name) - 1);
+        strncpy(g.text, Mission_goals[i].message, sizeof(g.text) - 1);
+        g.type = Mission_goals[i].type & GOAL_TYPE_MASK;
+        g.status = Mission_goals[i].satisfied;
+        g.invalid = (Mission_goals[i].type & INVALID_GOAL) != 0;
+
+        out.goals.push_back(g);
+    }
+
+    // the stage selection -- debrief_set_stages' formula loop, minus the
+    // presentation-fed stages (promotion, badge, the traitor variant).
+    // debrief_init's own team-0 aim: the parse fills Debriefings[0] and
+    // leaves the pointer NULL until the debrief screen wants it
+    Debriefing = &Debriefings[0];
+
+    for (int i = 0; i < Debriefing->num_stages; ++i) {
+        debrief_stage &st = Debriefing->stages[i];
+
+        if (eval_sexp(st.formula) != 1)
+            continue;
+
+        debrief_stage_t s;
+        s.text = st.new_text ? st.new_text : "";
+        s.recommendation =
+            st.new_recommendation_text ? st.new_recommendation_text : "";
+        memset(s.voice, 0, sizeof(s.voice));
+        strncpy(s.voice, st.voice, sizeof(s.voice) - 1);
+
+        out.stages.push_back(s);
+    }
+
+    // the campaign verdict: the branch's pick, and the optional-loop
+    // solicitation exactly as debrief_accept offers it (a repeat of the
+    // same mission suppresses the offer)
+    if (m_campaign) {
+        int cur = Campaign.current_mission;
+
+        if (Campaign.next_mission >= 0)
+            strncpy(out.next_mission,
+                    Campaign.missions[Campaign.next_mission].name,
+                    sizeof(out.next_mission) - 1);
+
+        out.loop_offer = Campaign.missions[cur].has_mission_loop &&
+                         Campaign.loop_mission != -1 &&
+                         Campaign.next_mission != cur;
+        if (out.loop_offer && Campaign.missions[cur].mission_loop_desc)
+            out.loop_desc = Campaign.missions[cur].mission_loop_desc;
+    }
+
+    return out;
+}
+
+void
+fs2_t::accept(bool take_loop)
+{
+    if (!m_campaign)
+        return;
+
+    // the loop brief's YES (retail's popup, missiondebrief.cc:960):
+    // steer the branch into the side loop before committing
+    if (take_loop && Campaign.loop_mission != -1 &&
+        Campaign.missions[Campaign.current_mission].has_mission_loop) {
+        Campaign.loop_enabled = 1;
+        Campaign.next_mission = Campaign.loop_mission;
+    }
+
+    // grants, the completion mark, the .csg save, next -> current
+    mission_campaign_mission_over();
+
+    // debrief_accept's post-check: reentry closes the loop
+    if (Campaign.next_mission == Campaign.loop_reentry)
+        Campaign.loop_enabled = 0;
+
+    if (Campaign.next_mission == -1)
+        m_campaign_over = true;
+
+    // the pilot's bookmark -- stats and current campaign to the .plr
+    write_pilot_file(Player);
 }
 
 hud_state_t

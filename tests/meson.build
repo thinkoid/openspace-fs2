@@ -249,6 +249,18 @@ test('campaign-sim-check', find_program('campaign_sim_check.sh'),
     depends: [sim_dump],
     timeout: 600)
 
+# The campaign-flow gate: the synthetic two-hop campaign (flow.fc2,
+# staged into the scratch XDG data home through cfile's root-0 shadow)
+# across three processes -- goal-driven branch, .csg save + resume,
+# end-of-campaign -- plus the retail Training-1 fail/repeat/no-save smoke.
+test('campaign-flow-check', find_program('campaign_flow_check.sh'),
+    args: [
+        sim_dump.full_path(),
+        meson.project_source_root(),
+    ],
+    depends: [sim_dump],
+    timeout: 300)
+
 # The lesson gate: Training-1's native SEXP must put the lesson ON the
 # boundary -- directives decoded as retail draws them, the Welcome
 # Message promoted, token-translated, voice wave named -- all via

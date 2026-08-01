@@ -172,6 +172,41 @@ struct backdrop_t {
     float r, g, b, i;                  // suns: the directional light
 };
 
+// One mission goal as missiongoals.cc holds it: FRED's name for it, the
+// primary/secondary/bonus class, the GOAL_* status after the mission
+// (0 failed / 1 complete / 2 incomplete), and the briefing-room text.
+// invalid mirrors the INVALID_GOAL bit (a goal the mission withdrew).
+struct goal_state_t {
+    char name[32];                     // NAME_LENGTH
+    char text[128];                    // MAX_GOAL_TEXT
+    int type;                          // PRIMARY/SECONDARY/BONUS_GOAL
+    int status;                        // GOAL_FAILED/COMPLETE/INCOMPLETE
+    bool invalid;
+};
+
+// One debrief stage the formulas selected, in authored order: the
+// FRED-authored paragraph, the recommendation shown on request, and the
+// voice wave. Promotion/badge stages are presentation-fed (rank art,
+// medal bitmaps) and stay out; so does the traitor debriefing.
+struct debrief_stage_t {
+    std::string text;
+    std::string recommendation;
+    char voice[32];
+};
+
+// The mission-end verdict -- what retail's debrief screen would show and
+// what the campaign decided. next_mission is the branch formula's pick
+// ("" outside a campaign, or when the campaign just completed);
+// loop_offer flags the optional side-loop solicitation (accept(true)
+// takes it), loop_desc its popup text.
+struct debrief_t {
+    std::vector<goal_state_t> goals;
+    std::vector<debrief_stage_t> stages;
+    char next_mission[32];
+    bool loop_offer;
+    std::string loop_desc;
+};
+
 // The lesson's display half, value-only: what the training gauges would
 // draw this frame. training_text is empty outside a message's window
 // (retail's own text-length timing paces it headless -- the voice load
@@ -218,6 +253,21 @@ struct fs2_t {
     // "Tab") -- the sexp key-pressed predicate reads the mark
     void key_mark(const char *key_text);
 
+    // the campaign. load_campaign reads the .fc2 plus the pilot's .csg
+    // resume and enters campaign mode: every load() after it plays under
+    // GM_CAMPAIGN_MODE, and current_mission() names what to fly next
+    // ("" = the campaign is complete). debrief() is retail's
+    // debrief-entry sequence, sim half only -- fail incomplete goals,
+    // store the goal/event record, evaluate the branch formula and the
+    // stage formulas -- called once, while the world is still live.
+    // accept() is the debrief screen's Accept: commits the mission
+    // (grants, completion mark, the .csg save) and advances the
+    // campaign; take_loop steers into the offered side loop.
+    bool load_campaign(const char *game_root, const char *name);
+    const char *current_mission() const;
+    debrief_t debrief();
+    void accept(bool take_loop = false);
+
 private:
     physics_info m_pi;
     vector m_pos = vmd_zero_vector;
@@ -225,6 +275,8 @@ private:
     bool m_has_afterburner = false;
 
     bool m_world_live = false;
+    bool m_campaign = false;           // load_campaign() succeeded
+    bool m_campaign_over = false;      // accept() hit next_mission == -1
     bool m_pre_entry = true;           // freespace.cc's Pre_player_entry
                                        // (no header ever declared it; the
                                        // boundary owns the replica)
