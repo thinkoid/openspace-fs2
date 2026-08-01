@@ -981,11 +981,15 @@ pattern -- fx.gd (transient art + flipbook cache), sky.gd (lights /
 starfield / backdrop), hud.gd (every 2D pixel incl. the debrief
 overlay), sound.gd grown (hum, positioned attenuation, exit cleanup).
 Move-only commits, bodies verbatim, world-scene gate + probe shots
-identical after each cut. NEXT (decided, not started): the snapshot
-boundary contract -- split birth records (identity, once, dictionary)
-from per-frame kinematics (packed parallel arrays keyed by signature);
-measure before/after. Events/config/debrief stay dictionaries -- low
-volume, ergonomics win.
+identical after each cut. THEN the boundary contract, measured and landed
+(d1dd78c5c + 6320e5ede): identity crosses once at birth (the created
+event carries the full record), frame() carries kinematics as packed
+parallel arrays keyed by sig. Bench (GDScript side, live furball):
+dictionaries ~11.6 us/object/frame; packed 22 us marshal + 3.4 us walk
+at 15 objects -- 6.7x, ~15x marginal (a 100-object brawl: ~1.2 ms ->
+<0.1 ms). snapshot() stays as the oracle path; frame-eq-check (29th
+gate) pins the packed rows against it field for field. Events/config/
+debrief stay dictionaries -- low volume, ergonomics win.
 
 ## Where this work lives
 
