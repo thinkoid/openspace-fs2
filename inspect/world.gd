@@ -25,6 +25,7 @@ extends Node3D
 const ShipClass := preload("res://ship.gd")
 const SoundBankClass := preload("res://sound.gd")
 const RadarClass := preload("res://radar.gd")
+const FxClass := preload("res://fx.gd")
 
 # retail names for the keys the training sexps watch (key-pressed "a"),
 # forwarded through key_mark so Control_config[].used carries the truth.
@@ -51,9 +52,7 @@ const KEY_NAMES := {
 var sim                       # FS2 (libfs2) instance
 var ships_root: Node3D
 var ships := {}               # signature -> {node, is_ship, kind, radius}
-var flashes: Array[Dictionary] = []   # transient art: {node, deadline}
-var fx_cache := {}            # ani stem -> {tex, cols, rows, frames, fps},
-                              # or null where the bake is missing
+var fx                        # the transient-art shop (fx.gd)
 var sky_root: Node3D          # the authored backdrop, riding the camera
 var key_light: DirectionalLight3D
 var player_shield: Array = []
@@ -187,6 +186,9 @@ func _ready() -> void:
     ships_root = Node3D.new()
     ships_root.name = "Ships"
     add_child(ships_root)
+
+    fx = FxClass.new()
+    fx.setup(assets_dir, ships_root)
 
     _setup_camera()
     _setup_lights()
@@ -407,17 +409,17 @@ func _physics_process(delta: float) -> void:
             # looped (warp) or held at the last (explosions burn out as
             # the record dies); a shockwave's quad also rides the live
             # blast radius
-            var fx: Dictionary = node.get_meta("fx")
-            var age: float = (Time.get_ticks_msec() - int(fx["born"])) / 1000.0
-            var fr := int(age * int(fx["fps"]))
-            if fx["loop"]:
-                fr = fr % int(fx["frames"])
+            var fb: Dictionary = node.get_meta("fx")
+            var age: float = (Time.get_ticks_msec() - int(fb["born"])) / 1000.0
+            var fr := int(age * int(fb["fps"]))
+            if fb["loop"]:
+                fr = fr % int(fb["frames"])
             else:
-                fr = mini(fr, int(fx["frames"]) - 1)
-            var cols: int = fx["cols"]
+                fr = mini(fr, int(fb["frames"]) - 1)
+            var cols: int = fb["cols"]
             var row := int(fr / float(cols))
-            (fx["mat"] as StandardMaterial3D).uv1_offset = Vector3(
-                float(fr % cols) / cols, float(row) / float(fx["rows"]), 0.0)
+            (fb["mat"] as StandardMaterial3D).uv1_offset = Vector3(
+                float(fr % cols) / cols, float(row) / float(fb["rows"]), 0.0)
             if entry_kind == "shockwave":
                 node.scale = Vector3.ONE * maxf(rec["radius"], 0.1)
         elif entry_kind == "shockwave":
@@ -450,20 +452,20 @@ func _physics_process(delta: float) -> void:
             var th = entry.get("thrust")
             if th != null:
                 var burner: bool = rec["afterburner"]
-                var fx: Dictionary = th["fxa"] if burner and th["fxa"] != null \
+                var tfx: Dictionary = th["fxa"] if burner and th["fxa"] != null \
                     else th["fxn"]
                 var age: float = (Time.get_ticks_msec()
                                   - int(th["born"])) / 1000.0
-                var frames_n: int = fx["frames"]
-                var fr := int(age * int(fx["fps"])) % maxi(frames_n, 1)
-                var cols: int = fx["cols"]
+                var frames_n: int = tfx["frames"]
+                var fr := int(age * int(tfx["fps"])) % maxi(frames_n, 1)
+                var cols: int = tfx["cols"]
                 var off := Vector3(float(fr % cols) / cols,
                                    float(int(fr / float(cols)))
-                                   / float(fx["rows"]), 0.0)
+                                   / float(tfx["rows"]), 0.0)
                 for m in th["mats"]:
                     var sm := m as StandardMaterial3D
-                    sm.albedo_texture = fx["tex"]
-                    sm.uv1_scale = Vector3(1.0 / cols, 1.0 / fx["rows"], 1.0)
+                    sm.albedo_texture = tfx["tex"]
+                    sm.uv1_scale = Vector3(1.0 / cols, 1.0 / tfx["rows"], 1.0)
                     sm.uv1_offset = off
                 var gtex = th["glow_tex_a"] if burner \
                     and th["glow_tex_a"] != null else th["glow_tex"]
@@ -491,7 +493,7 @@ func _physics_process(delta: float) -> void:
                 tot += s
             var prev: float = entry.get("shield_prev", tot)
             if tot < prev - 0.5:
-                _shield_flash(node, entry["radius"])
+                fx._shield_flash(node, entry["radius"])
             entry["shield_prev"] = tot
 
         if rec["player"]:
@@ -513,19 +515,7 @@ func _physics_process(delta: float) -> void:
             m.emission = Color(0.5, 0.7, 1.0) * 2.0 if randf() < 0.06 \
                 else Color(0, 0, 0)
 
-    # transient art expires on its own clock; a parent freed by the
-    # reconciler takes its flash with it
-    var now_ms := Time.get_ticks_msec()
-    var live_flashes: Array[Dictionary] = []
-    for f: Dictionary in flashes:
-        var fn: Node = f["node"]
-        if not is_instance_valid(fn):
-            continue
-        if now_ms >= int(f["deadline"]):
-            fn.queue_free()
-            continue
-        live_flashes.append(f)
-    flashes = live_flashes
+    fx.reap(Time.get_ticks_msec())
 
     if player_node:
         # own hull out of the pilot's eyes; back for the chase view
@@ -628,96 +618,6 @@ func _update_combat_hud(prec: Dictionary, ship_recs: Array) -> void:
 
     overlay.queue_redraw()
 
-
-# retail's engine dress: the cone submodels wear the species thruster
-# flipbook as their texture (retail animates the thruster maps onto the
-# cones), and every POF thruster point gets a glow billboard
-# (thrusterglow). The family is species-picked, burner variants included:
-# index = species*2 + afterburner (ship.cc:2996). Returns the animation
-# state the reconciler drives, or null when the bakes are missing.
-func _dress_thrusters(ship, rec: Dictionary):
-    var species: int = int(rec.get("species", 0))
-    var fxn = _fx("thruster0%d" % (species + 1))
-    var fxa = _fx("thruster0%da" % (species + 1))
-    var glow = _fx("thrusterglow0%d" % (species + 1))
-    var glow_a = _fx("thrusterglow0%da" % (species + 1))
-    if fxn == null or not "thruster_nodes" in ship:
-        return null
-
-    var out := {
-        "mats": [], "glows": [], "fxn": fxn, "fxa": fxa,
-        "glow_tex": glow, "glow_tex_a": glow_a,
-        "born": Time.get_ticks_msec(),
-    }
-
-    for tn in ship.thruster_nodes:
-        var stack: Array = [tn]
-        while not stack.is_empty():
-            var cur = stack.pop_back()
-            for c in cur.get_children():
-                stack.append(c)
-            if cur is MeshInstance3D:
-                var mat := StandardMaterial3D.new()
-                mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-                mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-                mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-                mat.albedo_texture = fxn["tex"]
-                mat.uv1_scale = Vector3(1.0 / fxn["cols"],
-                                        1.0 / fxn["rows"], 1.0)
-                (cur as MeshInstance3D).material_override = mat
-                out["mats"].append(mat)
-
-    if ship.data != null and glow != null:
-        for bank in ship.data.thrusters:
-            var pts: PackedVector3Array = bank["points"]
-            var radii: PackedFloat32Array = bank["radii"]
-            for i in pts.size():
-                var gm := MeshInstance3D.new()
-                var gq := QuadMesh.new()
-                var r: float = radii[i] * 2.4
-                gq.size = Vector2(r, r)
-                var gmat := StandardMaterial3D.new()
-                gmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-                gmat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-                gmat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
-                gmat.albedo_texture = glow["tex"]
-                gq.material = gmat
-                gm.mesh = gq
-                gm.position = pts[i]
-                gm.visible = false
-                ship.add_child(gm)
-                out["glows"].append({ "node": gm, "mat": gmat })
-
-    return out
-
-# a debris chunk as retail renders it: the record names the source model
-# and the submodel piece, so a hull chunk wears the ship's own hull (the
-# GLB carries the pof's debris submodels; the Ship loader hides them at
-# load, this carves the named one out and shows it alone, transform
-# reset -- the sim's record IS the piece's world pose). Gray-box
-# fallback where the model or piece is missing.
-func _debris_node(rec: Dictionary) -> Node3D:
-    var stem := (rec.get("pof", "") as String).get_basename().to_lower()
-    var piece: String = rec.get("piece", "")
-    if not stem.is_empty() and not piece.is_empty():
-        var glb := assets_dir.path_join(stem + ".glb")
-        if FileAccess.file_exists(glb):
-            var m = ShipClass.new()
-            if m.load_ship(glb):
-                var pn := m.find_child(piece, true, false) as Node3D
-                if pn != null:
-                    var root := Node3D.new()
-                    pn.owner = null      # else Godot warns: the piece's
-                                         # owner stays the GLB scene root
-                    pn.get_parent().remove_child(pn)
-                    root.add_child(pn)
-                    pn.transform = Transform3D.IDENTITY
-                    pn.visible = true
-                    m.queue_free()
-                    ships_root.add_child(root)
-                    return root
-                m.queue_free()
-    return _simple_node("debris", rec["radius"])
 
 # the flight HUD, jet symbology (docs/hud-design.md): boresight where
 # the guns POINT, the velocity vector where the ship GOES, a speed tape
@@ -1019,25 +919,25 @@ func _spawn(sig: int, rec: Dictionary) -> void:
                     node = m
                     ships_root.add_child(node)
         if node == null:
-            node = _bolt_node(rec)
+            node = fx._bolt_node(rec)
         # born AT the muzzle, streak trailing through the cockpit for one
         # frame -- the flash owns the birth moment, the bolt shows from
         # its first step forward
         node.visible = false
         ships[sig] = { "node": node, "is_ship": false, "kind": "weapon",
                        "radius": rec["radius"], "newborn": true }
-        _muzzle_flash(rec)
+        fx._muzzle_flash(rec)
         return
     if kind == "shockwave":
         # the blast front: retail's own expanding-ring flipbook
         # (shockwave01), frame by age, size riding the record's live
         # radius; the torus stand-in only if the bake is missing
-        var fx = _fx("shockwave01")
+        var art_fx = fx._fx("shockwave01")
         var node: Node3D
-        if fx != null:
-            node = _flipbook_node(fx, 2.0, true, false)
+        if art_fx != null:
+            node = fx._flipbook_node(art_fx, 2.0, true, false)
         else:
-            node = _simple_node("shockwave", 1.0)
+            node = fx._simple_node("shockwave", 1.0)
         ships[sig] = { "node": node, "is_ship": false, "kind": "shockwave",
                        "radius": 1.0 }
         return
@@ -1050,24 +950,24 @@ func _spawn(sig: int, rec: Dictionary) -> void:
             art = "warp"
         var node: Node3D = null
         if art == "debris":
-            node = _debris_node(rec)
+            node = fx._debris_node(rec)
         if art == "fireball" or art == "warp":
-            var fx = _fx((rec.get("pof", "") as String).to_lower())
-            if fx != null:
+            var art_fx = fx._fx((rec.get("pof", "") as String).to_lower())
+            if art_fx != null:
                 if art == "warp":
                     # the vortex stands in the arrival plane: a fixed
                     # quad, the reconciler's basis turns it; loops while
                     # the effect lives
-                    node = _flipbook_node(fx, rec["radius"] * 2.0, false,
-                                          true)
+                    node = fx._flipbook_node(art_fx, rec["radius"] * 2.0,
+                                             false, true)
                 else:
-                    node = _flipbook_node(fx, rec["radius"] * 2.0, true,
-                                          false)
+                    node = fx._flipbook_node(art_fx, rec["radius"] * 2.0,
+                                             true, false)
         if node == null:
             if art == "fireball":
-                node = _explosion_node(rec["radius"])
+                node = fx._explosion_node(rec["radius"])
             else:
-                node = _simple_node(art, rec["radius"])
+                node = fx._simple_node(art, rec["radius"])
         ships[sig] = { "node": node, "is_ship": false, "kind": art,
                        "radius": rec["radius"] }
         return
@@ -1100,307 +1000,8 @@ func _spawn(sig: int, rec: Dictionary) -> void:
     ships_root.add_child(node)
     ships[sig] = { "node": node, "is_ship": is_ship, "radius": radius }
     if is_ship:
-        ships[sig]["thrust"] = _dress_thrusters(node, rec)
+        ships[sig]["thrust"] = fx._dress_thrusters(node, rec)
     _tick("arrived: %s (%s)" % [rec["name"], rec["class"]])
-
-# the non-ship visuals: unshaded primitives sized by the sim's own radius
-func _simple_node(kind: String, radius: float) -> Node3D:
-    var mi := MeshInstance3D.new()
-    var mat := StandardMaterial3D.new()
-    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-    match kind:
-        "shockwave":
-            # a unit ring in the horizontal plane; the reconciler scales
-            # it to the record's live blast radius every frame
-            var tm := TorusMesh.new()
-            tm.inner_radius = 0.85
-            tm.outer_radius = 1.0
-            mat.albedo_color = Color(1.0, 0.6, 0.3, 0.6)
-            mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-            tm.material = mat
-            mi.mesh = tm
-        "warp":
-            # the arrival flash: retail's warp effect is a plane normal
-            # to the ship's approach -- a blue-white disc, facing the
-            # record's fvec (the mesh turns; the node's basis stays the
-            # reconciler's to set)
-            var wm := CylinderMesh.new()
-            wm.top_radius = maxf(radius, 1.0)
-            wm.bottom_radius = wm.top_radius
-            wm.height = 0.4
-            mat.albedo_color = Color(0.5, 0.75, 1.0, 0.85)
-            mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-            wm.material = mat
-            mi.mesh = wm
-            mi.rotation_degrees = Vector3(90, 0, 0)
-            var wrap := Node3D.new()
-            wrap.add_child(mi)
-            ships_root.add_child(wrap)
-            return wrap
-        "debris":
-            var db := BoxMesh.new()
-            var s: float = clampf(radius, 0.5, 6.0)
-            db.size = Vector3(s, s * 0.6, s * 1.4)
-            mat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
-            mat.albedo_color = Color(0.35, 0.35, 0.38)
-            mat.emission_enabled = true
-            mat.emission = Color(0, 0, 0)
-            db.material = mat
-            mi.mesh = db
-            mi.set_meta("arc_mat", mat)   # the crackle's visual half
-    ships_root.add_child(mi)
-    return mi
-
-# the baked retail flipbooks (ani2png's atlases beside the models):
-# stem -> {tex, cols, rows, frames, fps}, null cached for missing bakes
-func _fx(stem: String) -> Variant:
-    if fx_cache.has(stem):
-        return fx_cache[stem]
-    var dir := assets_dir.path_join("effects")
-    var out = null
-    var meta_path := dir.path_join(stem + ".json")
-    if FileAccess.file_exists(meta_path):
-        var side = JSON.parse_string(FileAccess.get_file_as_string(meta_path))
-        if side is Dictionary:
-            var img := Image.load_from_file(dir.path_join(side["atlas"]))
-            if img:
-                out = {
-                    "tex": ImageTexture.create_from_image(img),
-                    "cols": int(side["cols"]), "rows": int(side["rows"]),
-                    "frames": int(side["frames"]), "fps": int(side["fps"]),
-                    "w": int(side["width"]), "h": int(side["height"]),
-                }
-    fx_cache[stem] = out
-    return out
-
-# a retail flipbook on a quad -- additive, unshaded (the effects families
-# are light on black); the material's UV window is one frame, and the
-# reconciler advances uv1_offset by age. Billboards face the camera; the
-# warp plane keeps its basis (visible from both sides).
-func _flipbook_node(fx: Dictionary, size: float, billboard: bool,
-                    loop: bool) -> MeshInstance3D:
-    var mi := MeshInstance3D.new()
-    var qm := QuadMesh.new()
-    qm.size = Vector2(size, size)
-    var mat := StandardMaterial3D.new()
-    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-    mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-    mat.albedo_texture = fx["tex"]
-    mat.uv1_scale = Vector3(1.0 / fx["cols"], 1.0 / fx["rows"], 1.0)
-    if billboard:
-        mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
-        mat.billboard_keep_scale = true
-    else:
-        mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-    qm.material = mat
-    mi.mesh = qm
-    mi.set_meta("fx", {
-        "mat": mat, "cols": fx["cols"], "rows": fx["rows"],
-        "frames": fx["frames"], "fps": fx["fps"], "loop": loop,
-        "born": Time.get_ticks_msec(),
-    })
-    ships_root.add_child(mi)
-    return mi
-
-# a laser bolt in retail's own art: the body streak (@Laser Bitmap)
-# stretched along the flight axis as crossed additive quads -- readable
-# from any angle without a shader -- and the head glow (@Laser Glow) as
-# a camera billboard tinted by the cycle color, which the reconciler
-# follows per frame (the "bolt_mat" meta). Capsule fallback in the tbl
-# color where the bake is missing.
-func _bolt_node(rec: Dictionary) -> Node3D:
-    var r: float = maxf(rec.get("laser_radius", 0.4), 0.15)
-    var length: float = maxf(rec.get("laser_length", 6.0), 2.0 * r)
-    var wrap := Node3D.new()
-
-    var body = _fx((rec.get("laser_bitmap", "") as String)
-                   .get_basename().to_lower())
-    if body != null:
-        # retail's g3_draw_laser stretches the sprite between the
-        # PROJECTED head and tail -- a screen-space draw. The 3D
-        # equivalent (depth-tested, unlike a HUD overlay) is a
-        # velocity-stretched billboard: a unit quad whose basis the
-        # reconciler rebuilds every frame -- face to the camera, long
-        # axis along the flight axis' screen projection, length
-        # collapsing toward a fat blob end-on. A plane merely
-        # CONTAINING the axis is edge-on to your own fire and vanishes
-        # (field-reported "not retail").
-        var mi := MeshInstance3D.new()
-        var qm := QuadMesh.new()
-        qm.size = Vector2.ONE
-        var mat := StandardMaterial3D.new()
-        mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-        mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-        mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-        mat.albedo_texture = body["tex"]
-        qm.material = mat
-        mi.mesh = qm
-        wrap.add_child(mi)
-        wrap.set_meta("stretch", { "len": length, "r": r })
-
-        var glow = _fx((rec.get("laser_glow", "") as String)
-                       .get_basename().to_lower())
-        if glow != null:
-            # rides the HEAD end (+X/2 through the stretched basis);
-            # billboard keep_scale stays false, so the parent's stretch
-            # never inflates it. Head-circle proportions: bigger washes
-            # the first-person view flat red (additive saturation at
-            # muzzle distance).
-            var gm := MeshInstance3D.new()
-            gm.position = Vector3(0.5, 0, 0)
-            var gq := QuadMesh.new()
-            gq.size = Vector2(r * 2.6, r * 2.6)
-            var gmat := StandardMaterial3D.new()
-            gmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-            gmat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-            gmat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
-            gmat.albedo_texture = glow["tex"]
-            gmat.albedo_color = rec.get("color", Color.WHITE)
-            gq.material = gmat
-            gm.mesh = gq
-            wrap.add_child(gm)
-            wrap.set_meta("bolt_mat", gmat)
-    else:
-        var mi := MeshInstance3D.new()
-        var cm := CapsuleMesh.new()
-        cm.radius = r
-        cm.height = length
-        var mat := StandardMaterial3D.new()
-        mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-        mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-        mat.albedo_color = rec.get("color", Color(1.0, 0.35, 0.25))
-        cm.material = mat
-        mi.mesh = cm
-        mi.rotation_degrees = Vector3(90, 0, 0)
-        wrap.add_child(mi)
-        wrap.set_meta("bolt_mat", mat)
-
-    ships_root.add_child(wrap)
-    return wrap
-
-# an explosion, presentation-owned: the sim's fireball record times and
-# sizes it (the node lives exactly as long as the record); the art -- a
-# fading core, one burst of embers, a dying light -- is the scene's
-func _explosion_node(radius: float) -> Node3D:
-    var root := Node3D.new()
-    var r := maxf(radius, 1.0)
-
-    # additive, not matte: the core must read as light -- an alpha disc
-    # at explosion size paints the sky khaki (field-reported)
-    var mi := MeshInstance3D.new()
-    var sm := SphereMesh.new()
-    sm.radius = r * 0.45
-    sm.height = sm.radius * 2.0
-    var mat := StandardMaterial3D.new()
-    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-    mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-    mat.albedo_color = Color(1.0, 0.55, 0.2, 0.7)
-    sm.material = mat
-    mi.mesh = sm
-    root.add_child(mi)
-
-    var p := GPUParticles3D.new()
-    p.one_shot = true
-    p.explosiveness = 1.0
-    p.amount = 40
-    p.lifetime = 1.2
-    p.emitting = true
-    var pm := ParticleProcessMaterial.new()
-    pm.direction = Vector3.ZERO
-    pm.spread = 180.0
-    pm.initial_velocity_min = r
-    pm.initial_velocity_max = r * 2.5
-    pm.gravity = Vector3.ZERO
-    pm.scale_min = 0.15
-    pm.scale_max = 0.5
-    pm.color = Color(1.0, 0.55, 0.2)
-    p.process_material = pm
-    var pmesh := SphereMesh.new()
-    pmesh.radius = 0.35
-    pmesh.height = 0.7
-    var pmat := StandardMaterial3D.new()
-    pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-    pmat.albedo_color = Color(1.0, 0.6, 0.25)
-    pmesh.material = pmat
-    p.draw_pass_1 = pmesh
-    root.add_child(p)
-
-    var l := OmniLight3D.new()
-    l.light_color = Color(1.0, 0.7, 0.3)
-    l.light_energy = 3.0
-    l.omni_range = r * 8.0
-    root.add_child(l)
-
-    root.set_meta("born", Time.get_ticks_msec())
-    root.set_meta("core_mat", mat)
-    root.set_meta("boom_light", l)
-    ships_root.add_child(root)
-    return root
-
-# the gun flash: a weapon record is born AT the muzzle, so the birth
-# position is the flash position -- brief, bright, gone
-func _muzzle_flash(rec: Dictionary) -> void:
-    var p: Vector3 = rec["pos"]
-    var n := Node3D.new()
-
-    # the weapon's own glow art as a soft billboard -- a solid sphere at
-    # muzzle distance reads as a hard-edged sticker (field-capture
-    # lesson); small additive sphere only if no glow is baked
-    var glow = _fx((rec.get("laser_glow", "") as String)
-                   .get_basename().to_lower())
-    var mi := MeshInstance3D.new()
-    if glow != null:
-        var gq := QuadMesh.new()
-        gq.size = Vector2(1.0, 1.0)
-        var gmat := StandardMaterial3D.new()
-        gmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-        gmat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-        gmat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
-        gmat.albedo_texture = glow["tex"]
-        # dim enough that the radial gradient survives additive
-        # saturation -- full white bakes a poker chip
-        gmat.albedo_color = Color(0.9, 0.7, 0.4)
-        gq.material = gmat
-        mi.mesh = gq
-    else:
-        var sm := SphereMesh.new()
-        sm.radius = 0.35
-        sm.height = 0.7
-        var mat := StandardMaterial3D.new()
-        mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-        mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-        mat.albedo_color = Color(1.0, 0.8, 0.45, 0.8)
-        sm.material = mat
-        mi.mesh = sm
-    n.add_child(mi)
-
-    var l := OmniLight3D.new()
-    l.light_color = Color(1.0, 0.8, 0.4)
-    l.light_energy = 2.0
-    l.omni_range = 12.0
-    n.add_child(l)
-
-    n.position = Vector3(p.x, p.y, -p.z)
-    ships_root.add_child(n)
-    flashes.append({ "node": n, "deadline": Time.get_ticks_msec() + 50 })
-
-# the shield shimmer: quadrant totals dropped this frame, so the bubble
-# takes a hit -- a translucent shell over the hull, briefly (retail
-# lights the struck mesh section; the whole-bubble flash is the honest
-# approximation until shield geometry crosses)
-func _shield_flash(node: Node3D, radius: float) -> void:
-    var mi := MeshInstance3D.new()
-    var sm := SphereMesh.new()
-    sm.radius = maxf(radius, 1.0) * 1.15
-    sm.height = sm.radius * 2.0
-    var mat := StandardMaterial3D.new()
-    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-    mat.albedo_color = Color(0.45, 0.7, 1.0, 0.35)
-    mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-    sm.material = mat
-    mi.mesh = sm
-    node.add_child(mi)
-    flashes.append({ "node": mi, "deadline": Time.get_ticks_msec() + 220 })
 
 func _tick(line: String) -> void:
     ticker_lines.append(line)
@@ -1609,9 +1210,7 @@ func _reset_world() -> void:
         ships[sig]["node"].queue_free()
     ships.clear()
 
-    for f in flashes:
-        f["node"].queue_free()
-    flashes.clear()
+    fx.reset()
 
     if sky_root:
         sky_root.queue_free()
@@ -1721,7 +1320,7 @@ func _setup_backdrop() -> void:
         var dir := Vector3(u.x, u.y, -u.z)
         var ax := Vector3(r3.x, r3.y, -r3.z)
         var ay := Vector3(f3.x, f3.y, -f3.z)
-        var fx = _fx((e["name"] as String).to_lower())
+        var e_fx = fx._fx((e["name"] as String).to_lower())
 
         if e["sun"]:
             suns += 1
@@ -1734,18 +1333,18 @@ func _setup_backdrop() -> void:
             li.basis = Basis.looking_at(-dir)      # shines FROM the sun
 
             var size: float = 2.0 * SKY_R * tan(0.05 * e["scale_x"])
-            var glow = _fx((e["glow"] as String).to_lower())
+            var glow = fx._fx((e["glow"] as String).to_lower())
             if glow != null:
                 sky_root.add_child(_sky_quad(glow["tex"], dir, ax, ay,
                                              size * 2.2, size * 2.2,
                                              false, true))
-            if fx != null:
-                sky_root.add_child(_sky_quad(fx["tex"], dir, ax, ay,
+            if e_fx != null:
+                sky_root.add_child(_sky_quad(e_fx["tex"], dir, ax, ay,
                                              size, size, false, true))
-        elif fx != null:
+        elif e_fx != null:
             var sx: float = 2.0 * SKY_R * tan(deg_to_rad(5.0 * e["scale_x"]))
             var sy: float = 2.0 * SKY_R * tan(deg_to_rad(5.0 * e["scale_y"]))
-            sky_root.add_child(_sky_quad(fx["tex"], dir, ax, ay, sx, sy,
+            sky_root.add_child(_sky_quad(e_fx["tex"], dir, ax, ay, sx, sy,
                                          e["xparent"], false))
 
 func _sky_quad(tex: Texture2D, dir: Vector3, ax: Vector3, ay: Vector3,
