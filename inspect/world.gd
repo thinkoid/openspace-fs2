@@ -1393,10 +1393,13 @@ func _unhandled_input(event: InputEvent) -> void:
         KEY_H:
             hud.visible = not hud.visible
         KEY_J:
-            # Alt-J, retail's own jump binding: end the mission into the
-            # debrief (campaign mode only -- a lone mission has nowhere
-            # to go)
-            if event.alt_pressed and not campaign_name.is_empty():
+            # end the mission into the debrief (campaign mode only -- a
+            # lone mission has nowhere to go). Alt-J is retail's jump
+            # binding; Shift-Super-J is the house alternative, because
+            # the WM here owns Alt-J (field request)
+            if (event.alt_pressed
+                    or (event.shift_pressed and event.meta_pressed)) \
+                    and not campaign_name.is_empty():
                 _enter_debrief()
         KEY_ESCAPE:
             get_tree().quit()
@@ -1769,7 +1772,7 @@ func _setup_hud() -> void:
     help.offset_left = 16
     help.offset_bottom = -12
     help.add_theme_font_size_override("font_size", 24)
-    help.text = "mouse steers + fires (RMB missile), Q/E roll, A/Z throttle, \\ full, Tab burner, T target, M match, V view, H hud, Esc quit"
+    help.text = "mouse steers + fires (RMB missile), Q/E roll, A/Z throttle, \\ full, Tab burner, T target, M match, V view, H hud, Shift-Super-J end mission, Esc quit"
     hud.add_child(help)
 
 
