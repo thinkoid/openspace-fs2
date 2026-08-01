@@ -86,6 +86,7 @@ protected:
                                     &FS2::load);
         godot::ClassDB::bind_method(godot::D_METHOD("step", "dt", "controls"),
                                     &FS2::step);
+        godot::ClassDB::bind_method(godot::D_METHOD("frame"), &FS2::frame);
         godot::ClassDB::bind_method(godot::D_METHOD("snapshot"),
                                     &FS2::snapshot);
         godot::ClassDB::bind_method(godot::D_METHOD("events"), &FS2::events);
@@ -211,13 +212,12 @@ public:
         m_sim.accept(take_loop);
     }
 
-    godot::Array snapshot() const
+    // one record as a dictionary -- snapshot()'s rows, and the created
+    // event's birth payload (identity crosses once, there)
+    static godot::Dictionary rec_dict(const object_state_t &o)
     {
-        godot::Array out;
-
-        for (const object_state_t &o : m_sim.snapshot()) {
-            godot::Dictionary d;
-            d["signature"] = o.signature;
+        godot::Dictionary d;
+        d["signature"] = o.signature;
             switch (o.type) {
             case OBJ_WEAPON:    d["type"] = "weapon"; break;
             case OBJ_FIREBALL:  d["type"] = "fireball"; break;
@@ -258,14 +258,78 @@ public:
             d["color"] = godot::Color(o.laser_rgb[0] / 255.0f,
                                       o.laser_rgb[1] / 255.0f,
                                       o.laser_rgb[2] / 255.0f);
-            d["laser_length"] = o.laser_length;
-            d["laser_radius"] = o.laser_head_radius;
-            d["laser_bitmap"] = o.laser_bitmap;
-            d["laser_glow"] = o.laser_glow;
-            d["piece"] = o.piece;
+        d["laser_length"] = o.laser_length;
+        d["laser_radius"] = o.laser_head_radius;
+        d["laser_bitmap"] = o.laser_bitmap;
+        d["laser_glow"] = o.laser_glow;
+        d["piece"] = o.piece;
 
-            out.push_back(d);
-        }
+        return d;
+    }
+
+    godot::Array snapshot() const
+    {
+        godot::Array out;
+
+        for (const object_state_t &o : m_sim.snapshot())
+            out.push_back(rec_dict(o));
+
+        return out;
+    }
+
+    // the packed kinematic core: a handful of Packed*Array crossings per
+    // frame instead of a dictionary per object -- retail's `vector` and
+    // godot::Vector3 are both three floats, so the copies are straight
+    // memcpy. Rows join to birth identity by "sig".
+    godot::Dictionary frame() const
+    {
+        frame_t f = m_sim.frame();
+        int n = int(f.sig.size());
+
+        godot::Dictionary out;
+        out["n"] = n;
+
+        godot::PackedInt32Array sig;
+        sig.resize(n);
+        if (n)
+            memcpy(sig.ptrw(), f.sig.data(), n * sizeof(int32_t));
+        out["sig"] = sig;
+
+        godot::PackedInt32Array flags;
+        flags.resize(n);
+        if (n)
+            memcpy(flags.ptrw(), f.flags.data(), n * sizeof(int32_t));
+        out["flags"] = flags;
+
+        auto vecs = [n](const std::vector<vector> &v) {
+            godot::PackedVector3Array a;
+            a.resize(n);
+            if (n)
+                memcpy(a.ptrw(), v.data(), n * sizeof(vector));
+            return a;
+        };
+        out["pos"] = vecs(f.pos);
+        out["rvec"] = vecs(f.rvec);
+        out["uvec"] = vecs(f.uvec);
+        out["fvec"] = vecs(f.fvec);
+        out["vel"] = vecs(f.vel);
+
+        auto floats = [](const std::vector<float> &v) {
+            godot::PackedFloat32Array a;
+            a.resize(int(v.size()));
+            if (!v.empty())
+                memcpy(a.ptrw(), v.data(), v.size() * sizeof(float));
+            return a;
+        };
+        out["hull"] = floats(f.hull);
+        out["radius"] = floats(f.radius);
+        out["shield"] = floats(f.shield);      // 4 per row
+
+        godot::PackedByteArray rgb;            // 3 per row
+        rgb.resize(int(f.rgb.size()));
+        if (!f.rgb.empty())
+            memcpy(rgb.ptrw(), f.rgb.data(), f.rgb.size());
+        out["rgb"] = rgb;
 
         return out;
     }
@@ -281,6 +345,7 @@ public:
                 d["kind"] = "created";
                 d["signature"] = ev.signature;
                 d["name"] = ev.name;
+                d["rec"] = rec_dict(ev.birth);   // identity, once
                 break;
             case event_t::destroyed:
                 d["kind"] = "destroyed";
@@ -352,6 +417,10 @@ public:
         out["target_subsys_pos"] =
             godot::Vector3(h.target_subsys_pos.x, h.target_subsys_pos.y,
                            h.target_subsys_pos.z);
+        out["weapon_energy"] = h.weapon_energy;
+        out["weapon_energy_max"] = h.weapon_energy_max;
+        out["burner_fuel"] = h.burner_fuel;
+        out["burner_fuel_max"] = h.burner_fuel_max;
 
         godot::Array pb, sb;
         for (const weapon_bank_t &b : h.primary_banks) {

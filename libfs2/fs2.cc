@@ -787,6 +787,73 @@ fs2_t::snapshot() const
     return out;
 }
 
+// the hot crossing, packed: the same object walk as snapshot(), only
+// the fields that change frame to frame -- no strings, no per-record
+// structures. The presenter joins rows to birth identity by sig; the
+// created event carries the full record once.
+frame_t
+fs2_t::frame() const
+{
+    frame_t out;
+
+    if (!m_world_live)
+        return out;
+
+    for (object *objp = GET_FIRST(&obj_used_list);
+         objp != END_OF_LIST(&obj_used_list); objp = GET_NEXT(objp)) {
+        if (objp->type != OBJ_SHIP && objp->type != OBJ_START &&
+            objp->type != OBJ_WEAPON && objp->type != OBJ_FIREBALL &&
+            objp->type != OBJ_DEBRIS && objp->type != OBJ_SHOCKWAVE)
+            continue;
+
+        out.sig.push_back(objp->signature);
+        out.pos.push_back(objp->pos);
+        out.rvec.push_back(objp->orient.rvec);
+        out.uvec.push_back(objp->orient.uvec);
+        out.fvec.push_back(objp->orient.fvec);
+        out.vel.push_back(objp->phys_info.vel);
+        out.hull.push_back(objp->hull_strength);
+
+        // the live radius: a shockwave's is the expanding blast front
+        out.radius.push_back(objp->type == OBJ_SHOCKWAVE
+                                 ? Shockwaves[objp->instance].radius
+                                 : objp->radius);
+
+        int flags = 0;
+        float sh[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        unsigned char rgb[3] = { 0, 0, 0 };
+
+        if (objp->type == OBJ_SHIP || objp->type == OBJ_START) {
+            if (Ships[objp->instance].flags & SF_DYING)
+                flags |= 1;
+            if (objp->phys_info.flags & PF_AFTERBURNER_ON)
+                flags |= 2;
+            if (objp->flags & OF_PLAYER_SHIP)
+                flags |= 4;
+            for (int i = 0; i < MAX_SHIELD_SECTIONS; i++)
+                sh[i] = objp->shields[i];
+        }
+        else if (objp->type == OBJ_WEAPON) {
+            weapon_info *wip =
+                &Weapon_info[Weapons[objp->instance].weapon_info_index];
+            if (wip->render_type != WRT_POF) {
+                color c;
+                memset(&c, 0, sizeof(c));
+                weapon_get_laser_color(&c, objp);
+                rgb[0] = c.red;
+                rgb[1] = c.green;
+                rgb[2] = c.blue;
+            }
+        }
+
+        out.flags.push_back(flags);
+        out.shield.insert(out.shield.end(), sh, sh + 4);
+        out.rgb.insert(out.rgb.end(), rgb, rgb + 3);
+    }
+
+    return out;
+}
+
 void
 fs2_t::key_mark(const char *key_text)
 {
@@ -950,20 +1017,32 @@ fs2_t::hud_state() const
     out.target_signature = -1;
     out.target_subsys[0] = '\0';
     out.target_subsys_pos = vmd_zero_vector;
+    out.weapon_energy = 0.0f;
+    out.weapon_energy_max = 0.0f;
+    out.burner_fuel = 0.0f;
+    out.burner_fuel_max = 0.0f;
 
     if (!m_world_live)
         return out;
 
     // the selected primary's muzzle speed -- with the target's motion
-    // (both already in the snapshot) it completes the lead solution
+    // (both already in the snapshot) it completes the lead solution --
+    // and the energy/fuel gauges (HUD freight here, so the packed
+    // frame() stays uniform across object kinds)
     if (Player_obj && Player_obj->type == OBJ_SHIP) {
-        const ship_weapon &w = Ships[Player_obj->instance].weapons;
+        const ship &sp = Ships[Player_obj->instance];
+        const ship_info &si = Ship_info[sp.ship_info_index];
+        const ship_weapon &w = sp.weapons;
         if (w.current_primary_bank >= 0 &&
             w.current_primary_bank < w.num_primary_banks) {
             int wi = w.primary_bank_weapons[w.current_primary_bank];
             if (wi >= 0)
                 out.primary_speed = Weapon_info[wi].max_speed;
         }
+        out.weapon_energy = sp.weapon_energy;
+        out.weapon_energy_max = si.max_weapon_reserve;
+        out.burner_fuel = sp.afterburner_fuel;
+        out.burner_fuel_max = si.afterburner_fuel_capacity;
     }
 
     // the player's target, as retail's own targeting state has it --
@@ -1196,6 +1275,8 @@ fs2_t::events()
             ev.kind = event_t::created;
             ev.signature = obj.signature;
             strncpy(ev.name, obj.name, sizeof(ev.name) - 1);
+            ev.birth = obj;   // the identity record crosses ONCE, here;
+                              // frame() rows carry only what changes
             out.push_back(ev);
         }
     }

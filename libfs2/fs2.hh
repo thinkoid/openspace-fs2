@@ -129,6 +129,22 @@ struct object_state_t {
                                        // debris wears debris01/02
 };
 
+// The per-frame kinematic core, packed for the hot crossing: parallel
+// arrays, one row per live object -- sig[i] names the row, and identity
+// crossed ONCE at birth (the created event carries the full record), so
+// nothing static re-crosses at 60 Hz. flags bits: 1 dying,
+// 2 afterburner, 4 player. shield is 4 floats per row (ships; zeros
+// elsewhere), rgb 3 bytes per row (a laser's live cycle color), radius
+// is the LIVE value (a shockwave's expanding blast front).
+struct frame_t {
+    std::vector<int> sig;
+    std::vector<int> flags;
+    std::vector<vector> pos, rvec, uvec, fvec, vel;
+    std::vector<float> hull, radius;
+    std::vector<float> shield;         // 4 per row
+    std::vector<unsigned char> rgb;    // 3 per row
+};
+
 // The discontinuities between two events() drains: objects entering and
 // leaving the world, and every new mission-log entry (retail's own record
 // -- LOG_WAYPOINTS_DONE, LOG_SHIP_DESTROYED... the sexp predicates read
@@ -140,6 +156,10 @@ struct event_t {
     int signature;                     // created/destroyed
     char name[32];                     // created/destroyed; sound: the wav
                                        // message: the voice wav ("" = none)
+
+    object_state_t birth;              // created: the full identity record
+                                       // -- the frame() rows carry only
+                                       // what changes after this
 
     int log_type;                      // log: the LOG_* constant
     char pname[32], sname[32];         // log; message: pname = the sender
@@ -246,6 +266,10 @@ struct hud_state_t {
                                        // (system_info->name, "" = none)
     vector target_subsys_pos;          // its world position (FS2 frame;
                                        // valid when target_subsys set)
+    float weapon_energy;               // the player's gun reserve and
+    float weapon_energy_max;           // ceiling, afterburner fuel and
+    float burner_fuel;                 // capacity -- HUD freight, so the
+    float burner_fuel_max;             // packed frame() stays uniform
     std::vector<weapon_bank_t> primary_banks;
     std::vector<weapon_bank_t> secondary_banks;
 };
@@ -271,6 +295,9 @@ struct fs2_t {
     bool load(const char *game_root, const char *mission, int seed);
     void step(float dt, const flight_controls_t &controls);
     std::vector<object_state_t> snapshot() const;
+    frame_t frame() const;             // the packed kinematic core --
+                                       // snapshot() stays for the oracle
+                                       // tools; the presenter reads this
     std::vector<event_t> events();     // drains
     hud_state_t hud_state() const;
     std::vector<backdrop_t> backdrop() const;   // static per mission

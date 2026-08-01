@@ -134,6 +134,18 @@ test('tres-load-check', find_program('tres_load_check.sh'),
     depends: [pof2glb],
     timeout: 120)
 
+# The packed-boundary gate: frame()'s parallel rows vs snapshot()'s
+# records, same frame, exact -- snapshot() is the pinned oracle, and
+# this keeps the presenter's hot packed crossing honest against it.
+test('frame-eq-check', find_program('frame_eq_check.sh'),
+    args: [
+        libfs2_gdext,
+        meson.current_source_dir() / 'check_frame_eq.gd',
+        meson.project_source_root(),
+    ],
+    depends: [libfs2_so],
+    timeout: 120)
+
 # The GDExtension gate: a headless godot boot loads libfs2 through the
 # build tree's generated fs2.gdextension (the same load_extension contract
 # fly.gd uses) and check_gdext.gd proves FS2.version() round-trips the
