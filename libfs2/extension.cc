@@ -60,6 +60,7 @@ controls_of(const godot::Dictionary &controls)
     c.target_subsys = controls.get("target_subsys", false);
     c.cycle_primary = controls.get("cycle_primary", false);
     c.cycle_secondary = controls.get("cycle_secondary", false);
+    c.warp_out = controls.get("warp_out", false);
 
     return c;
 }
@@ -371,6 +372,11 @@ public:
                 d["text"] = ev.text;
                 d["wave"] = ev.name;
                 break;
+            case event_t::hud_text:
+                d["kind"] = "hud_text";
+                d["text"] = ev.text;
+                d["source"] = ev.source;
+                break;
             }
             out.push_back(d);
         }
@@ -439,6 +445,9 @@ public:
         }
         out["primary_banks"] = pb;
         out["secondary_banks"] = sb;
+
+        out["warpout_stage"] = h.warpout_stage;
+        out["departed"] = h.departed;
 
         godot::Array dirs;
         for (const directive_t &d : h.directives) {

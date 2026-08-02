@@ -143,6 +143,30 @@ capture_message(const char *who, const char *text, const char *wave)
     captured_messages.push_back(req);
 }
 
+// The HUD-line recorder (hudmessage.cc's Hud_msg_capture seam): the text
+// of every line the scrolling HUD ticker commits -- warp and lock
+// feedback, warnings, notifications that have no other channel out.
+// Same bound-and-drop discipline as the sound ring.
+struct hud_line_req_t {
+    char text[256];
+    int source;
+};
+
+static std::vector<hud_line_req_t> captured_hud_lines;
+
+static void
+capture_hud_line(const char *text, int source)
+{
+    if (captured_hud_lines.size() >= 16)
+        return;
+
+    hud_line_req_t req;
+    memset(&req, 0, sizeof(req));
+    strncpy(req.text, text, sizeof(req.text) - 1);
+    req.source = source;
+    captured_hud_lines.push_back(req);
+}
+
 // radar.cc's blip-list reset -- file-scope in retail, but its callers are
 // split: radar_frame_init (the caller game_frame uses) needs fonts, while
 // the reset alone is the sim half (ship_process_post PLOTS blips every
@@ -249,6 +273,7 @@ boot(const char *game_root)
     Sound_enabled = 0;
     Snd_capture = capture_sound;
     Msg_capture = capture_message;
+    Hud_msg_capture = capture_hud_line;
 
     gr_screen.gf_init_color = null_init_color;
     gr_screen.gf_init_alphacolor = null_init_alphacolor;
@@ -611,8 +636,16 @@ fs2_t::step(float dt, const flight_controls_t &controls)
     // the virtual stick: retail's control_info filled from the boundary
     // in place of read_keyboard_controls; the rest of
     // read_player_controls' PCM_NORMAL path follows verbatim
-    // (playercontrol.cc:824)
-    if (!m_pre_entry && Player_obj->type == OBJ_SHIP) {
+    // (playercontrol.cc:824). During a warpout the autopilot owns the
+    // ship instead: retail's own read_player_controls (its stage 1..3
+    // branch zeroes the stick, ramps to warp speed and posts the stage
+    // transitions) -- the boundary stick is ignored until the sequence
+    // completes or aborts.
+    if (!m_pre_entry && Player_obj->type == OBJ_SHIP &&
+        Player->control_mode != PCM_NORMAL) {
+        read_player_controls(Player_obj, flFrametime);
+    }
+    else if (!m_pre_entry && Player_obj->type == OBJ_SHIP) {
         memset(&Player->ci, 0, sizeof(control_info));
         Player->ci.pitch = controls.pitch;
         Player->ci.heading = controls.heading;
@@ -737,6 +770,40 @@ fs2_t::step(float dt, const flight_controls_t &controls)
     }
     m_cycle_s_held = controls.cycle_secondary;
 
+    // the jump key (keycontrol.cc:2252, END_MISSION's body): the
+    // collision and engine gates, then the staged warpout through
+    // retail's own event flow. A second press during stage 1 aborts --
+    // retail spells that ESC (keycontrol.cc:1530); past stage 1 it is
+    // too late, retail's own rule.
+    if (controls.warp_out && !m_warp_held && !m_pre_entry &&
+        Player_obj->type == OBJ_SHIP &&
+        !(Ships[Player_obj->instance].flags & SF_DYING)) {
+        if (Player->control_mode == PCM_NORMAL) {
+            control_used(END_MISSION);
+
+            if (collide_predict_large_ship(Player_obj, 200.0f)) {
+                gamesnd_play_iface(SND_GENERAL_FAIL);
+                HUD_printf(XSTR(
+                    "** WARNING ** Collision danger.  Warpout not activated.",
+                    39));
+            }
+            else if (ship_get_subsystem_strength(Player_ship,
+                                                 SUBSYSTEM_ENGINE) < 0.1f) {
+                gamesnd_play_iface(SND_GENERAL_FAIL);
+                HUD_printf(
+                    XSTR("Engine failure.  Cannot engage warp drive.", 40));
+            }
+            else {
+                snd_play(&Snds[SND_PLAYER_WARP_OUT]);
+                gameseq_post_event(GS_EVENT_PLAYER_WARPOUT_START);
+            }
+        }
+        else if (Player->control_mode == PCM_WARPOUT_STAGE1) {
+            gameseq_post_event(GS_EVENT_PLAYER_WARPOUT_STOP);
+        }
+    }
+    m_warp_held = controls.warp_out;
+
     mission_parse_eval_stuff();        // arrivals and departures, live
     obj_move_all(flFrametime);
     mission_eval_goals();
@@ -765,6 +832,12 @@ fs2_t::step(float dt, const flight_controls_t &controls)
     mflash_process_all();
     shipfx_flash_do_frame(flFrametime);
     shockwave_move_all(flFrametime);
+
+    // drain the sequencer, retail's own between-frames rhythm: the
+    // warpout stages travel its event queue (posted above and from
+    // shipfx_warpout_frame) and land in the game half's stand-in
+    // (freespacestubs' game_process_event)
+    gameseq_process_events();
 }
 
 std::vector<object_state_t>
@@ -1021,9 +1094,23 @@ fs2_t::hud_state() const
     out.weapon_energy_max = 0.0f;
     out.burner_fuel = 0.0f;
     out.burner_fuel_max = 0.0f;
+    out.warpout_stage = 0;
+    out.departed = false;
 
     if (!m_world_live)
         return out;
+
+    // the warpout sequence, where it stands: the stage while the
+    // autopilot owns the ship, and -- the mission's own truth, retail's
+    // log entry from shipfx_warpout_frame -- whether the player is gone
+    if (Player->control_mode >= PCM_WARPOUT_STAGE1 &&
+        Player->control_mode <= PCM_WARPOUT_STAGE3)
+        out.warpout_stage = Player->control_mode;
+
+    if (Player_ship)
+        out.departed = mission_log_get_time(LOG_SHIP_DEPART,
+                                            Player_ship->ship_name, NULL,
+                                            NULL) != 0;
 
     // the selected primary's muzzle speed -- with the target's motion
     // (both already in the snapshot) it completes the lead solution --
@@ -1246,6 +1333,17 @@ fs2_t::events()
         out.push_back(ev);
     }
     captured_messages.clear();
+
+    // the frame's HUD ticker lines, oldest first
+    for (const hud_line_req_t &req : captured_hud_lines) {
+        event_t ev;
+        memset(&ev, 0, sizeof(ev));
+        ev.kind = event_t::hud_text;
+        ev.source = req.source;
+        strncpy(ev.text, req.text, sizeof(ev.text) - 1);
+        out.push_back(ev);
+    }
+    captured_hud_lines.clear();
 
     // new mission-log entries since the last drain -- retail's own record
     for (; m_log_drained < last_entry; m_log_drained++) {

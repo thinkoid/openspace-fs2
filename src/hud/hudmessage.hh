@@ -35,6 +35,11 @@
 
 extern int ACTIVE_BUFFER_LINES; // user-preferred number of message buffer lines
 
+// the HUD-line capture seam (the boundary's recorder, beside Msg_capture
+// and Snd_capture): every line committed to the scrolling HUD ticker
+// forwards here -- warnings, lock/warp feedback, notifications
+extern void (*Hud_msg_capture)(const char *text, int source);
+
 typedef struct
 {
     char text[MAX_HUD_LINE_LEN];

@@ -152,6 +152,9 @@ Hud_display_info HUD_active_msgs_list[MAX_ACTIVE_BUFFER_LINES];
 
 int HUD_msg_inited = FALSE;
 
+// the HUD-line capture seam -- see hudmessage.hh
+void (*Hud_msg_capture)(const char *text, int source) = NULL;
+
 // There is a maximum number of lines that will be stored in the message scrollback.  Oldest
 // messages are deleted to make way for newest messages.
 #define MAX_MSG_SCROLLBACK_LINES 100
@@ -504,6 +507,9 @@ HUD_printf_line(char *text, int source, int time = 0, int x = 0)
     HUD_pending[Hud_list_end].source = source;
     HUD_pending[Hud_list_end].time = time;
     HUD_pending[Hud_list_end].x = x;
+
+    if (Hud_msg_capture)
+        Hud_msg_capture(HUD_pending[Hud_list_end].text, source);
 }
 
 // converts a TEAM_* define to a HUD_SOURCE_* define

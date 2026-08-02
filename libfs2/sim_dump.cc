@@ -10,6 +10,7 @@
 //   sim_dump <game-root> <mission> run <frames> [every]
 //   sim_dump <game-root> <mission> fire <frames> [every]
 //   sim_dump <game-root> <campaign> campaign <frames> [take_loop]
+//   sim_dump <game-root> <mission> warpout <engage-frame> <frames> [abort]
 //
 // `fire` is `run` with the trigger held and a minimal aim assist: each
 // frame it steers toward the nearest hostile using only what crosses the
@@ -21,6 +22,11 @@
 // the CURRENT mission with the fire driver, then runs the mission-end
 // pair: debrief (goal states, stage selection, the branch verdict) and
 // accept (the .csg save, the advance) -- the campaign-flow gate's driver.
+//
+// `warpout` flies hands-off and presses the jump key at the engage
+// frame, witnessing the departure sequence: each stage once, the warp
+// hole's crossing, the departure log entry. With `abort`, a second
+// press two seconds in exercises the stage-1 abort and the sim flies on.
 //
 // All floats %.9g so every float32 round-trips exactly.
 
@@ -103,14 +109,19 @@ main(int argc, char *argv[])
     }
 
     bool firing = campaign || strcmp(argv[3], "fire") == 0;
-    if ((!firing && strcmp(argv[3], "run") != 0) || argc < 5) {
+    bool warpout_mode = strcmp(argv[3], "warpout") == 0;
+    if ((!firing && !warpout_mode && strcmp(argv[3], "run") != 0) ||
+        argc < 5 || (warpout_mode && argc < 6)) {
         fprintf(stderr, "sim_dump: unknown mode %s\n", argv[3]);
         return 2;
     }
 
-    int frames = atoi(argv[4]);
-    int every = (!campaign && argc > 5) ? atoi(argv[5]) : 600;
+    int engage = warpout_mode ? atoi(argv[4]) : 0;
+    int frames = atoi(argv[warpout_mode ? 5 : 4]);
+    int every = (!campaign && !warpout_mode && argc > 5) ? atoi(argv[5]) : 600;
     bool take_loop = campaign && argc > 5 && atoi(argv[5]) != 0;
+    bool warp_abort = warpout_mode && argc > 6 &&
+                      strcmp(argv[6], "abort") == 0;
 
     flight_controls_t controls;
     memset(&controls, 0, sizeof(controls));
@@ -125,6 +136,9 @@ main(int argc, char *argv[])
     bool debris_shown = false;
     bool weapons2_shown = false;
     bool subsys_shown = false;
+    int last_stage = 0;
+    bool warp_hole_shown = false;
+    bool departed_seen = false;
 
     for (int frame = 1; frame <= frames; frame++) {
         if (firing) {
@@ -212,7 +226,42 @@ main(int argc, char *argv[])
             controls.target_subsys = frame == 462;
         }
 
+        if (warpout_mode)
+            controls.warp_out = frame == engage ||
+                                (warp_abort && frame == engage + 120);
+
         sim.step(dt, controls);
+
+        // the warpout witnesses -- each stage once, the hole once, the
+        // abort or the departure; the warpout gate pins the sequence
+        if (warpout_mode && !departed_seen) {
+            hud_state_t hs = sim.hud_state();
+
+            if (hs.warpout_stage != last_stage) {
+                if (hs.warpout_stage > 0)
+                    printf("warpout stage %d\n", hs.warpout_stage);
+                else if (!hs.departed)
+                    printf("warpout aborted\n");
+                last_stage = hs.warpout_stage;
+            }
+
+            if (hs.warpout_stage >= 2 && !warp_hole_shown) {
+                for (const object_state_t &o : sim.snapshot())
+                    if (o.type == OBJ_FIREBALL &&
+                        strcmp(o.class_name, "warp") == 0) {
+                        printf("warpout hole up ani %s\n", o.pof);
+                        warp_hole_shown = true;
+                        break;
+                    }
+            }
+
+            if (hs.departed) {
+                printf("warpout departed\n");
+                departed_seen = true;   // the loop ends after this
+                                        // frame's event drain (the log
+                                        // entry crosses there)
+            }
+        }
 
         // one-shot art lines, each record kind's first crossing -- the
         // gate pins all four: laser color + tbl size, player shields,
@@ -328,6 +377,10 @@ main(int argc, char *argv[])
                 printf("event %d message '%s' '%s' wave %s\n", frame,
                        ev.pname, ev.text, ev.name[0] ? ev.name : "-");
                 break;
+            case event_t::hud_text:
+                printf("event %d hud '%s' src %d\n", frame, ev.text,
+                       ev.source);
+                break;
             }
         }
 
@@ -343,6 +396,9 @@ main(int argc, char *argv[])
                 printf("hud %d directive %d key %d '%s'\n", frame, d.state,
                        int(d.key_line), d.text);
         }
+
+        if (departed_seen)
+            break;
     }
 
     // the mission-end pair: everything the debrief screen would show,

@@ -57,6 +57,12 @@ struct flight_controls_t {
     bool cycle_primary;                // edge -> "." (bank 1 -> bank 2
                                        // -> linked, retail's cycle)
     bool cycle_secondary;              // edge -> "/" (next missile bank)
+    bool warp_out;                     // edge -> the jump key: retail's
+                                       // END_MISSION gates (collision,
+                                       // engines) then the staged
+                                       // warpout; pressed again during
+                                       // stage 1 = the abort (retail
+                                       // spells that ESC)
 };
 
 // The flying state after a step -- physics_info's living fields.
@@ -150,7 +156,7 @@ struct frame_t {
 // -- LOG_WAYPOINTS_DONE, LOG_SHIP_DESTROYED... the sexp predicates read
 // the same table).
 struct event_t {
-    enum kind_t { created, destroyed, log, sound, message };
+    enum kind_t { created, destroyed, log, sound, message, hud_text };
 
     kind_t kind;
     int signature;                     // created/destroyed
@@ -166,7 +172,11 @@ struct event_t {
     fix time;                          // log: mission time of the entry
 
     char text[512];                    // message: the translated line
-                                       // (retail's MESSAGE_LENGTH)
+                                       // (retail's MESSAGE_LENGTH);
+                                       // hud_text: the ticker line
+
+    int source;                        // hud_text: HUD_SOURCE_* (color
+                                       // class at the commit point)
 
     bool has_pos;                      // sound: 3d, at pos
     vector pos;
@@ -272,6 +282,12 @@ struct hud_state_t {
     float burner_fuel_max;             // packed frame() stays uniform
     std::vector<weapon_bank_t> primary_banks;
     std::vector<weapon_bank_t> secondary_banks;
+    int warpout_stage;                 // 0 = flying normally; 1..3 =
+                                       // retail's PCM_WARPOUT stages
+                                       // (the autopilot owns the stick)
+    bool departed;                     // the player's LOG_SHIP_DEPART is
+                                       // on the mission log -- warped
+                                       // out, the mission is over
 };
 
 // The boundary object. Slice 1 grew the single-ship flight surface
@@ -341,6 +357,7 @@ private:
     bool m_subsys_held = false;        // target-subsystem edge detection
     bool m_cycle_p_held = false;       // primary-cycle edge detection
     bool m_cycle_s_held = false;       // secondary-cycle edge detection
+    bool m_warp_held = false;          // jump-key edge detection
     int m_log_drained = 0;             // mission-log high-water mark
     std::vector<object_state_t> m_known; // last drain's world, for diffs
 

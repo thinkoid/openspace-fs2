@@ -9,6 +9,10 @@
 
 #include <gamesequence/gamesequence.hh>
 #include <globalincs/pstypes.hh>
+#include <hud/hud.hh>
+#include <object/object.hh>
+#include <playerman/player.hh>
+#include <ship/shipfx.hh>
 
 struct object;
 struct ship;
@@ -96,8 +100,56 @@ void game_poll()
    oracle_trap("game_poll");
 }
 
-void game_process_event(int, int)
+// The player-warpout event arc is real behavior, not a trap: freespace.cc
+// (the unported game half this file stands in for) owns these handlers
+// (freespace.cc:4127..4215), and the warpout stages travel retail's own
+// event queue -- read_player_controls posts DONE_STAGE1, shipfx's
+// warpout frame posts DONE_STAGE2/DONE, libfs2's step() drains the
+// queue into here. Sim substance only: camera moves, viewer modes and
+// the warpout-sound handle are presentation and stay out (the whoosh
+// itself crosses the boundary through the Snd_capture seam when the
+// boundary posts the start event). Everything else still lands in
+// GS_STATE_GAME_PLAY, the only state the simulation library is ever in.
+void game_process_event(int, int event)
 {
+    switch (event) {
+    case GS_EVENT_PLAYER_WARPOUT_START:
+        if (Player->control_mode == PCM_NORMAL) {
+            Player->control_mode = PCM_WARPOUT_STAGE1;
+            Warpout_time = 0.0f;
+            Warpout_forced = 0;
+        }
+        break;
+
+    case GS_EVENT_PLAYER_WARPOUT_STOP:
+        if (Player->control_mode != PCM_NORMAL && !Warpout_forced) {
+            Player->control_mode = PCM_NORMAL;
+            hud_subspace_notify_abort();
+        }
+        break;
+
+    case GS_EVENT_PLAYER_WARPOUT_DONE_STAGE1:   // up to warp speed
+        if (Player->control_mode != PCM_WARPOUT_STAGE1) {
+            gameseq_post_event(GS_EVENT_PLAYER_WARPOUT_STOP);
+        }
+        else {
+            shipfx_warpout_start(Player_obj);
+            Player->control_mode = PCM_WARPOUT_STAGE2;
+        }
+        break;
+
+    case GS_EVENT_PLAYER_WARPOUT_DONE_STAGE2:   // reached the effect
+        if (Player->control_mode != PCM_WARPOUT_STAGE2)
+            gameseq_post_event(GS_EVENT_PLAYER_WARPOUT_STOP);
+        else
+            Player->control_mode = PCM_WARPOUT_STAGE3;
+        break;
+
+    case GS_EVENT_PLAYER_WARPOUT_DONE:          // through it -- departed
+        Player->control_mode = PCM_NORMAL;
+        break;
+    }
+
     gameseq_set_state(GS_STATE_GAME_PLAY, 1);
 }
 
@@ -183,5 +235,9 @@ unsigned char Sun_drew[1 << 20];
 unsigned char Test_begin[1 << 20];
 unsigned char tst[1 << 20];
 unsigned char Viewer_zoom[1 << 20];
-unsigned char Warpout_forced[1 << 20];
-unsigned char Warpout_time[1 << 20];
+
+// live warpout state, typed (player.hh externs them; freespace.cc
+// declared them) -- read_player_controls' stage ramp and the event arc
+// above share them
+int Warpout_forced = 0;
+float Warpout_time = 0.0f;

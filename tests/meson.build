@@ -273,6 +273,18 @@ test('campaign-flow-check', find_program('campaign_flow_check.sh'),
     depends: [sim_dump],
     timeout: 300)
 
+# The warpout gate: the jump key flies retail's staged departure -- the
+# warpout autopilot, the warp hole fireball, the HUD notice through the
+# ticker seam, LOG_SHIP_DEPART -- plus the stage-1 abort, with two
+# departure runs byte-identical.
+test('warpout-check', find_program('warpout_check.sh'),
+    args: [
+        sim_dump.full_path(),
+        meson.project_source_root(),
+    ],
+    depends: [sim_dump],
+    timeout: 300)
+
 # The lesson gate: Training-1's native SEXP must put the lesson ON the
 # boundary -- directives decoded as retail draws them, the Welcome
 # Message promoted, token-translated, voice wave named -- all via
