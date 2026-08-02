@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# The campaign gate: EVERY install mission simulates 10 hands-off
+# The campaign gate: EVERY install mission simulates 60 hands-off
 # sim-seconds in the native world without crashing -- arrivals, dogfight
 # AI, turret fire, missiles, engine wash, debris, damage all exercising
 # retail's own code through the boundary. Aggregate assertions prove the
@@ -8,6 +8,14 @@
 # mid-run, and somewhere the AI scores a kill on its own. One combat
 # mission runs twice and must be byte-identical (combat joins the
 # determinism contract).
+#
+# The minute is load-bearing, not a round number. At the original ten
+# seconds this gate sat green over a real SIGABRT: SM2-02 tripped
+# Assert(theta_goal >= 0) at frame 2444 -- a NaN rotation axis out of
+# vecmat.cc's theta==PI branch -- and no mission in the corpus reaches
+# that state inside 600 frames (notes.txt, the 2026-08-02 campaign
+# sweep). All 90 install missions survive 3600; the whole gate costs
+# under a minute. Do not shorten it back.
 #
 #   campaign_sim_check.sh <sim_dump> [search-root]
 #
@@ -46,7 +54,7 @@ warps=0
 for f in "$root"/data/missions/*.fs2; do
     m=$(basename "$f")
     total=$((total + 1))
-    if ! "$sim" "$root" "$f" run 600 600 > "$tmp/$m.out" 2> "$tmp/$m.err"; then
+    if ! "$sim" "$root" "$f" run 3600 3600 > "$tmp/$m.out" 2> "$tmp/$m.err"; then
         echo "CRASH $m: $(tail -1 "$tmp/$m.err" | cut -c1-90)"
         crashed=$((crashed + 1))
         continue
@@ -104,7 +112,7 @@ fi
 combat=$(grep -l "^event [0-9]* log 1 " "$tmp"/*.out 2> /dev/null | head -1)
 if [ -n "$combat" ]; then
     m=$(basename "$combat" .out)
-    "$sim" "$root" "$root/data/missions/$m" run 600 600 \
+    "$sim" "$root" "$root/data/missions/$m" run 3600 3600 \
         > "$tmp/again.out" 2> /dev/null || true
     if ! cmp -s "$combat" "$tmp/again.out"; then
         echo "FAIL: $m differs across two runs -- combat determinism broken"

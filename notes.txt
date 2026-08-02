@@ -79,7 +79,16 @@ fs2open also dropped the per-case vm_vec_normalize calls.  That part is
 cleanup, NOT a second bug: ours already normalises after the switch at
 vecmat.cc:1654, so cases 0 and 1 merely normalise twice.  Case 2 is fine.
 
-NOT yet fixed here -- this sweep's scope was the ledger.
+FIXED, same day, after this ledger was written. All three cases now
+compute the component before the reciprocal. SM2-02 goes 134 -> 0 and
+the sweep is 41/41.
+
+The gate that should have caught it was already there and was simply too
+shallow: campaign-sim-check flies EVERY install mission, but for 600
+frames, and this aborts at 2444. It now flies 3600 (all 90 install
+missions survive that; the gate costs under a minute). Proven to bite --
+restoring the old line order takes it red with
+"CRASH SM2-02.fs2: Assertion failed: theta_goal >= 0".
 
 
 === NON-DEFECTS, RECORDED SO THEY ARE NOT RE-CHASED ===
