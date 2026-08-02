@@ -27,6 +27,15 @@ pof2glb = executable('pof2glb',
 # offsets, digests). The extraction goes through retail's own cfile -- the
 # authoritative VP reader -- so it links the foundation and the stub
 # apparatus exactly like the oracle dumpers in ../tests do.
+# savejson is the pilot-save codec: .plr/.csg/.css decoded to JSON and
+# encoded back, byte-faithful (the gate cmps the round trip). Headers only
+# -- the raw-struct blocks (color, detail_levels, scoring_struct) come from
+# the game's own headers so the codec always matches the compiled layout;
+# nothing links.
+savejson = executable('savejson',
+    'savejson.cc',
+    include_directories: inc)
+
 vpstage = executable('vpstage',
     ['vpstage.cc', pof2glb_version] + oracle_stubs,
     include_directories: inc,

@@ -285,6 +285,18 @@ test('warpout-check', find_program('warpout_check.sh'),
     depends: [sim_dump],
     timeout: 300)
 
+# The save-codec gate: savejson round-trips a real campaign hop's .plr /
+# .csg / .css byte-identically, an edited field survives the trip, and a
+# second hop resumes from codec-written saves (retail accepts the output).
+test('savejson-check', find_program('savejson_check.sh'),
+    args: [
+        savejson.full_path(),
+        sim_dump.full_path(),
+        meson.project_source_root(),
+    ],
+    depends: [savejson, sim_dump],
+    timeout: 300)
+
 # The lesson gate: Training-1's native SEXP must put the lesson ON the
 # boundary -- directives decoded as retail draws them, the Welcome
 # Message promoted, token-translated, voice wave named -- all via
