@@ -54,8 +54,9 @@ func setup_lights() -> void:
     var env := Environment.new()
     env.background_mode = Environment.BG_SKY
     env.sky = sky_res
-    # the map is physical radiance and reads dim raw; lift it
-    env.background_energy_multiplier = 2.0
+    # backdrop, not spectacle: the band way dimmer (field-reported at
+    # 2.0 -- overpowering)
+    env.background_energy_multiplier = 0.6
     # ambient: mostly a lifted constant, tinted by the sky -- a pure-sky
     # ambient would be DARKER than the old flat gray, not brighter
     env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
