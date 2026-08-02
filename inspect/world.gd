@@ -197,6 +197,13 @@ func _load_libfs2() -> bool:
     if gdext.is_empty():
         gdext = ProjectSettings.globalize_path("res://") \
             + "../build/libfs2/fs2.gdextension"
+    elif gdext.is_relative_path():
+        # a shell-relative FS2_GDEXT (./build/...) must resolve against
+        # the launch shell's $PWD -- godot --path has already chdir'd
+        # into the project (same rule as the assets/root/mission args)
+        var launch := OS.get_environment("PWD")
+        if not launch.is_empty():
+            gdext = launch.path_join(gdext).simplify_path()
     if GDExtensionManager.load_extension(gdext) != \
             GDExtensionManager.LOAD_STATUS_OK:
         _fatal("cannot load libfs2 (%s) -- build it, or set FS2_GDEXT"
