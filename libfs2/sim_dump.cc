@@ -140,6 +140,7 @@ main(int argc, char *argv[])
     int last_stage = 0;
     bool warp_hole_shown = false;
     bool departed_seen = false;
+    bool shieldhit_shown = false;
 
     for (int frame = 1; frame <= frames; frame++) {
         if (firing) {
@@ -349,6 +350,26 @@ main(int argc, char *argv[])
             if (hs.target_subsys[0]) {
                 printf("art subsys '%s'\n", hs.target_subsys);
                 subsys_shown = true;
+            }
+        }
+
+        // the first quadrant dip: incoming fire reached the player's
+        // shield -- the shield-range gate's witness that the range
+        // shoots back (any driving mode; a hands-off run is the pure
+        // incoming-fire case)
+        if (!shieldhit_shown) {
+            for (const object_state_t &o : sim.snapshot()) {
+                if (!o.player || o.shield_max <= 0.0f)
+                    continue;
+                float qmax = o.shield_max / 4.0f;
+                for (int q = 0; q < 4; q++)
+                    if (o.shield[q] < qmax - 0.5f) {
+                        printf("art shieldhit frame %d q %d %.9g of %.9g\n",
+                               frame, q, o.shield[q], qmax);
+                        shieldhit_shown = true;
+                        break;
+                    }
+                break;
             }
         }
 

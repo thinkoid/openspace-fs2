@@ -55,6 +55,8 @@ var player_energy_frac := 1.0               # gun reserve fraction
 var player_burner_frac := 1.0               # afterburner fuel fraction
 var player_shield: Array = []
 var player_shield_max := 0.0
+var target_shield: Array = []
+var target_shield_max := 0.0
 var player_hull_frac := 1.0
 var player_pos := Vector3.ZERO              # FS2 frame
 var player_team := 0                        # for hostile/friendly coloring
@@ -269,6 +271,8 @@ func update_combat(prec: Dictionary, ship_recs: Array, target_sig_: int,
     player_shield = prec.get("shield", [])
     player_shield_max = prec.get("shield_max", 0.0)
     player_hull_frac = prec["hull"] / maxf(prec["hull_max"], 1.0)
+    target_shield = target_rec.get("shield", [])
+    target_shield_max = target_rec.get("shield_max", 0.0)
 
     var blips := []
     for rec in ship_recs:
@@ -354,11 +358,32 @@ func _draw_hud() -> void:
     _draw_speed_tape(vp, fsz)
     _draw_weapon_gauge(vp, fsz)
 
+    # own ship's shield, bottom-center of the HUD rectangle on the
+    # monitor/weapons row; hull integrity rides in the middle (retail
+    # pairs them on the player shield icon)
+    if player_shield_max > 0.0 and player_shield.size() == 4:
+        var sc := Vector2(vp.x * 0.5, vp.y * 0.5 + _ui(226.0) + _ui(34.0))
+        _draw_shield_gauge(sc, _ui(30.0), player_shield,
+                           player_shield_max, HUD_LINE)
+        overlay.draw_string(hud_font,
+                            sc + Vector2(-_ui(24.0), int(_ui(13.0)) * 0.35),
+                            "%3d%%" % maxi(0, int(100.0 * player_hull_frac)),
+                            HORIZONTAL_ALIGNMENT_CENTER, int(_ui(48.0)),
+                            int(_ui(13.0)), HUD_LINE)
+
     if target_rec.is_empty():
         return
 
     var col := Color(1.0, 0.35, 0.3) if target_rec["team"] != player_team \
         else Color(0.35, 1.0, 0.4)
+
+    # the target's shield, in miniature beside the monitor text -- same
+    # glyph, the target's color, gone entirely for shieldless contacts
+    if target_shield_max > 0.0 and target_shield.size() == 4:
+        _draw_shield_gauge(
+            Vector2(vp.x * 0.16 + _ui(210.0),
+                    vp.y * 0.5 + _ui(226.0) + _ui(26.0)),
+            _ui(22.0), target_shield, target_shield_max, col)
 
     var p3: Vector3 = target_rec["pos"]
     var v := Vector3(p3.x, p3.y, -p3.z)
@@ -452,6 +477,28 @@ func _draw_hud() -> void:
             var lp := cam.unproject_position(lv)
             overlay.draw_circle(lp, _ui(3.5), col)
             overlay.draw_arc(lp, _ui(8.0), 0.0, TAU, 24, col, 1.5)
+
+# a shield gauge: four arcs around a ring, nose up, each fading as its
+# quadrant drains and vanishing when it collapses. Retail's quadrant
+# convention (shield.cc:824, get_quadrant's x-vs-z halfplanes):
+# 0 = right, 1 = front, 2 = rear, 3 = left.
+const SHIELD_ARCS := [0.0, -PI / 2.0, PI / 2.0, PI]   # quadrant -> center
+                                                      # angle (2D y is DOWN,
+                                                      # so -PI/2 is the top)
+
+func _draw_shield_gauge(center: Vector2, radius: float, quads: Array,
+                        total_max: float, base: Color) -> void:
+    var qmax := total_max / 4.0
+    if qmax <= 0.0:
+        return
+    for q in 4:
+        var frac := clampf(float(quads[q]) / qmax, 0.0, 1.0)
+        if frac <= 0.01:
+            continue                    # a collapsed quadrant is a hole
+        var col := Color(base, 0.25 + 0.75 * frac)
+        var mid: float = SHIELD_ARCS[q]
+        overlay.draw_arc(center, radius, mid - 0.7, mid + 0.7, 16, col,
+                         2.0 + 1.5 * frac)
 
 # the weapon gauge at the HUD rectangle's lower-right, retail's bank
 # list: one line per mounted bank, a box per shot the next trigger pull
@@ -681,6 +728,8 @@ func reset() -> void:
     target_closure = 0.0
     player_shield = []
     player_hull_frac = 1.0
+    target_shield = []
+    target_shield_max = 0.0
 
     ticker_lines.clear()
     chatter_lines.clear()

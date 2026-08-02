@@ -153,6 +153,27 @@ else
     rc=1
 fi
 
+# the shield range: the drones alive, chasing, and armed with real guns
+# (the Training gun's zero damage taught us the hard way) -- a hands-off
+# run must show incoming fire reaching the player's shield: a quadrant
+# dips through retail's own apply_damage_to_shield, and the hull behind
+# it holds
+"$sim" "$root" "$repo/tests/shield-range.fs2" run 900 900 > "$tmp/shield2.txt" 2> /dev/null
+
+if grep -q "^art shieldhit frame [0-9]* q [0-9]" "$tmp/shield2.txt"; then
+    echo "OK: $(grep -m1 '^art shieldhit' "$tmp/shield2.txt")"
+else
+    echo "FAIL: no incoming fire reached the player's shield"
+    rc=1
+fi
+
+if grep -q "^state 900 Alpha 1 .* dying 0 .* hull 290/290$" "$tmp/shield2.txt"; then
+    echo "OK: the hull behind the shield holds at frame 900"
+else
+    echo "FAIL: player hull did not hold: $(grep -m1 '^state 900 Alpha 1' "$tmp/shield2.txt" || echo none)"
+    rc=1
+fi
+
 if grep -q "^art missile Piranha pof piranha\.pof$" "$tmp/fire.txt"; then
     echo "OK: $(grep -m1 '^art missile' "$tmp/fire.txt")"
 else

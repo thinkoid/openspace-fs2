@@ -320,7 +320,9 @@ func _physics_process(delta: float) -> void:
         var burner := (flags & 2) != 0
         var is_player := (flags & 4) != 0
 
-        if entry["is_ship"]:
+        # by kind, not is_ship: a box stand-in (no GLB) is still a ship
+        # to the radar, the monitor and the shield gauge
+        if entry.get("kind", "") == "ship":
             var birth: Dictionary = entry["birth"]
             ship_recs.append({
                 "signature": sig, "pos": fpos[i], "team": birth["team"],
@@ -332,6 +334,9 @@ func _physics_process(delta: float) -> void:
                     "class": birth["class"], "team": birth["team"],
                     "pos": fpos[i], "vel": fvel[i],
                     "hull": fhull[i], "hull_max": birth["hull_max"],
+                    "shield": [fshield[i * 4], fshield[i * 4 + 1],
+                               fshield[i * 4 + 2], fshield[i * 4 + 3]],
+                    "shield_max": birth["shield_max"],
                 }
 
         # FS2 frame -> Godot frame at the visual boundary only
@@ -668,7 +673,10 @@ func _spawn(sig: int, rec: Dictionary) -> void:
 
     node.name = rec["name"]
     ships_root.add_child(node)
-    ships[sig] = { "node": node, "is_ship": is_ship, "radius": radius }
+    # kind says WHAT it is; is_ship says whether real ship art loaded --
+    # a GLB-less box stand-in is still a ship to the HUD and the radar
+    ships[sig] = { "node": node, "is_ship": is_ship, "kind": "ship",
+                   "radius": radius }
     if is_ship:
         ships[sig]["thrust"] = fx._dress_thrusters(node, rec)
     hud._tick("arrived: %s (%s)" % [rec["name"], rec["class"]])
