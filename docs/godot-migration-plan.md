@@ -1045,6 +1045,20 @@ savejson-check (31st gate): a real hop's three saves round-trip
 byte-identical, an edit survives, and retail resumes from
 codec-written saves.
 
+**Status (2026-08-02, shields):** the shield gauge (c7bd94502) -- four
+arcs around a ring, nose up, fading per quadrant (retail's convention,
+shield.cc:824: 0 right / 1 front / 2 rear / 3 left), own ship
+bottom-center with hull integrity inside, the target's in miniature
+beside the monitor in target color; live target quadrants join
+target_rec. Bug fixed underneath: GLB-less box stand-ins carried
+is_ship=false and fell off radar/monitor/gauge -- kind now says what
+an entry IS, is_ship only whether ship art loaded. The proving ground
+is tests/shield-range.fs2: weapons-range with the drones alive,
+chasing, and armed with real Subach -- retail's Training gun does
+LITERALLY ZERO damage (hit sounds, no drain; the range's first draft
+taught it). sim_dump's shieldhit witness + two new weapons-gate pins
+(quadrant dips, hull holds behind it). Next: the campaign itself.
+
 ## Where this work lives
 
 - `master` — the retail Linux port; mothballed 2026-07-30 at its
