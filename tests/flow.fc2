@@ -1,14 +1,25 @@
 $Name: Flow
 $Type: single
-+Description: XSTR("The campaign-flow gate's synthetic two-hop: clear the range to advance, clear it again to finish.", -1)
++Description: XSTR("The campaign-flow gate's synthetic hops: clear the range to advance, an optional side loop off the first, clear again to finish.", -1)
 $end_multi_text
 +Starting Ships: ( "GTF Myrmidon" )
 +Starting Weapons: ( "Subach HL-7" "Piranha" )
 $Mission: flow-1.fs2
 +Flags: 0
 +Formula: (cond ((is-previous-goal-true "flow-1.fs2" "Clear the range")(next-mission "flow-2.fs2"))((true)(next-mission "flow-1.fs2")))
++Mission Loop:
++Mission Loop Text: XSTR("Command offers an optional patrol of the range. Will you fly it?", -1)
+$end_multi_text
++Mission Loop Brief Sound: TR1_DB_01.wav
+$end_multi_text
++Formula: (cond ((is-previous-goal-true "flow-1.fs2" "Clear the range")(next-mission "flow-loop.fs2")))
 +Level: 0
 +Position: 2
+$Mission: flow-loop.fs2
++Flags: 0
++Formula: (cond ((true)(next-mission "flow-2.fs2")))
++Level: 1
++Position: 1
 $Mission: flow-2.fs2
 +Flags: 0
 +Formula: (cond ((true)(end-of-campaign)))

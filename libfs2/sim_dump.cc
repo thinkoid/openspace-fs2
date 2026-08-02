@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <mission/missioncampaign.hh>
 #include <object/object.hh>
 
 #include "fs2.hh"
@@ -420,9 +421,19 @@ main(int argc, char *argv[])
 
         printf("verdict next '%s' loop %d\n", d.next_mission,
                int(d.loop_offer));
+        if (d.loop_offer)
+            printf("loop desc '%s' voice %s\n", d.loop_desc.c_str(),
+                   d.loop_voice[0] ? d.loop_voice : "-");
 
         sim.accept(take_loop);
         printf("current '%s'\n", sim.current_mission());
+
+        // the loop bookkeeping, retail's own globals (an oracle tool
+        // reads past the boundary on purpose): enabled while inside the
+        // detour, cleared when the reentry mission comes up -- the
+        // loop-arc gate pins the .csg-carried pair directly
+        printf("loop state enabled %d reentry %d\n", Campaign.loop_enabled,
+               Campaign.loop_reentry);
     }
 
     return 0;

@@ -245,6 +245,9 @@ struct debrief_t {
     char next_mission[32];
     bool loop_offer;
     std::string loop_desc;
+    char loop_voice[32];               // the loop brief's voice wave
+                                       // ("" = none -- retail's own
+                                       // campaign authors no loop voice)
 };
 
 // The lesson's display half, value-only: what the training gauges would

@@ -980,6 +980,7 @@ fs2_t::debrief()
     debrief_t out;
     out.next_mission[0] = '\0';
     out.loop_offer = false;
+    out.loop_voice[0] = '\0';
 
     // retail's debrief entry, in retail's order (freespace.cc:4527 +
     // debrief_init's campaign block): fail what never completed, store
@@ -1047,6 +1048,10 @@ fs2_t::debrief()
                          Campaign.next_mission != cur;
         if (out.loop_offer && Campaign.missions[cur].mission_loop_desc)
             out.loop_desc = Campaign.missions[cur].mission_loop_desc;
+        if (out.loop_offer && Campaign.missions[cur].mission_loop_brief_sound)
+            strncpy(out.loop_voice,
+                    Campaign.missions[cur].mission_loop_brief_sound,
+                    sizeof(out.loop_voice) - 1);
     }
 
     return out;
@@ -1058,11 +1063,14 @@ fs2_t::accept(bool take_loop)
     if (!m_campaign)
         return;
 
-    // the loop brief's YES (retail's popup, missiondebrief.cc:960):
-    // steer the branch into the side loop before committing
+    // the loop brief's Accept (missionloopbrief.cc:117): the branch's
+    // pick becomes the reentry point -- mission_campaign_next_mission
+    // clears loop_enabled when the campaign comes back to it, and the
+    // pair rides the .csg -- then the side loop takes its place
     if (take_loop && Campaign.loop_mission != -1 &&
         Campaign.missions[Campaign.current_mission].has_mission_loop) {
         Campaign.loop_enabled = 1;
+        Campaign.loop_reentry = Campaign.next_mission;
         Campaign.next_mission = Campaign.loop_mission;
     }
 

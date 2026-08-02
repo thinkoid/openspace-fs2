@@ -205,6 +205,7 @@ public:
         out["next_mission"] = d.next_mission;
         out["loop_offer"] = d.loop_offer;
         out["loop_desc"] = d.loop_desc.c_str();
+        out["loop_voice"] = d.loop_voice;
         return out;
     }
 
