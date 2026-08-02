@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <algorithm>
 #include <filesystem>
 
 #include <anim/animplay.hh>
@@ -1367,42 +1368,90 @@ fs2_t::events()
         out.push_back(ev);
     }
 
-    // world membership diff against the last drain
-    std::vector<object_state_t> now = snapshot();
+    // world membership against the last drain, signatures only: one
+    // walk of the object list (frame()'s own filter), sorted scratch
+    // for the membership tests, and record_of runs ONLY for actual
+    // births -- the full-record snapshot retired from the per-frame
+    // path. Emission keeps list order for created and stored order for
+    // destroyed (sim_dump's event lines are pinned gate output; the
+    // sorted copies are lookup structure, never the walk).
+    struct present_t {
+        int signature;
+        object *objp;
+    };
+    std::vector<present_t> now;
 
-    for (const object_state_t &obj : now) {
-        bool known = false;
-        for (const object_state_t &old : m_known)
-            if (old.signature == obj.signature)
-                known = true;
-        if (!known) {
+    for (object *objp = GET_FIRST(&obj_used_list);
+         objp != END_OF_LIST(&obj_used_list); objp = GET_NEXT(objp)) {
+        if (objp->type != OBJ_SHIP && objp->type != OBJ_START &&
+            objp->type != OBJ_WEAPON && objp->type != OBJ_FIREBALL &&
+            objp->type != OBJ_DEBRIS && objp->type != OBJ_SHOCKWAVE)
+            continue;
+        now.push_back({ objp->signature, objp });
+    }
+
+    std::vector<known_t> known_sorted = m_known;
+    std::sort(known_sorted.begin(), known_sorted.end(),
+              [](const known_t &a, const known_t &b) {
+                  return a.signature < b.signature;
+              });
+
+    std::vector<int> now_sigs;
+    now_sigs.reserve(now.size());
+    for (const present_t &p : now)
+        now_sigs.push_back(p.signature);
+    std::sort(now_sigs.begin(), now_sigs.end());
+
+    std::vector<known_t> next;
+    next.reserve(now.size());
+
+    for (const present_t &p : now) {
+        known_t k;
+        memset(&k, 0, sizeof(k));
+        k.signature = p.signature;
+
+        known_t probe;
+        probe.signature = p.signature;
+        auto it = std::lower_bound(known_sorted.begin(), known_sorted.end(),
+                                   probe,
+                                   [](const known_t &a, const known_t &b) {
+                                       return a.signature < b.signature;
+                                   });
+
+        if (it == known_sorted.end() || it->signature != p.signature) {
             event_t ev;
             memset(&ev, 0, sizeof(ev));
             ev.kind = event_t::created;
-            ev.signature = obj.signature;
-            strncpy(ev.name, obj.name, sizeof(ev.name) - 1);
-            ev.birth = obj;   // the identity record crosses ONCE, here;
-                              // frame() rows carry only what changes
+            ev.signature = p.signature;
+            ev.birth = record_of(p.objp);   // the identity record
+                                            // crosses ONCE, here;
+                                            // frame() rows carry only
+                                            // what changes
+            strncpy(ev.name, ev.birth.name, sizeof(ev.name) - 1);
+            strncpy(k.name, ev.birth.name, sizeof(k.name) - 1);
             out.push_back(ev);
         }
-    }
-
-    for (const object_state_t &old : m_known) {
-        bool alive = false;
-        for (const object_state_t &obj : now)
-            if (obj.signature == old.signature)
-                alive = true;
-        if (!alive) {
-            event_t ev;
-            memset(&ev, 0, sizeof(ev));
-            ev.kind = event_t::destroyed;
-            ev.signature = old.signature;
-            strncpy(ev.name, old.name, sizeof(ev.name) - 1);
-            out.push_back(ev);
+        else {
+            strncpy(k.name, it->name, sizeof(k.name) - 1);
         }
+
+        next.push_back(k);
     }
 
-    m_known = now;
+    for (const known_t &old : m_known) {
+        if (std::binary_search(now_sigs.begin(), now_sigs.end(),
+                               old.signature))
+            continue;
+
+        event_t ev;
+        memset(&ev, 0, sizeof(ev));
+        ev.kind = event_t::destroyed;
+        ev.signature = old.signature;
+        strncpy(ev.name, old.name, sizeof(ev.name) - 1);
+        out.push_back(ev);
+    }
+
+    m_known = std::move(next);
     return out;
 }
 

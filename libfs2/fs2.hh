@@ -362,7 +362,15 @@ private:
     bool m_cycle_s_held = false;       // secondary-cycle edge detection
     bool m_warp_held = false;          // jump-key edge detection
     int m_log_drained = 0;             // mission-log high-water mark
-    std::vector<object_state_t> m_known; // last drain's world, for diffs
+
+    // the last drain's membership, signature + the name captured at
+    // birth (the destroyed event's only payload) -- the full records
+    // stopped being retained when the diff went signatures-only
+    struct known_t {
+        int signature;
+        char name[32];
+    };
+    std::vector<known_t> m_known;
 
 public:
     fs2_t();
