@@ -600,8 +600,7 @@ func build_debrief(mission_name: String, debrief_data: Dictionary) -> void:
     else:
         verdict.text = "next: %s      [Enter] accept" % next
         if debrief_data.get("loop_offer", false):
-            verdict.text += "      [L] optional mission: %s" \
-                % debrief_data.get("loop_desc", "")
+            verdict.text += "      (an optional assignment follows)"
     _debrief_style(verdict, fsz, HUD_LINE)
     col.add_child(verdict)
 
@@ -609,6 +608,64 @@ func drop_debrief() -> void:
     if debrief_panel:
         debrief_panel.queue_free()
         debrief_panel = null
+
+# the loop brief, retail's own screen after a loop-offering debrief's
+# Accept (missionloopbrief.cc): the offer's prose alone on the page,
+# the choice keys, the voice if the campaign authors one (retail's
+# campaign does not). Takes the debrief panel's place; drop_debrief
+# clears either.
+func build_loop_brief(debrief_data: Dictionary) -> void:
+    drop_debrief()
+
+    debrief_panel = Control.new()
+    debrief_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+    add_child(debrief_panel)
+
+    var dim := ColorRect.new()
+    dim.color = Color(0.0, 0.02, 0.0, 0.85)
+    dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+    debrief_panel.add_child(dim)
+
+    var margin := MarginContainer.new()
+    margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+    for side in ["left", "top", "right", "bottom"]:
+        margin.add_theme_constant_override("margin_" + side, int(_ui(90.0)))
+    debrief_panel.add_child(margin)
+
+    var col := VBoxContainer.new()
+    col.add_theme_constant_override("separation", int(_ui(14.0)))
+    margin.add_child(col)
+
+    var fsz := int(_ui(26.0))
+
+    var title := Label.new()
+    title.text = "OPTIONAL MISSION"
+    _debrief_style(title, int(fsz * 1.3), HUD_LINE)
+    col.add_child(title)
+
+    var above := Control.new()
+    above.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    col.add_child(above)
+
+    var para := Label.new()
+    para.text = debrief_data.get("loop_desc", "")
+    para.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    para.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    _debrief_style(para, fsz, HUD_LINE)
+    col.add_child(para)
+
+    var below := Control.new()
+    below.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    col.add_child(below)
+
+    var keys := Label.new()
+    keys.text = "[L] accept the assignment      [Enter] decline"
+    _debrief_style(keys, fsz, HUD_LINE)
+    col.add_child(keys)
+
+    var wave: String = debrief_data.get("loop_voice", "")
+    if not wave.is_empty():
+        sounds.play_voice(wave)
 
 func _debrief_style(l: Label, size: int, color: Color) -> void:
     l.add_theme_font_override("font", hud_font)

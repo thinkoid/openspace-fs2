@@ -81,11 +81,15 @@ var mission_name := ""
 var game_root := ""
 
 # the campaign (boundary slice 3): non-empty campaign_name puts the
-# scene in campaign mode -- Alt-J ends the mission into the debrief
-# overlay (the sim freezes, the verdict shows), Enter accepts and loads
-# the branch's pick in place, L takes the offered side loop
+# scene in campaign mode -- the flown departure (or a lost fight) ends
+# the mission into the debrief overlay (the sim freezes, the verdict
+# shows), Enter accepts and loads the branch's pick in place. A
+# loop-offering debrief goes two-phase, retail's own order: Enter
+# accepts INTO the loop-brief screen, where L flies the optional
+# mission and Enter declines onto the main line.
 var campaign_name := ""
 var debriefing := false
+var loop_briefing := false
 var debrief_data := {}
 
 var mouse_accum := Vector2.ZERO
@@ -683,13 +687,19 @@ func _unhandled_input(event: InputEvent) -> void:
         return
     if not (event is InputEventKey and event.pressed):
         return
-    # the debrief overlay owns the keys while it is up
+    # the debrief overlay owns the keys while it is up. Retail's order
+    # for a loop point: Accept leaves the debrief INTO the loop-brief
+    # screen (missionloopbrief.cc), and the choice happens there.
     if debriefing:
         match event.keycode:
             KEY_ENTER, KEY_KP_ENTER:
-                _accept_debrief(false)
+                if not loop_briefing and debrief_data.get("loop_offer", false):
+                    loop_briefing = true
+                    hud.build_loop_brief(debrief_data)
+                else:
+                    _accept_debrief(false)
             KEY_L:
-                if debrief_data.get("loop_offer", false):
+                if loop_briefing:
                     _accept_debrief(true)
             KEY_ESCAPE:
                 get_tree().quit()
@@ -739,6 +749,7 @@ func _unhandled_input(event: InputEvent) -> void:
 # the campaign flow: debrief overlay in, accept out, next mission in place
 
 func _enter_debrief() -> void:
+    loop_briefing = false
     debrief_data = sim.debrief()
     debriefing = true
     Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -763,6 +774,7 @@ func _accept_debrief(take_loop: bool) -> void:
 
     hud.drop_debrief()
     debriefing = false
+    loop_briefing = false
     debrief_data = {}
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
     mouse_grabbed = true
