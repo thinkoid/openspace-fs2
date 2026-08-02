@@ -1059,6 +1059,20 @@ LITERALLY ZERO damage (hit sounds, no drain; the range's first draft
 taught it). sim_dump's shieldhit witness + two new weapons-gate pins
 (quadrant dips, hull holds behind it). Next: the campaign itself.
 
+**Status (2026-08-02, panorama sky):** the deep background is now
+NASA's Deep Star Maps 2020 (SVS 4851, galactic-coordinate 4k EXR,
+public domain, inspect/assets/ with credits in its README) as a
+PanoramaSkyMaterial -- replacing the procedural starfield AND retail's
+1998 nebula/planet backdrop bitmaps, a deliberate aesthetic call:
+every mission shares one galaxy, the suns still carry the per-mission
+lighting mood, and volumetric neb2 fog is a separate untouched system.
+The sky feeds ambient (30% sky / 70% lifted constant -- pure-sky
+ambient would be DARKER than the old flat gray), filmic tonemap +
+glow; suns keep their stars.tbl lights and additive billboards.
+sky.gd roughly halved (starfield, patch branch, and _sky_quad's
+non-billboard half deleted). EXR loads at runtime like all art here
+(no import pipeline); 145 ms/boot, noise for the gates. Suite 31/31.
+
 ## Where this work lives
 
 - `master` — the retail Linux port; mothballed 2026-07-30 at its

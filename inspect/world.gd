@@ -20,8 +20,8 @@
 # reconciler, keyed by retail's signature), input translation, the
 # camera, and campaign progression. Presentation concerns live in
 # passive modules it pushes state into, the radar.gd pattern: fx.gd
-# (transient art + the flipbook cache), sky.gd (lights, starfield,
-# backdrop), hud.gd (every 2D pixel, debrief overlay included),
+# (transient art + the flipbook cache), sky.gd (lights, panorama sky,
+# suns), hud.gd (every 2D pixel, debrief overlay included),
 # sound.gd (voice, effects, the hum). Nothing calls back; every module
 # reads the frame the orchestrator hands it. The GDScript-era
 # mission.tscn folded in 2026-07-31; the retired sims remain as specs
@@ -60,7 +60,7 @@ var sim                       # FS2 (libfs2) instance
 var ships_root: Node3D
 var ships := {}               # signature -> {node, is_ship, kind, radius}
 var fx                        # the transient-art shop (fx.gd)
-var sky                       # lights + starfield + backdrop (sky.gd)
+var sky                       # lights + panorama sky + suns (sky.gd)
 var player_sig := -1
 
 var throttle := 0.0
@@ -169,7 +169,6 @@ func _ready() -> void:
     add_child(sky)
     sky.setup(sim, fx)
     sky.setup_lights()
-    sky.setup_starfield()
     sky.setup_backdrop()
 
     sounds = SoundBankClass.new()
