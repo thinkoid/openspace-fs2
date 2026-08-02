@@ -485,14 +485,18 @@ func _physics_process(delta: float) -> void:
                         gm.albedo_color = Color(1, 1, 1,
                                                 0.25 + 0.75 * frac)
 
-            # the shield taking hits: a drop in the quadrant total this
-            # frame is a strike on the bubble
-            var tot := fshield[i * 4] + fshield[i * 4 + 1] \
-                + fshield[i * 4 + 2] + fshield[i * 4 + 3]
-            var prev: float = entry.get("shield_prev", tot)
-            if tot < prev - 0.5:
-                fx._shield_flash(node, entry["radius"])
-            entry["shield_prev"] = tot
+            # the shield taking hits: retail's four quadrants are tracked
+            # one by one, so the strike lights the section that actually
+            # fell rather than the whole hull
+            var quads: Array = [fshield[i * 4], fshield[i * 4 + 1],
+                                fshield[i * 4 + 2], fshield[i * 4 + 3]]
+            var was: Array = entry.get("shield_quads", quads)
+            if entry["is_ship"]:
+                for q in 4:
+                    if float(quads[q]) < float(was[q]) - 0.5:
+                        fx.shield_hit(node, entry.get("stem", ""),
+                                      node.data, q)
+            entry["shield_quads"] = quads
 
         if is_player:
             player_sig = sig
@@ -682,7 +686,7 @@ func _spawn(sig: int, rec: Dictionary) -> void:
     # kind says WHAT it is; is_ship says whether real ship art loaded --
     # a GLB-less box stand-in is still a ship to the HUD and the radar
     ships[sig] = { "node": node, "is_ship": is_ship, "kind": "ship",
-                   "radius": radius }
+                   "radius": radius, "stem": stem }
     if is_ship:
         ships[sig]["thrust"] = fx._dress_thrusters(node, rec)
     hud._tick("arrived: %s (%s)" % [rec["name"], rec["class"]])

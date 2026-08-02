@@ -36,6 +36,13 @@ func reap(now_ms: int) -> void:
         if now_ms >= int(f["deadline"]):
             fn.queue_free()
             continue
+        # a shield patch dims over its life instead of blinking out
+        if f.has("fade_mat"):
+            var born := int(f["born"])
+            var span := maxf(float(int(f["deadline"]) - born), 1.0)
+            var k := 1.0 - clampf((now_ms - born) / span, 0.0, 1.0)
+            (f["fade_mat"] as StandardMaterial3D).albedo_color.a = \
+                float(f["alpha0"]) * k
         live_flashes.append(f)
     flashes = live_flashes
 
@@ -281,23 +288,94 @@ func _muzzle_flash(rec: Dictionary) -> void:
     ships_root.add_child(n)
     flashes.append({ "node": n, "deadline": Time.get_ticks_msec() + 50 })
 
-# the shield shimmer: quadrant totals dropped this frame, so the bubble
-# takes a hit -- a translucent shell over the hull, briefly (retail
-# lights the struck mesh section; the whole-bubble flash is the honest
-# approximation until shield geometry crosses)
-func _shield_flash(node: Node3D, radius: float) -> void:
+# the shield taking a hit: retail lights the struck section of the ship's
+# OWN shield mesh (the POF's SHLD chunk, which pof2glb carries into the
+# .tres), not a bubble around the hull. We bake that mesh into four
+# quadrant meshes once per class and light the struck one additively.
+#
+# The quadrant test is retail's, shield.cc get_quadrant -- two halfplanes
+# in x and z, giving 0 right / 1 front / 2 rear / 3 left. Retail runs it
+# in FILE space; pof2glb's axis map leaves x alone and flips z
+# (godot.x = file.x, godot.z = -file.z), so `x < z` becomes `x < -z` and
+# `x < -z` becomes `x < z`. Nothing else about the test changes.
+# A whisper, not a slab. Two things made the first cut blinding: the alpha
+# was half-opaque, and CULL_DISABLED drew the far side of the patch too, so
+# every pixel got the additive contribution TWICE. Culling to the near
+# surface alone and dropping the alpha to a twentieth leaves a faint glow
+# that reads as energy on the hull rather than a pane of blue glass.
+# (0.55 -> 0.10 -> 0.05, both steps field-reported as still too bright.)
+const SHIELD_COLOR := Color(0.40, 0.68, 1.0, 0.05)
+const SHIELD_MS := 260
+
+var shield_meshes: Dictionary = {}   # class stem -> Array[4] of ArrayMesh
+var shield_patches: Dictionary = {}  # "<ship id>:<quadrant>" -> flash entry
+
+
+func _shield_quadrants(stem: String, data) -> Array:
+    if shield_meshes.has(stem):
+        return shield_meshes[stem]
+
+    var out: Array = [null, null, null, null]
+    if data != null and not data.shield_tris.is_empty():
+        var bucket := [PackedVector3Array(), PackedVector3Array(),
+                       PackedVector3Array(), PackedVector3Array()]
+        for t in data.shield_tris:
+            var vix: PackedInt32Array = t["verts"]
+            var a: Vector3 = data.shield_verts[vix[0]]
+            var b: Vector3 = data.shield_verts[vix[1]]
+            var c: Vector3 = data.shield_verts[vix[2]]
+            var mid := (a + b + c) / 3.0
+            var q := 0
+            if mid.x < -mid.z:
+                q |= 1
+            if mid.x < mid.z:
+                q |= 2
+            bucket[q].append_array(PackedVector3Array([a, b, c]))
+        for q in 4:
+            if bucket[q].is_empty():
+                continue
+            var arrays := []
+            arrays.resize(Mesh.ARRAY_MAX)
+            arrays[Mesh.ARRAY_VERTEX] = bucket[q]
+            var am := ArrayMesh.new()
+            am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+            out[q] = am
+
+    shield_meshes[stem] = out
+    return out
+
+
+# one patch per ship and quadrant, REFRESHED rather than appended -- the
+# old whole-bubble flash stacked a new translucent shell per hit, so
+# sustained fire compounded into an opaque ball (field-reported)
+func shield_hit(node: Node3D, stem: String, data, quad: int) -> void:
+    var meshes := _shield_quadrants(stem, data)
+    if meshes[quad] == null:
+        return
+
+    var now := Time.get_ticks_msec()
+    var key := "%d:%d" % [node.get_instance_id(), quad]
+    var f = shield_patches.get(key)
+    if f != null and is_instance_valid(f["node"]):
+        f["born"] = now
+        f["deadline"] = now + SHIELD_MS
+        return
+
     var mi := MeshInstance3D.new()
-    var sm := SphereMesh.new()
-    sm.radius = maxf(radius, 1.0) * 1.15
-    sm.height = sm.radius * 2.0
+    mi.mesh = meshes[quad]
     var mat := StandardMaterial3D.new()
     mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-    mat.albedo_color = Color(0.45, 0.7, 1.0, 0.35)
     mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-    sm.material = mat
-    mi.mesh = sm
+    mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+    mat.cull_mode = BaseMaterial3D.CULL_BACK     # near surface only
+    mat.albedo_color = SHIELD_COLOR
+    mi.material_override = mat
     node.add_child(mi)
-    flashes.append({ "node": mi, "deadline": Time.get_ticks_msec() + 220 })
+
+    f = { "node": mi, "born": now, "deadline": now + SHIELD_MS,
+          "fade_mat": mat, "alpha0": SHIELD_COLOR.a }
+    flashes.append(f)
+    shield_patches[key] = f
 
 # the non-ship visuals: unshaded primitives sized by the sim's own radius
 func _simple_node(kind: String, radius: float) -> Node3D:
