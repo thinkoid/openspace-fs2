@@ -240,6 +240,16 @@ func _physics_process(delta: float) -> void:
         "target_subsys": Input.is_key_pressed(KEY_S),
         "cycle_primary": Input.is_key_pressed(KEY_PERIOD),
         "cycle_secondary": Input.is_key_pressed(KEY_SLASH),
+        # the jump key: Alt-J is retail's binding; Shift-Super-J is the
+        # house alternative (the WM here owns Alt-J). The boundary flies
+        # retail's staged warpout off this edge -- collision and engine
+        # gates, the autopilot, the hole -- and a second press during
+        # stage 1 aborts. The debrief comes later, when the departure
+        # lands on the mission log.
+        "warp_out": Input.is_key_pressed(KEY_J)
+            and (Input.is_key_pressed(KEY_ALT)
+                 or (Input.is_key_pressed(KEY_SHIFT)
+                     and Input.is_key_pressed(KEY_META))),
     }
     mouse_accum = Vector2.ZERO
 
@@ -260,6 +270,8 @@ func _physics_process(delta: float) -> void:
             sounds.play_event(ev, player_pos)
         elif ev["kind"] == "message":
             hud.add_chatter(ev)
+        elif ev["kind"] == "hud_text":
+            hud.add_hud_line(ev["text"])
 
     # reconcile: the packed frame is the truth (frame() -- parallel
     # arrays, one row per object; identity arrived at birth); nodes
@@ -544,6 +556,16 @@ func _physics_process(delta: float) -> void:
     hud.update_lesson(h)
     hud.update_chatter()
 
+    # the departure: the ship flew through the hole and retail logged it
+    # -- the mission is over. Campaign mode goes to the debrief; a lone
+    # mission has nowhere to go and the flight simply ends.
+    if bool(h.get("departed", false)) and not debriefing:
+        if campaign_name.is_empty():
+            print("world: departed")
+            get_tree().quit()
+        else:
+            _enter_debrief()
+
 # a new signature enters the world: a bolt for weapons, a glow for
 # fireballs, a tumbling chunk for debris, a Ship if the assets carry the
 # class's GLB, an honest gray box otherwise
@@ -710,15 +732,6 @@ func _unhandled_input(event: InputEvent) -> void:
             match_target = not match_target
         KEY_V:
             first_person = not first_person
-        KEY_J:
-            # end the mission into the debrief (campaign mode only -- a
-            # lone mission has nowhere to go). Alt-J is retail's jump
-            # binding; Shift-Super-J is the house alternative, because
-            # the WM here owns Alt-J (field request)
-            if (event.alt_pressed
-                    or (event.shift_pressed and event.meta_pressed)) \
-                    and not campaign_name.is_empty():
-                _enter_debrief()
         KEY_ESCAPE:
             get_tree().quit()
 

@@ -179,6 +179,17 @@ func add_chatter(ev: Dictionary) -> void:
     if not (ev["wave"] as String).is_empty():
         sounds.play_voice(ev["wave"])
 
+# a HUD ticker line (the boundary's hud_text seam): retail's scrolling
+# feedback -- warp notices, warnings -- joins the chatter window,
+# speakerless
+func add_hud_line(text: String) -> void:
+    chatter_lines.append({
+        "line": text,
+        "deadline": Time.get_ticks_msec() + 1000 + 150 * text.length(),
+    })
+    if chatter_lines.size() > 4:
+        chatter_lines.pop_front()
+
 # the chatter window: recent radio lines, each shown for its own
 # text-length window (the voice may run longer -- lines scroll off,
 # the voice plays out)
