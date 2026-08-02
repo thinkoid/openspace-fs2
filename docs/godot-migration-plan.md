@@ -991,6 +991,29 @@ at 15 objects -- 6.7x, ~15x marginal (a 100-object brawl: ~1.2 ms ->
 gate) pins the packed rows against it field for field. Events/config/
 debrief stay dictionaries -- low volume, ergonomics win.
 
+**Status (2026-08-02):** warp-out is a flown departure, not a debug key
+(2b1d750ca + 0659f3a00). The jump key (Shift-Super-J, or retail's
+Alt-J) crosses as the warp_out control edge and the boundary flies
+retail's whole sequence: keycontrol's END_MISSION gates (collision
+predict, engine strength), the staged autopilot via retail's own
+read_player_controls (ramp to 40 km/s, hold through the effect),
+shipfx's WarpMap01 hole as a live fireball record (the presenter's warp
+art already knew it), stage events travelling retail's own sequencer
+queue -- drained per step into freespacestubs' game_process_event,
+which now carries freespace.cc's player-warpout event arc (sim
+substance; camera/viewer stay out). A second press during stage 1
+aborts (retail's ESC semantics). The mission ends when LOG_SHIP_DEPART
+lands: hud_state carries departed (+ warpout_stage), campaign mode
+enters the debrief, a lone mission ends the flight. New alongside: the
+HUD-line capture seam (Hud_msg_capture at HUD_printf_line, beside
+Msg_capture/Snd_capture) -- every retail HUD ticker line now crosses
+as a hud_text event and joins the chatter window ('Subspace node
+activated', warnings, lock feedback). warpout-check (30th gate) pins
+the stage staircase, the hole, both sounds, the departure log and the
+abort; bite-proven (severed stage-3 transition -> red). Remaining from
+the queue: loop-brief UI flown in anger, shields on the HUD, then the
+campaign itself.
+
 ## Where this work lives
 
 - `master` — the retail Linux port; mothballed 2026-07-30 at its
