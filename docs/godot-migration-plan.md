@@ -1014,6 +1014,26 @@ abort; bite-proven (severed stage-3 transition -> red). Remaining from
 the queue: loop-brief UI flown in anger, shields on the HUD, then the
 campaign itself.
 
+**Status (2026-08-02, later):** the loop brief, flown (9f4441f70 +
+11b2c96f0). Reading accept(take_loop) against retail's
+loop_brief_button_pressed found the real bug: the reentry bookmark
+(Campaign.loop_reentry = next_mission before the steer) was never
+saved, so the loop never officially closed -- the pair rides the .csg
+and mission_campaign_next_mission clears loop_enabled only at the
+reentry mission. Fixed and pinned directly: sim_dump's campaign
+epilogue prints retail's own loop globals, and flow.fc2 grew a
+retail-shaped side loop off flow-1 (loop text + brief voice; retail's
+own campaign authors text only). The flow gate's new loop arc proves
+accept-detour / resume-inside-the-loop / rejoin-at-reentry across
+process boundaries, 'enabled 1 reentry 2' inside and 'enabled 0' after
+-- bite-proven against the severed reentry line. debrief_t carries
+loop_voice. Presenter goes two-phase, retail's order: Enter accepts
+INTO the loop-brief overlay (prose alone + voice), L flies the
+optional mission, Enter declines onto the main line; headless probe
+walks warpout -> Enter -> L on synthetic keys and lands in flow-loop.
+Remaining: shields on the HUD, then the campaign itself (its two SOC
+loops now reachable for real).
+
 ## Where this work lives
 
 - `master` — the retail Linux port; mothballed 2026-07-30 at its
