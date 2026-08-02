@@ -1034,6 +1034,17 @@ walks warpout -> Enter -> L on synthetic keys and lands in flow-loop.
 Remaining: shields on the HUD, then the campaign itself (its two SOC
 loops now reachable for real).
 
+**Status (2026-08-02, evening):** tools/savejson (8dcbfe8d2) -- the
+pilot-save codec: .plr / .csg / .css to JSON and back, byte-faithful,
+so a save can be JSON-ified, hand-edited, re-encoded. Standalone
+(headers only; the raw-struct blocks come from the game's own headers
+so the codec tracks the compiled layout). Found along the way:
+pstypes' fix is typedef long -- 8 bytes here, not retail's 4 -- making
+the .plr's raw mission_time_limit dump 64-bit in this build's saves.
+savejson-check (31st gate): a real hop's three saves round-trip
+byte-identical, an edit survives, and retail resumes from
+codec-written saves.
+
 ## Where this work lives
 
 - `master` — the retail Linux port; mothballed 2026-07-30 at its
