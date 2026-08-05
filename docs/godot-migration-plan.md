@@ -1073,15 +1073,49 @@ sky.gd roughly halved (starfield, patch branch, and _sky_quad's
 non-billboard half deleted). EXR loads at runtime like all art here
 (no import pipeline); 145 ms/boot, noise for the gates. Suite 31/31.
 
+**Status (2026-08-05): MOTHBALLED, mid-lane and on purpose.** Six days
+after the revival the second step is essentially delivered: the retail
+simulation runs behind `libfs2` with Godot presenting, all 41 campaign
+missions simulate, the campaign advances mission to mission on real
+outcomes, and 31 gates hold it. What remains before a person can
+*complete* the campaign here is four specific things -- player death,
+red-alert missions, the parked promotion/badge/traitor debrief stages,
+and the briefing chain -- and the user's call was that the retail port
+should answer, by being played to the end, which of them actually matter
+and in what shape. So `master` becomes the live line again and this
+branch waits, clean, at 31/31.
+
+The full census with verified `file:line` anchors is `notes.txt` at the
+branch tip, and the restart brief is the README's "Restarting this
+branch" section. Two findings from this branch travelled to `master` on
+the way out, both retail bugs in shared sources and neither related to
+the migration: `vm_matrix_to_rot_axis_and_angle`'s degenerate-axis
+reciprocal (aborts SM2-02) and `approach()`'s assert on a denormal
+`theta_goal`. Nothing else crossed -- the remaining `src/` delta is the
+`Fred_running` resurrection for the extraction tools, the three capture
+seams, and the XDG/cfile work, none of which `master` wants.
+
+The shape of the two biggest remaining pieces is already known, which is
+most of why stopping here is cheap: **death is the warp-out slice again**
+(retail's own events already fire inside the sim; the stubs'
+`game_process_event` swallows them; `read_player_controls` honours
+`GM_DEAD` unaided), and **red alert is the `game_do_training_checks`
+defect again** (the state machine advances only from inside a HUD gauge
+painter, so headless it never advances at all). Both have worked
+examples in this branch's history to copy.
+
 ## Where this work lives
 
 - `master` — the retail Linux port; mothballed 2026-07-30 at its
   survey-complete milestone, serving as the migration's reference
-  implementation. The reunification merge (2026-07-30) carried its whole
-  fix + survey campaign into this branch.
-- `godot` branch (in this repo) — the migration: converter, inspection
-  project, manifests, and now the libfs2 boundary. They sit next to the
-  port's readers, which they depend on.
+  implementation. **Live again 2026-08-05** (see the mothball status
+  block above): the campaign playthrough happens there. The reunification
+  merge (2026-07-30) carried its whole fix + survey campaign into this
+  branch.
+- `godot` branch (in this repo) — the migration: converters, the Godot
+  presenter, manifests, and the libfs2 boundary. They sit next to the
+  port's readers, which they depend on. **Mothballed 2026-08-05** at
+  31/31 with its restart brief in the README.
 - Separate repo (later) — when FS2 becomes a library behind a narrow boundary
   (below), the port graduates to a pinned dependency (submodule/subtree).
 

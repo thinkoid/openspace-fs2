@@ -1,146 +1,127 @@
 -*- mode: compilation -*-
 
-Retail-campaign flight sweep, 2026-08-02.  Every mission named in
-FreeSpace2.fc2 (41, in campaign order) flown hands-off through
-sim_dump's `run` driver for 3600 frames (60 s of sim), in a scratch XDG
-home.  Whole sweep costs ~28 s.  Purpose: find out how the retail
-campaign BEHAVES in the sim, not merely whether it parses -- mission-check
-already proves every mission in the install parses, and corpus-check
-proves all 176 models convert.
+MOTHBALL NOTE, 2026-08-05.  This branch is parked here, clean, at 31/31.
+What follows is the reason and the restart queue: the census of what
+stands between the campaign flow (which works) and a campaign a person
+can complete (which is four specific things away).  The prose brief lives
+in the README's "Restarting this branch"; this file is the navigable copy
+-- every claim below is an anchor you can walk in compilation mode, and
+every line number was verified on the day it was written.
 
-(The 2026-07-29 low-hanging-fruit survey that lived here is in git
-history at d10a70302, per the rolling-notes convention.)
-
-Headline: 40 of 41 run to completion.  ONE hard failure, root-caused
-below to a retail arithmetic bug that fs2open fixed.  Nothing else in the
-sweep is a defect: every other anomaly is either the hands-off stick
-dying (expected -- nobody is flying) or benign model-table chatter.
-
-  rc  missions
-  --  --------
-   0  40
- 134  SM2-02.fs2   SIGABRT, Assert(theta_goal >= 0), ~frame 2444
-
-Player outcome after 60 s hands-off (stick centred; the sim is not
-trying to survive):
-
-  survived untouched  33
-  survived damaged     3   loop1-1 194.6/290, loop1-2 265.1/275,
-                           sm3-10 214.5/275
-  killed               2   SM1-02 (hull -1.63/290), loop2-2 (Alpha 1
-                           destroyed frame 584 -- "Into the Lion's Den"
-                           is a suicide run at a Sathanas)
-  n/a                  3   the three Training missions have no combat
+The campaign gets completed on `master` first.  That is what decides
+which of these four matter and in what shape.
 
 
-=== THE ONE REAL DEFECT ===
+What stands between the campaign FLOW and the campaign ITSELF, 2026-08-05.
 
-/home/lnicoara/build/mine.d/fs2.d/fs2/src/math/vecmat.cc:1622: note: `ix = 1.0f / rot_axis->x` reads the OUTPUT vector two lines before that component is written -- uninitialised stack read
-/home/lnicoara/build/mine.d/fs2.d/fs2/src/math/vecmat.cc:1624: note: this is where rot_axis->x actually gets its value; the reciprocal above needed to come AFTER it
-/home/lnicoara/build/mine.d/fs2.d/fs2/src/math/vecmat.cc:1632: note: same defect, case 1 (iy from an unwritten rot_axis->y)
-/home/lnicoara/build/mine.d/fs2.d/fs2/src/math/vecmat.cc:1642: note: same defect, case 2 (iz from an unwritten rot_axis->z)
+The flow works: goals evaluate, the branch formula picks, the debrief
+overlay comes up, Accept saves the .csg and loads the next mission in
+place, side loops open and close.  campaign-flow-check pins all of it and
+the 41-mission hands-off sweep says every mission runs.  None of that is
+a playthrough.  A human flying the retail campaign hits four walls, and
+this is the census of them, in the order they bite.
 
-vm_matrix_to_rot_axis_and_angle's theta==PI branch.  At exactly 180 deg
-the rotation axis is degenerate, so the routine reconstructs it from the
-largest diagonal term.  All three cases take the reciprocal of the axis
-component BEFORE computing it, so the scale factor comes from whatever
-was on the stack.  Result: a NaN axis.
-
-Measured, not inferred.  A temporary probe at the call site printed:
-
-    NANPROBE theta 3.14159 axis -nan -nan -nan goal -nan -nan -nan
-    NANPROBE curr 0.329988 0.413277 0.848711 / -0.874826 0.471676 ...
-    NANPROBE goal -0.0105273 0.990426 0.137641 / 0.978091 -0.018421 ...
-
-theta is pi to six figures; the axis is NaN.  (Probe reverted; tree clean.)
-
-How the NaN reaches the assert:
-
-/home/lnicoara/build/mine.d/fs2.d/fs2/src/math/vecmat.cc:1879: note: theta_goal = rot_axis * theta -- a NaN axis makes every component NaN
-/home/lnicoara/build/mine.d/fs2.d/fs2/src/math/vecmat.cc:1891: note: the per-axis dispatch sign-corrects so away() always sees theta_goal >= 0 ... but NaN fails BOTH `> 0` and `< 0` and falls through to the "theta_goal == 0" branch
-/home/lnicoara/build/mine.d/fs2.d/fs2/src/math/vecmat.cc:1824: note: Assert(theta_goal >= 0) -- fires on NaN, which is why a routine that cannot be handed a negative still aborts
-
-The dispatch's careful sign correction is exactly what disguises the
-bug: a negative theta_goal is genuinely unreachable, so the assert reads
-as dead code until a NaN walks in through the one comparison hole.
-
-The fix, from fs2open release_26_0_0 code/math/vecmat.cpp:1781-1814 --
-compute the sqrt first, then the reciprocal:
-
-    case 0:
-        float ix;
-        rot_axis->xyz.x = fl_sqrt(m->a2d[0][0] + 1.0f);
-        ix = 1.0f / rot_axis->xyz.x;
-        rot_axis->xyz.y = m->a2d[0][1] * ix;
-        rot_axis->xyz.z = m->a2d[0][2] * ix;
-        break;
-
-fs2open also dropped the per-case vm_vec_normalize calls.  That part is
-cleanup, NOT a second bug: ours already normalises after the switch at
-vecmat.cc:1654, so cases 0 and 1 merely normalise twice.  Case 2 is fine.
-
-FIXED, same day, after this ledger was written. All three cases now
-compute the component before the reciprocal. SM2-02 goes 134 -> 0 and
-the sweep is 41/41.
-
-The gate that should have caught it was already there and was simply too
-shallow: campaign-sim-check flies EVERY install mission, but for 600
-frames, and this aborts at 2444. It now flies 3600 (all 90 install
-missions survive that; the gate costs under a minute). Proven to bite --
-restoring the old line order takes it red with
-"CRASH SM2-02.fs2: Assertion failed: theta_goal >= 0".
+(The 2026-08-02 retail-campaign flight sweep that lived here is in git
+history at 2db2903cd, per the rolling-notes convention.)
 
 
-=== NON-DEFECTS, RECORDED SO THEY ARE NOT RE-CHASED ===
+=== 1. DEATH HAS NO PATH ===
 
-loop2-2 reports no player ship in any state line.  Not a bug: Alpha 1
-(sig 8) is created at frame 1 and destroyed at frame 584.  The player
-simply dies, because the mission is a four-Mara suicide run at a
-Sathanas and nobody is flying.
+The only way a mission can end in the presenter is the player flying out
+through a subspace hole:
 
-16 of loop2-2's 40 object creations cross the boundary with an EMPTY
-name.  Not a bug: the events() filter admits OBJ_WEAPON, OBJ_FIREBALL,
-OBJ_DEBRIS and OBJ_SHOCKWAVE beside ships, and those legitimately have
-no ship name.  The sweep's "crt"/"dst" columns therefore count all
-object churn, not ship arrivals -- which is why SM2-09 shows 1517
-creations in 60 s.
+/home/lnicoara/build/mine.d/fs2.d/fs2/inspect/world.gd:581: note: `departed` is the sole mission-end test -- a killed player leaves the world running with no player ship
 
-Warning volume is model-table chatter, not simulation trouble.  The
-three shapes, in descending count:
+Retail's death arc is already flying inside the sim.  Both events are
+posted by code the boundary runs every frame:
 
-  "Estimated radius error: Estimate X, actual Y Mc->radius"
-      208 in SM1-09 alone -- a per-instance model radius estimate,
-      emitted once per created object of the offending classes
-  "Warning: Ignoring unrecognized subsystem <name>, believed to be in
-   ship <pof>"  -- e.g. fighterbay on capital01b.pof, core on
-      Comm2S-01.pof; retail's own tables vs its own models
-  "Unknown special object type $pathNN while reading model <pof>"
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/ship/shiphit.cc:1073: note: player_died_start posts GS_EVENT_DEATH_DIED -- reached from ship_hit_kill (shiphit.cc:1364), a live path in campaign combat
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/ship/ship.cc:2634: note: the death roll finishing posts GS_EVENT_DEATH_BLEW_UP for the player object (also ship.cc:2897 and :2916)
 
-Every mission also emits a constant baseline the sweep filters out:
-"Weapon name -- Unknown Bomb/Megabomb", "Error opening mission.txt",
-"Error opening hud config file".
+Both are swallowed:
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/tests/freespacestubs_gen.cc:113: note: game_process_event carries the warp-out arc and nothing else; every other event falls through to gameseq_set_state(GS_STATE_GAME_PLAY, 1) -- the two death events included
+
+What the sim half of those events actually does is twelve lines of
+bookkeeping, and it is all sim, no presentation:
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/freespace2/freespace.cc:4711: note: GS_STATE_DEATH_DIED -- Player_died_time = timestamp(10), player_show_death_message, Game_mode |= GM_DEAD_DIED
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/freespace2/freespace.cc:4717: note: GS_STATE_DEATH_BLEW_UP -- drop the target, emp_stop_local, clear PLAYER_FLAGS_AUTO_TARGETING, Game_mode |= GM_DEAD_BLEW_UP, arm the died-popup timestamp
+
+And retail's own control reader already honours the flag, so the stick
+dies by itself -- no boundary special-casing, the same way PCM_WARPOUT
+routing needed none:
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/playerman/playercontrol.cc:452: note: button_info actions gated on !(Game_mode & GM_DEAD)
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/playerman/playercontrol.cc:579: note: the stick axes are zeroed outright under GM_DEAD
+
+So this is the warp-out slice again, in the same shape: the arc into the
+stubs file (which IS unported freespace.cc's stand-in, its honest home),
+a death stage on hud_state beside warpout_stage, and the presenter
+running the dead camera into the debrief.
+
+The one genuinely new thing is what retail offers after the popup:
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/popup/popupdead.cc:362: note: popupdead_restart -- the died popup's Restart choice re-flies the same mission; the boundary has no mission-restart entry point at all
 
 
-=== WHAT THIS SWEEP DOES NOT ESTABLISH ===
+=== 2. RED ALERT IS UNREACHABLE HEADLESS -- 7 OF THE 41 ===
 
-Hands-off for 60 s is a smoke test, not a playthrough.  It does not
-touch: whether goals can be MET, whether the campaign advances
-mission-to-mission on real outcomes, arrivals cued minutes in, or
-anything past the first minute of each mission.  A mission that boots
-clean here can still be unplayable.
+SM1-02, SM1-03, sm3-02, SM3-03, SM3-08, sm3-09, sm3-10 are red-alert
+missions: the mission ends itself on a countdown, no debrief, and the
+next one starts with the player's hull, subsystems and loadout carried
+across.  The operator is live and does arm the countdown:
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/parse/sexp.cc:8219: note: OP_RED_ALERT calls red_alert_start_mission -- the op works
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/missionui/redalert.cc:785: note: red_alert_start_mission only sets Red_alert_new_mission_timestamp (plus OF_GUARDIAN so the player cannot die during the warning)
+
+But the state machine only ADVANCES from inside a HUD gauge draw:
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/missionui/redalert.cc:812: note: red_alert_check_status does the whole transition -- store wingman status, fail incomplete, store goals+events, scoring_level_close, eval next, mission_over
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/hud/hud.cc:2419: note: its ONLY caller in the tree is hud_maybe_display_red_alert, a gauge painter -- headless the countdown is armed and never checked, so the mission simply runs on forever
+
+This is the game_do_training_checks defect exactly: a maintainer living
+in a presentation call, invisible to the boundary.  It got the same
+treatment then (relocated verbatim into the pure-sim file, called from
+both game_frame and step()) and wants it again.
+
+The carry across the hop is a second, separate piece of work:
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/freespace2/freespace.cc:1230: note: red_alert_bash_wingman_status on the way IN to a red-alert mission -- the boundary's load() has no equivalent, so a red-alert hop would start at full hull with the authored loadout
 
 
-=== HOW TO RE-RUN ===
+=== 3. THE PARKED DEBRIEF STAGES ===
 
-The sweep script is scratch, not a gate:
-  <session scratchpad>/sweep.py
+/home/lnicoara/build/mine.d/fs2.d/fs2/libfs2/fs2.cc:1015: note: the stage formula loop deliberately omits promotion, badge and the traitor variant -- rank-ups and medals never reach the player, and betraying the GTVA has no consequence the presenter can show
 
-  python3 sweep.py [frames]          # default 3600
+Deliberate, recorded, and cheap to revisit once the campaign is being
+flown for real: scoring_level_close already runs, so the rank and medal
+progression IS happening in the pilot file -- nothing announces it.
 
-It reads the mission list straight out of the install's FreeSpace2.fc2,
-so it tracks the campaign rather than a copied list.  If it earns a
-place it becomes a gate; for now it is an instrument.
 
-Single mission, by hand:
+=== 4. THE BRIEFING CHAIN IS ABSENT ===
 
-  ./build/libfs2/sim_dump ../rundir SM2-02.fs2 run 3600 1800
+Command brief, mission brief (stages, icons, voice), ship select, weapon
+select.  Missions fly with the loadout FRED authored, which is playable
+but silent -- the campaign's whole narrative half, and the only place the
+player ever chooses anything.  Nothing is broken here; it is simply not
+built.  Largest of the four by a wide margin, and the least blocking.
+
+
+=== NOT A GAP ===
+
+end-mission is retail's own no-op and needs nothing from us:
+
+/home/lnicoara/build/mine.d/fs2.d/fs2/src/parse/sexp.cc:5441: note: "Not ending mission -- end-mission sexpression no longer works!" -- Volition disabled the operator; missions that call it rely on something else
+
+
+=== RECOMMENDED ORDER ===
+
+Death, then red alert, then the parked stages, then briefings.
+
+Death first because a human playthrough cannot fail without it -- the
+campaign's repeat-the-mission branch (every `((true)(next-mission
+"<same>"))` clause in FreeSpace2.fc2) is unreachable by the only means a
+player normally triggers it.  Red alert second because 7 of 41 missions
+are genuinely broken, not merely unadorned, and because the fix is a
+known shape.  Both are small.  The briefing chain is a lane of its own.
