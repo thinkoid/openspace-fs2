@@ -41,6 +41,42 @@ main()
     vm_vec_crossprod(&vz, &vx, &vy);
     CHECK(fabsf(vz.z - 1.0f) < 1e-5f);
 
+    // vm_matrix_to_rot_axis_and_angle at exactly 180 degrees, where the
+    // axis is degenerate and gets rebuilt from the largest diagonal term.
+    // Retail took the reciprocal of the axis component BEFORE writing it,
+    // reading whatever the caller left in the out-param; the resulting NaN
+    // axis then slipped through vm_matrix_interpolate's sign dispatch (NaN
+    // fails both > 0 and < 0) and aborted inside away(). SM2-02 died on it.
+    //
+    // A half turn about the (1,1,0) axis: R = 2nn' - I, whose off-diagonal
+    // terms are what the reciprocal scales -- a half turn about a COORDINATE
+    // axis would multiply zeros and hide the defect.
+    //
+    // The poison value is the point of the test: the routine must not read
+    // the out-param at all, so seeding it with a number that would visibly
+    // corrupt the answer makes the old order fail deterministically instead
+    // of depending on what the stack happened to hold.
+    matrix half_turn;
+    vm_set_identity(&half_turn);
+    half_turn.a2d[0][0] = 0.0f;
+    half_turn.a2d[0][1] = 1.0f;
+    half_turn.a2d[1][0] = 1.0f;
+    half_turn.a2d[1][1] = 0.0f;
+    half_turn.a2d[2][2] = -1.0f;
+
+    float theta = 0.0f;
+    vector axis;
+    vm_vec_make(&axis, 1.0e9f, 1.0e9f, 1.0e9f); // poison
+
+    vm_matrix_to_rot_axis_and_angle(&half_turn, &theta, &axis);
+
+    const float root_half = 0.70710678f;
+    CHECK(fabsf(theta - PI) < 1e-5f);
+    CHECK(!_isnan(axis.x) && !_isnan(axis.y) && !_isnan(axis.z));
+    CHECK(fabsf(axis.x - root_half) < 1e-5f);
+    CHECK(fabsf(axis.y - root_half) < 1e-5f);
+    CHECK(fabsf(axis.z) < 1e-5f);
+
     if (failures == 0)
         printf("math_test: all passed\n");
     return failures ? 1 : 0;
