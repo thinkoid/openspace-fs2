@@ -23,30 +23,36 @@ anchors sit beside it (Emacs `compilation-mode` files).
 ## Two projects, one lineage
 
 The Linux port is complete, and it is not the end of the line — it is the end
-of *a* line. As of **2026-07-30 this branch is mothballed** at its
-survey-complete milestone: the campaign plays, the codebase survey is closed
-(warnings 4,756 → 15, every survivor a catalogued decision in
-[docs/notes.md](docs/notes.md)), and further chipping would mean modernizing
-subsystems — the renderer above all — that the next stage replaces outright.
+of *a* line. It was mothballed 2026-07-30 at its survey-complete milestone:
+the campaign plays, the codebase survey is closed (warnings 4,756 → 15,
+every survivor a catalogued decision in [docs/notes.md](docs/notes.md)), and
+further chipping would mean modernizing subsystems — the renderer above all
+— that the next stage replaces outright.
 
-The live project is the **Godot migration on the `godot` branch**, revived
-the same day along its own mothball note's exit route: GDExtension-first.
-The simulation stays this port's C++, compiled as a native module; Godot
-owns presentation. That branch's README carries the map and the plan.
+**This branch is live again as of 2026-08-05**, for one specific reason:
+the campaign playtest that was always this port's own closing gate has never
+been run to the end. The Godot migration on `godot` reached the point where
+its remaining work is *campaign-completion* work — player death, red-alert
+missions, debrief promotion stages, the briefing chain — and the sane way to
+learn which of those matter, and in what shape, is to finish the retail
+campaign here first. So `godot` is mothballed at 31/31 with its restart
+brief in its own README, and the flight deck is open here.
 
-Mothballed is not abandoned: fixes still land here on their merits, and this
-branch remains the migration's authoritative retail reference — the code the
-GDExtension compiles and the behavior its oracles diff against. The lineage
-runs retail 2002 → Linux port 2026 → Godot host, in one continuous history.
+The lineage runs retail 2002 → Linux port 2026 → Godot host, in one
+continuous history, and neither branch is abandoned: fixes land on whichever
+one they belong to, and this branch remains the migration's authoritative
+retail reference — the code the GDExtension compiles and the behavior its
+oracles diff against.
 
 ## Branches
 
 - `retail` — `663b3471b`, the 2002 Volition warpcore CVS import. Pristine,
   immutable.
-- `master` — the retail-forward port; mothballed 2026-07-30 at its
-  survey-complete milestone, live as the migration's reference implementation.
-- `godot` — the working branch: the Godot migration, revived 2026-07-30,
-  GDExtension-first; see its own README.
+- `master` — the retail-forward port, and the working branch again as of
+  2026-08-05: the campaign playthrough happens here.
+- `godot` — the Godot migration, GDExtension-first; mothballed 2026-08-05 at
+  31/31 with the campaign simulating end to end. Its README carries the map
+  and the four moves that restart it.
 - `fs2open` — fs2open `release_26_0_0`, reference implementation and fix-mine
   source. Read, cherry-pick ideas, never build on.
 - `reference/*` — abandoned 2018/2023 fork lines; style reference only.

@@ -1094,3 +1094,48 @@ resolving to master's side.
 Parked port-line stock stays parked (the E4+E5 flag list, the
 commented-code policy, cf_get_file_list dedup); the campaign playtest
 remains open as the port's own closing gate.
+
+## Port line live again: the closing gate gets flown (2026-08-05)
+
+The godot line ran six days and delivered its second step: the retail
+simulation behind a native boundary (`libfs2`), Godot presenting, the
+whole campaign simulating, 31 gates.  It stops there -- mothballed at
+31/31 -- because everything it has left is *campaign-completion* work:
+player death, red-alert missions, the parked promotion/badge/traitor
+debrief stages, and the briefing chain.  Which of those matter, and in
+what shape, is a question this branch answers better by doing the thing
+it has never done: playing the retail campaign to the end.  So the
+closing gate quoted directly above stops being "open" and starts being
+the task.
+
+Two findings travelled back with the move, both retail bugs in shared
+sources, both found by the godot line's hands-off flight sweep of all 41
+campaign missions, and neither having anything to do with the migration:
+
+- **vm_matrix_to_rot_axis_and_angle** took the reciprocal of the rotation
+  axis component before writing it, in all three degenerate-axis cases --
+  an uninitialised out-param read whose NaN then slipped through
+  vm_matrix_interpolate's sign dispatch (NaN fails both `> 0` and `< 0`)
+  and aborted inside away().  SM2-02 dies on it, roughly mission 20 of
+  the campaign about to be flown.  `math_test` grew the regression, with
+  a poisoned out-param so the old order fails deterministically rather
+  than depending on stack contents; proven to bite.
+- **approach()** asserted `time_to_wp > 0` where zero is reachable and
+  already handled exactly below (formation flight converged on a
+  stationary leader yields a denormal theta_goal).  Retail shipped with
+  asserts compiled out.
+
+Nothing else crossed.  The rest of the godot branch's `src/` delta is the
+narrow `Fred_running` resurrection for its extraction tools, three
+capture seams, and its XDG/cfile work -- none of which this branch wants,
+the Fred fold (survey D) having been deliberate.
+
+Playtest gate unchanged -- `ninja -C build` deploys into the sibling run
+directory, and the game runs from there:
+
+    cd ../rundir && ./fs2 -window -res 2048x1536
+
+What it now covers, accumulated: the auto-match-target-speed
+fix (survey B), the whole E-series behavioural corrections, the 20 mined
+fs2open fixes, and these two.  Findings go in this file as their own
+block; anything with a `file:line` shape goes to `notes.txt` beside it.
