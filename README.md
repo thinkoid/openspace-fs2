@@ -175,6 +175,8 @@ perturbing the subject and watching it go red.
   `waypoints-check`, `radar-check`, `sound-check`, `targeting-check`,
   `shiptbl-check`, `glb/tres/tex/manifest/tres-load/vpstage-check`,
   `pof-oracle`, `ani-check`.
+- Inherited from the port: `math` — the vecmat regressions, including the
+  degenerate rot-axis case this branch's flight sweep found.
 - Per-slice, boundary era: `gdext-check` (the extension loads and
   round-trips), `flight-native-check` (540-frame trace through the
   boundary, tolerance **zero**), `world-check`, `training-flight-check`,
@@ -221,18 +223,29 @@ chain (command brief, mission brief, ship and weapon select).
 
 ## Recipes
 
-Prerequisites: meson + ninja, a C++17 toolchain, SDL2/OpenAL/GL/zlib,
+Prerequisites: meson + ninja, a C++17 toolchain, SDL2/OpenAL/GL,
 Python 3, **Godot 4.x** (developed on 4.7.1), and your own retail FreeSpace 2
 data (GOG) unpacked into a sibling run directory — the recipes below assume
 `../rundir` with `data/{models,maps,tables,missions}` populated.
 
 ### Build the toolchain
 
+Two submodules, and the GDExtension needs both: `subprojects/libpof` (the POF
+reader the converters go through) and `third-party/godot-cpp`, which `libfs2`
+compiles as its own static library. `stb`, beside it under `third-party/`, is
+vendored outright rather than a submodule.
+
 ```
-git submodule update --init          # libpof, under subprojects/
+git submodule update --init
 meson setup build
 ninja -C build
 ```
+
+The bindings are *not* pinned by the submodule: `gen_bindings.py` dumps
+`extension_api.json` from the installed `godot` at configure time and trims it
+through `build_profile.json`, so they match the binary that will actually load
+the extension. No `godot` on `PATH` means no bindings and no extension — the
+converters and `sim_dump` still build, since neither includes a Godot header.
 
 ### Convert and view a model
 
@@ -291,12 +304,18 @@ an honest gray box rather than vanishing — which also means missing art can
 *masquerade* as working code, so check the pantry first when something
 "doesn't look right".
 
-Controls: **mouse** steers (captured in-window; click to re-grab), **M1** /
-`LCtrl` guns, **M2** / `Space` missiles, `A`/`Z` throttle, `\` full,
-`Backspace` zero, `Tab` afterburner, `T` target next, `H` next hostile,
-`E` next escort, `S` next subsystem, `.` / `/` cycle primary / secondary
-bank, `M` match target speed (a mode; throttle keys cancel), `V`
-cockpit/chase, `Shift-Super-J` (or `Alt-J`) warp out, `Esc` quits.
+Controls: **mouse** steers (captured in-window; click to re-grab), and the
+**arrow keys** do the same job on pitch and heading — they sum with the mouse
+into one stick, so either flies. **M1** / `LCtrl` guns, **M2** / `Space`
+missiles, `A`/`Z` throttle in tenths, `\` full, `Backspace` or `0` zero, `Tab`
+afterburner, `T` target next, `H` next hostile, `E` next escort, `S` next
+subsystem, `.` / `/` cycle primary / secondary bank, `M` match target speed (a
+mode; any throttle key cancels it), `V` cockpit/chase, `Shift-Super-J` (or
+`Alt-J`) warp out, `Esc` quits.
+
+**Roll is unbound, deliberately.** `Q` was roll and `E` is retail's escort
+key; both were freed, and nothing has claimed roll since. Pitch and heading
+fly the ship — you are not missing a binding.
 
 ### Fly the campaign
 
@@ -315,6 +334,23 @@ takes an offered side loop. Warp out to end a mission the intended way.
 roots rather than your shell's working directory — and `godot --path`
 chdirs the engine into the project before `_ready`, which has produced this
 same confusion three separate times.)
+
+### Walk the showroom
+
+`tests/showroom.fs2` is a viewing stand rather than a gate: 57 ship classes
+plus the player, in seven rows down +Z by size class — Terran, Vasudan and
+Shivan fighters, then bombers, then support and freight, then cruisers and
+corvettes, then capitals, ending on a Sathanas 11 km out. Row spacing scales
+to each class's bulk so nothing overlaps. Everything is friendly, inert
+(`ai-play-dead`) and turned to face you; nothing fights, arrives or departs.
+
+```
+godot --path "$PWD/inspect" -- world "$PWD/tests/showroom.fs2" \
+      "$PWD/build/glb" "$PWD/../rundir"
+```
+
+It is the fastest check that the bake is complete — all 57 classes had
+converted art when it landed, and a gray box is a missing GLB.
 
 ### The engine-free oracle
 
@@ -429,6 +465,14 @@ censuses, useful to any future frontend:
   the mothball on the campaign-completion census (the four gaps above).
   Earlier notes rotate into git history rather than accumulating; the
   2026-08-02 retail-campaign flight sweep is at `2db2903cd`.
+- **docs/hud-design.md** — why the HUD above looks nothing like retail's.
+  Decided 2026-07-31 after flying the retail-skin pass: retail's HUD is
+  period art from a 640x480 world — the rotating target model is ornament,
+  the reticle arch is composition — so this one is jet symbology adapted to
+  6DOF instead. What the skin pass left behind regardless: the `ani2png
+  --aa` bake, the boundary's HUD freight, and the window-anchored layout.
+  (Its line 8 is stale — it says the skin survives as a `retail_hud` path in
+  `world.gd`, and no such path is in the tree.)
 - **docs/itches.md** — the redesign urges that surfaced mid-work and were
   written down instead of scratched.
 - **docs/sexp-vm.md** — the SEXP evaluator analysis.
