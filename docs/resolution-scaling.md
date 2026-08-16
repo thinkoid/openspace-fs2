@@ -6,8 +6,12 @@ resolution-independence machinery already worked out in the `reference/2023`
 fork (SCP's virtual-canvas system), and sketches a **retail-shaped adaptation**
 that is markedly less invasive than the fork's own.
 
-No code has been written for this yet — this is the delineation doc, the
-resolution analogue of [sexp-vm.md](sexp-vm.md) / [pof-model.md](pof-model.md).
+This is the delineation doc, the resolution analogue of
+[sexp-vm.md](sexp-vm.md) / [pof-model.md](pof-model.md). It was written before
+any of it was built; **§6 records what has since landed** — presentation
+scaling, 2026-07-28, which is a stage this doc did not originally have and
+which is what `-res` runs today. Everything from §4's native-canvas-scale
+design onward remains blueprint, and §6 says why that half was deferred.
 
 **Anchor convention.** Symbols are the anchor; line hints are hints. Two source
 lines coexist here:

@@ -25,8 +25,15 @@ document avoids that by convention:
   refactor updates the relevant survey file in the *same commit*, and
   `git blame` tells you exactly how stale any claim is relative to the code.
 
-The untracked compilation-mode analysis files (Emacs, `public/notes.txt`)
-remain the ephemeral *working / port-log* layer. This survey is the durable one.
+The compilation-mode analysis files (Emacs) remain the *working / port-log*
+layer: `notes.txt` at the repo root, rolling — each sweep supersedes the last
+wholesale, so its history is in git rather than in the file — plus the pinned
+ones beside this survey, `../pof-oracle-findings.txt` and
+`../hud-aabitmap-artefact.txt`. This survey is the durable layer.
+
+(Written when those files lived under `public/` on codeberg and were untracked.
+They are tracked and under `docs/` now; `../notes.md`'s 2026-07-22 hosting-
+migration entry is where that rename is recorded.)
 
 ## The board
 
