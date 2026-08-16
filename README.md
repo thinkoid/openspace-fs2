@@ -471,8 +471,7 @@ censuses, useful to any future frontend:
   the reticle arch is composition — so this one is jet symbology adapted to
   6DOF instead. What the skin pass left behind regardless: the `ani2png
   --aa` bake, the boundary's HUD freight, and the window-anchored layout.
-  (Its line 8 is stale — it says the skin survives as a `retail_hud` path in
-  `world.gd`, and no such path is in the tree.)
+  The skin itself came out entirely and lives only in git.
 - **docs/itches.md** — the redesign urges that surfaced mid-work and were
   written down instead of scratched.
 - **docs/sexp-vm.md** — the SEXP evaluator analysis.

@@ -4,8 +4,12 @@ Decision (2026-07-31, after flying the retail-skin pass): stop
 replicating retail's HUD. It is period art from a 640x480 world — the
 rotating target model is ornament, the reticle arch is composition.
 The port's HUD should serve a pilot, in the idiom of real fighter HUDs,
-adapted to 6DOF space. The retail-skin work stays in the tree (the
-`retail_hud` path in world.gd) but is parked, not polished further.
+adapted to 6DOF space. This paragraph originally said the retail-skin
+work would stay in the tree, parked as a `retail_hud` path in world.gd;
+the very next commit (`b364c0822`) took it out instead — skin, target-view
+well, reticle arch and icon anis together. It is recoverable from git
+(`git show b364c0822^:inspect/world.gd`) if nostalgia ever wins, and that
+is the only place it lives.
 
 What survives from the skin pass regardless: the ani2png `--aa` bake
 (interface art as alpha masks), the boundary freight (shield quadrants,
